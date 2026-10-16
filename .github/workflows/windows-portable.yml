@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+concurrency:
+  group: auctionhammer-windows-main
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -55,4 +58,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
-          gh release create $tag 'AuctionHammer-Windows.zip' --title "AuctionHammer Portable $tag" --notes "Przenosna gra Windows + kod zrodlowy. Rozpakuj folder AuctionHammer i uruchom URUCHOM_AUCTIONHAMMER.bat. Brak wymogu Pythona, pip lub Git." --latest --target '${{ github.sha }}'
+          gh release create $tag 'AuctionHammer-Windows.zip' --title "AuctionHammer Portable $tag" --notes "Portable Windows release. Extract AuctionHammer and launch URUCHOM_AUCTIONHAMMER.bat. Python and pygame-ce are bundled." --latest --target '${{ github.sha }}'
