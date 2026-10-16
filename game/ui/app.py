@@ -180,8 +180,10 @@ class SoloApp:
     def _choose_target(self, target):
         """Clicking a highlighted board target picks an unambiguous option."""
         pending = self.game.pending
+        if pending is None or target is None:
+            return
         matches = [i for i, item in enumerate(pending.choices)
-                   if item.target == target] if pending else []
+                   if item.target == target]
         if len(matches) == 1:
             self._choose(matches[0])
         elif len(matches) > 1:
