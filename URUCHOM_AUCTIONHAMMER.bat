@@ -2,20 +2,21 @@
 setlocal
 cd /d "%~dp0"
 
-if not exist "%~dp0AuctionHammer.exe" (
-  echo [Brak EXE] To folder z kodem zrodlowym, a nie gotowa gra Windows.
-  echo Pobierz AuctionHammer-Windows.zip z:
-  echo https://github.com/MateuszBock0/AuctionHammer/releases/latest
-  echo Wydanie zawiera AuctionHammer.exe i biblioteki - bez instalacji Pythona.
-  pause
-  exit /b 2
-)
-
+rem Allow bootstrap from source-only folder: updater downloads portable EXE on first run.
 if exist "%~dp0tools\portable_launcher.ps1" (
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\portable_launcher.ps1"
   if not errorlevel 1 goto :done
-  echo [Aktualizator] Blad sprawdzania aktualizacji. Uruchamiam lokalne EXE.
+  echo [Aktualizator] Nie udalo sie pobrac lub uruchomic wersji portable.
 )
-start "" "%~dp0AuctionHammer.exe"
+
+if exist "%~dp0AuctionHammer.exe" (
+  start "" "%~dp0AuctionHammer.exe"
+  goto :done
+)
+
+echo [Brak EXE] Pierwsze uruchomienie wymaga dostepu do GitHub Releases.
+echo https://github.com/MateuszBock0/AuctionHammer/releases/latest
+pause
+
 :done
 endlocal
