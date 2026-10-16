@@ -150,33 +150,69 @@ class SoloApp:
                 if self.slot_rect(idx,j).collidepoint(pos):return uid
         return None
 
+    CHOICES_PER_PAGE = 8
+    CHOICE_FIRST_Y = 354
+    CHOICE_ROW_HEIGHT = 54
+
     def choice_bounds(self):
-        x,y,w,h=260,159,806,595
-        start=self.choice_page*9
-        return [(i,pygame.Rect(x+26,y+98+(i-start)*47,w-52,39)) for i in range(start,min(len(self.game.pending.choices),start+9))]
+        """Choice buttons belong to the sidebar, never above the game board."""
+        pending = self.game.pending
+        if pending is None:
+            return []
+        start = self.choice_page * self.CHOICES_PER_PAGE
+        count = min(len(pending.choices), start + self.CHOICES_PER_PAGE)
+        return [(i, pygame.Rect(1101, self.CHOICE_FIRST_Y +
+                                (i - start) * self.CHOICE_ROW_HEIGHT, 324, 47))
+                for i in range(start, count)]
+
+    def _choice_last_page(self):
+        pending = self.game.pending
+        return (len(pending.choices) - 1) // self.CHOICES_PER_PAGE if pending else 0
+
+    def _choose(self, index):
+        try:
+            self.game.choose(index)
+            self.last_error = ''
+        except IllegalMove as exc:
+            self.last_error = str(exc)
+        self.choice_page = 0
+
+    def _choose_target(self, target):
+        """Clicking a highlighted board target picks an unambiguous option."""
+        pending = self.game.pending
+        matches = [i for i, item in enumerate(pending.choices)
+                   if item.target == target] if pending else []
+        if len(matches) == 1:
+            self._choose(matches[0])
+        elif len(matches) > 1:
+            self.choice_page = matches[0] // self.CHOICES_PER_PAGE
+            self.last_error = 'Wybierz wariant zdolności w panelu po prawej.'
 
     def click(self,pos,button=1):
         g=self.game
         if self.details_card is not None:
             self.details_card=None;return
-        if pygame.Rect(1103,686,316,40).collidepoint(pos):
-            uid=self.sidebar_card
-            if uid in g.cards:self._open_details(uid)
-            return
         if g.phase=='finished':
             if pygame.Rect(1192,823,236,55).collidepoint(pos):self.restart()
             return
         if g.pending:
-            if g.pending.owner!=0:return
-            for index,rect in self.choice_bounds():
+            if g.pending.owner != 0:
+                return
+            for index, rect in self.choice_bounds():
                 if rect.collidepoint(pos):
-                    try:g.choose(index)
-                    except IllegalMove as e:self.last_error=str(e)
-                    self.choice_page=0
+                    self._choose(index)
                     return
-            if pygame.Rect(302,701,124,38).collidepoint(pos):self.choice_page=max(0,self.choice_page-1)
-            if pygame.Rect(890,701,124,38).collidepoint(pos):
-                self.choice_page=min((len(g.pending.choices)-1)//9,self.choice_page+1)
+            if pygame.Rect(1102,802,150,37).collidepoint(pos):
+                self.choice_page = max(0, self.choice_page - 1)
+                return
+            if pygame.Rect(1274,802,150,37).collidepoint(pos):
+                self.choice_page = min(self._choice_last_page(), self.choice_page + 1)
+                return
+            self._choose_target(self.target_under(pos))
+            return
+        if pygame.Rect(1103,686,316,40).collidepoint(pos):
+            uid=self.sidebar_card
+            if uid in g.cards:self._open_details(uid)
             return
         if g.phase=='mulligan':
             for uid,rect in self.hand_layout().items():
@@ -244,7 +280,12 @@ class SoloApp:
             if event.key==pygame.K_ESCAPE:
                 self.selected=None;self.tooltip_open=False
                 if self.game.phase=='finished':self.restart()
-            elif event.key==pygame.K_r:self.restart()
+            elif event.key==pygame.K_r and not self.game.pending:self.restart()
+            elif (self.game.pending and self.game.pending.owner == 0
+                  and pygame.K_1 <= event.key <= pygame.K_8):
+                index = self.choice_page * self.CHOICES_PER_PAGE + event.key - pygame.K_1
+                if index < len(self.game.pending.choices):
+                    self._choose(index)
             elif event.key==pygame.K_RETURN and self.game.phase=='mulligan':
                 try:self.game.finish_mulligan(0)
                 except IllegalMove as e:self.last_error=str(e)
@@ -255,16 +296,18 @@ class SoloApp:
                 if self.game.pending and self.game.pending.owner==0:self.choice_page=max(0,self.choice_page-1)
                 else:self.scroll=max(0,self.scroll-1)
             elif event.key==pygame.K_RIGHT:
-                if self.game.pending and self.game.pending.owner==0:self.choice_page=min((len(self.game.pending.choices)-1)//9,self.choice_page+1)
+                if self.game.pending and self.game.pending.owner==0:self.choice_page=min(self._choice_last_page(),self.choice_page+1)
                 else:self.scroll+=1
-            elif event.key==pygame.K_i:self._open_details(self.selected or self.sidebar_card)
+            elif event.key==pygame.K_i:
+                self._open_details(self.game.pending.uid if self.game.pending
+                                   else self.selected or self.sidebar_card)
             elif event.key==pygame.K_F11:
                 flags=pygame.RESIZABLE if self.window.get_flags() & pygame.FULLSCREEN else pygame.FULLSCREEN
                 self.window=pygame.display.set_mode(self.window.get_size(),flags)
             elif event.key==pygame.K_q:return False
         elif event.type==pygame.MOUSEWHEEL:
             if self.game.pending and self.game.pending.owner==0:
-                self.choice_page=max(0,min((len(self.game.pending.choices)-1)//9,self.choice_page-event.y))
+                self.choice_page=max(0,min(self._choice_last_page(),self.choice_page-event.y))
             else:self.scroll=max(0,self.scroll-event.y)
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
             pos=self._physical_to_virtual(event.pos)
@@ -273,7 +316,7 @@ class SoloApp:
             pos=self._physical_to_virtual(event.pos)
             if self.drag_start:
                 down,card=self.drag_start;self.drag_start=None
-                if card in self.game.players[0].hand and (pos[0]-down[0])**2+(pos[1]-down[1])**2>100:
+                if not self.game.pending and card in self.game.players[0].hand and (pos[0]-down[0])**2+(pos[1]-down[1])**2>100:
                     if self.OWN_Y-12<=pos[1]<=self.OWN_Y+self.SLOT_H+12 and self.game.phase=='turn' and self.game.active==0:
                         target=self.target_under(pos)
                         replace=target if target in self.game.players[0].board and len(self.game.players[0].board)==5 else None
@@ -349,6 +392,9 @@ class SoloApp:
         self._text('KARTA / AKCJE',22,1103,106,cfg.GOLD)
         card_id=self.selected or self.card_under(self.mouse_pos())
         self.sidebar_card=card_id if card_id in self.game.cards else None
+        if self.game.pending and self.game.pending.owner == 0:
+            self._draw_choice_sidebar()
+            return
         if card_id and card_id in self.game.cards:
             c=self.game.cards[card_id];d=c.definition
             self._text(d.name,18,1105,151,FACTION_COLORS[d.faction])
@@ -425,7 +471,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.2 · v17',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.3 · v17',14,1310,35,cfg.GOLD)
 
     def _draw_log(self):
         # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
@@ -439,24 +485,68 @@ class SoloApp:
             self._text(self.last_error[:105],13,280,899,cfg.RED)
 
     def _draw_choices(self):
-        g=self.game
-        if not g.pending or g.pending.owner!=0:return
-        dim=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        dim.fill((3,9,15,204));self.screen.blit(dim,(0,0))
-        rect=pygame.Rect(260,159,806,595)
-        self._panel(rect,(29,43,57),cfg.GOLD,18)
-        self._text('WYBIERZ CEL / WARIANT ZDOLNOŚCI',22,285,182,cfg.GOLD)
-        card=g.cards[g.pending.uid].definition
-        self._text(f'{card.name}  ·  {card.trigger}',16,286,219,cfg.TEXT)
-        summary='Wybór jest obowiązkowy, jeśli istnieje legalny cel.'
-        self._text(summary,14,286,245,cfg.MUTED)
-        for i,r in self.choice_bounds():
-            ch=g.pending.choices[i]
-            self._button(r,f'{i+1}. {ch.label}',accent=(i%2==0),small=True)
-        if len(g.pending.choices)>9:
-            self._button(pygame.Rect(302,701,124,38),'← POPRZEDNIE',small=True)
-            self._button(pygame.Rect(890,701,124,38),'NASTĘPNE →',small=True)
-            self._text(f'Strona {self.choice_page+1}/{(len(g.pending.choices)-1)//9+1}',15,663,712,cfg.MUTED,center=True)
+        """Highlight legal targets without hiding the battlefield or its labels."""
+        pending = self.game.pending
+        if pending is None or pending.owner != 0:
+            return
+        counts = {}
+        for ch in pending.choices:
+            if ch.target is not None:
+                counts[ch.target] = counts.get(ch.target, 0) + 1
+        for target, count in counts.items():
+            rect = None
+            if target.startswith('hero:'):
+                rect = self.hero_rect(int(target.split(':')[1]))
+            else:
+                for player in self.game.players:
+                    if target in player.board:
+                        rect = self.slot_rect(player.idx, player.board.index(target))
+                        break
+            if rect is not None:
+                pygame.draw.rect(self.screen, cfg.GOLD, rect.inflate(8, 8), 4, border_radius=13)
+
+    def _draw_choice_sidebar(self):
+        """A full-height, readable selector in the existing right sidebar."""
+        pending = self.game.pending
+        card = self.game.cards[pending.uid].definition
+        self._text('WYBIERZ CEL / EFEKT',22,1104,106,cfg.GOLD)
+        name = self.cards_view.clip(card.name,self.fonts[18],320)
+        self._text(name,18,1104,149,FACTION_COLORS[card.faction])
+        self._text(f'Aktywacja: {card.trigger}',14,1104,179,cfg.TEXT)
+        self._text('ZDOLNOŚĆ',14,1104,211,cfg.GOLD)
+        lines = self._wrap(card.effect,14,320)
+        for i,line in enumerate(lines[:4]):
+            self._text(line,14,1104,234+i*21,cfg.TEXT)
+        if len(lines)>4:
+            self._text('Pełny opis karty: naciśnij [I].',12,1104,320,cfg.MUTED)
+        pygame.draw.line(self.screen,cfg.PANEL_BORDER,(1104,335),(1425,335),1)
+        total = len(pending.choices)
+        self._text(f'LEGALNE WYBORY: {total}',14,1104,338,cfg.GOLD)
+        for index, rect in self.choice_bounds():
+            choice = pending.choices[index]
+            pygame.draw.rect(self.screen,(40,64,73),rect,border_radius=9)
+            pygame.draw.rect(self.screen,cfg.HOVER if rect.collidepoint(self.mouse_pos())
+                             else cfg.PANEL_BORDER,rect,2,border_radius=9)
+            desc = choice.label.replace('  →  ', ' → ')
+            fragments = self._wrap(desc,13,286)
+            first = self.cards_view.clip(fragments[0],self.fonts[13],281)
+            self._text(f'{index%self.CHOICES_PER_PAGE+1}. {first}',13,
+                       rect.x+9,rect.y+(8 if len(fragments)>1 else 15))
+            if len(fragments)>1:
+                second = self.cards_view.clip(' '.join(fragments[1:]),self.fonts[13],290)
+                self._text(second,13,rect.x+23,rect.y+26,cfg.MUTED)
+        if self._choice_last_page():
+            self._button(pygame.Rect(1102,802,150,37),'← WSTECZ',
+                         active=self.choice_page>0,small=True)
+            self._button(pygame.Rect(1274,802,150,37),'DALEJ →',
+                         active=self.choice_page<self._choice_last_page(),small=True)
+            self._text(f'Strona {self.choice_page+1}/{self._choice_last_page()+1}',
+                       13,1260,847,cfg.MUTED,center=True)
+        else:
+            self._text('Wybierz z listy lub kliknij podświetlony cel.',
+                       12,1104,816,cfg.MUTED)
+        self._text('Wybór wymagany, gdy istnieje legalny cel.',
+                   12,1104,879,cfg.MUTED)
 
     def _draw_details(self):
         uid=self.details_card
