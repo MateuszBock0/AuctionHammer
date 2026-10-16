@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 if not exist "AuctionHammer.exe" (
- echo Brak pliku AuctionHammer.exe. Pobierz gotowy pakiet z GitHub Releases.
+ echo AuctionHammer.exe was not found. Download the Windows release from GitHub.
  pause
  exit /b 1
 )
