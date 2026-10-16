@@ -1,38 +1,44 @@
-# AuctionHammer — master folder i wersja portable Windows
+# AuctionHammer
 
-Tu znajduje się **cała gra i jej kod źródłowy**: solo vs komputer, 70 kart startowych (po jednej kopii każdego typu), Game Master v17. **Brak aukcji, kart aukcyjnych i kosztów wystawiania kart.**
+AuctionHammer is a turn-based fantasy card game for one player against a computer opponent. The current solo prototype follows **Game Master v17** and includes 70 unique starter cards, with one copy of each card in the shared pool. Auctions and card play costs are not part of this version.
 
-## Chcę tylko grać — nowy komputer Windows 10/11
+## Play on Windows
 
-1. Pobierz **[AuctionHammer-Windows.zip z najnowszego wydania](https://github.com/MateuszBock0/AuctionHammer/releases/latest/download/AuctionHammer-Windows.zip)**.
-2. Rozpakuj archiwum do jednego folderu **`AuctionHammer`** (nie uruchamiaj EXE wewnątrz ZIP).
-3. Uruchom **`URUCHOM_AUCTIONHAMMER.bat`** albo bez internetu **`GRAJ_BEZ_INTERNETU.bat`**.
+Download the latest [Windows release](https://github.com/MateuszBock0/AuctionHammer/releases/latest), extract the `AuctionHammer` folder, and open **`URUCHOM_AUCTIONHAMMER.bat`**. The Windows release includes the game executable and its runtime dependencies. No separate Python installation is needed to play.
 
-Pobrałeś kompletny folder z `AuctionHammer.exe`, `_internal/` i kodem źródłowym. **Nie trzeba instalować Pythona, pygame-ce, pip, Git, VS Code ani używać terminala.** Dostęp do GitHub potrzebny jest tylko do pobrania/aktualizacji; offline gra nadal działa. Połączenie z internetem nie jest potrzebne do samej rozgrywki.
+- **`URUCHOM_AUCTIONHAMMER.bat`** checks for a newer release and then starts the game. If the update check is unavailable, it uses the installed version.
+- **`GRAJ_BEZ_INTERNETU.bat`** starts the installed version without checking for updates.
+- **`AuctionHammer.exe`** starts the game directly.
 
-## Pierwsze uruchomienie projektu źródłowego (repozytorium jest jeszcze puste)
+Keep `AuctionHammer.exe` and the `_internal` directory together. An internet connection is needed to download updates, but not to play offline.
 
-Jeśli masz ZIP ze **źródłami bez EXE**, rozpakuj go do folderu `AuctionHammer`, a następnie uruchom **`OPUBLIKUJ_NA_GITHUB.bat`**. Skrypt korzysta z Gita już obecnego na komputerze, pobiera bieżące repozytorium, przekazuje komplet źródeł i otwiera GitHub Actions. Może być potrzebna jednorazowa autoryzacja konta w oknie Git Credential Manager. Nie potrzeba do tego Python ani pip.
+## Controls
 
-Po zielonym zakończeniu workflow pobierz `AuctionHammer-Windows.zip` z zakładki **[Releases](https://github.com/MateuszBock0/AuctionHammer/releases/latest)**. Jeśli działania GitHub Actions są wyłączone, włącz je w ustawieniach repozytorium.
+- Select a card in your hand, then click your board to play it. You can also drag a card onto the board.
+- Select one of your ready units, then choose an enemy unit or the opposing hero to attack.
+- When a skill requires a target or mode, use the **selection panel on the right**. Eligible targets are highlighted on the board; a direct click works when there is only one available mode for that target.
+- Press **1–8** to select a visible choice, or use the panel's navigation controls for additional choices.
+- Press **I** to open a card's full description. Mouse wheel scrolls the description.
+- Press **Space** to end your turn and **F11** to toggle fullscreen.
 
-## Edycja kodu w VS Code
+Each card identifies its activation timing: **On Play, On Attack, On Death, End of Turn,** or **Passive** (these labels currently appear in Polish in the game interface). When an On Play effect has legal selectable options, choosing one is required; when no legal option exists, the card can still be played without resolving that effect.
 
-W folderze `AuctionHammer` masz `game/`, `data/`, `docs/` i `tests/`. Otwórz `AuctionHammer` przez `OTWORZ_W_VS_CODE.bat` albo File → Open Folder. Gra przez EXE nie potrzebuje interpretera; debugowanie źródeł w VS Code wymaga Pythona i pygame-ce. Do aktualizowania źródeł służy GitHub i Git.
+## Project files
 
-## Pliki startowe
+| Path | Purpose |
+| --- | --- |
+| `game/` | Game engine, AI, and Pygame client |
+| `data/` | Card catalogue and structured rule data |
+| `assets/` | Card artwork and other game assets |
+| `tests/` | Automated regression tests |
+| `AUCTIONHAMMER_MASTER.md` | Canonical project specification and implementation notes |
+| `docs/GAME_MASTER_v17.md` | Full v17 rules and card descriptions |
+| `.github/workflows/` | Automated tests and Windows release build |
 
-- `URUCHOM_AUCTIONHAMMER.bat` — sprawdza nowe wydanie GitHub, następnie uruchamia EXE; offline używa posiadanej wersji.
-- `GRAJ_BEZ_INTERNETU.bat` — natychmiast uruchamia lokalne EXE.
-- `OPUBLIKUJ_NA_GITHUB.bat` — jednorazowe wysłanie folderu źródeł do repozytorium; wymaga Gita.
-- `OTWORZ_W_VS_CODE.bat` — otwiera kod do edycji.
-- `START_DEVELOPER.bat` — alternatywny rozruch przez Pythona dla programisty.
-- `AUCTIONHAMMER_MASTER.md` — dokument źródłowy projektu i specyfikacja zasad.
+To work on the source code, open this folder in VS Code. Source development requires Python 3.11+ and the dependencies in `requirements.txt`. The packaged Windows game does not.
 
-## Testy i ograniczenia
+## Releases and contributions
 
-CI uruchamia wszystkie testy na Windows przed budową. Wersja prototypowa nadal wymaga walidacji złożonych łańcuchów zdarzeń przeciw Game Master v17. Publikacja Release wymaga, żeby GitHub Actions miał prawo zapisu `contents: write` (workflow ustawia wymagane uprawnienie).
+Changes merged to `main` run automated tests and build a new Windows release through GitHub Actions. Published builds are available under [Releases](https://github.com/MateuszBock0/AuctionHammer/releases/latest).
 
-## GitHub
-
-[MateuszBock0/AuctionHammer](https://github.com/MateuszBock0/AuctionHammer) — repozytorium publiczne. Nie dodawaj do niego prywatnych danych, haseł ani tokenów. Wersję wyłącznie dla własnego użytku można zmienić na prywatną w ustawieniach repozytorium, ale wtedy bezpośrednie pobieranie wydań wymaga logowania.
+The solo engine is an MVP. Some complex chains of simultaneous effects still require additional rules-validation tests. The rules in Game Master v17 take precedence over earlier prototype behaviour.
