@@ -1,0 +1,18 @@
+# Local Python state and credentials
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+*.tmp
+*.bak
+local_config.json
+# Windows local build artifacts
+_internal/
+AuctionHammer.exe
+BUILD_VERSION.txt
+dist/
+build/
+*.spec
+# Local artifacts
+.DS_Store

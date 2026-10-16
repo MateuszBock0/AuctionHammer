@@ -1,0 +1,20 @@
+AuctionHammer — naprawa uruchamiania bez internetu
+
+1. Rozpakuj tę paczkę do C:\Users\Mateusz\Desktop\AuctionHammer\
+2. Potwierdź zastąpienie plików launch_auctionhammer.py i URUCHOM_AUCTIONHAMMER.bat
+3. Kliknij dwukrotnie URUCHOM_AUCTIONHAMMER.bat
+
+Program najpierw sprawdza działające pygame-ce w:
+  - lokalnym AuctionHammer\.venv
+  - interpreterze, który uruchomił launcher
+  - C:\Users\Mateusz\.venv (Twoje wcześniejsze środowisko)
+  - ścieżce AUCTIONHAMMER_PYTHON, jeśli ją ustawisz
+
+Jeżeli żaden interpreter nie ma pygame-ce, instalacja wymaga
+dostępu do pypi.org (sieć/DNS). Nie usuwa działającej gry.
+
+Szybkie uruchomienie bez instalatora (Git Bash):
+  ~/.venv/Scripts/python.exe game/main.py
+
+Jeśli globalna .venv została usunięta, przywróć łączność
+z pypi.org i ponownie uruchom URUCHOM_AUCTIONHAMMER.bat.

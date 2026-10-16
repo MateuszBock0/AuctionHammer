@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "S01",
+    "trigger": "Przy wystawieniu",
+    "family": "Obrażenia",
+    "name": "Mag Zorzy",
+    "atk": 1,
+    "hp": 4,
+    "effect": "Zadaj 3 obrażenia wybranej wrogiej jednostce.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S02",
+    "trigger": "Przy wystawieniu",
+    "family": "Leczenie",
+    "name": "Kapłanka Srebrnego Blasku",
+    "atk": 3,
+    "hp": 5,
+    "effect": "Ulecz wybraną sojuszniczą jednostkę lub własnego bohatera o 4 HP.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S04",
+    "trigger": "Przy wystawieniu",
+    "family": "ATK ±",
+    "name": "Tkacz Run",
+    "atk": 1,
+    "hp": 4,
+    "effect": "Wybierz: przyznaj własnej jednostce +1 ATK albo nałóż −1 ATK na wrogą jednostkę; efekt trwa do opuszczenia planszy przez cel.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu premii lub osłabienia ATK.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S08",
+    "trigger": "Przy wystawieniu",
+    "family": "MAX HP ±",
+    "name": "Mag Tkanki Życia",
+    "atk": 2,
+    "hp": 7,
+    "effect": "Wybierz: przyznaj własnej jednostce +4 MAX HP i +4 aktualnego HP albo zmniejsz MAX HP wrogiej jednostki o 4 (aktualne HP ogranicz do nowego maksimum). Efekt trwa do opuszczenia planszy przez cel.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S03",
+    "trigger": "Przy wystawieniu",
+    "family": "Pancerz",
+    "name": "Zaklinacz Runicznej Zbroi",
+    "atk": 2,
+    "hp": 7,
+    "effect": "Przyznaj 4 trwałego pancerza wybranej sojuszniczej jednostce.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S05",
+    "trigger": "Przy wystawieniu",
+    "family": "Tarcza",
+    "name": "Strażniczka Księżycowej Pieczęci",
+    "atk": 3,
+    "hp": 6,
+    "effect": "Przyznaj tarczę wybranej sojuszniczej jednostce i 1 trwałego pancerza temu samemu celowi.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S58",
+    "trigger": "Przy wystawieniu",
+    "family": "Trucizna",
+    "name": "Alchemik Jadowych Korzeni",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Nałóż na wybraną wrogą jednostkę truciznę: 2 obrażenia przez 2 jej własne tury.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNYCH obrażeń z jednej porcji trucizny; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S59",
+    "trigger": "Przy wystawieniu",
+    "family": "Ogłuszenie",
+    "name": "Tkaczka Uśpienia",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 1 obrażenie.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S60",
+    "trigger": "Przy wystawieniu",
+    "family": "Regeneracja",
+    "name": "Druid Odnowy",
+    "atk": 3,
+    "hp": 6,
+    "effect": "Nałóż na wybraną sojuszniczą jednostkę regenerację 3 HP przez 2 jej własne tury.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S61",
+    "trigger": "Przy wystawieniu",
+    "family": "Prowokacja",
+    "name": "Władczyni Leśnych Więzów",
+    "atk": 3,
+    "hp": 7,
+    "effect": "Nadaj wybranej sojuszniczej jednostce prowokację do jej opuszczenia planszy.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S07",
+    "trigger": "Przy wystawieniu",
+    "family": "Oczyszczanie",
+    "name": "Kapłanka Oczyszczenia",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Usuń z wybranej własnej jednostki wszystkie tymczasowe negatywne efekty albo z wrogiej wszystkie tymczasowe pozytywne efekty; dodatkowo ulecz własny cel o 1 HP, jeżeli taki był wybrany.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S64",
+    "trigger": "Przy wystawieniu",
+    "family": "Odporność",
+    "name": "Strażnik Zaklęć Ochronnych",
+    "atk": 4,
+    "hp": 6,
+    "effect": "Nadaj wybranej własnej jednostce odporność na truciznę do jej opuszczenia planszy.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S66",
+    "trigger": "Przy wystawieniu",
+    "family": "Szybki atak",
+    "name": "Mag Migotliwego Kroku",
+    "atk": 2,
+    "hp": 4,
+    "effect": "Ta jednostka może zaatakować w turze, w której została wystawiona.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S67",
+    "trigger": "Przy wystawieniu",
+    "family": "Podwójny atak",
+    "name": "Zaklinacz Podwójnego Uderzenia",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Ta jednostka otrzymuje Podwójny atak: może atakować dwa razy w każdej własnej turze do opuszczenia planszy.",
+    "faction": "Elfy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S09",
+    "trigger": "Przy ataku",
+    "family": "Obrażenia",
+    "name": "Wilk Szponiasty",
+    "atk": 2,
+    "hp": 5,
+    "effect": "Przed standardową walką zadaj 1 dodatkowe obrażenie celowi ataku.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S10",
+    "trigger": "Przy ataku",
+    "family": "Leczenie",
+    "name": "Nietoperz Krwiożerca",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Przed standardową walką ulecz tę jednostkę o 2 HP.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S68",
+    "trigger": "Przy ataku",
+    "family": "ATK ±",
+    "name": "Dzik Bursztynowych Kłów",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Przed standardową walką wybierz: przyznaj sobie +1 ATK albo nałóż −1 ATK na atakowaną wrogą jednostkę, do końca bieżącej tury.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu premii lub osłabienia ATK.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S69",
+    "trigger": "Przy ataku",
+    "family": "MAX HP ±",
+    "name": "Nosorożec Żelaznoskóry",
+    "atk": 3,
+    "hp": 7,
+    "effect": "Przed standardową walką wybierz: przyznaj sobie +1 MAX HP i +1 aktualnego HP albo obniż MAX HP atakowanej jednostki o 1 do końca jej najbliższej własnej tury.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S12",
+    "trigger": "Przy ataku",
+    "family": "Pancerz",
+    "name": "Żarłacz Pancerzy",
+    "atk": 4,
+    "hp": 5,
+    "effect": "Przed standardową walką usuń do 2 punktów pancerza z celu ataku.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S70",
+    "trigger": "Przy ataku",
+    "family": "Tarcza",
+    "name": "Żółw Rogaty",
+    "atk": 3,
+    "hp": 6,
+    "effect": "Przed standardową walką daj sobie 1 tarczę, jeśli jeszcze jej nie posiadasz.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S11",
+    "trigger": "Przy ataku",
+    "family": "Trucizna",
+    "name": "Jadowita Żmija",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Nałóż na cel ataku truciznę: 1 obrażenie przez 2 jego własne tury.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNYCH obrażeń z jednej porcji trucizny; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S15",
+    "trigger": "Przy ataku",
+    "family": "Ogłuszenie",
+    "name": "Niedźwiedź Grzmotu",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Gdy atakujesz jednostkę, ogłusz ją na 1 jej własną turę przed standardową walką.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S71",
+    "trigger": "Przy ataku",
+    "family": "Regeneracja",
+    "name": "Salamandra Odnowy",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Przed standardową walką nałóż na tę jednostkę regenerację 1 HP przez 2 własne tury.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S72",
+    "trigger": "Przy ataku",
+    "family": "Prowokacja",
+    "name": "Bawół Strażnik",
+    "atk": 2,
+    "hp": 8,
+    "effect": "Przed standardową walką nadaj tej jednostce prowokację do końca jej najbliższej własnej tury.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S74",
+    "trigger": "Przy ataku",
+    "family": "Oczyszczanie",
+    "name": "Lis Oczyszczający",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Gdy atakujesz jednostkę, usuń z niej wszystkie tymczasowe pozytywne efekty przed standardową walką.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S76",
+    "trigger": "Przy ataku",
+    "family": "Odporność",
+    "name": "Miodożer Nieugięty",
+    "atk": 4,
+    "hp": 6,
+    "effect": "Przed standardową walką zyskaj odporność na ogłuszenie do końca własnej najbliższej tury.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S78",
+    "trigger": "Przy ataku",
+    "family": "Szybki atak",
+    "name": "Gepard Burzowy",
+    "atk": 2,
+    "hp": 4,
+    "effect": "Przed standardową walką nadaj wybranej innej sojuszniczej jednostce wystawionej w tej turze możliwość atakowania już teraz.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S79",
+    "trigger": "Przy ataku",
+    "family": "Podwójny atak",
+    "name": "Dwugłowa Hiena",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Gdy wykonujesz pierwszy atak w tej turze, otrzymaj Podwójny atak do końca bieżącej tury: możesz zaatakować drugi raz.",
+    "faction": "Dzikie bestie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S21",
+    "trigger": "Przy śmierci",
+    "family": "Obrażenia",
+    "name": "Widmo Otchłani",
+    "atk": 1,
+    "hp": 4,
+    "effect": "Zadaj 4 obrażenia wrogiemu bohaterowi.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S17",
+    "trigger": "Przy śmierci",
+    "family": "Leczenie",
+    "name": "Duch Ostatniej Łaski",
+    "atk": 3,
+    "hp": 8,
+    "effect": "Ulecz własnego bohatera o 6 HP.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S23",
+    "trigger": "Przy śmierci",
+    "family": "ATK ±",
+    "name": "Klątwonosiciel",
+    "atk": 1,
+    "hp": 3,
+    "effect": "Wybierz: przyznaj pozostałej własnej jednostce +2 ATK albo nałóż −2 ATK na wrogą jednostkę; efekt trwa do opuszczenia planszy przez cel.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu premii lub osłabienia ATK.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S81",
+    "trigger": "Przy śmierci",
+    "family": "MAX HP ±",
+    "name": "Krwawy Homunkulus",
+    "atk": 4,
+    "hp": 7,
+    "effect": "Wybierz: przyznaj pozostałej własnej jednostce +5 MAX HP i +5 aktualnego HP albo zmniejsz MAX HP wrogiej jednostki o 5. Efekt trwa do opuszczenia planszy przez cel.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S82",
+    "trigger": "Przy śmierci",
+    "family": "Pancerz",
+    "name": "Golem Grobowy",
+    "atk": 3,
+    "hp": 7,
+    "effect": "Przyznaj 6 trwałego pancerza wybranej pozostałej sojuszniczej jednostce.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S20",
+    "trigger": "Przy śmierci",
+    "family": "Tarcza",
+    "name": "Strażnik Mauzoleum",
+    "atk": 4,
+    "hp": 7,
+    "effect": "Przyznaj tarczę wybranej pozostałej sojuszniczej jednostce i 2 trwałego pancerza temu samemu celowi.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S83",
+    "trigger": "Przy śmierci",
+    "family": "Trucizna",
+    "name": "Nosiciel Plagi",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Nałóż na wybraną wrogą jednostkę truciznę: 2 obrażenia przez 3 jej własne tury.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNYCH obrażeń z jednej porcji trucizny; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S84",
+    "trigger": "Przy śmierci",
+    "family": "Ogłuszenie",
+    "name": "Banshee Krzyku",
+    "atk": 1,
+    "hp": 4,
+    "effect": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 2 obrażenia.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S85",
+    "trigger": "Przy śmierci",
+    "family": "Regeneracja",
+    "name": "Życiodajne Widmo",
+    "atk": 3,
+    "hp": 6,
+    "effect": "Nałóż na wybraną pozostałą sojuszniczą jednostkę regenerację 3 HP przez 3 jej własne tury.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S86",
+    "trigger": "Przy śmierci",
+    "family": "Prowokacja",
+    "name": "Trupi Wartownik",
+    "atk": 3,
+    "hp": 9,
+    "effect": "Pozostała wybrana sojusznicza jednostka otrzymuje prowokację do swojego opuszczenia planszy.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S87",
+    "trigger": "Przy śmierci",
+    "family": "Oczyszczanie",
+    "name": "Widmo Rozproszenia",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Usuń z wybranej pozostałej własnej jednostki wszystkie tymczasowe negatywne efekty oraz przyznaj jej 2 trwałego pancerza.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S88",
+    "trigger": "Przy śmierci",
+    "family": "Odporność",
+    "name": "Grobowy Antymag",
+    "atk": 4,
+    "hp": 7,
+    "effect": "Nadaj wybranej pozostałej własnej jednostce odporność na truciznę i ogłuszenie do jej opuszczenia planszy.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S90",
+    "trigger": "Przy śmierci",
+    "family": "Szybki atak",
+    "name": "Koszmar Błyskawic",
+    "atk": 2,
+    "hp": 4,
+    "effect": "Twoja najbliższa wystawiona jednostka może zaatakować w turze jej wystawienia.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S91",
+    "trigger": "Przy śmierci",
+    "family": "Podwójny atak",
+    "name": "Dwuszczęki Horror",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Wybrana pozostała sojusznicza jednostka otrzymuje Podwójny atak do opuszczenia planszy.",
+    "faction": "Potwory",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S27",
+    "trigger": "Na koniec tury",
+    "family": "Obrażenia",
+    "name": "Kusznik Runiczny",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Zadaj 1 obrażenie wrogiej jednostce z najniższym aktualnym HP.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S25",
+    "trigger": "Na koniec tury",
+    "family": "Leczenie",
+    "name": "Medyk Górniczy",
+    "atk": 2,
+    "hp": 7,
+    "effect": "Ulecz wybraną sojuszniczą jednostkę o 2 HP.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S28",
+    "trigger": "Na koniec tury",
+    "family": "ATK ±",
+    "name": "Mistrz Run Bitewnych",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Wybierz: przyznaj sojuszniczej jednostce +1 ATK albo nałóż −1 ATK na wrogą jednostkę do końca jej najbliższej własnej tury.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu premii lub osłabienia ATK.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S93",
+    "trigger": "Na koniec tury",
+    "family": "MAX HP ±",
+    "name": "Kowal Życiostali",
+    "atk": 3,
+    "hp": 6,
+    "effect": "Wybierz: przyznaj sojuszniczej jednostce +1 MAX HP i +1 aktualnego HP albo obniż MAX HP wrogiej jednostki o 1 do końca jej najbliższej własnej tury.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S26",
+    "trigger": "Na koniec tury",
+    "family": "Pancerz",
+    "name": "Kowal Żelaznej Kuźni",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Przyznaj 2 tymczasowego pancerza wybranej sojuszniczej jednostce do końca jej najbliższej własnej tury.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S94",
+    "trigger": "Na koniec tury",
+    "family": "Tarcza",
+    "name": "Mistrz Tarczy",
+    "atk": 1,
+    "hp": 8,
+    "effect": "Daj wybranej sojuszniczej jednostce 1 tarczę, jeśli jeszcze jej nie posiada.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S32",
+    "trigger": "Na koniec tury",
+    "family": "Trucizna",
+    "name": "Alchemik Kopalnianych Trucizn",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Na koniec tury nałóż na wybraną wrogą jednostkę truciznę: 1 obrażenie przez 2 jej własne tury. Jedna jednostka może mieć tylko jedną aktywną truciznę pochodzącą od tego Alchemika; trucizny różnych źródeł nadal się sumują.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNYCH obrażeń z jednej porcji trucizny; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S95",
+    "trigger": "Na koniec tury",
+    "family": "Ogłuszenie",
+    "name": "Młotnik Wstrząsów",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Na koniec tury ogłusz wrogą jednostkę z najniższym aktualnym ATK na 1 jej własną turę. Nie możesz ogłuszać tej samej jednostki w dwóch kolejnych własnych turach.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S31",
+    "trigger": "Na koniec tury",
+    "family": "Regeneracja",
+    "name": "Znachor Klanowy",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Nałóż na wybraną sojuszniczą jednostkę regenerację 1 HP przez 2 jej własne tury.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S96",
+    "trigger": "Na koniec tury",
+    "family": "Prowokacja",
+    "name": "Wartownik Szybu",
+    "atk": 2,
+    "hp": 8,
+    "effect": "Nadaj wybranej sojuszniczej jednostce prowokację do końca jej najbliższej własnej tury.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S97",
+    "trigger": "Na koniec tury",
+    "family": "Oczyszczanie",
+    "name": "Czyściciel Run",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Usuń wszystkie tymczasowe negatywne efekty z wybranej sojuszniczej jednostki.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S99",
+    "trigger": "Na koniec tury",
+    "family": "Odporność",
+    "name": "Górski Odtruwacz",
+    "atk": 3,
+    "hp": 7,
+    "effect": "Nadaj wybranej sojuszniczej jednostce odporność na truciznę do końca jej najbliższej własnej tury.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S101",
+    "trigger": "Na koniec tury",
+    "family": "Szybki atak",
+    "name": "Konstruktor Sprężyn",
+    "atk": 2,
+    "hp": 4,
+    "effect": "Na koniec tury wybierz jedną kartę jednostki z ręki; otrzymuje Szybki atak wyłącznie jeśli wystawisz ją w swojej następnej turze. Bonus nie przechodzi na kolejne tury i nie kumuluje się.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S102",
+    "trigger": "Na koniec tury",
+    "family": "Podwójny atak",
+    "name": "Mechanik Dwóch Ostrzy",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Na koniec tury wybrana sojusznicza jednostka otrzymuje Podwójny atak wyłącznie w swojej najbliższej własnej turze; premia nie kumuluje się.",
+    "faction": "Krasnoludy",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S103",
+    "trigger": "Pasywna",
+    "family": "Obrażenia",
+    "name": "Weteran Odwetu",
+    "atk": 4,
+    "hp": 5,
+    "effect": "Każda wroga jednostka, która atakuje tę jednostkę, otrzymuje 1 obrażenie przed standardową walką.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S104",
+    "trigger": "Pasywna",
+    "family": "Leczenie",
+    "name": "Kapelan Garnizonu",
+    "atk": 4,
+    "hp": 5,
+    "effect": "Dopóki ta jednostka jest na planszy, każda własna jednostka odzyskuje dodatkowe 2 HP podczas leczenia ze zdolności.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S34",
+    "trigger": "Pasywna",
+    "family": "ATK ±",
+    "name": "Chorąży Królewskiej Kompanii",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Wybierz tryb aury przy wystawieniu: najbliższa inna sojusznicza jednostka (preferuj po prawej, w przeciwnym razie po lewej) ma +1 ATK ALBO wroga jednostka bezpośrednio naprzeciw Chorążego ma −1 ATK. Tryb jest stały do opuszczenia planszy.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu premii lub osłabienia ATK.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S35",
+    "trigger": "Pasywna",
+    "family": "MAX HP ±",
+    "name": "Komendant Straży",
+    "atk": 3,
+    "hp": 7,
+    "effect": "Wybierz tryb aury przy pojawieniu się na planszy: pozostałe własne jednostki mają +1 MAX HP i +1 aktualnego HP ALBO wrogie mają −1 MAX HP (aktualne HP ogranicz do maksimum), dopóki zdolność działa.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S105",
+    "trigger": "Pasywna",
+    "family": "Pancerz",
+    "name": "Zbrojmistrz Garnizonu",
+    "atk": 2,
+    "hp": 7,
+    "effect": "Dopóki ta zdolność działa, pozostałe sojusznicze jednostki mają po 2 tymczasowego pancerza ze źródła tej aury; wygaśnięcie aury usuwa tę ochronę.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S106",
+    "trigger": "Pasywna",
+    "family": "Tarcza",
+    "name": "Chorąży z Pawężą",
+    "atk": 3,
+    "hp": 7,
+    "effect": "Dopóki ta zdolność działa, ta jednostka ma tarczę. Tarcza z aury nie odnawia się po zużyciu podczas tego wystawienia.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S107",
+    "trigger": "Pasywna",
+    "family": "Trucizna",
+    "name": "Chemik Wojskowy",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Gdy wroga jednostka zadaje tej jednostce standardowe obrażenia w walce, otrzymuje truciznę: 1 obrażenie przez 2 własne tury.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNYCH obrażeń z jednej porcji trucizny; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S108",
+    "trigger": "Pasywna",
+    "family": "Ogłuszenie",
+    "name": "Królewski Trębacz",
+    "atk": 1,
+    "hp": 6,
+    "effect": "Gdy wroga jednostka po raz pierwszy znajdzie się naprzeciw Trębacza, jest ogłuszona na 1 własną turę. Ta sama jednostka nie może być ogłuszona ponownie przez Trębacza podczas jego bieżącego wystawienia.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S109",
+    "trigger": "Pasywna",
+    "family": "Regeneracja",
+    "name": "Kapelan Odnowy",
+    "atk": 2,
+    "hp": 7,
+    "effect": "Ta jednostka ma regenerację 2 HP na koniec każdej własnej tury, dopóki działa ta zdolność.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S33",
+    "trigger": "Pasywna",
+    "family": "Prowokacja",
+    "name": "Strażnik Bram",
+    "atk": 2,
+    "hp": 8,
+    "effect": "Ta jednostka posiada prowokację; wrogie jednostki muszą atakować cele z prowokacją.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S111",
+    "trigger": "Pasywna",
+    "family": "Oczyszczanie",
+    "name": "Chirurg Frontowy",
+    "atk": 2,
+    "hp": 7,
+    "effect": "Dopóki ta zdolność działa, tymczasowe negatywne efekty nakładane na tę jednostkę są natychmiast usuwane.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "hand_growth": {
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S39",
+    "trigger": "Pasywna",
+    "family": "Odporność",
+    "name": "Alchemik Antytoksyk",
+    "atk": 4,
+    "hp": 7,
+    "effect": "Ta jednostka jest odporna na truciznę; istniejące trucizny zostają usunięte.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
+    "hand_growth": {
+      "atk_per_hand_turn": 0,
+      "hp_per_hand_turn": 2,
+      "growth_profile": "Defensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S114",
+    "trigger": "Pasywna",
+    "family": "Szybki atak",
+    "name": "Instruktor Błyskawicznego Natarcia",
+    "atk": 1,
+    "hp": 4,
+    "effect": "Ta jednostka ma Szybki atak: może atakować od razu po wystawieniu, dopóki zdolność działa.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  },
+  {
+    "id": "S115",
+    "trigger": "Pasywna",
+    "family": "Podwójny atak",
+    "name": "Mistrz Dwóch Ostrzy",
+    "atk": 1,
+    "hp": 5,
+    "effect": "Ta jednostka ma Podwójny atak: może atakować dwa razy w każdej własnej turze, dopóki działa zdolność.",
+    "faction": "Ludzie",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
+    "hand_growth": {
+      "atk_per_hand_turn": 2,
+      "hp_per_hand_turn": 0,
+      "growth_profile": "Ofensywny"
+    },
+    "card_origin_version": "v13 (balance)",
+    "implementation_status": "specification_not_playtested_in_full_engine"
+  }
+]

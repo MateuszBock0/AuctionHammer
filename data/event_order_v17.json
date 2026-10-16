@@ -1,0 +1,63 @@
+{
+  "authoritative_priority": [
+    "validate_declared_action_and_targets",
+    "commit_initial_action_and_refresh_continuous_auras",
+    "source_primary_trigger_on_play_or_on_attack_or_ability",
+    "event_reactive_passives_and_defender_reactions",
+    "simultaneous_standard_combat_if_eligible",
+    "atomic_effect_wave_defenses_statuses_damage_heal",
+    "death_sweep_kill_coins_hero_threshold_coins_and_aura_refresh",
+    "simultaneous_death_triggers_from_single_snapshot",
+    "recursive_death_and_reaction_waves_until_stable",
+    "terminal_hero_check_after_each_closed_wave_and_before_next_action"
+  ],
+  "simultaneous_death_batch": true,
+  "simultaneous_combat_damage": true,
+  "actor_trigger_priority_before_defender_reactions": true,
+  "same_priority_tiebreak": [
+    "active_player_left_to_right",
+    "other_player_left_to_right",
+    "instance_id"
+  ],
+  "auto_target_tie": "leftmost_legal",
+  "invalidated_target": "effect_fizzles_no_retarget",
+  "resource_damage_priority": [
+    "shield_first_for_incoming_at_least_1",
+    "multiplicative_percent_reduction_round_down",
+    "temporary_armor",
+    "permanent_armor",
+    "hp"
+  ],
+  "poison_ignores_all_defenses": true,
+  "statuses": {
+    "end_of_turn_expires_at": "specified_turn_end_expiry_phase",
+    "until_next_own_turn_end": "first_target_own_turn_end",
+    "poison": "after_draw_before_actions",
+    "regeneration": "after_end_turn_abilities_before_hand_scaling",
+    "stun": "immediate_disable_duration_own_turns_stack"
+  },
+  "turn_start_order": [
+    "refresh_turn_availability_and_expiry",
+    "draw_to_minimum_five",
+    "poison_as_atomic_wave",
+    "resolve_cascades",
+    "permit_actions"
+  ],
+  "turn_end_order": [
+    "end_turn_skills_left_to_right_each_complete",
+    "regeneration_wave",
+    "starter_hand_scaling",
+    "expire_end_turn_effects_and_resolve_cascades"
+  ],
+  "full_round_order": [
+    "both_turns_finish",
+    "grant_each_one_coin",
+    "auction_if_round_multiple_of_three"
+  ],
+  "auras_are_continuously_recomputed_not_queued_retriggered": true,
+  "first_time_reactions_track_source_and_target_instance_ids": true,
+  "hero_death_end_of_closed_wave": true,
+  "simultaneous_hero_death_only_same_wave": true,
+  "version": "17.0",
+  "status": "LOCKED_GLOBAL_PRIORITY"
+}

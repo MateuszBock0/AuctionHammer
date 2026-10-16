@@ -1,0 +1,261 @@
+{
+  "version": "17.0",
+  "updated": "2026-10-16",
+  "project": "GRA KARCIANA ONLINE",
+  "game_type": "2-player turn-based online PvP",
+  "initial": {
+    "players": 2,
+    "first_player": "random",
+    "hero_start_hp": 100,
+    "hero_max_hp": 100,
+    "first_player_coins": 0,
+    "second_player_coins": 3,
+    "initial_hero_armor": 0,
+    "hand_start": 5,
+    "draw_pile_start": 5,
+    "initial_mulligan_max": 3,
+    "board_size": 5,
+    "starter_archetypes": 70,
+    "starter_physical_copies": 70,
+    "copies_per_starter_archetype": 1,
+    "common_starting_bank": true,
+    "remaining_undealt_pool_after_initial_distribution": 50,
+    "mulligan_protocol": {
+      "simultaneous_hidden_selection": true,
+      "max_cards": 3,
+      "source": "initial_undealt_shared_bank",
+      "replacements_drawn_from_unassigned_pool_without_replacement": true,
+      "rejected_cards_destination": "EXCLUDED_FROM_MATCH",
+      "rejected_cards_return_to_pool": false,
+      "rejected_cards_accessible_to_any_player": false,
+      "rejected_cards_in_graveyard": false,
+      "excluded_cards_do_not_reenter_match": true,
+      "exclusion_applies_only_to_initial_mulligan": true,
+      "independent_player_mulligans_use_one_server_lottery": true
+    }
+  },
+  "turn": {
+    "play_limit": 1,
+    "draw_until_hand_at_least": 5,
+    "draw_during_own_turn_start": true,
+    "one_attack_per_unit_per_own_turn": true,
+    "double_attack_limit": 2,
+    "summoning_sickness": true,
+    "board_entry": "far_right",
+    "board_reorder": false,
+    "end_turn_sequence": [
+      "end_turn_skills_left_to_right",
+      "regeneration",
+      "hand_stat_scaling_and_every_third_turn_ability_upgrades",
+      "end_turn_effect_expiry"
+    ]
+  },
+  "economy": {
+    "income_per_full_round_each": 1,
+    "income_timing": "after both player turns; before auction",
+    "kill_bounty": {
+      "starter": 1,
+      "auction_basic": 1,
+      "auction_rare": 2,
+      "auction_legendary": 3
+    },
+    "hero_hp_crossing_thresholds": [
+      75,
+      50,
+      25
+    ],
+    "hero_hp_crossing_coin_bonus": 2,
+    "money_public": true,
+    "money_cap": null,
+    "starter_paid_skills": false
+  },
+  "auction": {
+    "every_full_rounds": 3,
+    "offered_distinct_archetypes": 3,
+    "common_level_every_auction": "auction_number, starting at 1",
+    "rarity_probabilities": {
+      "basic": 0.6,
+      "rare": 0.3,
+      "legendary": 0.1
+    },
+    "incremental_bid_min": 1,
+    "auction_first_turn_preference": "alternates by auction; first auction favours initial first mover",
+    "winner": "pays bid and chooses one",
+    "loser": "chooses another free",
+    "third_card": "returns to auction pool",
+    "new_card_destination": "hand",
+    "auction_catalog_status": "NOT_FINAL"
+  },
+  "rarity_paid_skill_limits": {
+    "basic": "once per match per instance",
+    "rare": "once per own turn per instance",
+    "legendary": "repeated while the player can afford each use"
+  },
+  "game_end": {
+    "first_hero_at_or_below_zero": "lose immediately",
+    "simultaneous_hero_death_tiebreak": [
+      "higher_end_hero_hp",
+      "more_hand_plus_draw_cards",
+      "highest_onboard_unit_ATK_plus_current_HP",
+      "second_player_wins"
+    ]
+  },
+  "card_growth": {
+    "applies": "starter cards physically remaining in their owner hand at the end of own turn",
+    "per_own_turn_points": 2,
+    "profiles": [
+      {
+        "atk": 2,
+        "hp": 0
+      },
+      {
+        "atk": 1,
+        "hp": 1
+      },
+      {
+        "atk": 0,
+        "hp": 2
+      }
+    ],
+    "every_hand_turns_ability_upgrade": 3,
+    "growth_cap": null,
+    "ability_upgrade_compulsory": true,
+    "reset_on_board_to_hand": true,
+    "reset_on_graveyard": true,
+    "auction_cards_hand_scale": false,
+    "quality_growth": {
+      "Szybki atak": {
+        "atk": 2,
+        "hp": 1
+      },
+      "Podwójny atak": {
+        "atk": 2,
+        "hp": 0
+      },
+      "Tarcza": {
+        "atk": 0,
+        "hp": 3
+      },
+      "Prowokacja": {
+        "atk": 0,
+        "hp": 3
+      },
+      "Ogłuszenie": {
+        "per_3_hand_turns": "+1 damage on successful stun",
+        "stun_duration_change": 0
+      },
+      "Oczyszczanie": {
+        "per_3_hand_turns": "+1 heal allied or +1 damage enemy if at least one eligible effect removed",
+        "scope_change": false
+      },
+      "Odporność": {
+        "per_3_hand_turns": "+1 permanent armor per upgrade level on first successful immunity activation for each source board stay",
+        "status_scope_change": false,
+        "activation_limit_per_board_stay": 1
+      }
+    }
+  },
+  "attack": {
+    "standard_unit_combat": "simultaneous reciprocal ATK damage",
+    "hero_counterattack": false,
+    "attacker_targeting": "any eligible unit or hero, except enemy taunt",
+    "on_attack_skill_timing": "before standard attack; may end combat if kills target",
+    "poison_ignores_defenses": true
+  },
+  "set_card_count": 70,
+  "cards_per_faction": 14,
+  "family_count": 14,
+  "canonical_card_file": "data/cards_base_70.json",
+  "warnings": [
+    "Full 36 auction-card catalog not designed.",
+    "Prototype simulation is not a faithful production rules engine.",
+    "Some effect durations/targets are defined per card text, not by global family."
+  ],
+  "event_resolution": {
+    "authoritative_priority": [
+      "validate_declared_action_and_targets",
+      "commit_initial_action_and_refresh_continuous_auras",
+      "source_primary_trigger_on_play_or_on_attack_or_ability",
+      "event_reactive_passives_and_defender_reactions",
+      "simultaneous_standard_combat_if_eligible",
+      "atomic_effect_wave_defenses_statuses_damage_heal",
+      "death_sweep_kill_coins_hero_threshold_coins_and_aura_refresh",
+      "simultaneous_death_triggers_from_single_snapshot",
+      "recursive_death_and_reaction_waves_until_stable",
+      "terminal_hero_check_after_each_closed_wave_and_before_next_action"
+    ],
+    "simultaneous_death_batch": true,
+    "simultaneous_combat_damage": true,
+    "actor_trigger_priority_before_defender_reactions": true,
+    "same_priority_tiebreak": [
+      "active_player_left_to_right",
+      "other_player_left_to_right",
+      "instance_id"
+    ],
+    "auto_target_tie": "leftmost_legal",
+    "invalidated_target": "effect_fizzles_no_retarget",
+    "resource_damage_priority": [
+      "shield_first_for_incoming_at_least_1",
+      "multiplicative_percent_reduction_round_down",
+      "temporary_armor",
+      "permanent_armor",
+      "hp"
+    ],
+    "poison_ignores_all_defenses": true,
+    "statuses": {
+      "end_of_turn_expires_at": "specified_turn_end_expiry_phase",
+      "until_next_own_turn_end": "first_target_own_turn_end",
+      "poison": "after_draw_before_actions",
+      "regeneration": "after_end_turn_abilities_before_hand_scaling",
+      "stun": "immediate_disable_duration_own_turns_stack"
+    },
+    "turn_start_order": [
+      "refresh_turn_availability_and_expiry",
+      "draw_to_minimum_five",
+      "poison_as_atomic_wave",
+      "resolve_cascades",
+      "permit_actions"
+    ],
+    "turn_end_order": [
+      "end_turn_skills_left_to_right_each_complete",
+      "regeneration_wave",
+      "starter_hand_scaling",
+      "expire_end_turn_effects_and_resolve_cascades"
+    ],
+    "full_round_order": [
+      "both_turns_finish",
+      "grant_each_one_coin",
+      "auction_if_round_multiple_of_three"
+    ],
+    "auras_are_continuously_recomputed_not_queued_retriggered": true,
+    "first_time_reactions_track_source_and_target_instance_ids": true,
+    "hero_death_end_of_closed_wave": true,
+    "simultaneous_hero_death_only_same_wave": true
+  },
+  "time_limits": {
+    "enabled": false,
+    "mulligan_seconds": null,
+    "turn_seconds": null,
+    "target_choice_seconds": null,
+    "auction_bid_seconds": null,
+    "auction_pick_seconds": null,
+    "timeout_events_enabled": false,
+    "automatic_pass_on_inactivity": false,
+    "automatic_end_turn_on_inactivity": false,
+    "loss_on_inactivity": false,
+    "disconnect_recovery": "implementation_detail_no_match_timer"
+  },
+  "base_game_design_status": "LOCKED_FOR_IMPLEMENTATION",
+  "base_engine_implementation_status": "NOT_IMPLEMENTED_IN_THIS_PACKAGE",
+  "mvp_scope": {
+    "starter_cards": 70,
+    "starter_card_copies_per_archetype": 1,
+    "auctions_enabled": false,
+    "auction_cards_enabled": false,
+    "later_auction_design": "DEFERRED_SEPARATE_STAGE",
+    "persistent_coins_and_standard_income": true
+  },
+  "rules_source_priority": "GAME_MASTER.md section 7 and event_order_v17.json; per-card text defines effects not event ordering",
+  "no_timer_decision_confirmed": true,
+  "canonical_bank_file": "data/starter_bank_v17.json"
+}

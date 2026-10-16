@@ -1,0 +1,53 @@
+{
+  "version": "17.0",
+  "project": "GRA KARCIANA ONLINE",
+  "date": "2026-10-16",
+  "base_design_status": "LOCKED_FOR_MVP",
+  "implementation_status": "SPECIFICATION_READY_ENGINE_NOT_YET_IMPLEMENTED",
+  "canonical_files": {
+    "human": "GAME_MASTER.md",
+    "all_data": "data/GAME_MASTER.json",
+    "core_rules": "data/game_rules_v17.json",
+    "event_priority": "data/event_order_v17.json",
+    "initial_bank": "data/starter_bank_v17.json",
+    "cards": "data/cards_base_70.json",
+    "spreadsheet": "karty_startowe_macierz_efektow_v17.xlsx"
+  },
+  "confirmed": {
+    "starters": 70,
+    "copies_per_starter": 1,
+    "shared_bank": 70,
+    "hand_start": 5,
+    "draw_start": 5,
+    "mulligan_max": 3,
+    "discarded_mulligan_cards": "EXCLUDED_FROM_MATCH",
+    "both_can_draw_mulligan_discards": false,
+    "hero_start_hp": 100,
+    "second_player_start_coins": 3,
+    "starting_armor": 0,
+    "timers_enabled": false,
+    "event_priority_locked": true,
+    "hand_stats_per_own_turn": 2,
+    "ability_upgrade_every_hand_turns": 3
+  },
+  "next_tasks": [
+    "core_game_engine",
+    "deterministic_event_queue",
+    "all_70_card_effect_handlers",
+    "data_integrity_and_rules_tests",
+    "local_two_player_prototype",
+    "balance_validation"
+  ],
+  "later_tasks": [
+    "final_auction_catalog_about_36_archetypes",
+    "rarity_variants_and_auction_costs",
+    "auction_integration",
+    "online_netcode_ui_art"
+  ],
+  "not_done": [
+    "production_engine",
+    "full_auction_catalog",
+    "full_game_balance_verification"
+  ],
+  "prototype_status": "HISTORICAL_SIMPLIFIED_NOT_PRODUCTION_ENGINE"
+}
