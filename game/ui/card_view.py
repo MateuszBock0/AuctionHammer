@@ -9,6 +9,15 @@ FACTION_COLORS={
     'Elfy':(101,194,150),'Dzikie bestie':(220,164,89),'Potwory':(176,125,217),
     'Krasnoludy':(222,134,93),'Ludzie':(122,178,227),
 }
+
+# Activation timing appears on every card, separate from granted/temporary statuses.
+TRIGGER_BADGES = {
+    'Przy wystawieniu': ('PRZY ZAGRANIU', (55, 114, 144)),
+    'Przy ataku': ('PRZY ATAKU', (139, 99, 49)),
+    'Przy śmierci': ('PRZY ŚMIERCI', (126, 77, 141)),
+    'Na koniec tury': ('NA KONIEC TURY', (65, 118, 82)),
+    'Pasywna': ('PASYWNA', (65, 98, 152)),
+}
 ART={'S01':'mag_zorzy.png','S09':'wilk_szponiasty.png','S21':'widmo.png','S34':'chorazy.png',
      'S105':'straznik.png','S27':'kowal_run.png','S82':'rycerz_kosci.png'}
 
@@ -19,6 +28,7 @@ class CardView:
         self.font_small=pygame.font.SysFont('segoeui',12)
         self.font_stats=pygame.font.SysFont('segoeui',19,bold=True)
         self.font_badge=pygame.font.SysFont('segoeui',10,bold=True)
+        self.font_trigger=pygame.font.SysFont('segoeui',11,bold=True)
         self.artcache={}
 
     @staticmethod
@@ -68,7 +78,14 @@ class CardView:
         name=self.clip(d.name,self.font_title,rect.width-16)
         name_s=self.font_title.render(name,True,cfg.TEXT)
         screen.blit(name_s,(rect.x+7,rect.y+8))
-        art_rect=pygame.Rect(rect.x+7,rect.y+34,rect.width-14,max(22,rect.height-86))
+        trigger_label,trigger_color=TRIGGER_BADGES[d.trigger]
+        trigger_rect=pygame.Rect(rect.x+7,rect.y+30,rect.width-14,19)
+        pygame.draw.rect(screen,trigger_color,trigger_rect,border_radius=4)
+        trigger_text=self.clip(trigger_label,self.font_trigger,trigger_rect.width-8)
+        trigger_image=self.font_trigger.render(trigger_text,True,(252,253,250))
+        screen.blit(trigger_image,(trigger_rect.centerx-trigger_image.get_width()//2,
+                                   trigger_rect.y+3))
+        art_rect=pygame.Rect(rect.x+7,rect.y+54,rect.width-14,max(22,rect.height-106))
         if art_rect.height>0 and art_rect.width>0:
             screen.blit(self.art(d.id,d.faction,art_rect.size),art_rect)
         subtitle=self.clip(d.family.upper(),self.font_small,rect.width-16)
