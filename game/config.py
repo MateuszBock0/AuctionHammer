@@ -1,7 +1,7 @@
-"""AuctionHammer MVP 0.9.2 v17 — konfiguracja klienta pygame-ce."""
+"""AuctionHammer MVP 0.9.3 v17 — konfiguracja klienta pygame-ce."""
 WINDOW_WIDTH = 1480
 WINDOW_HEIGHT = 920
-WINDOW_TITLE = "AuctionHammer | Solo vs Computer — MVP 0.9.2 v17"
+WINDOW_TITLE = "AuctionHammer | Solo vs Computer — MVP 0.9.3 v17"
 FPS = 60
 BACKGROUND = (14, 20, 30)
 PANEL = (25, 36, 49)
