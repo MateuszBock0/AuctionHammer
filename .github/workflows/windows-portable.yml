@@ -1,0 +1,55 @@
+name: Build portable Windows + Release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install build tools
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+      - name: Automated regression tests
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m unittest discover -s tests -v
+      - name: Build AuctionHammer.exe with Python and pygame-ce included
+        run: |
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name AuctionHammer --paths . --add-data "data;data" --add-data "assets;assets" --collect-all pygame game/main.py
+      - name: Assemble standalone master folder
+        shell: pwsh
+        run: |
+          $dest = 'release/AuctionHammer'
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item -Path 'dist/AuctionHammer/*' -Destination $dest -Recurse -Force
+          foreach ($dir in @('game','assets','data','docs','tests','tools','.vscode')) {
+            Copy-Item -Path $dir -Destination $dest -Recurse -Force
+          }
+          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
+            Copy-Item -Path $f -Destination $dest -Force
+          }
+          $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
+          Set-Content -Path "$dest/BUILD_VERSION.txt" -Value $tag -NoNewline
+          Compress-Archive -Path $dest -DestinationPath 'AuctionHammer-Windows.zip' -Force
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-Windows
+          path: AuctionHammer-Windows.zip
+      - name: Publish stable latest-release download URL
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
+          gh release create $tag 'AuctionHammer-Windows.zip' --title "AuctionHammer Portable $tag" --notes "Przenosna gra Windows + kod zrodlowy. Rozpakuj folder AuctionHammer i uruchom URUCHOM_AUCTIONHAMMER.bat. Brak wymogu Pythona, pip lub Git." --latest --target '${{ github.sha }}'
