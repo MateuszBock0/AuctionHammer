@@ -527,47 +527,56 @@ class SoloApp:
                 pygame.draw.rect(self.screen, cfg.GOLD, rect.inflate(8, 8), 4, border_radius=13)
 
     def _draw_choice_sidebar(self):
-        """A full-height, readable selector in the existing right sidebar."""
-        pending = self.game.pending
-        card = self.game.cards[pending.uid].definition
-        self._text('WYBIERZ CEL / EFEKT',22,1104,106,cfg.GOLD)
-        name = self.cards_view.clip(card.name,self.fonts[18],320)
-        self._text(name,18,1104,149,FACTION_COLORS[card.faction])
-        self._text(f'Aktywacja: {card.trigger}',14,1104,179,cfg.TEXT)
-        self._text('ZDOLNOŚĆ',14,1104,211,cfg.GOLD)
-        lines = self._wrap(card.effect,14,320)
+        """Dedicated selection panel below the skill description."""
+        pending=self.game.pending
+        card=self.game.cards[pending.uid].definition
+        self._text('WYBÓR ZDOLNOŚCI',22,1104,108,cfg.GOLD)
+
+        # Skill description is fully separated from interactive controls.
+        info=pygame.Rect(1094,145,342,239)
+        self._panel(info,(31,47,59),cfg.PANEL_BORDER,12)
+        self._text(self.cards_view.clip(card.name,self.fonts[18],312),
+                   18,1107,162,FACTION_COLORS[card.faction])
+        self._text(f'Aktywacja: {card.trigger}',14,1107,191,cfg.TEXT)
+        self._text('DZIAŁANIE ZDOLNOŚCI',14,1107,223,cfg.GOLD)
+        lines=self._wrap(card.effect,14,314)
         for i,line in enumerate(lines[:4]):
-            self._text(line,14,1104,234+i*21,cfg.TEXT)
+            self._text(self.cards_view.clip(line,self.fonts[14],314),
+                       14,1107,252+i*22,cfg.TEXT)
         if len(lines)>4:
-            self._text('Pełny opis karty: naciśnij [I].',12,1104,320,cfg.MUTED)
-        pygame.draw.line(self.screen,cfg.PANEL_BORDER,(1104,335),(1425,335),1)
-        total = len(pending.choices)
-        self._text(f'LEGALNE WYBORY: {total}',14,1104,338,cfg.GOLD)
-        for index, rect in self.choice_bounds():
-            choice = pending.choices[index]
-            pygame.draw.rect(self.screen,(40,64,73),rect,border_radius=9)
-            pygame.draw.rect(self.screen,cfg.HOVER if rect.collidepoint(self.mouse_pos())
-                             else cfg.PANEL_BORDER,rect,2,border_radius=9)
-            desc = choice.label.replace('  →  ', ' → ')
-            fragments = self._wrap(desc,13,286)
-            first = self.cards_view.clip(fragments[0],self.fonts[13],281)
-            self._text(f'{index%self.CHOICES_PER_PAGE+1}. {first}',13,
-                       rect.x+9,rect.y+(8 if len(fragments)>1 else 15))
-            if len(fragments)>1:
-                second = self.cards_view.clip(' '.join(fragments[1:]),self.fonts[13],290)
-                self._text(second,13,rect.x+23,rect.y+26,cfg.MUTED)
+            self._text('Pełny opis: naciśnij [I]',12,1107,354,cfg.MUTED)
+
+        pane=pygame.Rect(1094,394,342,500)
+        self._panel(pane,(22,37,49),cfg.GOLD,12)
+        self._text(f'WYBIERZ CEL / WARIANT ({len(pending.choices)})',
+                   14,1107,410,cfg.GOLD)
+        self._text('Wybór jest wymagany.',13,1107,437,cfg.TEXT)
+        pygame.draw.line(self.screen,cfg.PANEL_BORDER,(1107,458),(1421,458),1)
+        for index,rect in self.choice_bounds():
+            choice=pending.choices[index]
+            hovered=rect.collidepoint(self.mouse_pos())
+            pygame.draw.rect(self.screen,(50,76,85) if hovered else (39,59,72),
+                             rect,border_radius=8)
+            pygame.draw.rect(self.screen,cfg.HOVER if hovered else cfg.PANEL_BORDER,
+                             rect,2,border_radius=8)
+            label=self._wrap(choice.label.replace('  →  ',' → '),13,288)
+            number=index-self.choice_page*self.CHOICES_PER_PAGE+1
+            self._text(f'{number}. {self.cards_view.clip(label[0],self.fonts[13],270)}',
+                       13,rect.x+10,rect.y+(8 if len(label)>1 else 16),cfg.TEXT)
+            if len(label)>1:
+                rest=self.cards_view.clip(' '.join(label[1:]),self.fonts[13],285)
+                self._text(rest,13,rect.x+25,rect.y+28,cfg.MUTED)
         if self._choice_last_page():
             self._button(pygame.Rect(1103,814,150,38),'← WSTECZ',
                          active=self.choice_page>0,small=True)
             self._button(pygame.Rect(1274,814,150,38),'DALEJ →',
                          active=self.choice_page<self._choice_last_page(),small=True)
             self._text(f'Strona {self.choice_page+1}/{self._choice_last_page()+1}',
-                       13,1260,847,cfg.MUTED,center=True)
+                       13,1263,866,cfg.MUTED,center=True)
         else:
-            self._text('Wybierz z listy lub kliknij podświetlony cel.',
-                       12,1104,816,cfg.MUTED)
-        self._text('Wybór wymagany, gdy istnieje legalny cel.',
-                   12,1104,879,cfg.MUTED)
+            self._text('Kliknij opcję albo podświetlony cel na planszy.',
+                       12,1107,852,cfg.MUTED)
+        self._text('Pełny opis zdolności: [I]',12,1107,876,cfg.MUTED)
 
     def _draw_details(self):
         uid=self.details_card
