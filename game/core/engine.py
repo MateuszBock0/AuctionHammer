@@ -173,6 +173,8 @@ class Match:
             p.next_fast=False
         card.quick_next_turn=None
         self._log(f'{p.name} wystawia {self.label(uid)} {u.atk}/{u.hp}.')
+        if self._fast(u):
+            self._log(f'{self.label(uid)}: Szybki atak — może atakować od razu.')
         # Apply continuous auras immediately, but resolve first-sighting
         # reactive triggers only after the played card's primary ON_PLAY effect.
         self._update_auras(defer_reactive=True)
@@ -368,9 +370,9 @@ class Match:
 
     def _add_effect(self,uid,kind,value=0,remaining=0,expires=None,source='',positive=True,bonus_once=0,expire_action=None):
         u=self.units.get(uid)
-        if u is None:return
-        if kind in ('poison','stun') and self._is_immune(uid,kind):return
-        if not positive and self.cards[uid].definition.id=='S111' and not self._disabled(u):return
+        if u is None:return False
+        if kind in ('poison','stun') and self._is_immune(uid,kind):return False
+        if not positive and self.cards[uid].definition.id=='S111' and not self._disabled(u):return False
         if kind=='stun':
             existing=[e.expires or 0 for e in u.effects if e.kind=='stun']
             if existing:expires=max(expires or 0,max(existing)+1)
@@ -380,6 +382,7 @@ class Match:
             else:u.hp=min(u.hp,u.max_hp)
         suffix=f' od {self.label(source)}' if source in self.cards and source!=uid else ''
         self._log(f'{self.label(uid)} otrzymuje {kind} {value if value else ""}{suffix}'.strip())
+        return True
 
     def _is_immune(self,uid,kind):
         if uid not in self.units:return False
@@ -548,8 +551,8 @@ class Match:
             i=own.index(uid)
             if i<len(enemy) and enemy[i] not in u.seen_opponents:
                 opp=enemy[i];u.seen_opponents.add(opp)
-                self._add_effect(opp,'stun',expires=self._expiry(self.units[opp].owner),source=uid,positive=False)
-                if u.ability_level and opp in self.units and self._has(self.units[opp],'stun'):
+                applied=self._add_effect(opp,'stun',expires=self._expiry(self.units[opp].owner),source=uid,positive=False)
+                if applied and u.ability_level and opp in self.units:
                     self._damage(opp,u.ability_level)
         # Lethal outcomes of these reactions are resolved in the caller.
 
@@ -641,8 +644,9 @@ class Match:
             arm(target,1)
         elif cid=='S58':self._add_poison(target,2,2,uid,level)
         elif cid=='S59':
-            if target in self.units:self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
-            self._damage(target,1+level)
+            applied = (self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
+                       if target in self.units else False)
+            self._damage(target,1+(level if applied else 0))
         elif cid=='S60':regen(target,3,2,level)
         elif cid=='S61':mod(target,'taunt',0,True)
         elif cid=='S07':
@@ -678,8 +682,8 @@ class Match:
         elif cid=='S11':self._add_poison(attacked,1,2,uid,level)
         elif cid=='S15':
             if attacked in self.units:
-                self._add_effect(attacked,'stun',expires=next_end(attacked),source=uid,positive=False)
-                if level:self._damage(attacked,level)
+                applied=self._add_effect(attacked,'stun',expires=next_end(attacked),source=uid,positive=False)
+                if applied and level:self._damage(attacked,level)
         elif cid=='S71':regen(uid,1,2,level)
         elif cid=='S72':mod(uid,'taunt',0,True,expires=self.players[owner].turn_count+1)
         elif cid=='S74':
@@ -701,8 +705,9 @@ class Match:
             arm(target,2)
         elif cid=='S83':self._add_poison(target,2,3,uid,level)
         elif cid=='S84':
-            if target in self.units:self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
-            self._damage(target,2+level)
+            applied = (self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
+                       if target in self.units else False)
+            self._damage(target,2+(level if applied else 0))
         elif cid=='S85':regen(target,3,3,level)
         elif cid=='S86':mod(target,'taunt',0,True)
         elif cid=='S87':
@@ -731,9 +736,10 @@ class Match:
             pool=[x for x in enemy if not(here and here.last_stun_target==x and here.last_stun_turn==self.players[owner].turn_count-1)]
             if pool:
                 t=min(pool,key=lambda x:(self.units[x].atk,enemy.index(x)))
-                self._add_effect(t,'stun',expires=next_end(t),source=uid,positive=False)
-                if level:self._damage(t,level)
-                if here:here.last_stun_target=t;here.last_stun_turn=self.players[owner].turn_count
+                applied=self._add_effect(t,'stun',expires=next_end(t),source=uid,positive=False)
+                if applied:
+                    if level:self._damage(t,level)
+                    if here:here.last_stun_target=t;here.last_stun_turn=self.players[owner].turn_count
         elif cid=='S31':regen(target,1,2,level)
         elif cid=='S96':mod(target,'taunt',0,True,expires=next_end(target))
         elif cid=='S97':
