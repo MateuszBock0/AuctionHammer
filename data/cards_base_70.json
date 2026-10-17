@@ -222,7 +222,7 @@
     "name": "Mag Migotliwego Kroku",
     "atk": 2,
     "hp": 4,
-    "effect": "Ta jednostka może zaatakować w turze, w której została wystawiona.",
+    "effect": "Przy wystawieniu wybierz: (1) nadaj Szybki atak tej jednostce, aby mogła zaatakować natychmiast w turze wystawienia, ALBO (2) nadaj Szybki atak jednej wskazanej innej własnej karcie jednostki w ręce na jej najbliższe wystawienie. Premia do karty w ręce nie kumuluje się i znika po jej pierwszym wystawieniu; wybierając tę opcję, Mag nie uzyskuje Szybkiego ataku.",
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
@@ -230,8 +230,18 @@
       "hp_per_hand_turn": 0,
       "growth_profile": "Ofensywny"
     },
-    "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "card_origin_version": "v19 (faction identity adjustment)",
+    "implementation_status": "ENGINE_INTEGRATION_V19",
+    "targeting_rules_v19": {
+      "target_modes": [
+        "self_on_board",
+        "one_other_unit_card_in_own_hand"
+      ],
+      "grant": "quick_attack",
+      "other_duration": "until_first_summon",
+      "no_stack": true,
+      "self_and_other_mutually_exclusive": true
+    }
   },
   {
     "id": "S67",
@@ -240,7 +250,7 @@
     "name": "Zaklinacz Podwójnego Uderzenia",
     "atk": 1,
     "hp": 5,
-    "effect": "Ta jednostka otrzymuje Podwójny atak: może atakować dwa razy w każdej własnej turze do opuszczenia planszy.",
+    "effect": "Przy wystawieniu wybierz tę jednostkę albo inną wskazaną sojuszniczą jednostkę na planszy. Wybrana jednostka otrzymuje Podwójny atak do opuszczenia planszy: może atakować maksymalnie dwa razy na własną turę. Bonus nie kumuluje się, nie pozwala atakować w turze wystawienia bez Szybkiego ataku i nie przyznaje trzeciego ataku.",
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
@@ -248,8 +258,18 @@
       "hp_per_hand_turn": 0,
       "growth_profile": "Ofensywny"
     },
-    "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "card_origin_version": "v19 (faction identity adjustment)",
+    "implementation_status": "ENGINE_INTEGRATION_V19",
+    "targeting_rules_v19": {
+      "target_modes": [
+        "self_on_board",
+        "other_ally_on_board"
+      ],
+      "grant": "double_attack",
+      "duration": "until_leave_board",
+      "no_stack": true,
+      "max_attacks_per_turn": 2
+    }
   },
   {
     "id": "S09",
@@ -440,14 +460,14 @@
     "hp": 6,
     "effect": "Gdy atakujesz jednostkę, usuń z niej wszystkie tymczasowe pozytywne efekty przed standardową walką.",
     "faction": "Dzikie bestie",
-    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "scaling": "Co 3 własne tury na ręce: jeśli zdolność rzeczywiście usunęła co najmniej jeden tymczasowy pozytywny efekt z atakowanej wrogiej jednostki, zadaj temu celowi dodatkowe 1 obrażenie za każdy ukończony próg. Bez sojuszniczej gałęzi leczenia.",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
       "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S76",
@@ -490,9 +510,9 @@
     "trigger": "Przy ataku",
     "family": "Podwójny atak",
     "name": "Dwugłowa Hiena",
-    "atk": 1,
-    "hp": 5,
-    "effect": "Gdy wykonujesz pierwszy atak w tej turze, otrzymaj Podwójny atak do końca bieżącej tury: możesz zaatakować drugi raz.",
+    "atk": 2,
+    "hp": 6,
+    "effect": "Gdy ta jednostka wykonuje pierwszy legalny atak w swojej turze, aktywuje Podwójny atak do końca tej tury: może wykonać maksymalnie drugi atak. Zdolność nie działa, jeśli jednostka jest ogłuszona lub ma wyciszone zdolności; bez Szybkiego ataku pierwszy atak jest możliwy najwcześniej w następnej własnej turze po wystawieniu.",
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
@@ -500,8 +520,8 @@
       "hp_per_hand_turn": 0,
       "growth_profile": "Ofensywny"
     },
-    "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "card_origin_version": "v19 (faction identity adjustment)",
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S21",
@@ -582,7 +602,7 @@
     "name": "Golem Grobowy",
     "atk": 3,
     "hp": 7,
-    "effect": "Przyznaj 6 trwałego pancerza wybranej pozostałej sojuszniczej jednostce.",
+    "effect": "Gdy ta jednostka umiera, przyznaj 6 trwałego pancerza wybranej pozostałej sojuszniczej jednostce. Jeśli nie ma żadnej pozostałej sojuszniczej jednostki, przyznaj zamiast tego 6 trwałego pancerza własnemu bohaterowi.",
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
     "hand_growth": {
@@ -591,7 +611,7 @@
       "growth_profile": "Defensywny"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S20",
@@ -600,7 +620,7 @@
     "name": "Strażnik Mauzoleum",
     "atk": 4,
     "hp": 7,
-    "effect": "Przyznaj tarczę wybranej pozostałej sojuszniczej jednostce i 2 trwałego pancerza temu samemu celowi.",
+    "effect": "Gdy ta jednostka umiera, przyznaj 1 tarczę i 2 trwałego pancerza wybranej pozostałej sojuszniczej jednostce. Jeśli nie ma żadnej pozostałej sojuszniczej jednostki, przyznaj tę tarczę i 2 trwałego pancerza własnemu bohaterowi. Obowiązuje limit jednej tarczy na cel.",
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
     "hand_growth": {
@@ -609,7 +629,7 @@
       "growth_profile": "Defensywny"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S83",
@@ -692,14 +712,14 @@
     "hp": 6,
     "effect": "Usuń z wybranej pozostałej własnej jednostki wszystkie tymczasowe negatywne efekty oraz przyznaj jej 2 trwałego pancerza.",
     "faction": "Potwory",
-    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "scaling": "Co 3 własne tury na ręce: jeśli zdolność przy śmierci rzeczywiście usunęła co najmniej jeden tymczasowy negatywny efekt z własnej jednostki, ulecz ten cel o dodatkowe 1 HP za każdy ukończony próg. Bez wrogiej gałęzi oczyszczania.",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
       "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S88",
@@ -726,7 +746,7 @@
     "name": "Koszmar Błyskawic",
     "atk": 2,
     "hp": 4,
-    "effect": "Twoja najbliższa wystawiona jednostka może zaatakować w turze jej wystawienia.",
+    "effect": "Gdy ta jednostka umiera, wybierz losowo bez zwracania do 2 różnych kart jednostek z własnej ręki i nadaj im Szybki atak na ich najbliższe wystawienie. Premia pozwala zaatakować w turze wystawienia, nie kumuluje się i zostaje zużyta po pierwszym wystawieniu danej karty. Jeśli w ręce jest mniej niż 2 karty, wzmocnij wszystkie dostępne; jeśli ręka jest pusta, efekt nie działa.",
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
@@ -735,7 +755,7 @@
       "growth_profile": "Ofensywny"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S91",
@@ -744,7 +764,7 @@
     "name": "Dwuszczęki Horror",
     "atk": 1,
     "hp": 5,
-    "effect": "Wybrana pozostała sojusznicza jednostka otrzymuje Podwójny atak do opuszczenia planszy.",
+    "effect": "Gdy ta jednostka umiera, wybrana pozostała sojusznicza jednostka na planszy otrzymuje Podwójny atak do opuszczenia planszy. Jeśli nie ma żadnej pozostałej sojuszniczej jednostki na planszy, nadaj Podwójny atak jednej losowej karcie jednostki we własnej ręce, jeśli jest dostępna; ten awaryjny bonus pozwala na drugi atak tylko w pierwszej własnej turze, w której ta jednostka może legalnie atakować po wystawieniu (także w turze wystawienia, jeśli ma Szybki atak). Bonus awaryjny nie kumuluje się.",
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
@@ -753,7 +773,7 @@
       "growth_profile": "Ofensywny"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S27",
@@ -944,14 +964,14 @@
     "hp": 6,
     "effect": "Usuń wszystkie tymczasowe negatywne efekty z wybranej sojuszniczej jednostki.",
     "faction": "Krasnoludy",
-    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "scaling": "Co 3 własne tury na ręce: jeśli zdolność rzeczywiście usunęła co najmniej jeden tymczasowy negatywny efekt z własnej jednostki, ulecz ten cel o dodatkowe 1 HP za każdy ukończony próg. Bez wrogiej gałęzi oczyszczania.",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
       "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S99",
@@ -1086,7 +1106,7 @@
     "name": "Zbrojmistrz Garnizonu",
     "atk": 2,
     "hp": 7,
-    "effect": "Dopóki ta zdolność działa, pozostałe sojusznicze jednostki mają po 2 tymczasowego pancerza ze źródła tej aury; wygaśnięcie aury usuwa tę ochronę.",
+    "effect": "Dopóki źródło tej aury pozostaje na planszy i działa, każda inna sojusznicza jednostka otrzymuje JEDNORAZOWO 2 tymczasowego pancerza z tej aury przy pierwszym objęciu ochroną (wystawienie źródła lub wejście celu). Zużyte punkty nie odnawiają się podczas przeliczania aur ani na początku tury. Gdy źródło opuści planszę lub aura przestanie działać, niewykorzystane punkty pochodzące z tego źródła znikają; przy ponownym objęciu po przerwie powstaje nowa porcja.",
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
     "hand_growth": {
@@ -1095,7 +1115,7 @@
       "growth_profile": "Defensywny"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S106",
@@ -1160,14 +1180,14 @@
     "hp": 7,
     "effect": "Ta jednostka ma regenerację 2 HP na koniec każdej własnej tury, dopóki działa ta zdolność.",
     "faction": "Ludzie",
-    "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+    "scaling": "Co 3 własne tury na ręce: +1 do samoregeneracji HP na koniec KAŻDEJ własnej tury, dopóki jednostka znajduje się na planszy i zdolność działa (za każdy ukończony próg).",
     "hand_growth": {
       "atk_per_hand_turn": 0,
       "hp_per_hand_turn": 2,
       "growth_profile": "Defensywny"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S33",
@@ -1196,14 +1216,14 @@
     "hp": 7,
     "effect": "Dopóki ta zdolność działa, tymczasowe negatywne efekty nakładane na tę jednostkę są natychmiast usuwane.",
     "faction": "Ludzie",
-    "scaling": "Co 3 własne tury na ręce: za każde użyteczne oczyszczenie ulecz własny cel o dodatkowe 1 HP lub zadaj wrogiemu celowi dodatkowe 1 obrażenie.",
+    "scaling": "Co 3 własne tury na ręce: jeśli pasywne oczyszczanie rzeczywiście usunęło z tej jednostki co najmniej jeden tymczasowy negatywny efekt, ulecz tę jednostkę o dodatkowe 1 HP za każdy ukończony próg. Bez wrogiej gałęzi oczyszczania.",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
       "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "implementation_status": "ENGINE_INTEGRATION_V19"
   },
   {
     "id": "S39",
@@ -1229,8 +1249,8 @@
     "family": "Szybki atak",
     "name": "Instruktor Błyskawicznego Natarcia",
     "atk": 1,
-    "hp": 4,
-    "effect": "Ta jednostka ma Szybki atak: może atakować od razu po wystawieniu, dopóki zdolność działa.",
+    "hp": 5,
+    "effect": "Ta jednostka ma pasywnie Szybki atak tylko dla siebie: może zaatakować w turze wystawienia, jeśli nie jest ogłuszona ani wyciszona. Nie nadaje Szybkiego ataku innym jednostkom.",
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
@@ -1238,8 +1258,15 @@
       "hp_per_hand_turn": 0,
       "growth_profile": "Ofensywny"
     },
-    "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "card_origin_version": "v19 (faction identity adjustment)",
+    "implementation_status": "ENGINE_INTEGRATION_V19",
+    "targeting_rules_v19": {
+      "target_modes": [
+        "self_on_board"
+      ],
+      "grant": "self_quick_attack",
+      "requires_active_ability": true
+    }
   },
   {
     "id": "S115",
@@ -1247,8 +1274,8 @@
     "family": "Podwójny atak",
     "name": "Mistrz Dwóch Ostrzy",
     "atk": 1,
-    "hp": 5,
-    "effect": "Ta jednostka ma Podwójny atak: może atakować dwa razy w każdej własnej turze, dopóki działa zdolność.",
+    "hp": 6,
+    "effect": "Ta jednostka ma pasywnie Podwójny atak tylko dla siebie: może atakować maksymalnie dwa razy w każdej własnej turze, dopóki zdolność działa. Nie nadaje Podwójnego ataku innym jednostkom. Bez Szybkiego ataku nie może atakować w turze wystawienia.",
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
@@ -1256,7 +1283,15 @@
       "hp_per_hand_turn": 0,
       "growth_profile": "Ofensywny"
     },
-    "card_origin_version": "v13 (balance)",
-    "implementation_status": "specification_not_playtested_in_full_engine"
+    "card_origin_version": "v19 (faction identity adjustment)",
+    "implementation_status": "ENGINE_INTEGRATION_V19",
+    "targeting_rules_v19": {
+      "target_modes": [
+        "self_on_board"
+      ],
+      "grant": "self_double_attack",
+      "requires_active_ability": true,
+      "max_attacks_per_turn": 2
+    }
   }
 ]
