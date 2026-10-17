@@ -533,7 +533,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.5 · v17',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.6 · v17',14,1310,35,cfg.GOLD)
 
     def _draw_log(self):
         # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.

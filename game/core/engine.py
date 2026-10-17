@@ -372,7 +372,17 @@ class Match:
         u=self.units.get(uid)
         if u is None:return False
         if kind in ('poison','stun') and self._is_immune(uid,kind):return False
-        if not positive and self.cards[uid].definition.id=='S111' and not self._disabled(u):return False
+        if not positive and self.cards[uid].definition.id=='S111' and not self._disabled(u):
+            # S111 immediately removes *temporary* negative effects. Permanent
+            # penalties are outside the card's cleansing scope (GM v17).
+            temporary = expires is not None or expire_action is not None or remaining>0
+            if temporary:
+                self._log(f'{self.label(uid)} usuwa nałożony efekt {kind} (S111).')
+                # Quality upgrade: +1 HP per stored level, only when an
+                # eligible negative status was actually intercepted/removed.
+                if u.ability_level:
+                    self._heal(uid,u.ability_level)
+                return False
         if kind=='stun':
             existing=[e.expires or 0 for e in u.effects if e.kind=='stun']
             if existing:expires=max(expires or 0,max(existing)+1)
@@ -392,7 +402,6 @@ class Match:
         if target in self.units:
             if self._is_immune(target,'poison'):return
             if self.cards[source].definition.id=='S32' and any(e.kind=='poison' and e.source==source for e in self.units[target].effects):return
-            if self.cards[target].definition.id=='S111' and not self._disabled(self.units[target]):return
             self._add_effect(target,'poison',total,turns,source=source,positive=False,bonus_once=bonus)
         elif target and target.startswith('hero:'):
             self.players[int(target.split(':')[1])].hero_effects.append(Effect('poison',total,turns,source=source,positive=False))
@@ -409,7 +418,7 @@ class Match:
         u=self.units[target];oldmax=u.max_hp
         old_effects=list(u.effects)
         before=len(u.effects)
-        u.effects=[e for e in u.effects if not (e.positive!=negative and (e.expires is not None or e.kind in ('poison','regen')))]
+        u.effects=[e for e in u.effects if not (e.positive!=negative and (e.expires is not None or e.expire_action is not None or e.kind in ('poison','regen')))]
         # Cleansing a temporary armor marker must also remove its actual armor.
         removed=[e for e in old_effects if e not in u.effects and e.kind=='temp_armor_marker']
         for e in removed:u.temporary_armor.pop(e.source,None)
