@@ -234,6 +234,67 @@ class FullScalingAudit(unittest.TestCase):
         self.assertFalse(any(e.kind=="atk" for e in enemy.effects))
         self.assertEqual(enemy.hp,99)
 
+    def test_stat_only_family_abilities_do_not_gain_extra_uses(self):
+        """The other 20 cards gain stats, not extra shields, attacks or triggers."""
+        all_ids={
+            "Tarcza":("S05","S70","S20","S94","S106"),
+            "Prowokacja":("S61","S72","S86","S96","S33"),
+            "Szybki atak":("S66","S78","S90","S101","S114"),
+            "Podwójny atak":("S67","S79","S91","S102","S115"),
+        }
+        for family,ids in all_ids.items():
+            for cid in ids:
+                for turns in (0,3,6,9):
+                    with self.subTest(family=family,card=cid,turns=turns):
+                        g,source,ally,enemy,aid,eid=scenario(cid,turns)
+                        def skill(context, mode="auto", target=None, attacked=None):
+                            g._execute(cid,context,Choice(mode,target,""),attacked=attacked)
+                        if family=="Tarcza":
+                            if cid=="S05":skill("play","Cel sojuszniczy",aid)
+                            elif cid=="S70":skill("attack",attacked=eid)
+                            elif cid=="S20":skill("death","Pozostała jednostka",aid)
+                            elif cid=="S94":skill("end","Cel sojuszniczy",aid)
+                            else:
+                                # Automatic S106 shield is granted during PLAY_CARD.
+                                g.players[0].board.remove(cid)
+                                del g.units[cid]
+                                g.players[0].hand.append(cid)
+                                g.cards[cid].zone="hand"
+                                g.players[0].played_this_turn=False
+                                g.play(cid)
+                                source=g.units[cid]
+                            shield=source.shield if cid in ("S70","S106") else ally.shield
+                            self.assertEqual(shield,1)
+                        elif family=="Prowokacja":
+                            if cid=="S61":skill("play","Cel sojuszniczy",aid)
+                            elif cid=="S72":skill("attack",attacked=eid)
+                            elif cid=="S86":skill("death","Pozostała jednostka",aid)
+                            elif cid=="S96":skill("end","Cel sojuszniczy",aid)
+                            recipient=source if cid in ("S72","S33") else ally
+                            self.assertTrue(g._taunt(recipient))
+                        elif family=="Szybki atak":
+                            if cid=="S78":
+                                skill("attack","Nadaj szybki atak",aid,attacked=eid)
+                                self.assertTrue(g._fast(ally))
+                            elif cid=="S90":
+                                skill("death")
+                                self.assertTrue(g.players[0].next_fast)
+                            elif cid=="S101":
+                                held=g.players[0].hand[0]
+                                skill("end","Szybki atak w kolejnej turze",held)
+                                self.assertEqual(g.cards[held].quick_next_turn,
+                                                 g.players[0].turn_count+1)
+                            else:self.assertTrue(g._fast(source))
+                            if cid in ("S66","S114"):
+                                self.assertEqual(2 if g._double(source) else 1,1)
+                        else:
+                            if cid=="S79":source.attacks=1
+                            elif cid=="S91":skill("death","Pozostała jednostka",aid)
+                            elif cid=="S102":skill("end","Podwójny atak na następną turę",aid)
+                            recipient=ally if cid in ("S91","S102") else source
+                            self.assertTrue(g._double(recipient))
+                            self.assertEqual(2 if g._double(recipient) else 1,2)
+
     def test_poison_ability_bonus_occurs_once_not_each_tick(self):
         g,s,_,enemy,_,eid=scenario("S58",6)
         g._execute("S58","play",Choice("Cel wrogi",eid,""))
