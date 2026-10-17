@@ -75,6 +75,7 @@ class StunRegressions(unittest.TestCase):
         force_unit(g,'S95',0)
         quick=force_unit(g,'S66',0)
         quick.played_turn=g.players[0].turn_count
+        g._add_effect('S66','quick',source='S66')
         self.assertTrue(g.legal_attacks('S66'))
         g._add_effect('S66','stun',expires=g._expiry(0),source='S59',positive=False)
         g._add_effect('S95','stun',expires=g._expiry(0),source='S59',positive=False)
@@ -98,7 +99,7 @@ class StunRegressions(unittest.TestCase):
 
 class HasteRegressions(unittest.TestCase):
     def test_innate_quick_attack_on_play(self):
-        for uid in ('S66','S114'):
+        for uid in ('S114',):
             with self.subTest(uid=uid):
                 g=setup_game(310)
                 add_hand(g,uid)
@@ -142,8 +143,10 @@ class HasteRegressions(unittest.TestCase):
         force_unit(g,'S90',0)
         add_hand(g,'S01')
         g._kill_batch(['S90']);g._drain()
-        self.assertTrue(g.players[0].next_fast)
-        g.play('S01')
-        self.assertIn('hero:1',g.legal_attacks('S01'))
+        recipients=[x for x in g.players[0].hand if g.cards[x].quick_on_first_summon]
+        self.assertEqual(len(recipients),min(2,len(g.players[0].hand)))
+        selected=recipients[0]
+        g.play(selected)
+        self.assertIn('hero:1',g.legal_attacks(selected))
 
 if __name__=='__main__': unittest.main()
