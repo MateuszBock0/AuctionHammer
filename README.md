@@ -1,6 +1,6 @@
 # AuctionHammer
 
-AuctionHammer is a turn-based fantasy card game for one player against a computer opponent. The current solo prototype follows **Game Master v17** and includes 70 unique starter cards, with one copy of each card in the shared pool. Auctions and card play costs are not part of this version.
+AuctionHammer is a turn-based fantasy card game for one player against a computer opponent. The current solo prototype follows **Game Master v19** and includes 70 unique starter cards, with one copy of each card in the shared pool. Auctions and card play costs are not part of this version.
 
 ## Play on Windows
 
@@ -22,6 +22,8 @@ Keep `AuctionHammer.exe` and the `_internal` directory together. An internet con
 - Press **Space** to end your turn. Press **F11** to switch between fullscreen and your previous window size.
 - Resize the window at any time using its borders. The battlefield and click targets stay aligned, with the original aspect ratio preserved.
 
+Each card displays a large family-specific emblem, a prominently bolded effect quantity where applicable, and a separate green upgrade ribbon showing exactly what improves after every three completed own turns in hand. The full card description (I) highlights the scalable number in green bold, without confusing it with durations or attack limits.
+
 Each card identifies its activation timing: **On Play, On Attack, On Death, End of Turn,** or **Passive** (these labels currently appear in Polish in the game interface). When an On Play effect has legal selectable options, choosing one is required; when no legal option exists, the card can still be played without resolving that effect.
 
 ## Display and scaling
@@ -39,7 +41,7 @@ For the largest game view, press **F11** to enter fullscreen. Press **F11** agai
 | `assets/` | Card artwork and other game assets |
 | `tests/` | Automated regression tests |
 | `AUCTIONHAMMER_MASTER.md` | Canonical project specification and implementation notes |
-| `docs/GAME_MASTER_v17.md` | Full v17 rules and card descriptions |
+| `docs/GAME_MASTER_v17.md` | Full v19 rules and card descriptions |
 | `.github/workflows/` | Automated tests and Windows release build |
 
 To work on the source code, open this folder in VS Code. Source development requires Python 3.11+ and the dependencies in `requirements.txt`. The packaged Windows game does not.
@@ -48,4 +50,10 @@ To work on the source code, open this folder in VS Code. Source development requ
 
 Changes merged to `main` run automated tests and build a new Windows release through GitHub Actions. Published builds are available under [Releases](https://github.com/MateuszBock0/AuctionHammer/releases/latest).
 
-The solo engine is an MVP. Some complex chains of simultaneous effects still require additional rules-validation tests. The rules in Game Master v17 take precedence over earlier prototype behaviour.
+The solo engine is an MVP. Some complex chains of simultaneous effects still require additional rules-validation tests. The rules in Game Master v19 take precedence over earlier prototype behaviour.
+
+## Game Master v19 integration
+
+The approved v19 card changes are now implemented in the executable: **S66** chooses Quick Attack for itself or one particular hand card, **S67** grants Double Attack to itself or a selected allied unit, **S79** is 2 ATK / 6 HP with its conditional second attack, and **S114/S115** have updated HP and self-only traits. This version also implements the v18/v19 death fallbacks (S20/S82/S90/S91), the one-time S105 aura armor, and per-turn S109 quality healing. The 70-card shared pool and no-auction MVP remain unchanged.
+
+For the original, complete rules archive, see the project Game Master v19 source package. See also `docs/V19_INTEGRATION_AND_UI.md` for the integration mapping and tests.
