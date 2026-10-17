@@ -661,68 +661,68 @@ class SoloApp:
     def _draw_details(self):
         uid=self.details_card
         if uid not in self.game.cards:return
-        card=self.game.cards[uid];d=card.definition
+        card=self.game.cards[uid];d=card.definition;u=self.game.units.get(uid)
+        cue=card_cue(card,u)
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((1,5,10,226));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,94,1190,745)
         self._panel(box,(24,38,52),FACTION_COLORS[d.faction],18)
         pygame.draw.line(self.screen,(66,91,106),(489,180),(489,766),2)
-        # Large card illustration and attributes.
         self._text('PODGLĄD KARTY',16,186,124,cfg.GOLD)
         self.cards_view.draw(self.screen,card,pygame.Rect(194,198,255,338),
-                             unit=self.game.units.get(uid),selected=True,
-                             statuses=active_statuses(self.game,uid) if uid in self.game.units else hand_grants(self.game,uid))
-        self._text(f'{d.id}  ·  {d.faction}',18,194,557,FACTION_COLORS[d.faction])
-        self._text(f'Aktywacja: {d.trigger}',18,194,588)
-        self._text(f'Rodzina: {d.family}',18,194,619)
-        u=self.game.units.get(uid)
-        self._text(f'Poziom zdolności: +{u.ability_level if u else card.ability_level}',18,194,650,cfg.GOLD)
-        if not u:
-            self._text(f'Tury na ręce: {card.hand_turns}',18,194,681,cfg.MUTED)
-        else:
-            self._text(f'Pancerz: {u.armor}  ·  Tarcza: {u.shield}',16,194,681,cfg.MUTED)
-        # Right-hand reading column; no ellipses or clipped card text.
-        self._text(d.name,28,520,118,FACTION_COLORS[d.faction])
-        self._text('ZDOLNOŚĆ',20,520,191,cfg.GOLD)
-        lines=self._wrap(d.effect,22,760)
-        y=232-self.details_scroll
-        content_top=226;content_bottom=745
-        for line in lines:
-            if content_top<=y<=content_bottom-28:self._text(line,22,520,y)
-            y+=31
-        y+=28
-        if content_top<=y<=content_bottom-26:self._text('ROZWÓJ ZDOLNOŚCI',20,520,y,cfg.GOLD)
-        y+=42
-        for line in self._wrap(d.scaling,20,760):
-            if content_top<=y<=content_bottom-25:self._text(line,20,520,y,cfg.TEXT)
-            y+=29
-        y+=30
-        if content_top<=y<=content_bottom-23:self._text('WZROST STATYSTYK NA RĘCE',18,520,y,cfg.GOLD)
-        y+=31
-        growth=f'+{d.growth_atk} ATK  /  +{d.growth_hp} MAX HP  po każdej własnej turze'
-        if content_top<=y<=content_bottom-25:self._text(growth,18,520,y,cfg.TEXT)
-        y+=47
-        statuses=active_statuses(self.game,uid) if uid in self.game.units else hand_grants(self.game,uid)
-        if statuses:
-            if content_top<=y<=content_bottom-24:
-                self._text(f'AKTYWNE EFEKTY / NADANE STATUSY ({len(statuses)})',18,520,y,cfg.GOLD)
-            y+=37
-            for st in statuses:
-                if content_top<=y<=content_bottom-23:
-                    self._text('●',18,523,y,st.color)
-                    self._text(st.name,18,549,y,st.color)
-                y+=26
-                provenance=f'Źródło: {st.source}' if st.source else 'Źródło: własne / aktualny stan'
-                text=st.detail+'  |  '+provenance
-                for line in self._wrap(text,15,736):
-                    if content_top<=y<=content_bottom-22:self._text(line,15,550,y,cfg.TEXT)
-                    y+=22
-                y+=13
-        else:
-            if content_top<=y<=content_bottom-25:self._text('AKTYWNE EFEKTY: brak',18,520,y,cfg.MUTED)
-            y+=34
-        self.details_maxscroll=max(0,y-705)
-        self._text('Kółko myszy — przewiń opis i statusy',14,524,774,cfg.MUTED)
+                             unit=u,selected=True,
+                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid))
+        self._text(f'{d.id} • {d.faction}',18,194,554,FACTION_COLORS[d.faction])
+        self._text(f'Aktywacja: {d.trigger}',16,194,585)
+        self._text(f'Rodzina: {d.family}',16,194,615)
+        self._text(f'Poziom zdolności: {cue.ability_level}',18,194,652,cfg.GOLD)
+        self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
+                   14,194,684,cfg.MUTED)
+
+        self._text(self.cards_view.clip(d.name,self.fonts[28],760),28,520,115,FACTION_COLORS[d.faction])
+        self._infographic_box(pygame.Rect(520,159,228,70),'BAZOWA ZDOLNOŚĆ',cue.base,cue.color,
+                              'Liczba zmienna oznaczona pogrubieniem')
+        self._infographic_box(pygame.Rect(763,159,227,70),'CO 3 WŁASNE TURY NA RĘCE',cue.upgrade,cfg.GREEN,
+                              'Próg: 3 / 6 / 9 / 12…')
+        self._infographic_box(pygame.Rect(1005,159,227,70),'MOMENT AKTYWACJI',cue.trigger,cfg.HOVER,
+                              cue.family)
+        pygame.draw.line(self.screen,cfg.PANEL_BORDER,(518,243),(1297,243),1)
+
+        content_top=264;content_bottom=749
+        y=content_top-self.details_scroll
+        if content_top<=y<content_bottom-27:self._text('ZDOLNOŚĆ — WARTOŚĆ SKALUJĄCA POGRUBIONA',18,520,y,cfg.GOLD)
+        y+=37
+        y=self._rich_effect_text(d,520,y,750,18,content_top,content_bottom)
+        y+=24
+        if content_top<=y<content_bottom-25:self._text('ULEPSZENIE ZDOLNOŚCI',20,520,y,cfg.GOLD)
+        y+=36
+        for line in self._wrap(d.scaling,18,750):
+            if content_top<=y<content_bottom-25:self._text(line,18,520,y,cfg.TEXT)
+            y+=27
+        y+=23
+        if content_top<=y<content_bottom-25:self._text('PRZYROST STATYSTYK NA RĘCE',18,520,y,cfg.GOLD)
+        y+=32
+        if content_top<=y<content_bottom-25:self._text(cue.growth,18,520,y,cfg.TEXT)
+        y+=48
+        statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid)
+        if content_top<=y<content_bottom-26:
+            self._text(f'AKTYWNE / NADANE EFEKTY ({len(statuses)})',18,520,y,cfg.GOLD)
+        y+=35
+        for st in statuses:
+            if content_top<=y<content_bottom-23:
+                self._text('●',18,523,y,st.color)
+                self._text(st.name,18,549,y,st.color)
+            y+=27
+            provenance=f'Źródło: {st.source}' if st.source else 'Źródło: własna zdolność'
+            for line in self._wrap(st.detail+'  |  '+provenance,15,740):
+                if content_top<=y<content_bottom-23:self._text(line,15,550,y,cfg.TEXT)
+                y+=22
+            y+=10
+        if not statuses and content_top<=y<content_bottom-23:
+            self._text('Brak dodatkowych statusów',15,549,y,cfg.MUTED)
+        y+=26
+        self.details_maxscroll=max(0,y-722)
+        self._text('Kółko myszy: przewiń tekst • Zielone pogrubienie: wartość rosnąca',13,524,777,cfg.MUTED)
         self._button(pygame.Rect(1095,777,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
     def _draw_gameover(self):
