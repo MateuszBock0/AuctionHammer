@@ -146,6 +146,43 @@ class SoloApp:
             result.append(line)
         return result
 
+    def _infographic_box(self,rect,title,value,color,subtitle=''):
+        self._panel(rect,(31,50,58),color,9)
+        self._text(title,12,rect.x+9,rect.y+5,cfg.MUTED)
+        text=self.cards_view.clip(value,self.fonts_bold[18],rect.width-14)
+        self.screen.blit(self.fonts_bold[18].render(text,True,color),(rect.x+9,rect.y+21))
+        if subtitle:
+            cap=self.cards_view.clip(subtitle,self.fonts[12],rect.width-14)
+            self._text(cap,12,rect.x+9,rect.y+45,cfg.TEXT)
+
+    def _rich_effect_text(self,definition,x,y,width,size=18,top=0,bottom=920):
+        """Render effect prose with the precise scaling number in bold.
+        Durations and unrelated counts stay regular, per Game Master v19.
+        """
+        regular=self.fonts[size]
+        bold=self.fonts_bold[size]
+        marks=set(highlighted_numeric_ranges(definition))
+        cx=x;cy=y
+        for token in re.finditer(r'\s+|\d+|[^\s\d]+',definition.effect):
+            piece=token.group()
+            if '\n' in piece:
+                cy+=size+8;cx=x
+                continue
+            if piece.isspace():
+                if cx>x:
+                    cx+=regular.size(piece)[0]
+                continue
+            emphasis=token.span() in marks
+            font=bold if emphasis else regular
+            w=font.size(piece)[0]
+            if cx+w>x+width and cx>x:
+                cy+=size+9
+                cx=x
+            if top<=cy<bottom-size-3:
+                self.screen.blit(font.render(piece,True,(173,255,189) if emphasis else cfg.TEXT),(cx,cy))
+            cx+=w
+        return cy+size+7
+
     def _panel(self,rect,fill=None,line=None,radius=14):
         pygame.draw.rect(self.screen,fill or cfg.PANEL,rect,border_radius=radius)
         pygame.draw.rect(self.screen,line or cfg.PANEL_BORDER,rect,1,border_radius=radius)
@@ -462,43 +499,38 @@ class SoloApp:
         card_id=self.selected or self.card_under(self.mouse_pos())
         self.sidebar_card=card_id if card_id in self.game.cards else None
         if card_id and card_id in self.game.cards:
-            c=self.game.cards[card_id];d=c.definition
-            self._text(d.name,18,1105,151,FACTION_COLORS[d.faction])
-            self._text(f'{d.id}  ·  {d.faction}  ·  {d.trigger}',13,1105,178,cfg.MUTED)
-            u=self.game.units.get(card_id)
-            self._text(f'ATK {u.atk if u else c.attack}    HP {u.hp if u else c.max_hp}/{u.max_hp if u else c.max_hp}',18,1105,204)
-            if not u:
-                self._text(f'Tury na ręce: {c.hand_turns}    Zdolność: +{c.ability_level}',14,1105,234,cfg.GOLD)
-            else:
-                self._text(f'Pancerz: {u.armor}    Tarcza: {u.shield}    Ataki: {u.attacks}',14,1105,234,cfg.GOLD)
-            self._text('ZDOLNOŚĆ',15,1105,271,cfg.HOVER)
-            yy=294
-            max_description_y=415 if u else 479
-            for line in self._wrap(d.effect,14,326):
-                if yy>max_description_y:break
-                self._text(line,14,1105,yy);yy+=20
+            c=self.game.cards[card_id];d=c.definition;u=self.game.units.get(card_id)
+            cue=card_cue(c,u)
+            self._text(self.cards_view.clip(d.name,self.fonts[18],310),18,1105,150,FACTION_COLORS[d.faction])
+            self._text(f'{d.id} • {d.faction} • L{cue.ability_level}',13,1105,181,cfg.MUTED)
+            self._infographic_box(pygame.Rect(1104,210,153,70),'ACTIVATION',cue.trigger,(142,215,238),cue.family)
+            self._infographic_box(pygame.Rect(1267,210,157,70),'SCALES / 3 TURNS',cue.upgrade,cfg.GREEN,cue.next_threshold)
+            self._infographic_box(pygame.Rect(1104,290,320,69),'BASE EFFECT → CURRENT',cue.base,cue.color,
+                                  f'ATK {u.atk if u else c.attack} / HP {u.hp if u else c.max_hp}')
+            self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
+            yy=405
+            for line in self._wrap(d.effect,13,312)[:3]:
+                self._text(line,13,1105,yy,cfg.TEXT);yy+=18
+            if len(self._wrap(d.effect,13,312))>3:
+                self._text('Pełny opis i wartości: [I]',12,1105,464,cfg.MUTED)
+            self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
+            self._text(self.cards_view.clip(cue.growth,self.fonts[13],309),13,1105,517,cfg.MUTED)
             if u:
-                pygame.draw.line(self.screen,cfg.PANEL_BORDER,(1105,440),(1419,440),1)
                 statuses=active_statuses(self.game,card_id)
-                self._text(f'AKTYWNE EFEKTY ({len(statuses)})',15,1105,448,cfg.GOLD)
-                if not statuses:self._text('Brak aktywnych statusów',14,1105,476,cfg.MUTED)
-                else:
-                    for j,st in enumerate(statuses[:6]):
-                        yy=477+j*32
-                        pygame.draw.circle(self.screen,st.color,(1112,yy+8),5)
-                        description=st.name
-                        if st.source:description+=f'  ← {st.source}'
-                        description=self.cards_view.clip(description,self.fonts[13],297)
-                        self._text(description,13,1126,yy,st.color)
-                        # Show magnitude and duration in the large [I] card modal.
-                    if len(statuses)>6:
-                        self._text(f'+{len(statuses)-6} dalszych efektów — otwórz [I]',13,1105,672,cfg.MUTED)
+                self._text(f'AKTYWNE EFEKTY ({len(statuses)})',15,1105,548,cfg.GOLD)
+                for j,st in enumerate(statuses[:4]):
+                    yy=576+j*24
+                    pygame.draw.circle(self.screen,st.color,(1113,yy+8),5)
+                    self._text(self.cards_view.clip(st.name,self.fonts[13],295),13,1126,yy,st.color)
+                if len(statuses)>4:
+                    self._text(f'+{len(statuses)-4} w pełnym opisie [I]',12,1105,676,cfg.MUTED)
             else:
-                self._text('SKALOWANIE',15,1105,507,cfg.HOVER)
-                yy=533
-                for line in self._wrap(d.scaling,13,326):
-                    self._text(line,13,1105,yy,cfg.MUTED);yy+=18
-                    if yy>672:break
+                grants=hand_grants(self.game,card_id)
+                if grants:
+                    self._text('PRZYZNANE CECHY W RĘCE',14,1105,553,cfg.GOLD)
+                    for j,st in enumerate(grants[:3]):
+                        self._text(self.cards_view.clip(st.name,self.fonts[13],310),13,1105,577+j*25,st.color)
+                self._text(self.cards_view.clip(d.scaling,self.fonts[12],313),12,1105,658,cfg.MUTED)
         else:
             lines=['Kliknij kartę, aby zobaczyć jej opis.','Najpierw zagrywasz JEDNĄ jednostkę','na turę, potem możesz atakować','dowolną liczbą gotowych jednostek.','','FRAKCJE:',
                    'ELFY: efekt przy wystawieniu','BESTIE: efekt przy ataku','POTWORY: efekt przy śmierci',
