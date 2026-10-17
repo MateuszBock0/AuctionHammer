@@ -131,6 +131,8 @@ class V19EngineIntegration(unittest.TestCase):
         self.assertTrue(g._double(g.units[uid]))
         self.assertIn('hero:1',g.legal_attacks(uid))
         g.end_turn()
+        while g.pending is not None:
+            g.choose(0)
         self.assertFalse(g.units[uid].fallback_double_pending)
 
     def test_s20_and_s82_death_protection_has_hero_fallback(self):
