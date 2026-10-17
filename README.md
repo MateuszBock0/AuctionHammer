@@ -19,9 +19,16 @@ Keep `AuctionHammer.exe` and the `_internal` directory together. An internet con
 - When a skill requires a target or mode, use the **selection panel on the right**. Eligible targets are highlighted on the board; a direct click works when there is only one available mode for that target.
 - Press **1–8** to select a visible choice, or use the panel's navigation controls for additional choices.
 - Press **I** to open a card's full description. Mouse wheel scrolls the description.
-- Press **Space** to end your turn and **F11** to toggle fullscreen.
+- Press **Space** to end your turn. Press **F11** to switch between fullscreen and your previous window size.
+- Resize the window at any time using its borders. The battlefield and click targets stay aligned, with the original aspect ratio preserved.
 
 Each card identifies its activation timing: **On Play, On Attack, On Death, End of Turn,** or **Passive** (these labels currently appear in Polish in the game interface). When an On Play effect has legal selectable options, choosing one is required; when no legal option exists, the card can still be played without resolving that effect.
+
+## Display and scaling
+
+On Windows, AuctionHammer detects the current desktop size at launch and opens a window that fits within the screen, leaving room for Windows UI such as the taskbar. The game supports Full HD and common 125% or 150% Windows display scaling. It also adapts to manually resized windows while keeping the entire board and controls visible.
+
+For the largest game view, press **F11** to enter fullscreen. Press **F11** again to return to the previous window size. The game does not require a specific screen resolution and does not change the Windows scaling setting.
 
 ## Project files
 

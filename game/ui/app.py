@@ -1,5 +1,6 @@
 """Pygame-ce klient 0.9.1: pełna plansza 2D, ręka, wybory celów, AI, ekran wyniku."""
 from __future__ import annotations
+import os
 import pygame
 from game import config as cfg
 from game.core.engine import Match
@@ -7,7 +8,7 @@ from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
-from game.ui.layout import fitted_viewport, window_to_canvas
+from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 
 class SoloApp:
     SIDEBAR_X=1082
@@ -22,11 +23,16 @@ class SoloApp:
     HAND_H=169
 
     def __init__(self):
+        os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
         pygame.init()
-        # A fixed logical canvas keeps every hitbox in one coordinate system.
-        # Only presentation is resized: the viewport preserves aspect ratio.
-        self.window=pygame.display.set_mode((cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT),pygame.RESIZABLE)
-        self.screen=pygame.Surface((cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT)).convert()
+        # Fit the opening window to the current display, respecting Windows DPI
+        # scaling and keeping room for the title bar and taskbar.
+        # The internal canvas and all clickable hitboxes retain their v17 size.
+        logical_size=(cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT)
+        desktop_size=self._desktop_resolution()
+        self.windowed_size=preferred_window_size(desktop_size,logical_size)
+        self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
+        self.screen=pygame.Surface(logical_size).convert()
         pygame.display.set_caption(cfg.WINDOW_TITLE)
         self.clock=pygame.time.Clock()
         self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,22,28,34,46)}
@@ -50,6 +56,35 @@ class SoloApp:
         self.details_scroll=0
         self.sidebar_card=None
         self._old_pending=None
+
+    @staticmethod
+    def _desktop_resolution():
+        """Get SDL's display dimensions in its own DPI-aware window coordinates."""
+        try:
+            sizes=pygame.display.get_desktop_sizes()
+            if sizes:
+                try:
+                    index=pygame.display.get_window_display_index()
+                except (AttributeError, pygame.error):
+                    index=0
+                if not (0<=index<len(sizes)):
+                    index=0
+                width,height=sizes[index]
+                if width>0 and height>0:
+                    return int(width),int(height)
+        except (AttributeError, pygame.error):
+            pass
+        info=pygame.display.Info()
+        return max(640,int(info.current_w)),max(480,int(info.current_h))
+
+    def _toggle_fullscreen(self):
+        """Fullscreen uses the actual desktop mode; restore windowed size on exit."""
+        if self.window.get_flags() & pygame.FULLSCREEN:
+            self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
+        else:
+            self.windowed_size=tuple(self.window.get_size())
+            self.window=pygame.display.set_mode(self._desktop_resolution(),pygame.FULLSCREEN)
+        self.drag_start=None
 
     def _viewport(self):
         return pygame.Rect(*fitted_viewport(self.window.get_size(),(cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT)))
@@ -276,7 +311,16 @@ class SoloApp:
     def handle(self,event):
         if event.type==pygame.QUIT:return False
         if event.type==pygame.VIDEORESIZE:
-            self.window=pygame.display.set_mode((max(700,event.w),max(500,event.h)),pygame.RESIZABLE)
+            if not self.window.get_flags() & pygame.FULLSCREEN:
+                dw,dh=self._desktop_resolution()
+                max_width,max_height=max(1,dw-24),max(1,dh-64)
+                width=max(min(560,max_width),min(int(event.w),max_width))
+                height=max(min(360,max_height),min(int(event.h),max_height))
+                self.windowed_size=(width,height)
+                self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
+            return True
+        if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
+            self._toggle_fullscreen()
             return True
         if self.details_card is not None:
             if event.type==pygame.KEYDOWN and event.key in (pygame.K_ESCAPE,pygame.K_i):
@@ -311,9 +355,6 @@ class SoloApp:
             elif event.key==pygame.K_i:
                 self._open_details(self.game.pending.uid if self.game.pending
                                    else self.selected or self.sidebar_card)
-            elif event.key==pygame.K_F11:
-                flags=pygame.RESIZABLE if self.window.get_flags() & pygame.FULLSCREEN else pygame.FULLSCREEN
-                self.window=pygame.display.set_mode(self.window.get_size(),flags)
             elif event.key==pygame.K_q:return False
         elif event.type==pygame.MOUSEWHEEL:
             if self.game.pending and self.game.pending.owner==0:
@@ -492,7 +533,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.4 · v17',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.5 · v17',14,1310,35,cfg.GOLD)
 
     def _draw_log(self):
         # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
