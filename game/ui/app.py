@@ -1,4 +1,4 @@
-"""Pygame-ce klient 0.9.1: pełna plansza 2D, ręka, wybory celów, AI, ekran wyniku."""
+"""AuctionHammer MVP 0.9.8: responsive Pygame v19 client with semantic card infographics."""
 from __future__ import annotations
 import os
 import re
@@ -149,8 +149,13 @@ class SoloApp:
     def _infographic_box(self,rect,title,value,color,subtitle=''):
         self._panel(rect,(31,50,58),color,9)
         self._text(title,12,rect.x+9,rect.y+5,cfg.MUTED)
-        text=self.cards_view.clip(value,self.fonts_bold[18],rect.width-14)
-        self.screen.blit(self.fonts_bold[18].render(text,True,color),(rect.x+9,rect.y+21))
+        # Long upgrade formulas should remain completely visible, not ellipsized
+        # in the narrow laptop sidebar.
+        font=next((self.fonts_bold[n] for n in (18,16,14,13)
+                   if self.fonts_bold[n].size(value)[0]<=rect.width-14),
+                  self.fonts_bold[13])
+        text=self.cards_view.clip(value,font,rect.width-14)
+        self.screen.blit(font.render(text,True,color),(rect.x+9,rect.y+23))
         if subtitle:
             cap=self.cards_view.clip(subtitle,self.fonts[12],rect.width-14)
             self._text(cap,12,rect.x+9,rect.y+45,cfg.TEXT)
