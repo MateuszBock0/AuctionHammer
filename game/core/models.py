@@ -76,6 +76,8 @@ class Card:
     hand_turns: int = 0
     # Granted only to the specified card for its immediately upcoming play
     quick_next_turn: int | None = None
+    quick_on_first_summon: bool = False  # v19 S66 / S90 target, bound to this card instance
+    double_on_first_eligible: bool = False  # v19 S91 fallback, bound to card instance
 
     @property
     def ability_level(self) -> int:
@@ -115,6 +117,8 @@ class Unit:
     seen_opponents: set[str] = field(default_factory=set)
     last_stun_target: str = ""
     last_stun_turn: int = -10
+    fallback_double_pending: bool = False
+    fallback_double_started: bool = False
     passives_triggered: set[str] = field(default_factory=set)
     # Diagnostic provenance for shield and armor; authoritative numeric value stays above.
     shield_source: str = ""
