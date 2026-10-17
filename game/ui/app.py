@@ -1,12 +1,14 @@
 """Pygame-ce klient 0.9.1: pełna plansza 2D, ręka, wybory celów, AI, ekran wyniku."""
 from __future__ import annotations
 import os
+import re
 import pygame
 from game import config as cfg
 from game.core.engine import Match
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
+from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 
@@ -37,6 +39,7 @@ class SoloApp:
         self.clock=pygame.time.Clock()
         self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,22,28,34,46)}
         self.cards_view=CardView()
+        self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
         self.ai=ComputerOpponent()
         self.bg=self._create_background()
         self.restart()
@@ -247,7 +250,7 @@ class SoloApp:
             if pygame.Rect(1274,814,150,38).collidepoint(pos):
                 self.choice_page = min(self._choice_last_page(), self.choice_page + 1)
                 return
-            self._choose_target(self.target_under(pos))
+            self._choose_target(self.target_under(pos) or self.card_under(pos))
             return
         if pygame.Rect(1103,686,316,40).collidepoint(pos):
             uid=self.sidebar_card
@@ -437,11 +440,12 @@ class SoloApp:
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
                                  statuses=hand_grants(self.game,uid))
             if marked:
-                badge=pygame.Rect(rect.x+9,rect.y+80,rect.width-18,25)
-                pygame.draw.rect(self.screen,(159,70,57),badge,border_radius=6)
+                pygame.draw.rect(self.screen,(250,208,119),rect.inflate(9,9),4,border_radius=12)
+                badge=pygame.Rect(rect.x+6,rect.y+79,rect.width-12,29)
+                pygame.draw.rect(self.screen,(130,56,54),badge,border_radius=6)
                 pygame.draw.rect(self.screen,cfg.GOLD,badge,2,border_radius=6)
                 rank=self.game.players[0].mulligan_selected.index(uid)+1
-                self._text(f'WYMIANA {rank}/3',13,badge.centerx,badge.centery,
+                self._text(f'✓  WYMIANA {rank}/3',13,badge.centerx,badge.centery,
                            (255,250,238),center=True)
         if len(self.game.players[0].hand)>6:
             self._button(pygame.Rect(42,851,40,37),'‹',active=self.scroll>0,small=True)
@@ -533,7 +537,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.6 · v17',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.8 · v19',14,1310,35,cfg.GOLD)
 
     def _draw_log(self):
         # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
@@ -564,8 +568,11 @@ class SoloApp:
                     if target in player.board:
                         rect = self.slot_rect(player.idx, player.board.index(target))
                         break
+                if target in self.game.players[0].hand:
+                    rect = self.hand_layout().get(target)
             if rect is not None:
-                pygame.draw.rect(self.screen, cfg.GOLD, rect.inflate(8, 8), 4, border_radius=13)
+                pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(8,8),4,border_radius=13)
+                pygame.draw.circle(self.screen,cfg.GOLD,(rect.right-3,rect.y+3),7)
 
     def _draw_choice_sidebar(self):
         """Dedicated selection panel below the skill description."""
