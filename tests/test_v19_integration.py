@@ -118,6 +118,10 @@ class V19EngineIntegration(unittest.TestCase):
         self.assertEqual(len(boosted),1)
         uid=boosted[0]
         g.play(uid)
+        # The randomly chosen hand card may itself have a mandatory on-play
+        # effect; finish that choice before proceeding to turn boundaries.
+        while g.pending is not None:
+            g.choose(0)
         self.assertFalse(g.cards[uid].double_on_first_eligible)
         self.assertEqual(g.legal_attacks(uid),[])
         g.end_turn();g.end_turn()
