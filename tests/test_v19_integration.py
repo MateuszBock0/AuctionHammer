@@ -124,7 +124,10 @@ class V19EngineIntegration(unittest.TestCase):
             g.choose(0)
         self.assertFalse(g.cards[uid].double_on_first_eligible)
         self.assertEqual(g.legal_attacks(uid),[])
-        g.end_turn();g.end_turn()
+        for _ in range(2):
+            g.end_turn()
+            while g.pending is not None:
+                g.choose(0)
         self.assertTrue(g._double(g.units[uid]))
         self.assertIn('hero:1',g.legal_attacks(uid))
         g.end_turn()
