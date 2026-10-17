@@ -109,9 +109,10 @@ class CardView:
         base_s=self.font_effect.render(base,True,(250,250,241))
         screen.blit(base_s,(rect.x+11,rect.bottom-70))
         # Compact label with an explicit upgrade amount; rich details show the full text.
-        scale=self.clip(cue.upgrade,self.font_scale,rect.width-15)
+        scale_font=self.font_scale if self.font_scale.size(cue.upgrade)[0]<=rect.width-15 else self.font_badge
+        scale=self.clip(cue.upgrade,scale_font,rect.width-15)
         pygame.draw.rect(screen,(45,76,74),pygame.Rect(rect.x+5,rect.bottom-49,rect.width-10,19),border_radius=4)
-        text=self.font_scale.render(scale,True,(184,255,205))
+        text=scale_font.render(scale,True,(184,255,205))
         screen.blit(text,(rect.x+9,rect.bottom-47))
         atk=unit.atk if unit else card.attack
         hp=unit.hp if unit else card.max_hp
