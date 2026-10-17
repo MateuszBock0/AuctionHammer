@@ -370,7 +370,7 @@ class Match:
 
     def _has(self,u,kind):return any(e.kind==kind for e in u.effects)
     def _disabled(self,u):return self._has(u,'stun') or self._has(u,'silence')
-    def _fast(self,u):return self._has(u,'quick') or (self.cards[u.uid].definition.id in ('S66','S114') and not self._disabled(u))
+    def _fast(self,u):return self._has(u,'quick') or (self.cards[u.uid].definition.id=='S114' and not self._disabled(u))
     def _double(self,u):
         # S67 grants a status on play; it no longer has innate double attack.
         # S91's hand fallback grants double for the first *eligible* own turn.
