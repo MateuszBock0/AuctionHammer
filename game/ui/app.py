@@ -483,7 +483,7 @@ class SoloApp:
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
                                  statuses=hand_grants(self.game,uid))
             if marked:
-                pygame.draw.rect(self.screen,(250,208,119),rect.inflate(9,9),4,border_radius=12)
+                pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(9,9),4,border_radius=12)
                 badge=pygame.Rect(rect.x+6,rect.y+79,rect.width-12,29)
                 pygame.draw.rect(self.screen,(130,56,54),badge,border_radius=6)
                 pygame.draw.rect(self.screen,cfg.GOLD,badge,2,border_radius=6)
