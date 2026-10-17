@@ -150,9 +150,11 @@ class SoloApp:
                 if self.slot_rect(idx,j).collidepoint(pos):return uid
         return None
 
-    CHOICES_PER_PAGE = 8
-    CHOICE_FIRST_Y = 354
+    # Choice controls are confined to their own panel below the skill description.
+    CHOICES_PER_PAGE = 6
+    CHOICE_FIRST_Y = 467
     CHOICE_ROW_HEIGHT = 54
+    AI_ACTION_DELAY_MS = 850
 
     def choice_bounds(self):
         """Choice buttons belong to the sidebar, never above the game board."""
@@ -161,8 +163,8 @@ class SoloApp:
             return []
         start = self.choice_page * self.CHOICES_PER_PAGE
         count = min(len(pending.choices), start + self.CHOICES_PER_PAGE)
-        return [(i, pygame.Rect(1101, self.CHOICE_FIRST_Y +
-                                (i - start) * self.CHOICE_ROW_HEIGHT, 324, 47))
+        return [(i, pygame.Rect(1104, self.CHOICE_FIRST_Y +
+                                (i - start) * self.CHOICE_ROW_HEIGHT, 320, 47))
                 for i in range(start, count)]
 
     def _choice_last_page(self):
@@ -204,10 +206,10 @@ class SoloApp:
                 if rect.collidepoint(pos):
                     self._choose(index)
                     return
-            if pygame.Rect(1102,802,150,37).collidepoint(pos):
+            if pygame.Rect(1103,814,150,38).collidepoint(pos):
                 self.choice_page = max(0, self.choice_page - 1)
                 return
-            if pygame.Rect(1274,802,150,37).collidepoint(pos):
+            if pygame.Rect(1274,814,150,38).collidepoint(pos):
                 self.choice_page = min(self._choice_last_page(), self.choice_page + 1)
                 return
             self._choose_target(self.target_under(pos))
@@ -219,7 +221,10 @@ class SoloApp:
         if g.phase=='mulligan':
             for uid,rect in self.hand_layout().items():
                 if rect.collidepoint(pos):
-                    try:g.mulligan_toggle(uid)
+                    try:
+                        g.mulligan_toggle(uid)
+                        self.selected=uid
+                        self.last_error=''
                     except IllegalMove as e:self.last_error=str(e)
                     return
             if pygame.Rect(1182,808,243,59).collidepoint(pos):
@@ -262,7 +267,10 @@ class SoloApp:
         if target in g.units:self.selected=target;self.tooltip_open=True
 
     def _try_play(self,uid,replace=None):
-        try:self.game.play(uid,replace);self.selected=None;self.last_error=''
+        try:
+            self.game.play(uid,replace)
+            self.selected=uid if self.game.legal_attacks(uid) else None
+            self.last_error=''
         except IllegalMove as e:self.last_error=str(e)
 
     def handle(self,event):
@@ -284,7 +292,7 @@ class SoloApp:
                 if self.game.phase=='finished':self.restart()
             elif event.key==pygame.K_r and not self.game.pending:self.restart()
             elif (self.game.pending and self.game.pending.owner == 0
-                  and pygame.K_1 <= event.key <= pygame.K_8):
+                  and pygame.K_1 <= event.key <= pygame.K_6):
                 index = self.choice_page * self.CHOICES_PER_PAGE + event.key - pygame.K_1
                 if index < len(self.game.pending.choices):
                     self._choose(index)
@@ -336,7 +344,7 @@ class SoloApp:
             self.choice_page=0
             self._old_pending=g.pending
         t=pygame.time.get_ticks()
-        if t-self.last_ai_ms>265:
+        if t-self.last_ai_ms>self.AI_ACTION_DELAY_MS:
             if (g.phase=='turn' and (g.active==1 or g.pending and g.pending.owner==1)) or (g.pending and g.pending.owner==1):
                 try:self.ai.step(g)
                 except IllegalMove as e:self.last_error=str(e)
@@ -381,8 +389,19 @@ class SoloApp:
         hand=self.hand_layout()
         for uid,rect in hand.items():
             pygame.draw.rect(self.screen,(18,32,41),rect.inflate(11,10),border_radius=13)
-            self.cards_view.draw(self.screen,self.game.cards[uid],rect,selected=uid==self.selected,
-                                 dim=(self.game.phase=='turn' and self.game.active!=0),statuses=hand_grants(self.game,uid))
+            marked=(self.game.phase=='mulligan'
+                    and uid in self.game.players[0].mulligan_selected)
+            self.cards_view.draw(self.screen,self.game.cards[uid],rect,
+                                 selected=(uid==self.selected or marked),
+                                 dim=(self.game.phase=='turn' and self.game.active!=0),
+                                 statuses=hand_grants(self.game,uid))
+            if marked:
+                badge=pygame.Rect(rect.x+9,rect.y+80,rect.width-18,25)
+                pygame.draw.rect(self.screen,(159,70,57),badge,border_radius=6)
+                pygame.draw.rect(self.screen,cfg.GOLD,badge,2,border_radius=6)
+                rank=self.game.players[0].mulligan_selected.index(uid)+1
+                self._text(f'WYMIANA {rank}/3',13,badge.centerx,badge.centery,
+                           (255,250,238),center=True)
         if len(self.game.players[0].hand)>6:
             self._button(pygame.Rect(42,851,40,37),'‹',active=self.scroll>0,small=True)
             self._button(pygame.Rect(924,851,40,37),'›',active=self.scroll+6<len(self.game.players[0].hand),small=True)
@@ -391,12 +410,12 @@ class SoloApp:
     def _draw_sidebar(self):
         rect=pygame.Rect(self.SIDEBAR_X,87,364,819)
         self._panel(rect,(23,35,47),cfg.PANEL_BORDER,16)
-        self._text('KARTA / AKCJE',22,1103,106,cfg.GOLD)
-        card_id=self.selected or self.card_under(self.mouse_pos())
-        self.sidebar_card=card_id if card_id in self.game.cards else None
         if self.game.pending and self.game.pending.owner == 0:
             self._draw_choice_sidebar()
             return
+        self._text('KARTA / AKCJE',22,1103,106,cfg.GOLD)
+        card_id=self.selected or self.card_under(self.mouse_pos())
+        self.sidebar_card=card_id if card_id in self.game.cards else None
         if card_id and card_id in self.game.cards:
             c=self.game.cards[card_id];d=c.definition
             self._text(d.name,18,1105,151,FACTION_COLORS[d.faction])
@@ -473,7 +492,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.3 · v17',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.4 · v17',14,1310,35,cfg.GOLD)
 
     def _draw_log(self):
         # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
@@ -538,9 +557,9 @@ class SoloApp:
                 second = self.cards_view.clip(' '.join(fragments[1:]),self.fonts[13],290)
                 self._text(second,13,rect.x+23,rect.y+26,cfg.MUTED)
         if self._choice_last_page():
-            self._button(pygame.Rect(1102,802,150,37),'← WSTECZ',
+            self._button(pygame.Rect(1103,814,150,38),'← WSTECZ',
                          active=self.choice_page>0,small=True)
-            self._button(pygame.Rect(1274,802,150,37),'DALEJ →',
+            self._button(pygame.Rect(1274,814,150,38),'DALEJ →',
                          active=self.choice_page<self._choice_last_page(),small=True)
             self._text(f'Strona {self.choice_page+1}/{self._choice_last_page()+1}',
                        13,1260,847,cfg.MUTED,center=True)
