@@ -247,9 +247,15 @@ class SoloApp:
         return (len(pending.choices) - 1) // self.CHOICES_PER_PAGE if pending else 0
 
     def _choose(self, index):
+        pending=self.game.pending
         try:
             self.game.choose(index)
             self.last_error = ''
+            # After choosing S66's self-haste, let the player click an attack target
+            # immediately, without having to reselect the freshly played elf.
+            if pending and pending.context=='play' and pending.uid in self.game.units:
+                if self.game.legal_attacks(pending.uid):
+                    self.selected=pending.uid
         except IllegalMove as exc:
             self.last_error = str(exc)
         self.choice_page = 0
