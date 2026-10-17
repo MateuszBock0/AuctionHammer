@@ -80,9 +80,9 @@ class SelectionLayoutTests(unittest.TestCase):
         self.assertTrue(buttons)
         for _,rect in buttons:
             self.assertGreaterEqual(rect.left,1082)
-            self.assertGreaterEqual(rect.top,354)
+            self.assertGreaterEqual(rect.top,467)
             self.assertLessEqual(rect.right,1446)
-            self.assertLess(rect.bottom,802)
+            self.assertLessEqual(rect.bottom,786)
         self.app.draw()
 
     def test_click_target_on_board(self):
@@ -114,6 +114,34 @@ class SelectionLayoutTests(unittest.TestCase):
             label,colour=TRIGGER_BADGES[definition.trigger]
             self.assertTrue(label)
             self.assertEqual(len(colour),3)
+
+    def test_choice_area_is_distinct_from_description(self):
+        self.assertEqual(self.app.CHOICES_PER_PAGE,6)
+        self.assertGreater(self.app.CHOICE_FIRST_Y,459)
+        self.assertTrue(all(467<=r.top and r.bottom<=786 for _,r in self.app.choice_bounds()))
+        self.assertGreaterEqual(self.app.AI_ACTION_DELAY_MS,700)
+
+    def test_mulligan_selection_is_highlighted(self):
+        self.app.restart()
+        m=self.app.game
+        uid=m.players[0].hand[0]
+        rect=self.app.hand_layout()[uid]
+        self.app.click(rect.center)
+        self.assertIn(uid,m.players[0].mulligan_selected)
+        self.app._draw_board()
+        from game import config as cfg
+        pixel=self.app.screen.get_at((rect.x-3,rect.y+10))[:3]
+        self.assertEqual(pixel,tuple(cfg.GOLD))
+        self.app.click(rect.center)
+        self.assertNotIn(uid,m.players[0].mulligan_selected)
+
+    def test_haste_play_selects_unit_immediately(self):
+        self.app.restart()
+        self.app.game=setup_game(307)
+        playable(self.app.game,'S66')
+        self.app._try_play('S66')
+        self.assertEqual(self.app.selected,'S66')
+        self.assertIn('hero:1',self.app.game.legal_attacks('S66'))
 
 
 if __name__=='__main__':
