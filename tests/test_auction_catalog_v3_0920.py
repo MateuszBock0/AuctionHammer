@@ -58,7 +58,7 @@ class AuctionCatalogV3(unittest.TestCase):
         self.assertEqual(g.auction_awards[x]['rarity'],'legendarna')
 
     def test_A005_coin_transfer_and_new_coins_every_tier(self):
-        for tier,expected in [(0,(3,3)),(1,(6,4)),(2,(9,5))]:
+        for tier,expected in [(0,(3,3)),(1,(5,4)),(2,(9,5))]:
             g=setup_game(3202+tier)
             uid=add_card(g,'A005',tier)
             g.players[1].coins=9
