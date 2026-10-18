@@ -28,6 +28,16 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -v
+      - name: Render Minimal Fantasy screenshots
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python tools/render_minimal_fantasy_preview.py
+      - name: Publish card screenshots for visual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-Minimal-Fantasy-Preview
+          path: preview/*.png
       - name: Build AuctionHammer.exe with Python and pygame-ce included
         run: |
           python -m PyInstaller --noconfirm --clean --onedir --windowed --name AuctionHammer --paths . --add-data "data;data" --add-data "assets;assets" --collect-all pygame game/main.py
@@ -37,7 +47,7 @@ jobs:
           $dest = 'release/AuctionHammer'
           New-Item -ItemType Directory -Force -Path $dest | Out-Null
           Copy-Item -Path 'dist/AuctionHammer/*' -Destination $dest -Recurse -Force
-          foreach ($dir in @('game','assets','data','docs','tests','tools','.vscode')) {
+          foreach ($dir in @('game','assets','data','docs','tests','tools','preview','.vscode')) {
             Copy-Item -Path $dir -Destination $dest -Recurse -Force
           }
           foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
