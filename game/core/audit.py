@@ -140,6 +140,7 @@ def initialize_audit(game, complete=True):
     game.audit_actions=[]
     game.audit_internal=[]
     game._audit_open_action=None
+    game._audit_open_internal=None
     game.audit_complete=bool(complete)
     game.audit_first_event=len(game.event_journal)
 
@@ -198,6 +199,8 @@ def trace_effect(kind):
                 "after":None
             }
             game.audit_internal.append(record)
+            previous=getattr(game,"_audit_open_internal",None)
+            game._audit_open_internal=record["seq"]
             try:
                 outcome=method(game,*args,**kwargs)
                 record["result"]=_plain(outcome)
@@ -207,6 +210,7 @@ def trace_effect(kind):
                 raise
             finally:
                 record["after"]=_targets(game,args)
+                game._audit_open_internal=previous
         return traced
     return decorate
 
