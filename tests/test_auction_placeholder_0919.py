@@ -184,20 +184,25 @@ class AuctionCoreTests(unittest.TestCase):
 
     def test_full_auction_audit_deterministic_replay(self):
         m=Match(1908,audit_enabled=True,auctions_enabled=True)
-        m.finish_mulligan(0,[])
-        m.finish_mulligan(1,[])
-        for i in range(6):m.end_turn()
-        free_pick(m)
-        # Finish the game without bypassing its authoritative command entry.
-        m.players[1].hp=1
-        m.players[0].hp=0
-        m._check_winner()
+        players=[ComputerOpponent(0),ComputerOpponent(1)]
+        for step in range(1500):
+            if m.phase=='finished':break
+            if m.phase=='mulligan':
+                for ai in players:ai.step(m)
+            elif m.phase=='auction':
+                players[m.auction.turn].step(m)
+            elif m.pending:
+                players[m.pending.owner].step(m)
+            else:
+                players[m.active].step(m)
+            m.assert_integrity()
         self.assertEqual(m.phase,'finished')
+        self.assertGreater(len(m.auction_history),0)
         report=make_report(m)['payload']
-        self.assertIn('auction_bid',__import__('game.core.audit',fromlist=['ACTIONS']).ACTIONS)
         self.assertTrue(any(a['operation']=='auction_pick' for a in report['actions']))
-        # Deliberate state change above has no public command, so do not claim
-        # it is replayable. A separate full self-play test below covers this.
+        self.assertTrue(verify_replay(
+            report,lambda seed,auctions_enabled=False:
+                Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled)))
 
     def test_rarity_uses_independent_60_30_10_thresholds(self):
         from game.core.auction import begin
