@@ -1,7 +1,7 @@
 """Maszynowa specyfikacja wyborów kart startowych; tekst kart jest tylko opisem.
 
 Każdy z 70 archetypów ma przypisany rodzinny typ operacji, docelowe
-wybory i szczególne wyjątki zgodne z GAME_MASTER v17. Nie ma aukcji.
+wybory i szczególne wyjątki zgodne z GAME_MASTER v19. Nie ma aukcji.
 """
 from __future__ import annotations
 from .models import Choice
