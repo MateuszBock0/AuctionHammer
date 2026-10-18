@@ -240,10 +240,28 @@ class CardView:
         emblem=self.icons.get(d.faction,'factions',min(19,art.height-4))
         if emblem is not None:
             screen.blit(emblem,(art.x+2,art.y+2))
+        if d.id.startswith('A0'):
+            # Rarity changes every 3 complete rounds after acquisition. Card
+            # definition.scaling is updated with that exact identity, so the
+            # label remains valid for save, replay, hand and board rendering.
+            pieces=d.scaling.split(' · ')
+            level=pieces[0].replace('POZIOM ','P') if pieces else ''
+            rarity=pieces[1] if len(pieces)>1 else 'PODSTAWOWA'
+            tag=f'{level} {rarity}'
+            palette={'PODSTAWOWA':(100,76,51),'RZADKA':(96,74,139),
+                     'LEGENDARNA':(152,111,50)}
+            font=self.font(9,True)
+            available=max(21,art.width-28)
+            tag=self.clip(tag,font,available-5)
+            w=min(available,font.size(tag)[0]+7)
+            area=pygame.Rect(art.right-w-2,art.y+2,w,14)
+            pygame.draw.rect(screen,palette.get(rarity,(100,76,51)),
+                             area,border_radius=4)
+            self._center(screen,tag,area,font,(255,250,224))
         # ALL INFORMATION PANELS are opaque and above artwork/dimming.
         name_rect=zone['name']
-        pygame.draw.rect(screen,(20,31,43),name_rect,border_radius=4)
-        pygame.draw.rect(screen,(19,31,41),zone['info'],border_radius=5)
+        pygame.draw.rect(screen,(42,30,22),name_rect,border_radius=4)
+        pygame.draw.rect(screen,(33,27,23),zone['info'],border_radius=5)
         # Brushed-metal dividers are background-only and never cover text.
         info_zone=zone['info']
         pygame.draw.line(screen,(66,78,74),
