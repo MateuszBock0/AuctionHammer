@@ -22,8 +22,9 @@ class AtomicDeathWaveTests(unittest.TestCase):
         victim.hp=1
         g._kill_batch(['S84','S23'])
         self.assertEqual(g.death_waves[0]['triggers'],('S84','S23'))
-        self.assertEqual(set(g.death_waves[0]['options']),{'S84','S23'})
+        self.assertIsNone(g.death_waves[0]['options'])
         g._drain()
+        self.assertEqual(set(g.death_waves[0]['options']),{'S84','S23'})
         self.assertEqual(g.pending.uid,'S84')
         choose_target(g,'S01')
         # S84 does NOT kill the target until the whole cohort has declared.
@@ -33,8 +34,8 @@ class AtomicDeathWaveTests(unittest.TestCase):
         choose_target(g,'S01','Osłab')
         self.assertNotIn('S01',g.units)
         self.assertEqual(g.cards['S01'].zone,'grave')
-        self.assertEqual([x[0] for x in g.death_wave_log[:4]],
-                         ['wykryto','rozstrzyganie','wykryto','zamknięto'])
+        self.assertEqual([x[0] for x in g.death_wave_log[:5]],
+                         ['wykryto','migawka','rozstrzyganie','wykryto','zamknięto'])
         g.assert_integrity()
 
     def test_new_lethal_outcome_is_new_group_not_same_death_wave(self):
