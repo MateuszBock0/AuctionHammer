@@ -306,6 +306,9 @@ class AbilitySummary:
 def ability_summary(card, unit=None) -> AbilitySummary:
     """Zwróć wartości aktualne, nie bazowe statyczne liczby na grafice."""
     d = card.definition
+    if d.id.startswith('A0'):
+        return AbilitySummary('ZDOLNOŚĆ NIEAKTYWNA',
+                              d.effect+' Brak skalowania na ręce.')
     if d.id.startswith('AUC'):
         return AbilitySummary('Prowokacja + Tarcza',
                               'Karta testowej aukcji: Prowokacja i 1 Tarcza po wystawieniu. '
