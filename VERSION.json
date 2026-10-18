@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.8",
+  "mvp": "0.9.9",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": false,
@@ -8,5 +8,6 @@
   "starter_cards": 70,
   "copies_per_archetype": 1,
   "github_remote": "https://github.com/MateuszBock0/AuctionHammer",
-  "distribution": "portable-windows-pyinstaller-github-releases"
+  "distribution": "portable-windows-pyinstaller-github-releases",
+  "interface_language": "pl-PL"
 }
