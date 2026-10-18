@@ -150,7 +150,7 @@ class CardView:
                     screen.blit(badge,(x+4,yy+2))
                     x+=bw+3
         elif card.hand_turns>0:
-            caption=self.font_badge.render(f'Ręka {card.hand_turns}t  •  L{card.ability_level}',True,cfg.TEXT)
+            caption=self.font_badge.render(f'Na ręce: {card.hand_turns} t. • Poz. {card.ability_level}',True,cfg.TEXT)
             r=pygame.Rect(rect.x+4,art_rect.bottom-19,rect.width-8,16)
             pygame.draw.rect(screen,(67,105,96),r,border_radius=3)
             screen.blit(caption,(r.x+4,r.y+1))
