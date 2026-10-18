@@ -188,7 +188,7 @@ class SeparateAuctionSupplyTests(unittest.TestCase):
         self.assertIn(offers[2].uid,game.auction_discarded)
         before=state_snapshot(game)
         self.assertEqual(len(before['auction_v4']['bag']),10)
-        self.assertEqual(before['auction_v4']['unchosen_discarded'],[offers[2].uid])
+        self.assertEqual(before['auction_v4']['unsold_offers_history'],[offers[2].uid])
         with tempfile.TemporaryDirectory() as td:
             path=Path(td)/'auction_bags.json'
             save_match(game,path)
