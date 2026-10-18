@@ -118,6 +118,27 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
                 rect.center,view,(1480,980)))
             self.assertEqual(self.app.card_under(mapped),uid)
 
+    def test_attack_highlight_uses_actual_engine_legal_targets(self):
+        from test_engine import force_unit
+        app=self.app
+        game=app.game
+        if game.phase=='mulligan':
+            game.finish_mulligan(0,[])
+        if game.phase!='turn':
+            game.finish_mulligan(1,[])
+        game.active=0
+        if game.players[0].turn_count==0:game.players[0].turn_count=1
+        unit=force_unit(game,'S01',0)
+        unit.played_turn=0
+        defender=force_unit(game,'S33',1)  # provoke must force legal choice
+        defender.played_turn=0
+        app.selected='S01'
+        legal=game.legal_attacks('S01')
+        self.assertEqual(legal,['S33'])
+        boxes=app._attack_target_rects()
+        self.assertEqual(boxes,[app.slot_rect(1,game.players[1].board.index('S33'))])
+        self.assertNotIn(app.hero_rect(1),boxes)
+
     def test_right_click_opens_details_and_left_click_only_selects(self):
         uid,rect=next(iter(self.app.hand_layout().items()))
         self.app.click(rect.center)
