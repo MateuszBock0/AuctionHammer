@@ -36,6 +36,14 @@ class VisualTheme:
             base=(int(15+8*t+4*wave),int(24+7*t+3*wave),
                   int(32+8*t+2*wave))
             pygame.draw.line(art,base,(0,y),(w,y))
+        # Actual Tavern UI Pack v2 scenery; dark wells below keep units legible.
+        scene=ASSET_ROOT/'tavern_scene.jpg'
+        if scene.is_file():
+            try:
+                im=pygame.image.load(str(scene)).convert()
+                art.blit(pygame.transform.smoothscale(im,(w,h)),(0,0))
+            except (pygame.error,OSError):
+                pass
         rng=random.Random(916)
         # Carved slate grain (no dynamically changing noise / flicker).
         grain=pygame.Surface(size,pygame.SRCALPHA)
@@ -72,9 +80,9 @@ class VisualTheme:
         # Distinct but calm well surfaces for player/AI/hand.
         overlays=pygame.Surface(size,pygame.SRCALPHA)
         for rect,c in (
-            (pygame.Rect(82,90,983,315),(59,36,47,53)),
-            (pygame.Rect(82,406,983,310),(28,58,54,51)),
-            (pygame.Rect(82,713,983,246),(45,56,45,64))):
+            (pygame.Rect(82,90,983,315),(29,23,22,211)),
+            (pygame.Rect(82,406,983,310),(31,26,23,214)),
+            (pygame.Rect(82,713,983,246),(38,28,21,224))):
             pygame.draw.rect(overlays,c,rect,border_radius=21)
             pygame.draw.rect(overlays,(198,151,93,48),rect,1,border_radius=21)
         # Edge vignette using narrow translucent strokes, no expensive blur.
@@ -104,22 +112,54 @@ class VisualTheme:
         if sprite is not None:
             screen.blit(sprite,(int(x),int(y)))
 
+    def carved_panel(self,screen,rect,opacity=215):
+        """Detailed wood-and-gold carving behind auction/menu text only."""
+        path=ASSET_ROOT/'tavern_panel.png'
+        key=('carved',rect.size)
+        if key not in self._textures:
+            try:
+                raw=pygame.image.load(str(path)).convert_alpha()
+                self._textures[key]=pygame.transform.smoothscale(raw,rect.size)
+            except (OSError,pygame.error):
+                self._textures[key]=None
+        panel=self._textures[key]
+        if panel is not None:
+            tile=panel.copy()
+            tile.set_alpha(max(0,min(255,opacity)))
+            screen.blit(tile,rect)
+
+    def tavern_plaque(self,screen,rect):
+        path=ASSET_ROOT/'tavern_plaque.png'
+        key=('plaque',rect.size)
+        if key not in self._textures:
+            try:
+                raw=pygame.image.load(str(path)).convert_alpha()
+                self._textures[key]=pygame.transform.smoothscale(raw,rect.size)
+            except (OSError,pygame.error):
+                self._textures[key]=None
+        if self._textures[key] is not None:
+            screen.blit(self._textures[key],rect)
+
     def panel(self,screen,rect,fill=None,line=None,radius=12):
         base=fill or SLATE
-        accent=line or SILVER
+        # Warm walnut panels, while ally/enemy accent colors remain visible.
+        base=(int(base[0]*.48+58*.52),
+              int(base[1]*.48+38*.52),
+              int(base[2]*.48+25*.52))
+        accent=line or BRASS
         shadow=pygame.Surface((rect.width+12,rect.height+12),pygame.SRCALPHA)
         pygame.draw.rect(shadow,(0,0,0,79),
                          pygame.Rect(6,7,rect.width,rect.height),
                          border_radius=radius+1)
         screen.blit(shadow,(rect.x-6,rect.y-5))
-        pygame.draw.rect(screen,(8,15,23),rect,border_radius=radius)
+        pygame.draw.rect(screen,(19,12,8),rect,border_radius=radius)
         core=rect.inflate(-2,-2)
         pygame.draw.rect(screen,base,core,border_radius=max(2,radius-2))
         # Bevel: bronze highlights at the upper edge; recessed bottom.
         pygame.draw.line(screen,tuple(min(255,c+24) for c in base),
                          (rect.left+radius,rect.top+2),
                          (rect.right-radius,rect.top+2),1)
-        pygame.draw.line(screen,(12,20,28),
+        pygame.draw.line(screen,(24,16,10),
                          (rect.left+radius,rect.bottom-3),
                          (rect.right-radius,rect.bottom-3),1)
         pygame.draw.rect(screen,accent,rect,1,border_radius=radius)
@@ -132,11 +172,11 @@ class VisualTheme:
         if not active:
             base=(39,47,52);edge=(67,77,80)
         elif accent:
-            base=(72,103,82) if not hover else (87,130,98)
-            edge=(206,166,96)
+            base=(96,69,43) if not hover else (125,86,52)
+            edge=(221,166,88)
         else:
-            base=(43,65,74) if not hover else (58,89,98)
-            edge=(111,142,145) if hover else (82,107,117)
+            base=(69,48,33) if not hover else (99,67,40)
+            edge=(187,139,73) if hover else (118,91,59)
         if pressed and active:
             base=tuple(max(0,c-12) for c in base)
         self.panel(screen,rect,base,edge,9)
@@ -146,10 +186,10 @@ class VisualTheme:
 
     def slot(self,screen,rect,owner=0):
         accent=PLAYER if owner==0 else ENEMY
-        self.panel(screen,rect,(27,41,49),accent,12)
+        self.panel(screen,rect,(43,34,27),accent,12)
         inner=rect.inflate(-12,-12)
-        pygame.draw.rect(screen,(17,29,38),inner,border_radius=9)
-        pygame.draw.rect(screen,(56,73,80),inner,1,border_radius=9)
+        pygame.draw.rect(screen,(24,22,22),inner,border_radius=9)
+        pygame.draw.rect(screen,(95,68,42),inner,1,border_radius=9)
         # Small corner-line engraving; never under a placed card's labels.
         for sx in (rect.x+11,rect.right-11):
             for sy in (rect.y+11,rect.bottom-11):
