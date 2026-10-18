@@ -216,9 +216,10 @@ class SuppliedIconsTests(unittest.TestCase):
                         icon=icons.get(key,group,size)
                         self.assertIsNotNone(icon)
                         self.assertEqual(icon.get_size(),(size,size))
-                        alpha=pygame.surfarray.array_alpha(icon)
-                        self.assertGreater(int(alpha.max()),100)
-                        self.assertTrue(int((alpha==0).sum())>0)
+                        # pygame.mask działa bez NumPy w portable Windows.
+                        mask=pygame.mask.from_surface(icon,127)
+                        self.assertGreater(mask.count(),0)
+                        self.assertLess(mask.count(),size*size)
                         seen.add((group,key))
         self.assertEqual(len(seen),35)
 
@@ -231,11 +232,10 @@ class SuppliedIconsTests(unittest.TestCase):
         image=pygame.image.load(str(path))
         self.assertEqual(image.get_size(),(280,200))
         # 256-kolorowy atlas zachowuje detale i kanał alfa.
-        pixels=pygame.surfarray.array3d(image)
-        colors=len(set(zip(pixels[::3,::3,0].ravel().tolist(),
-                           pixels[::3,::3,1].ravel().tolist(),
-                           pixels[::3,::3,2].ravel().tolist())))
-        self.assertGreater(colors,80)
+        colors={image.get_at((x,y))[:3]
+                for x in range(0,image.get_width(),3)
+                for y in range(0,image.get_height(),3)}
+        self.assertGreater(len(colors),80)
 
     def test_immunity_icon_is_resolved_from_actual_status(self):
         from game.ui.game_icons import status_icon_key
