@@ -1,5 +1,15 @@
 # AuctionHammer — gra karciana
 
+**AuctionHammer 0.9.22** to turowa gra karciana fantasy solo przeciwko komputerowi: 70 unikalnych kart podstawowych, zasady **GAME_MASTER_v19**, aktywny **balans zdolności v20**. Aukcje działają na fundamencie **katalogu v3** (12 archetypów, trzy poziomy rzadkości, 36 opisów); specjalne zdolności A001–A012 pozostają nieaktywne. Katalog v4 jest udokumentowany jako przyszła zmiana, a nie część aktualnego silnika. Zagrywanie kart nie kosztuje monet.
+
+## Nowości 0.9.22 — poprawki po audycie meczu
+
+- Nie da się już wysyłać z interfejsu licytacji ponad posiadane monety ani zbyt niskich ofert. Niedostępne przyciski są wyszarzone; komunikat podpowiada **PASUJ**.
+- Na pełnej planszy (5/5) podświetlane są jednostki, które można zastąpić bez wykorzystanego ataku. Nielegalne próby wystawienia są przechwytywane przed silnikiem.
+- Kliknięcia w niedozwolone cele ataku nie generują błędnych komend. Komunikaty objaśniają **Prowokację**, brak gotowości i limit ataków.
+- Dodano testy regresyjne interfejsu i kombinacji **S91 + S09** zaobserwowanej w meczu 0.9.21; nie zmieniano wartości kart ani reguł walki.
+- Szczegóły: [audyt 0.9.22](docs/UX_AUDIT_0922.md).
+
 **AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Od 0.9.19 aktywny jest pierwszy prototyp aukcji z trzema tymczasowymi Strażnikami (3/6/12 PŻ); finalny katalog i płatne zdolności jeszcze nie istnieją. Koszt zagrania kart wynosi zero.**
 
 ## Uruchamianie w Windows
