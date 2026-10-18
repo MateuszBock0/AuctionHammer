@@ -8,7 +8,8 @@ from game.ui.combat_visuals import CombatVisuals
 from game.ui.visual_theme import VisualTheme
 from game.ui.match_history import MatchRecorder
 from game.core.persistence import save_match, load_match, save_path
-from game.core.audit import (audit_path, write_last_match, initialize_audit)
+from game.core.audit import (audit_path, write_last_match, initialize_audit,
+                             configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
 from game.core.ai import ComputerOpponent
@@ -63,6 +64,7 @@ class SoloApp:
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
         self.game=Match(audit_enabled=True)
+        configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
         self.ai.step(self.game)  # AI mulligan is committed, player's hand still hidden from it.
@@ -980,6 +982,10 @@ class SoloApp:
                             # Old saved game has no historic trace: mark partial.
                             initialize_audit(game,complete=False)
                         game.audit_enabled=True
+                        context=configure_audit_context(game,self.ai.difficulty,fresh=False)
+                        recorded_difficulty=context.get('ai_difficulty_current')
+                        if recorded_difficulty in ('łatwy','normalny','trudny'):
+                            self.ai.difficulty=recorded_difficulty
                         self.game=game
                         self._audit_saved_match=None
                         self._audit_notice=''
@@ -1012,6 +1018,7 @@ class SoloApp:
                     choices=('łatwy','normalny','trudny')
                     index=choices.index(self.ai.difficulty)
                     self.ai.difficulty=choices[(index+1)%len(choices)]
+                    record_ai_difficulty(self.game,self.ai.difficulty)
                 elif i==3:
                     try:
                         save_match(self.game)
