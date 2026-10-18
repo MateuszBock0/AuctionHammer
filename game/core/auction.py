@@ -39,6 +39,9 @@ class AuctionState:
 
 def begin(game):
     assert game.auctions_enabled and game.auction is None
+    if game.auction_catalog=='v4' and len(game.auction_bag)<3:
+        game._log('Aukcje: woreczek 12 archetypów wyczerpany. Dalsze oferty niedostępne.')
+        return None
     number=len(game.auction_history)+1
     completed=game.round-1
     offers=[]
@@ -52,7 +55,10 @@ def begin(game):
             offers.append(AuctionOffer(f"AUC{number:03d}H{hp:02d}",hp,3,
                                        rarity,number,""))
     else:
-        archetypes=game.rng.sample(list(CATALOG),3)
+        supply=(game.auction_bag if game.auction_catalog=='v4' else list(CATALOG))
+        archetypes=game.rng.sample(supply,3)
+        if game.auction_catalog=='v4':
+            for aid in archetypes:game.auction_bag.remove(aid)
         for aid in archetypes:
             roll=game.rng.random()
             game.rng_draw_index+=1
@@ -164,7 +170,14 @@ def pick(game,player,uid):
         state.turn=state.pick_order[1]
         return
     unchosen=[o.uid for o in state.offers if o.uid not in state.picks.values()]
-    game._log(f'Aukcja {state.number}: niewybrany archetyp {unchosen[0]} wraca do puli.')
+    if game.auction_catalog=='v4':
+        # Separate discarded-offers bag: neither basic bank nor future auction bag.
+        game.auction_discarded.extend(unchosen)
+        game._log(f'Aukcja {state.number}: niewybrana karta {unchosen[0]} '
+                  'trafia do osobnego woreczka ODRZUCONYCH AUKCYJNYCH. '
+                  'Nie będzie ponownie dostępna.')
+    else:
+        game._log(f'Aukcja {state.number}: niewybrany archetyp {unchosen[0]} wraca do puli.')
     game.auction_history.append({
         'number':state.number,'completed_round':state.completed_round,
         'offers':[asdict(o) for o in state.offers],
