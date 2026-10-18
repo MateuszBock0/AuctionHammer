@@ -39,6 +39,7 @@ class Match:
         self._wave_healing = []
         self._wave_status_ops = []
         self._wave_defense_ops = []
+        self._suspend_hero_thresholds = False
         self.deferred_attack: tuple[str,str] | None = None
         self.end_queue: deque[str] | None = None
         self._next_turn_due = False
@@ -564,10 +565,11 @@ class Match:
                 if p.hero_shield:p.hero_shield=0;return 0
                 a=min(amount,p.hero_armor);p.hero_armor-=a;amount-=a
             old=p.hp;p.hp-=amount
-            for threshold in (75,50,25):
-                if old>threshold>=p.hp and threshold not in p.thresholds:
-                    p.thresholds.add(threshold);p.coins+=2
-                    self._log(f'{p.name}: +2 monety za przekroczenie {threshold} HP.')
+            if not self._suspend_hero_thresholds:
+                for threshold in (75,50,25):
+                    if old>threshold>=p.hp and threshold not in p.thresholds:
+                        p.thresholds.add(threshold);p.coins+=2
+                        self._log(f'{p.name}: +2 monety za przekroczenie {threshold} PŻ.')
             return amount
         return 0
 
@@ -673,10 +675,23 @@ class Match:
                     unit.armor_perm_grants[source]=unit.armor_perm_grants.get(source,0)+amount
         # Bohaterowie i jednostki dostają zbiorcze konsekwencje przed
         # usunięciem ofiar i weryfikacją wyniku meczu.
-        for target,amount,ignore_defense in damage:
-            self._damage(target,amount,ignore_defense=ignore_defense,defer_death=True)
-        for target,amount,ability in healing:
-            self._heal(target,amount,ability=ability)
+        original_hero_hp=[p.hp for p in self.players]
+        self._suspend_hero_thresholds=True
+        try:
+            for target,amount,ignore_defense in damage:
+                self._damage(target,amount,ignore_defense=ignore_defense,defer_death=True)
+            for target,amount,ability in healing:
+                self._heal(target,amount,ability=ability)
+        finally:
+            self._suspend_hero_thresholds=False
+        # Progi bohatera sprawdzamy dla KOŃCOWEGO wyniku wspólnej fali,
+        # nie dla przejściowej wartości pomiędzy jednoczesnymi efektami.
+        for player,old in zip(self.players,original_hero_hp):
+            for threshold in (75,50,25):
+                if old>threshold>=player.hp and threshold not in player.thresholds:
+                    player.thresholds.add(threshold)
+                    player.coins+=2
+                    self._log(f'{player.name}: +2 monety za przekroczenie {threshold} PŻ.')
         self._update_auras()
         self._kill_batch([uid for uid,u in list(self.units.items()) if u.hp<=0])
         self._log(f'Zamknięto falę śmierci {wave["id"]}.')
