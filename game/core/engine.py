@@ -28,6 +28,11 @@ class Match:
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
+        # Auction cards live in a wholly separate per-match supply.
+        # Exactly 12 archetypes are offered ONCE: 3 per auction, at most 4.
+        self.auction_bag=list(CATALOG) if auction_catalog=='v4' else []
+        self.auction_discarded=[]  # unchosen offer UIDs, never returned
+        self.auction_used=[]       # acquired then removed; never redrawn
         self.exiled=[]
         self.vanished=[]
         self.ephemeral_ids=set()
@@ -418,7 +423,9 @@ class Match:
                     self._check_winner()
                     if self.phase=='finished':break
                     if (self.auctions_enabled and (self.round-1)%3==0
-                            and self.round>1 and not any(
+                            and self.round>1
+                            and (self.auction_catalog!='v4' or len(self.auction_bag)>=3)
+                            and not any(
                                 item["completed_round"]==self.round-1
                                 for item in self.auction_history)):
                         self._next_turn_due=True  # resume exactly this boundary after the auction
@@ -838,6 +845,9 @@ class Match:
         card.quick_on_first_summon=False;card.double_on_first_eligible=False
         if self.auction_catalog=='v4' and uid in self.ephemeral_ids:
             card.zone='vanished';self.vanished.append(uid)
+        elif self.auction_catalog=='v4' and uid in self.auction_awards:
+            # Purchased auction cards cannot enter the base grave/deck loop.
+            card.zone='auction_used';self.auction_used.append(uid)
         else:
             card.zone='grave';self.players[u.owner].grave.append(uid)
 
@@ -938,11 +948,27 @@ class Match:
         all_ids=list(self.bank)
         for p in self.players:all_ids+=p.hand+p.deck+p.grave+p.board
         all_ids+=self.excluded
-        if self.auction_catalog=='v4':all_ids+=self.exiled+self.vanished
+        if self.auction_catalog=='v4':
+            all_ids+=self.exiled+self.vanished+self.auction_used
         basic=[uid for uid in all_ids if uid not in self.auction_awards and
                not (self.auction_catalog=='v4' and uid in self.ephemeral_ids)]
         assert len(basic)==70 and len(set(basic))==70,('Bank 70x1 violated',len(basic),len(set(basic)))
         assert len(all_ids)==len(set(all_ids)), 'Auction card duplicated'
+        if self.auction_catalog=='v4':
+            assert len(self.auction_bag)==len(set(self.auction_bag))
+            assert len(self.auction_discarded)==len(set(self.auction_discarded))
+            assert len(self.auction_used)==len(set(self.auction_used))
+            offered={o['archetype'] for row in self.auction_history
+                     for o in row['offers'] if o.get('archetype')}
+            if self.auction is not None:
+                offered.update(o.archetype for o in self.auction.offers if o.archetype)
+            assert len(offered)+len(self.auction_bag)==len(CATALOG), 'Auction supply corrupted'
+            assert not offered.intersection(self.auction_bag), 'Offered archetype recycled'
+            assert not any(uid in self.bank or uid in self.excluded
+                           for uid in self.auction_awards), 'Auction card in basic bank'
+            assert all(not uid.startswith('AUC') for p in self.players
+                       for uid in p.deck+p.grave), 'Auction card leaked into normal draw'
+            assert all(uid not in self.cards for uid in self.auction_discarded), 'Unchosen offer was instantiated'
         assert set(all_ids)==set(self.cards),('Physical cards mismatch',len(all_ids),len(self.cards))
         assert all(uid not in self.bank and uid not in self.excluded for uid in self.auction_awards)
         for p in self.players:
