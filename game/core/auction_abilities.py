@@ -44,7 +44,7 @@ def options(game,uid,context,attacked=None):
     if context=='auction_exchange_enemy':
         return pick_choices(game,'exchange_enemy',enemy.hand,'Wymień')
     if context=='auction_discard':
-        return pick_choices(game,'discard',own.hand,'Odrzuć na cmentarz')
+        return pick_choices(game,'discard',enemy.hand,'Odrzuć na cmentarz')
     if context=='auction_return_second':
         already=game.auction_pending_targets.get(uid,[])
         return pick_choices(game,'return_hand',
@@ -210,6 +210,8 @@ def _copy(game,uid,target,legendary=False,ephemeral_silent=False):
     game.cards[new_uid]=card
     game.defs[new_uid]=card.definition
     game.ephemeral_ids.add(new_uid)
+    if target in game.auction_awards and kind(game,target):
+        game.auction_awards[new_uid]=dict(game.auction_awards[target],ephemeral=True)
     health=original.hp if legendary else original.base_max_hp
     clone=Unit(new_uid,owner,original.base_attack,original.base_max_hp,
                health,original.ability_level,p.turn_count)
@@ -331,14 +333,14 @@ def execute(game,uid,context,choice,attacked=None):
             game._log(f'{game.label(uid)} wymienia karty: {first} ⇄ {target}.')
         return
     if context=='auction_discard':
-        if target in own.hand:
-            own.hand.remove(target);own.grave.append(target)
+        if target in foe.hand:
+            foe.hand.remove(target);foe.grave.append(target)
             game.cards[target].zone='grave'
             game._log(f'{game.label(uid)}: {game.label(target)} trafia na cmentarz.')
         remaining=game.auction_pending_targets.get(uid,[])
         if target in remaining:remaining.remove(target)
-        if remaining and own.hand:
-            _prepare_pending(game,uid,'auction_discard',options(game,uid,'auction_discard'),owner=own.idx)
+        if remaining and foe.hand:
+            _prepare_pending(game,uid,'auction_discard',options(game,uid,'auction_discard'),owner=foe.idx)
         else:game.auction_pending_targets.pop(uid,None)
         return
     if context=='auction_return_second':
@@ -365,7 +367,7 @@ def execute(game,uid,context,choice,attacked=None):
         elif mode=='revive_one':
             game.auction_wave_ops.append(('revive',owner,target,False))
         elif mode=='revive_pair':
-            game.auction_wave_ops.append(('revive_pair',owner,target,False))
+            game.auction_wave_ops.append(('revive_pair',uid,owner,target))
     elif aid=='A004' and context=='play':
         _copy(game,uid,target,legendary=tier==2)
     elif aid=='A005' and context=='play':
@@ -497,15 +499,15 @@ def resolve_wave_ops(game):
             _,owner,target,full=item
             _revive(game,owner,target,full)
         elif op=='revive_pair':
-            _,owner,target,_=item
+            _,source,owner,target=item
             if _revive(game,owner,target,True):
                 others=[x for x in game.players[owner].grave
                         if x.startswith('S') and x!=target]
                 if others:
                     # Second choice happens AFTER the current atomic wave.
-                    game.auction_pending_targets[item[1]]=[target]
-                    _prepare_pending(game,item[1],'auction_return_second',
-                                     options(game,item[1],'auction_return_second'))
+                    game.auction_pending_targets[source]=[target]
+                    _prepare_pending(game,source,'auction_return_second',
+                                     options(game,source,'auction_return_second'))
 
 
 def expire_exile_marks(game,owner):
