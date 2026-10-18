@@ -96,6 +96,45 @@ class EffectsTests(unittest.TestCase):
         self.assertFalse(visual.pulses)
 
 
+class SuppliedIconsTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+        pygame.display.set_mode((320,240))
+
+    @classmethod
+    def tearDownClass(cls):
+        pygame.quit()
+
+    def test_all_35_original_icons_are_available_in_portable_atlas(self):
+        from game.ui.game_icons import GameIcons, FAMILY, FACTION, ATLAS_FILES
+        icons=GameIcons()
+        self.assertEqual(len(ATLAS_FILES),35)
+        self.assertEqual(len(FAMILY),14)
+        self.assertEqual(len(FACTION),5)
+        for name in FAMILY:
+            with self.subTest(family=name):
+                surface=icons.get(name,'families',16)
+                self.assertIsNotNone(surface)
+                self.assertEqual(surface.get_size(),(16,16))
+        for name in FACTION:
+            with self.subTest(faction=name):
+                self.assertIsNotNone(icons.get(name,'factions',20))
+        for path in ATLAS_FILES:
+            if path.startswith('statusy/'):
+                with self.subTest(status=path):
+                    surface=icons.get(path.split('/')[1],'statuses',20)
+                    self.assertIsNotNone(surface)
+
+    def test_immunity_icon_is_resolved_from_actual_status(self):
+        from game.ui.game_icons import status_icon_key
+        from game.core.status_view import VisibleStatus
+        poison=VisibleStatus('immune','ODP','Odporność na truciznę','Nie otrzymuje trucizny')
+        stun=VisibleStatus('immune','ODP','Odporność na ogłuszenie','Nie otrzymuje ogłuszenia')
+        self.assertEqual(status_icon_key(poison),'immune_poison')
+        self.assertEqual(status_icon_key(stun),'immune_stun')
+
+
 class MenuAndAITests(unittest.TestCase):
     def setUp(self):
         pygame.init()
