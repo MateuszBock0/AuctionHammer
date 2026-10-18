@@ -354,7 +354,10 @@ def execute(game,uid,context,choice,attacked=None):
             game.cards[target].zone='grave'
             game._log(f'{game.label(uid)}: {game.label(target)} trafia na cmentarz.')
         remaining=game.auction_pending_targets.get(uid,[])
-        if target in remaining:remaining.remove(target)
+        # This is a *count* of up to two discards, not a list of card IDs.
+        # Previously comparison with the chosen card never consumed it and
+        # could incorrectly discard the whole hand.
+        if remaining:remaining.pop(0)
         if remaining and foe.hand:
             _prepare_pending(game,uid,'auction_discard',options(game,uid,'auction_discard'),owner=foe.idx)
         else:game.auction_pending_targets.pop(uid,None)
