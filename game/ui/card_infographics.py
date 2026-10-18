@@ -103,7 +103,7 @@ def card_cue(card, unit=None) -> CardCue:
         cue=f'{value}{suffix}'
     else:
         cue=FAMILY_SYMBOLS[family]
-    upgrade='STAŁE PARAMETRY' if d.id.startswith('AUC') else UPGRADES[family]
+    upgrade='STAŁE PARAMETRY' if d.id.startswith('A0') or d.id.startswith('AUC') else UPGRADES[family]
     if family=='Regeneracja' and d.id=='S109':upgrade='+1 CO TURĘ / 3T'
     if d.id.startswith('AUC'):
         threshold='KARTA AUKCYJNA'
