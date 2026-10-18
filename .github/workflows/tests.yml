@@ -18,3 +18,13 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -v
+      - name: Rzeczywisty render Pygame wszystkich ikon i ekranów
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python tools/render_minimal_fantasy_preview.py
+      - name: Artefakty podglądów na PR
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-Game-Experience-Preview
+          path: preview/*.png
