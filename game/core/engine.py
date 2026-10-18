@@ -28,6 +28,12 @@ class Match:
         self.phase = 'mulligan'
         self.pending: Pending | None = None
         self.trigger_queue = deque()  # (uid, context, target)
+        # v19: each simultaneous death cohort freezes its legal targets before
+        # ANY member's death ability is allowed to change the board.
+        self.death_waves = deque()
+        self._applying_death_wave = False
+        self._death_wave_id = 0
+        self.death_wave_log = []
         self.deferred_attack: tuple[str,str] | None = None
         self.end_queue: deque[str] | None = None
         self._next_turn_due = False
@@ -253,7 +259,14 @@ class Match:
         self._check(0<=index<len(pending.choices),'Nieprawidłowy wybór')
         choice=pending.choices[index]
         self.pending=None
-        self._execute(pending.uid,pending.context,choice,pending.attack_target)
+        if pending.context=='death_wave':
+            self._check(bool(self.death_waves),'Nie ma oczekującej grupy zgonów')
+            wave=self.death_waves[0]
+            self._check(wave['waiting']==pending.uid,'Zmieniła się kolejność wyboru zgonów')
+            wave['choices'][pending.uid]=choice
+            wave['waiting']=None
+        else:
+            self._execute(pending.uid,pending.context,choice,pending.attack_target)
         self._drain()
 
     def _queue(self,uid,context,target=None):
@@ -266,6 +279,28 @@ class Match:
             limit=0
             while self.phase=='turn' and self.pending is None and limit<300:
                 limit+=1
+                if self.death_waves:
+                    wave=self.death_waves[0]
+                    undecided=next((uid for uid in wave['triggers'] if uid not in wave['choices']),None)
+                    if undecided is not None:
+                        opts=wave['options'][undecided]
+                        if not opts:
+                            wave['choices'][undecided]=None
+                        elif len(opts)==1 and opts[0].mode=='auto':
+                            wave['choices'][undecided]=opts[0]
+                        else:
+                            wave['waiting']=undecided
+                            self.pending=Pending(undecided,self.cards[undecided].owner,
+                                                 'death_wave',opts)
+                        continue
+                    self.death_waves.popleft()
+                    self._resolve_death_wave(wave)
+                    self._check_winner()
+                    if self.phase=='finished':
+                        self.death_waves.clear()
+                        self.trigger_queue.clear()
+                        break
+                    continue
                 if self.trigger_queue:
                     uid,ctx,tgt=self.trigger_queue.popleft()
                     if ctx not in ('death',) and uid not in self.units:continue
@@ -306,7 +341,7 @@ class Match:
                     continue
                 break
             self._check(limit<300,'Zbyt długa kolejka efektów')
-            if not self.trigger_queue and not self.deferred_attack and self.pending is None:
+            if not self.trigger_queue and not self.death_waves and not self.deferred_attack and self.pending is None:
                 self._check_winner()
         finally:
             self._draining=False
@@ -490,7 +525,7 @@ class Match:
                     absorb=min(amount,u.aura_armor[key]);u.aura_armor[key]-=absorb;amount-=absorb
                 absorb=self._spend_permanent_armor(u,amount);amount-=absorb
             dealt=max(0,amount);u.hp-=dealt
-            if u.hp<=0 and not defer_death:self._kill_batch([target])
+            if u.hp<=0 and not defer_death and not self._applying_death_wave:self._kill_batch([target])
             return dealt
         if target and target.startswith('hero:'):
             p=self.players[int(target.split(':')[1])]
@@ -505,19 +540,176 @@ class Match:
             return amount
         return 0
 
+    def _death_order(self,uid,positions):
+        """Stable v19 priority: active player's left-to-right, then rival, ID."""
+        owner,slot=positions[uid]
+        return (owner!=self.active,slot,uid)
+
     def _kill_batch(self,fallen):
-        fallen=list(dict.fromkeys(fallen))
-        for uid in fallen:
-            if uid not in self.units:continue
+        """Capture an entire lethal cohort before resolving any death trigger.
+
+        Choices are generated from ONE post-removal board snapshot and saved.
+        Trigger declarations from this cohort are never recalculated after an
+        earlier member's effect. A lethal outcome of the cohort's effects is
+        placed in a distinct follow-up cohort.
+        """
+        ids=[uid for uid in dict.fromkeys(fallen) if uid in self.units]
+        if not ids:return
+        positions={uid:(self.units[uid].owner,
+                        self.players[self.units[uid].owner].board.index(uid))
+                   for uid in ids}
+        ids.sort(key=lambda uid:self._death_order(uid,positions))
+        eligible=[]
+        for uid in ids:
             u=self.units[uid]
-            self._death_disabled[uid]=self._disabled(u)
+            disabled=self._disabled(u)
+            self._death_disabled[uid]=disabled
             self._death_levels[uid]=u.ability_level
+            if self.cards[uid].definition.faction=='Potwory' and not disabled:
+                eligible.append(uid)
+        for uid in ids:
+            owner=self.units[uid].owner
             self._remove_unit(uid,death=True)
-            self.players[1-u.owner].coins+=1
+            self.players[1-owner].coins+=1
             self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
-            if self.cards[uid].definition.faction=='Potwory' and not self._death_disabled[uid]:
-                self._queue(uid,'death')
-        if fallen:self._update_auras()
+        self._death_wave_id+=1
+        wave={'id':self._death_wave_id,'fallen':tuple(ids),
+              'triggers':tuple(eligible),'options':{},'choices':{},
+              'waiting':None}
+        # Freeze legal targets for the whole group; do NOT execute anything.
+        for uid in eligible:
+            wave['options'][uid]=tuple(options(self,uid,'death'))
+        self.death_waves.append(wave)
+        self.death_wave_log.append(('wykryto',wave['id'],tuple(ids)))
+        self._log(f'Fala zgonów {wave["id"]}: '+', '.join(self.label(uid) for uid in ids))
+        # Aura loss can create additional deaths, but only as a later wave.
+        # During an atomic death resolution aura recomputation is deferred.
+        if not self._applying_death_wave:
+            self._update_auras()
+
+    def _compile_death_intents(self,uid,choice):
+        """Prepare semantic operations WITHOUT changing game state.
+
+        This list is assembled for every source before a single death effect
+        is applied. Choices, immunity tests and cleanse success conditions are
+        taken from the same initial state of the group.
+        """
+        if choice is None:return []
+        cid=self.cards[uid].definition.id
+        owner=self.cards[uid].owner
+        level=self._death_levels.get(uid,0)
+        target=choice.target
+        mode=choice.mode
+        ops=[]
+        in_board=target in self.units
+        if cid=='S21':ops.append(('damage',f'hero:{1-owner}',4+level))
+        elif cid=='S17':ops.append(('heal',f'hero:{owner}',6+level))
+        elif cid=='S23' and in_board:
+            ops.append(('effect',target,'atk',(2+level) if mode=='Wzmocnij' else -(2+level)))
+        elif cid=='S81' and in_board:
+            ops.append(('effect',target,'max_hp',(5+level) if mode=='Wzmocnij' else -(5+level)))
+        elif cid=='S82':
+            if target==f'hero:{owner}' or in_board:ops.append(('armor',target,6+level))
+        elif cid=='S20':
+            if target==f'hero:{owner}' or in_board:
+                ops.extend((('shield',target,uid),('armor',target,2)))
+        elif cid=='S83' and in_board:
+            if not self._is_immune(target,'poison'):
+                ops.append(('poison',target,2,3,level))
+        elif cid=='S84' and in_board:
+            immune=self._is_immune(target,'stun')
+            cleaned=(self.cards[target].definition.id=='S111' and
+                     not self._disabled(self.units[target]))
+            applies=not immune and not cleaned
+            if not immune:ops.append(('stun',target,uid))
+            ops.append(('damage',target,2+(level if applies else 0)))
+        elif cid=='S85' and in_board:ops.append(('regen',target,3,3,level))
+        elif cid=='S86' and in_board:ops.append(('effect',target,'taunt',0))
+        elif cid=='S87' and in_board:
+            unit=self.units[target]
+            useful=any(not e.positive and (e.expires is not None or
+                       e.expire_action is not None or e.kind in ('poison','regen'))
+                       for e in unit.effects)
+            ops.append(('clean',target,True))
+            ops.append(('armor',target,2))
+            if useful and level:ops.append(('heal',target,level))
+        elif cid=='S88' and in_board:
+            ops.append(('immune',target,('poison','stun')))
+            if level:ops.append(('armor',target,level))
+        elif cid=='S90':
+            # Deterministic, unique physical cards from the same hand snapshot.
+            candidates=sorted(self.players[owner].hand)
+            chosen=self.rng.sample(candidates,min(2,len(candidates)))
+            for card in chosen:ops.append(('hand_quick',card))
+        elif cid=='S91':
+            if in_board:ops.append(('effect',target,'double',0))
+            else:
+                candidates=sorted(self.players[owner].hand)
+                if candidates:ops.append(('hand_double',self.rng.choice(candidates)))
+        return ops
+
+    def _resolve_death_wave(self,wave):
+        """Apply prepared intents as a single shared consequences wave."""
+        plans=[]
+        for uid in wave['triggers']:
+            plans.extend((uid,operation)
+                         for operation in self._compile_death_intents(uid,wave['choices'][uid]))
+        self.death_wave_log.append(('rozstrzyganie',wave['id'],len(plans)))
+        self._applying_death_wave=True
+        # Effects may alter shields and armor, but nobody dies or disappears
+        # before the group completes. HP damage/healing is applied together.
+        damage=[];healing=[]
+        try:
+            for source,op in plans:
+                kind=op[0];target=op[1]
+                if kind=='damage':
+                    damage.append((target,op[2]))
+                elif kind=='heal':
+                    healing.append((target,op[2]))
+                elif kind=='effect' and target in self.units:
+                    self._add_effect(target,op[2],op[3],source=source,
+                                     positive=(op[3]>=0))
+                elif kind=='armor':
+                    if target in self.units:
+                        u=self.units[target];u.armor_perm+=op[2]
+                        u.armor_perm_source=source
+                        u.armor_perm_grants[source]=u.armor_perm_grants.get(source,0)+op[2]
+                    elif isinstance(target,str) and target.startswith('hero:'):
+                        self.players[int(target.split(':')[1])].hero_armor+=op[2]
+                elif kind=='shield':
+                    if target in self.units:
+                        self.units[target].shield=1
+                        self.units[target].shield_source=source
+                    elif isinstance(target,str) and target.startswith('hero:'):
+                        self.players[int(target.split(':')[1])].hero_shield=1
+                elif kind=='poison' and target in self.units:
+                    self._add_poison(target,op[2],op[3],source,op[4])
+                elif kind=='stun' and target in self.units:
+                    self._add_effect(target,'stun',expires=self._expiry(self.units[target].owner),
+                                     source=source,positive=False)
+                elif kind=='regen' and target in self.units:
+                    self._add_effect(target,'regen',op[2],op[3],source=source,
+                                     bonus_once=op[4])
+                elif kind=='clean' and target in self.units:
+                    self._clean(target,negative=op[2])
+                elif kind=='immune' and target in self.units:
+                    self._grant_immunity(target,op[2],source=source)
+                elif kind=='hand_quick' and target in self.players[self.cards[source].owner].hand:
+                    self.cards[target].quick_on_first_summon=True
+                elif kind=='hand_double' and target in self.players[self.cards[source].owner].hand:
+                    self.cards[target].double_on_first_eligible=True
+            # Damage resource consumption follows stable source order; all
+            # positive/negative HP changes complete before the next death sweep.
+            for target,amount in damage:self._damage(target,amount,defer_death=True)
+            for target,amount in healing:self._heal(target,amount)
+            self._update_auras(defer_reactive=True)
+        finally:
+            self._applying_death_wave=False
+        newly_dead=[uid for uid,u in list(self.units.items()) if u.hp<=0]
+        if newly_dead:self._kill_batch(newly_dead)
+        else:self._update_auras()
+        self.death_wave_log.append(('zamknięto',wave['id'],tuple(newly_dead)))
+        self._log(f'Zamknięto wspólną falę efektów śmierci {wave["id"]}.')
 
     def _remove_unit(self,uid,death):
         u=self.units.pop(uid)
@@ -570,7 +762,7 @@ class Match:
         if not defer_reactive:
             self._apply_position_reactions()
         dead=[uid for uid,u in list(self.units.items()) if u.hp<=0]
-        if dead:self._kill_batch(dead)
+        if dead and not self._applying_death_wave:self._kill_batch(dead)
 
     def _apply_position_reactions(self):
         for uid,u in list(self.units.items()):
