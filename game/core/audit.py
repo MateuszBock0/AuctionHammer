@@ -411,10 +411,13 @@ def verify_replay(payload,match_factory):
     catalog_mode=payload.get("initial_state",{}).get("auction_catalog_mode","placeholders")
     if auction_enabled:
         try:
-            game=match_factory(payload["seed"],auctions_enabled=True,
-                               auction_catalog_mode=catalog_mode)
+            if catalog_mode=="placeholders":
+                game=match_factory(payload["seed"],auctions_enabled=True)
+            else:
+                game=match_factory(payload["seed"],auctions_enabled=True,
+                                   auction_catalog_mode=catalog_mode)
         except TypeError as exc:
-            raise ValueError("Odtwarzanie aukcji wymaga fabryki z auctions_enabled") from exc
+            raise ValueError("Odtwarzanie aukcji wymaga zgodnej fabryki Match") from exc
     else:
         game=match_factory(payload["seed"])
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
