@@ -154,6 +154,23 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('auction',None)
     data.setdefault('auction_history',[])
     data.setdefault('auction_awards',{})
+    if data.get('auction_catalog')=='v4':
+        from game.core.auction_catalog import CATALOG
+        seen={o.get('archetype') for h in data['auction_history']
+              for o in h.get('offers',[]) if o.get('archetype')}
+        if data.get('auction') is not None:
+            seen.update(o.archetype for o in data['auction'].offers if o.archetype)
+        data.setdefault('auction_bag',[a for a in CATALOG if a not in seen])
+        data.setdefault('auction_discarded',
+                        [h['unpicked'] for h in data['auction_history']
+                         if h.get('unpicked')])
+        data.setdefault('auction_used',
+                        [uid for uid,card in data['cards'].items()
+                         if card.zone=='auction_used'])
+    else:
+        data.setdefault('auction_bag',[])
+        data.setdefault('auction_discarded',[])
+        data.setdefault('auction_used',[])
     for name,default in (
             ('exiled',[]),('vanished',[]),('ephemeral_ids',set()),
             ('auction_death_grants',set()),('auction_rescue_spent',set()),
