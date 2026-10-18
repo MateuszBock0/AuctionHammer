@@ -89,3 +89,30 @@ def rarity_from_roll(roll: float):
 
 def evolve(rarity: str, stages: int = 1):
     return RARITIES[min(2,RARITIES.index(rarity)+max(0,stages))]
+
+
+# The reference dataset is versioned independently from the active v3 catalog.
+# Normal play started in 0.9.23 uses this exact v4 source; old v3 saves
+# continue to use the original CATALOG above.
+import json
+import sys
+from pathlib import Path
+_V4_ROOT=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parents[2]))
+_V4_DATA=json.loads((_V4_ROOT/'data'/'auction'/'KATALOG_AUKCYJNY_12_v4.json').read_text(encoding='utf-8'))
+V4_CARDS={card['id']:card for card in _V4_DATA['cards']}
+_V4_RARITIES={'podstawowa':'basic','rzadka':'rare','legendarna':'legendary'}
+assert len(V4_CARDS)==12 and all(len(c['variants'])==3 for c in V4_CARDS.values())
+
+
+def v4_variant(archetype: str, rarity: str) -> str:
+    return V4_CARDS[archetype]['variants'][_V4_RARITIES[rarity]]
+
+
+def stats_v4(archetype: str, completed_round: int):
+    if (archetype not in V4_CARDS or completed_round<3
+            or completed_round%3):
+        raise ValueError('Invalid v4 archetype or auction round')
+    atk=V4_CARDS[archetype]['stats_at_round_3_example']['atk']
+    atk+=(completed_round-3)//3
+    hp=completed_round+8-atk
+    return atk,hp

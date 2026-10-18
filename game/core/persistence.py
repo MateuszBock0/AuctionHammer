@@ -132,10 +132,13 @@ def load_match(path: Path | None = None) -> Match:
     awards=data.get('auction_awards',{})
     if not isinstance(awards,dict):
         raise ValueError('Zapis zawiera nieprawidłowe karty aukcyjne')
-    expected=ids|set(awards)
+    v4=data.get('auction_catalog')=='v4'
+    ephemeral=set(data.get('ephemeral_ids',set())) if v4 else set()
+    expected=ids|set(awards)|ephemeral
     if (not isinstance(data.get('cards'),dict)
             or set(data['cards'])!=expected
-            or any(not uid.startswith('AUC') for uid in awards)):
+            or any(not (uid.startswith('AUC') or (v4 and uid in ephemeral))
+                   for uid in awards)):
         raise ValueError('Zapis zawiera niezgodny katalog kart')
     if not isinstance(data.get('players'),list) or len(data['players'])!=2:
         raise ValueError('Nieprawidłowa liczba graczy')
@@ -151,6 +154,29 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('auction',None)
     data.setdefault('auction_history',[])
     data.setdefault('auction_awards',{})
+    if data.get('auction_catalog')=='v4':
+        from game.core.auction_catalog import CATALOG
+        seen={o.get('archetype') for h in data['auction_history']
+              for o in h.get('offers',[]) if o.get('archetype')}
+        if data.get('auction') is not None:
+            seen.update(o.archetype for o in data['auction'].offers if o.archetype)
+        data.setdefault('auction_bag',[a for a in CATALOG if a not in seen])
+        data.setdefault('auction_discarded',
+                        [h['unpicked'] for h in data['auction_history']
+                         if h.get('unpicked')])
+        data.setdefault('auction_used',
+                        [uid for uid,card in data['cards'].items()
+                         if card.zone=='auction_used'])
+    else:
+        data.setdefault('auction_bag',[])
+        data.setdefault('auction_discarded',[])
+        data.setdefault('auction_used',[])
+    for name,default in (
+            ('exiled',[]),('vanished',[]),('ephemeral_ids',set()),
+            ('auction_death_grants',set()),('auction_rescue_spent',set()),
+            ('auction_general_targets',{}),('auction_general_grants',{}),
+            ('auction_pending_targets',{}),('auction_wave_ops',[])):
+        data.setdefault(name,default)
     match=Match.__new__(Match)
     match.__dict__.update(data)
     return match

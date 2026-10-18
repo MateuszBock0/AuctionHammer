@@ -6,7 +6,7 @@ all cards are acquired with ATK + MAX HP = completed round + 8.
 from __future__ import annotations
 from dataclasses import dataclass,field,asdict
 from .models import Card,CardDefinition,IllegalMove
-from .auction_catalog import CATALOG,RARITIES,TRIGGER,stats,rarity_from_roll,evolve
+from .auction_catalog import CATALOG,RARITIES,TRIGGER,stats,stats_v4,v4_variant,rarity_from_roll,evolve
 
 PLACEHOLDER_HP=(3,6,12)  # only for compatibility with old saved games
 RARITY=RARITIES
@@ -39,6 +39,9 @@ class AuctionState:
 
 def begin(game):
     assert game.auctions_enabled and game.auction is None
+    if game.auction_catalog=='v4' and len(game.auction_bag)<3:
+        game._log('Aukcje: woreczek 12 archetypów wyczerpany. Dalsze oferty niedostępne.')
+        return None
     number=len(game.auction_history)+1
     completed=game.round-1
     offers=[]
@@ -52,12 +55,15 @@ def begin(game):
             offers.append(AuctionOffer(f"AUC{number:03d}H{hp:02d}",hp,3,
                                        rarity,number,""))
     else:
-        archetypes=game.rng.sample(list(CATALOG),3)
+        supply=(game.auction_bag if game.auction_catalog=='v4' else list(CATALOG))
+        archetypes=game.rng.sample(supply,3)
+        if game.auction_catalog=='v4':
+            for aid in archetypes:game.auction_bag.remove(aid)
         for aid in archetypes:
             roll=game.rng.random()
             game.rng_draw_index+=1
             rarity=rarity_from_roll(roll)
-            atk,hp=stats(aid,completed)
+            atk,hp=(stats_v4(aid,completed) if game.auction_catalog=='v4' else stats(aid,completed))
             offers.append(AuctionOffer(f"AUC{number:03d}{aid}",hp,atk,rarity,
                                        number,aid))
     free_first=game.first if number%2 else 1-game.first
@@ -128,9 +134,10 @@ def pick(game,player,uid):
         name=archetype.name
         trigger=TRIGGER[archetype.trigger]
         family=archetype.family
-        # Intentionally NOT a functional combat ability yet.
-        # Expose the exact draft rarity text with a clear disabled label.
-        text="NIEAKTYWNA (planowana): "+archetype.abilities[RARITIES.index(offer.rarity)]
+        if game.auction_catalog=='v4':
+            text=v4_variant(offer.archetype,offer.rarity)
+        else:
+            text="NIEAKTYWNA (planowana): "+archetype.abilities[RARITIES.index(offer.rarity)]
         definition_id=archetype.id
     else:
         name=f'Strażnik aukcji {offer.hp} PŻ'
@@ -152,7 +159,7 @@ def pick(game,player,uid):
         'atk':offer.atk,'hp':offer.hp,
         'archetype':offer.archetype,'purchase_round':state.completed_round,
         'last_evolve_round':state.completed_round,
-        'ability_implemented':not bool(offer.archetype)}
+        'ability_implemented':not bool(offer.archetype) or game.auction_catalog=='v4'}
     if not archetype:metadata['abilities']=('Prowokacja','Tarcza')
     game.auction_awards[uid]=metadata
     game.players[player].hand.append(uid)
@@ -163,7 +170,17 @@ def pick(game,player,uid):
         state.turn=state.pick_order[1]
         return
     unchosen=[o.uid for o in state.offers if o.uid not in state.picks.values()]
-    game._log(f'Aukcja {state.number}: niewybrany archetyp {unchosen[0]} wraca do puli.')
+    if game.auction_catalog=='v4':
+        # Separate discarded-offers bag: neither basic bank nor future auction bag.
+        game.auction_discarded.extend(unchosen)
+        game._log(f'Aukcja {state.number}: niewybrana karta {unchosen[0]} '
+                  'trafia do osobnego woreczka ODRZUCONYCH AUKCYJNYCH. '
+                  'Nie będzie ponownie dostępna.')
+        if not game.auction_bag:
+            game._log('Woreczek 12 kart aukcyjnych został wyczerpany. '
+                      'W tym meczu nie będzie kolejnych aukcji.')
+    else:
+        game._log(f'Aukcja {state.number}: niewybrany archetyp {unchosen[0]} wraca do puli.')
     game.auction_history.append({
         'number':state.number,'completed_round':state.completed_round,
         'offers':[asdict(o) for o in state.offers],
@@ -199,9 +216,14 @@ def advance_rarity(game,completed_round):
         old_def=card.definition
         from dataclasses import replace
         card.definition=replace(old_def,
-                                effect="NIEAKTYWNA (planowana): "+
-                                       CATALOG[archetype].abilities[RARITIES.index(new)],
+                                effect=(v4_variant(archetype,new) if game.auction_catalog=='v4'
+                                        else "NIEAKTYWNA (planowana): "+
+                                        CATALOG[archetype].abilities[RARITIES.index(new)]),
                                 scaling=f'POZIOM {meta["level"]} · {new.upper()} · NIE SKALUJE SIĘ')
         game.defs[uid]=card.definition
         game._log(f'{card.definition.name} ewoluuje: {old} → {new}.')
-    # Foundation only: no changes to combat queues or aura resolution.
+        if (game.auction_catalog=='v4' and archetype=='A002'
+                and uid in game.units and new=='rzadka' and
+                not game._disabled(game.units[uid])):
+            game._queue(uid,'auction_evolve')
+    # v4 effects are implemented by auction_abilities; legacy v3 stays inert.

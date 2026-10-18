@@ -1,3 +1,7 @@
+> **AKTUALIZACJA 0.9.23:** Poniższy tekst jest archiwalnym planem z 18.10.2026 i opisuje stan sprzed integracji. Zdolności A001–A012 zostały już uruchomione w nowym lokalnym trybie aukcji v4. Obowiązujący opis wdrożenia, osobnych woreczków i limitu czterech aukcji: [RELEASE_V4_0923.md](RELEASE_V4_0923.md). Starsze gry v3 zachowują dotychczasowe reguły. Katalog v4 nadal wymaga długofalowego sprawdzenia balansu, mimo zaliczenia testów technicznych.
+
+---
+
 # AuctionHammer — katalog aukcyjny v4: stan integracji
 
 **18.10.2026 · wersja robocza (DRAFT) · materiały referencyjne, nie aktywacja w silniku.**
