@@ -19,7 +19,8 @@ import os
 FORMAT="AuctionHammer.MatchAudit"
 SCHEMA=1
 FILENAME="AuctionHammer-OSTATNI-MECZ.json"
-ACTIONS=("mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",\n         "auction_bid","auction_pass","auction_pick")
+ACTIONS=("mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
+         "auction_bid","auction_pass","auction_pick")
 
 
 def audit_path() -> Path:
@@ -146,7 +147,11 @@ def state_snapshot(game):
             "defenses":_plain(game._wave_defense_ops)
         },
         "death_disabled":_plain(game._death_disabled),
-        "death_levels":_plain(game._death_levels),\n        "auctions_enabled":getattr(game,"auctions_enabled",False),\n        "auction":_plain(getattr(game,"auction",None)),\n        "auction_history":_plain(getattr(game,"auction_history",[])),\n        "auction_awards":_plain(getattr(game,"auction_awards",{}))
+        "death_levels":_plain(game._death_levels),
+        "auctions_enabled":getattr(game,"auctions_enabled",False),
+        "auction":_plain(getattr(game,"auction",None)),
+        "auction_history":_plain(getattr(game,"auction_history",[])),
+        "auction_awards":_plain(getattr(game,"auction_awards",{}))
     }
 
 
