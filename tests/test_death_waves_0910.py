@@ -143,7 +143,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g._add_effect('S21','stun',expires=g._expiry(0),source='S59',positive=False)
         old=g.players[1].hp
         g._kill_batch(['S21','S17'])
-        self.assertEqual([x for x,_ in g.death_waves[0]['sources']],['S17'])
+        self.assertEqual(g.death_waves[0]['source_ids'],('S17',))
         g._drain()
         self.assertEqual(g.players[1].hp,old)
         self.assertEqual(g.players[1].grave.count('S17'),1)
