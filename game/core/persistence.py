@@ -19,9 +19,9 @@ from game.core.engine import Match, ROOT
 from game.core.models import (Card,CardDefinition,Unit,Player,Effect,Choice,Pending,
                               load_catalog)
 
-SCHEMA=1
+from game.core.auction import AuctionState, AuctionOffer\n\nSCHEMA=1
 TYPES={cls.__name__:cls for cls in
-       (Card,CardDefinition,Unit,Player,Effect,Choice,Pending)}
+       (Card,CardDefinition,Unit,Player,Effect,Choice,Pending,AuctionState,AuctionOffer)}
 
 
 def save_path():
@@ -133,7 +133,7 @@ def load_match(path: Path | None = None) -> Match:
         raise ValueError('Nieprawidłowa liczba graczy')
     if not isinstance(data.get('rng'),random.Random):
         raise ValueError('Brak prawidłowego stanu losowania')
-    if data.get('phase') not in ('mulligan','turn','finished'):
+    if data.get('phase') not in ('mulligan','turn','auction','finished'):
         raise ValueError('Nieprawidłowa faza meczu')
     match=Match.__new__(Match)
     match.__dict__.update(data)
