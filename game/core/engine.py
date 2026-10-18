@@ -615,13 +615,19 @@ class Match:
                 ops.extend((('shield',target,uid),('armor',target,2)))
         elif cid=='S83' and in_board:
             if not self._is_immune(target,'poison'):
-                ops.append(('poison',target,2,3,level))
+                victim=self.units[target]
+                if (self.cards[target].definition.id=='S111' and
+                    not self._disabled(victim)):
+                    if victim.ability_level:ops.append(('heal',target,victim.ability_level))
+                else:ops.append(('poison',target,2,3,level))
         elif cid=='S84' and in_board:
             immune=self._is_immune(target,'stun')
             cleaned=(self.cards[target].definition.id=='S111' and
                      not self._disabled(self.units[target]))
             applies=not immune and not cleaned
-            if not immune:ops.append(('stun',target,uid))
+            if applies:ops.append(('stun',target,uid))
+            elif cleaned and not immune and self.units[target].ability_level:
+                ops.append(('heal',target,self.units[target].ability_level))
             ops.append(('damage',target,2+(level if applies else 0)))
         elif cid=='S85' and in_board:ops.append(('regen',target,3,3,level))
         elif cid=='S86' and in_board:ops.append(('effect',target,'taunt',0))
@@ -658,10 +664,17 @@ class Match:
         self._applying_death_wave=True
         # Effects may alter shields and armor, but nobody dies or disappears
         # before the group completes. HP damage/healing is applied together.
-        damage=[];healing=[]
+        damage=[];healing=[];statuses=[]
         try:
+            # Removing a pre-existing status cannot remove a NEW status from
+            # the same simultaneous group. Cleanse before other mutations;
+            # eligibility was already frozen when compiling all intents.
+            for source,op in plans:
+                if op[0]=='clean' and op[1] in self.units:
+                    self._clean(op[1],negative=op[2])
             for source,op in plans:
                 kind=op[0];target=op[1]
+                if kind=='clean':continue
                 if kind=='damage':
                     damage.append((target,op[2]))
                 elif kind=='heal':
@@ -682,22 +695,35 @@ class Match:
                         self.units[target].shield_source=source
                     elif isinstance(target,str) and target.startswith('hero:'):
                         self.players[int(target.split(':')[1])].hero_shield=1
-                elif kind=='poison' and target in self.units:
-                    self._add_poison(target,op[2],op[3],source,op[4])
-                elif kind=='stun' and target in self.units:
-                    self._add_effect(target,'stun',expires=self._expiry(self.units[target].owner),
-                                     source=source,positive=False)
-                elif kind=='regen' and target in self.units:
-                    self._add_effect(target,'regen',op[2],op[3],source=source,
-                                     bonus_once=op[4])
-                elif kind=='clean' and target in self.units:
-                    self._clean(target,negative=op[2])
+                elif kind in ('poison','stun','regen'):
+                    statuses.append((source,op))
                 elif kind=='immune' and target in self.units:
                     self._grant_immunity(target,op[2],source=source)
                 elif kind=='hand_quick' and target in self.players[self.cards[source].owner].hand:
                     self.cards[target].quick_on_first_summon=True
                 elif kind=='hand_double' and target in self.players[self.cards[source].owner].hand:
                     self.cards[target].double_on_first_eligible=True
+            # Status declarations have already passed immunity/cleanse tests
+            # against the group's common starting snapshot. A simultaneous
+            # grant of immunity cannot retroactively cancel another member's
+            # declaration; nor can a simultaneous cleanse remove a new status.
+            for source,op in statuses:
+                kind=op[0];target=op[1]
+                if target not in self.units:continue
+                u=self.units[target]
+                if kind=='stun':
+                    expiry=self._expiry(u.owner)
+                    earlier=[e.expires or 0 for e in u.effects if e.kind=='stun']
+                    if earlier:expiry=max(expiry,max(earlier)+1)
+                    u.effects.append(Effect('stun',expires=expiry,
+                                            source=source,positive=False))
+                elif kind=='poison':
+                    u.effects.append(Effect('poison',op[2],op[3],source=source,
+                                            positive=False,bonus_once=op[4],
+                                            initial_ticks=op[3]))
+                elif kind=='regen':
+                    u.effects.append(Effect('regen',op[2],op[3],source=source,
+                                            bonus_once=op[4],initial_ticks=op[3]))
             # Damage resource consumption follows stable source order; all
             # positive/negative HP changes complete before the next death sweep.
             for target,amount in damage:self._damage(target,amount,defer_death=True)
