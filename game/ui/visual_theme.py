@@ -13,12 +13,12 @@ import pygame
 
 ASSET_ROOT=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parents[2]))/'assets'/'ui'/'tavern'
 
-INK=(12,19,27)
-SLATE=(29,44,56)
-BRASS=(185,145,79)
-SILVER=(100,128,140)
-PLAYER=(72,141,120)
-ENEMY=(149,87,105)
+INK=(25,16,12)
+SLATE=(62,40,31)
+BRASS=(207,158,76)
+SILVER=(144,112,83)
+PLAYER=(79,137,111)
+ENEMY=(160,89,87)
 
 
 class VisualTheme:
@@ -33,15 +33,15 @@ class VisualTheme:
         for y in range(h):
             t=y/max(1,h-1)
             wave=.5+.5*math.cos(t*math.pi*2.1)
-            base=(int(15+8*t+4*wave),int(24+7*t+3*wave),
-                  int(32+8*t+2*wave))
+            base=(int(44+20*t+4*wave),int(26+11*t+3*wave),
+                  int(18+7*t+2*wave))
             pygame.draw.line(art,base,(0,y),(w,y))
         rng=random.Random(916)
         # Carved slate grain (no dynamically changing noise / flicker).
         grain=pygame.Surface(size,pygame.SRCALPHA)
         for _ in range(6000):
             x=rng.randrange(w);y=rng.randrange(h)
-            a=rng.randrange(5,21)
+            a=rng.randrange(12,35)
             bright=rng.randrange(2)==0
             pygame.draw.line(grain,(201,172,124,a) if bright
                              else (0,0,0,a),
@@ -54,7 +54,7 @@ class VisualTheme:
             try:
                 texture=pygame.image.load(str(wood)).convert()
                 surface=pygame.transform.smoothscale(texture,(w,h))
-                surface.set_alpha(38)
+                surface.set_alpha(180)
                 art.blit(surface,(0,0))
             except (OSError,pygame.error):
                 pass
@@ -72,9 +72,9 @@ class VisualTheme:
         # Distinct but calm well surfaces for player/AI/hand.
         overlays=pygame.Surface(size,pygame.SRCALPHA)
         for rect,c in (
-            (pygame.Rect(82,90,983,315),(59,36,47,53)),
-            (pygame.Rect(82,406,983,310),(28,58,54,51)),
-            (pygame.Rect(82,713,983,246),(45,56,45,64))):
+            (pygame.Rect(82,90,983,315),(31,15,10,106)),
+            (pygame.Rect(82,406,983,310),(35,21,12,104)),
+            (pygame.Rect(82,713,983,246),(31,17,10,127))):
             pygame.draw.rect(overlays,c,rect,border_radius=21)
             pygame.draw.rect(overlays,(198,151,93,48),rect,1,border_radius=21)
         # Edge vignette using narrow translucent strokes, no expensive blur.
@@ -112,17 +112,23 @@ class VisualTheme:
                          pygame.Rect(6,7,rect.width,rect.height),
                          border_radius=radius+1)
         screen.blit(shadow,(rect.x-6,rect.y-5))
-        pygame.draw.rect(screen,(8,15,23),rect,border_radius=radius)
+        pygame.draw.rect(screen,(23,12,8),rect,border_radius=radius)
         core=rect.inflate(-2,-2)
         pygame.draw.rect(screen,base,core,border_radius=max(2,radius-2))
         # Bevel: bronze highlights at the upper edge; recessed bottom.
         pygame.draw.line(screen,tuple(min(255,c+24) for c in base),
                          (rect.left+radius,rect.top+2),
                          (rect.right-radius,rect.top+2),1)
-        pygame.draw.line(screen,(12,20,28),
+        pygame.draw.line(screen,(26,15,9),
                          (rect.left+radius,rect.bottom-3),
                          (rect.right-radius,rect.bottom-3),1)
         pygame.draw.rect(screen,accent,rect,1,border_radius=radius)
+        if rect.width>130 and rect.height>38:
+            # Inset dark-leather panel, thin oak/bevel rim and brass fasteners.
+            pygame.draw.rect(screen,(107,67,37),rect.inflate(-6,-6),
+                             1,border_radius=max(2,radius-3))
+            pygame.draw.line(screen,(160,109,59),
+                             (rect.x+18,rect.y+4),(rect.right-18,rect.y+4),1)
         # Corner studs are tiny and outside text core.
         if rect.width>=165 and rect.height>=48:
             for px in (rect.x+9,rect.right-10):
@@ -130,26 +136,26 @@ class VisualTheme:
 
     def button(self,screen,rect,hover=False,active=True,accent=False,pressed=False):
         if not active:
-            base=(39,47,52);edge=(67,77,80)
+            base=(62,53,43);edge=(99,82,64)
         elif accent:
-            base=(72,103,82) if not hover else (87,130,98)
+            base=(95,68,41) if not hover else (119,89,53)
             edge=(206,166,96)
         else:
-            base=(43,65,74) if not hover else (58,89,98)
-            edge=(111,142,145) if hover else (82,107,117)
+            base=(88,54,34) if not hover else (116,74,42)
+            edge=(213,162,92) if hover else (153,105,58)
         if pressed and active:
             base=tuple(max(0,c-12) for c in base)
         self.panel(screen,rect,base,edge,9)
         if active and rect.height>22:
-            pygame.draw.line(screen,(129,156,151) if hover else (88,111,111),
+            pygame.draw.line(screen,(223,169,101) if hover else (151,107,70),
                              (rect.x+13,rect.y+5),(rect.right-13,rect.y+5),1)
 
     def slot(self,screen,rect,owner=0):
         accent=PLAYER if owner==0 else ENEMY
-        self.panel(screen,rect,(27,41,49),accent,12)
+        self.panel(screen,rect,(64,40,29),accent,12)
         inner=rect.inflate(-12,-12)
-        pygame.draw.rect(screen,(17,29,38),inner,border_radius=9)
-        pygame.draw.rect(screen,(56,73,80),inner,1,border_radius=9)
+        pygame.draw.rect(screen,(39,25,19),inner,border_radius=9)
+        pygame.draw.rect(screen,(105,75,52),inner,1,border_radius=9)
         # Small corner-line engraving; never under a placed card's labels.
         for sx in (rect.x+11,rect.right-11):
             for sy in (rect.y+11,rect.bottom-11):
@@ -160,12 +166,12 @@ class VisualTheme:
 
     def card_lustre(self,screen,rect,faction):
         """Rim-only accents: rendered behind data fields, no text overlays."""
-        pygame.draw.rect(screen,(8,15,22),rect.move(0,3),border_radius=11)
-        pygame.draw.rect(screen,(26,36,46),rect,border_radius=11)
+        pygame.draw.rect(screen,(25,14,9),rect.move(0,3),border_radius=11)
+        pygame.draw.rect(screen,(63,42,31),rect,border_radius=11)
         pygame.draw.rect(screen,faction,rect,2,border_radius=11)
         pygame.draw.line(screen,(199,163,106),
                          (rect.left+14,rect.top+4),(rect.right-14,rect.top+4),1)
-        pygame.draw.line(screen,(68,75,75),
+        pygame.draw.line(screen,(115,80,51),
                          (rect.left+14,rect.bottom-5),(rect.right-14,rect.bottom-5),1)
 
     @staticmethod
