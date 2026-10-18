@@ -698,7 +698,10 @@ class Match:
             self._death_disabled[uid]=blocked
             self._death_levels[uid]=unit.ability_level
             snapshot.append((uid,unit.owner,blocked,
-                             self.cards[uid].definition.faction=='Potwory'))
+                             (self.cards[uid].definition.faction=='Potwory' or
+                              (self.auction_catalog=='v4' and
+                               (self.cards[uid].definition.id in ('A001','A003','A011')
+                                or uid in self.auction_death_grants)))))
         for uid,owner,_,_ in snapshot:
             reward={"podstawowa":1,"rzadka":2,"legendarna":3}.get(
                 self.auction_awards.get(uid,{}).get("rarity","podstawowa"),1)
@@ -731,6 +734,7 @@ class Match:
         self._wave_healing=[]
         self._wave_status_ops=[]
         self._wave_defense_ops=[]
+        if self.auction_catalog=='v4':self.auction_wave_ops=[]
         try:
             for uid,choice in wave['decisions']:
                 self._execute(uid,'death',choice)
@@ -817,7 +821,9 @@ class Match:
                     player.coins+=2
                     self._log(f'{player.name}: +2 monety za przekroczenie {threshold} PŻ.')
         self._update_auras()
+        if self.auction_catalog=='v4':auction_ability_rules.rescue_heroes(self)
         self._kill_batch([uid for uid,u in list(self.units.items()) if u.hp<=0])
+        if self.auction_catalog=='v4':auction_ability_rules.resolve_wave_ops(self)
         self._log(f'Zamknięto falę śmierci {wave["id"]}.')
         self._check_winner()
 
@@ -825,9 +831,12 @@ class Match:
     def _remove_unit(self,uid,death):
         u=self.units.pop(uid)
         self.players[u.owner].board.remove(uid)
-        card=self.cards[uid];card.zone='grave';card.hand_turns=0;card.quick_next_turn=None
+        card=self.cards[uid];card.hand_turns=0;card.quick_next_turn=None
         card.quick_on_first_summon=False;card.double_on_first_eligible=False
-        self.players[u.owner].grave.append(uid)
+        if self.auction_catalog=='v4' and uid in self.ephemeral_ids:
+            card.zone='vanished';self.vanished.append(uid)
+        else:
+            card.zone='grave';self.players[u.owner].grave.append(uid)
 
     def _update_auras(self,defer_reactive=False):
         # Dynamic auras S34 / S35 / S105. Unit order is always compacted left.
@@ -837,6 +846,8 @@ class Match:
             if self._disabled(u):continue
             cid=self.cards[uid].definition.id
             friend=self.players[u.owner].board;enemy=self.players[1-u.owner].board
+            if self.auction_catalog=='v4' and cid=='A002' and auction_ability_rules.rarity(self,uid)==0:
+                for target in desired_atk:desired_atk[target]+=1
             if cid=='S34':
                 position=friend.index(uid)
                 value=1+u.ability_level
@@ -922,7 +933,9 @@ class Match:
         all_ids=list(self.bank)
         for p in self.players:all_ids+=p.hand+p.deck+p.grave+p.board
         all_ids+=self.excluded
-        basic=[uid for uid in all_ids if uid not in self.auction_awards]
+        if self.auction_catalog=='v4':all_ids+=self.exiled+self.vanished
+        basic=[uid for uid in all_ids if uid not in self.auction_awards and
+               not (self.auction_catalog=='v4' and uid in self.ephemeral_ids)]
         assert len(basic)==70 and len(set(basic))==70,('Bank 70x1 violated',len(basic),len(set(basic)))
         assert len(all_ids)==len(set(all_ids)), 'Auction card duplicated'
         assert set(all_ids)==set(self.cards),('Physical cards mismatch',len(all_ids),len(self.cards))
@@ -939,6 +952,11 @@ class Match:
         Dla efektów wymagających wyboru pending zatrzymuje kolejkę, co pozwala
         obsłużyć zarówno gracza jak i agenta tym samym kodem.
         """
+        if (self.auction_catalog=='v4' and
+            (self.cards[uid].definition.id in CATALOG or context.startswith('auction_') or
+             (context=='death' and uid in self.auction_death_grants))):
+            auction_ability_rules.execute(self,uid,context,choice,attacked)
+            return
         card=self.cards[uid]
         cid=card.definition.id
         owner=card.owner
