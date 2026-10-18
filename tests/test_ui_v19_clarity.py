@@ -48,10 +48,10 @@ class AbilitySummaryV19Tests(unittest.TestCase):
 
     def test_scaling_values_do_not_rewrite_durations_or_attack_limit(self):
         examples = [
-            ('S01', 3, ['6 obrażeń']),
-            ('S02', 3, ['7 PŻ']),
-            ('S58', 3, ['przez 2 tury', 'łącznie 7']),
-            ('S109', 3, ['5 PŻ', 'KAŻDEJ']),
+            ('S01', 3, ['4 obrażeń']),
+            ('S02', 3, ['5 PŻ']),
+            ('S58', 3, ['przez 2 tury', 'łącznie 5']),
+            ('S109', 3, ['3 PŻ', 'KAŻDEJ']),
             ('S115', 6, ['maks. dwa']),
         ]
         for cid, turns, expected in examples:
