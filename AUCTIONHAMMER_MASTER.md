@@ -1,6 +1,6 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.9  
+**Wersja gry:** MVP 0.9.10  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
 **Aukcje i karty aukcyjne:** poza bieżącym etapem.  
@@ -21,7 +21,9 @@ Ten dokument opisuje **aktualny stan gry**. Fragment od nagłówka „ARCHIWUM �
 | `game/ui/` | Polski interfejs użytkownika |
 | `tests/` | Testy zgodności i zabezpieczenia przed regresją |
 | `docs/GAME_MASTER_v17.md` | **Archiwum v17** — do porównywania historycznych decyzji |
-| `data/event_order_v17.json` | Historyczny zapis kolejki zdarzeń. Jego atomowe fale zgonów nadal wymagają osobnej weryfikacji w silniku |
+| `data/event_order_v19.json` | **Obowiązująca kolejność zdarzeń** i wspólne fale zgonów zgodnie z Game Master v19 |
+| `docs/FALY_ZGONOW_v19_MVP_0910.md` | Techniczny opis naprawy atomowych fal zgonów i wyników testów |
+| `data/event_order_v17.json` | Historyczny zapis kolejki, pozostawiony w archiwum |
 
 ### Uruchomienie i aktualizacje
 
@@ -40,7 +42,7 @@ Po rozpakowaniu gotowej wersji Windows kliknij `URUCHOM_AUCTIONHAMMER.bat`, aby 
 
 ### Ograniczenia i ryzyka
 
-Automatyczne testy obejmują podstawowe interakcje i zmiany zatwierdzone w v19, ale **nie dowodzą pełnej zgodności z kolejką jednoczesnych zdarzeń**. W szczególności wspólne migawki celów dla grup zgonów, atomowe rozstrzyganie efektów „Przy śmierci” i wywołane nimi kaskady wymagają dalszych testów. Wersja nie ma także udowodnionego balansu na podstawie dużej liczby meczów.
+Automatyczne testy obejmują zmiany v19 oraz nowe wspólne migawki i atomowe fale śmierci z MVP 0.9.10. Rozdzielono zbieranie wyborów od rozstrzygania skutków, uwzględniając osobne kaskady. **Nie jest to jednak dowód wyczerpującej zgodności wszystkich wielofalowych interakcji**; wymagane są kolejne testy bardzo rzadkich kombinacji zdolności i aur. Wersja nie ma także udowodnionego balansu na podstawie dużej liczby meczów.
 
 ---
 
