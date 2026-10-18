@@ -307,10 +307,14 @@ def ability_summary(card, unit=None) -> AbilitySummary:
     """Zwróć wartości aktualne, nie bazowe statyczne liczby na grafice."""
     d = card.definition
     if d.id.startswith('AUC'):
-        return AbilitySummary('Prowokacja + Tarcza',
-                              'Karta testowej aukcji: Prowokacja i 1 Tarcza po wystawieniu. '
-                              'Nie skaluje się w ręce. Poziom i rzadkość aukcji '
-                              'zapisane są oddzielnie.')
+        if d.effect.startswith('Prowokacja.'):
+            return AbilitySummary('Prowokacja + Tarcza',
+                                  'Karta testowej aukcji: Prowokacja i 1 Tarcza po wystawieniu. '
+                                  'Nie skaluje się w ręce.')
+        short=d.effect.strip()
+        if len(short)>94:
+            short=short[:91].rstrip()+'…'
+        return AbilitySummary(short,d.effect+' Nie skaluje się na ręce.')
     spec = SPECS[d.id]
     level = unit.ability_level if unit is not None else card.ability_level
     base = first_scalable_value(d)
