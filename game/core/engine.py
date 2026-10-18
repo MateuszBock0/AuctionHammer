@@ -93,7 +93,7 @@ class Match:
         self._log('Rozdano po 5 kart na rękę i do talii. Po jednym egzemplarzu na typ.')
         self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
         if self.auctions_enabled:
-            self._log("Wariant aukcyjny testowy: aukcje po rundach 3, 6, 9...")
+            self._log("Aukcje co trzy rundy: "+self.auction_catalog)
         if self.audit_enabled:
             initialize_audit(self)
 
@@ -494,8 +494,10 @@ class Match:
             self._log('Pełna runda: +1 moneta dla obu graczy.')
             # Rarity evolution is tied to full completed rounds, not hand turns.
             # It changes draft tier metadata only; skills remain disabled.
-            if self.auctions_enabled and self.auction_catalog=="v3":
+            if self.auctions_enabled and self.auction_catalog in ("v3","v4"):
                 auction_rules.advance_rarity(self,self.round-1)
+        if self.auction_catalog=='v4':
+            auction_ability_rules.expire_exile_marks(self,p.idx)
         self._next_turn_due=True
         self._update_auras()
 
@@ -903,6 +905,8 @@ class Match:
     def _check_winner(self):
         if self.phase!='turn':return
         a,b=self.players
+        if self.auction_catalog=='v4' and (a.hp<=0 or b.hp<=0):
+            auction_ability_rules.rescue_heroes(self)
         if a.hp>0 and b.hp>0:return
         if a.hp<=0 and b.hp>0:self.winner=1
         elif b.hp<=0 and a.hp>0:self.winner=0
