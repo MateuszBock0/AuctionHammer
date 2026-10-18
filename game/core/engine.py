@@ -667,9 +667,12 @@ class Match:
             snapshot.append((uid,unit.owner,blocked,
                              self.cards[uid].definition.faction=='Potwory'))
         for uid,owner,_,_ in snapshot:
+            reward={"podstawowa":1,"rzadka":2,"legendarna":3}.get(
+                self.auction_awards.get(uid,{}).get("rarity","podstawowa"),1)
             self._remove_unit(uid,death=True)
-            self.players[1-owner].coins+=1
-            self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
+            self.players[1-owner].coins+=reward
+            self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela '
+                      f'otrzymuje {reward} monet(y).')
         # Rejestrujemy źródła, ale ich legalne cele zamrażamy dopiero gdy
         # grupa dochodzi na początek kolejki. Wcześniejsza grupa może jeszcze
         # zmienić stan planszy, zwłaszcza po utracie dodatniej aury.
