@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.19: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.20: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
