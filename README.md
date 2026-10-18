@@ -1,6 +1,6 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Aukcje, karty aukcyjne i koszt zagrywania kart nie są jeszcze dostępne.**
+**AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Od 0.9.19 aktywny jest pierwszy prototyp aukcji z trzema tymczasowymi Strażnikami (3/6/12 PŻ); finalny katalog i płatne zdolności jeszcze nie istnieją. Koszt zagrania kart wynosi zero.**
 
 ## Uruchamianie w Windows
 
@@ -132,6 +132,44 @@ nieistniejącą pełną historię.
 Nowy obraz Pygame: `preview/VISUAL_0918_KONIEC_0_PZ.png`.
 
 [Szczegóły testów i metadanych](docs/COMBAT_AUDIT_HOTFIX_0918.md).
+
+## Aktualizacja 0.9.19 — karczemne UI i testowe aukcje
+
+**Wybrane elementy Tavern UI Pack v2:** drewniana faktura stołu jako
+subtelna warstwa pod panelami i mosiężny separator na ekranie aukcji.
+Nie użyto pełnego tła bogato wyposażonej karczmy ani ciężkich ramek
+wokół kart — zasłaniałyby teksty i miejsca interakcji. Cały interfejs
+pozostaje offline i zachowuje dotychczasowy kontrast.
+
+**Aukcje po rundach 3, 6, 9...:** po wypłaceniu obu graczom +1 monety
+rozpoczyna się licytacja bez limitu czasu. Wystawiane są trzy tymczasowe
+karty, każda **3 ATAK, Prowokacja i jednorazowa Tarcza**, o PŻ odpowiednio
+**3, 6 i 12**. Rzadkości losowane są niezależnie 60/30/10%; pozostają
+informacyjne aż do wdrożenia rzeczywistego katalogu aukcyjnego.
+Numer aukcji jest poziomem zapisanym na zdobytym egzemplarzu.
+
+Przebieg: oferuj co najmniej o 1 monetę więcej, pasuj lub przebij ofertę
+komputera. Zwycięzca płaci za **pierwszy wybór**, rywal bierze jedną
+z pozostałych kart **za darmo**, trzeci wariant nie jest rozdawany.
+Gdy obaj pasują bez oferty, darmowy pierwszy wybór przysługuje
+naprzemiennie rozpoczynającemu mecz i jego rywalowi.
+Wybrane karty trafiają na ręce (bez limitu 5), zachowują stałe statystyki,
+nie skalują się w ręce i po wystawieniu grają jak jednostki bazowe.
+
+- **Klawiatura:** cyfry + Enter do złożenia oferty; w fazie wyboru
+  **1/2/3** wybiera odpowiednią ofertę.
+- **Przyciski:** PASUJ, PODBIJ +1, LICYTUJ lub kliknij wybraną kartę.
+- **M:** można otworzyć menu i zapisać grę nawet podczas aukcji.
+
+Stare zapisy 0.9.18 pozostają w dotychczasowym trybie bez aukcji,
+bez dopisywania historycznie nieodbytych licytacji. Audyt JSON z
+nowego meczu zapisuje wszystkie nowe akcje aukcyjne.
+
+**Nie ma jeszcze** żadnych płatnych aktywacji zdolności, kopiowania,
+przejmowania, wskrzeszania czy finalnego katalogu 36 kart aukcyjnych.
+Mechaniki i balans pozostałych 70 kart nie zostały zmienione.
+
+[Analiza paczki i szczegóły implementacji](docs/TAVERN_AUCTION_PROTOTYPE_0919.md).
 
 ## Karty, efekty i skalowanie
 

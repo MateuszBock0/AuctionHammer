@@ -103,9 +103,11 @@ def card_cue(card, unit=None) -> CardCue:
         cue=f'{value}{suffix}'
     else:
         cue=FAMILY_SYMBOLS[family]
-    upgrade=UPGRADES[family]
+    upgrade='STAŁE PARAMETRY' if d.id.startswith('AUC') else UPGRADES[family]
     if family=='Regeneracja' and d.id=='S109':upgrade='+1 CO TURĘ / 3T'
-    if unit is not None:
+    if d.id.startswith('AUC'):
+        threshold='KARTA AUKCYJNA'
+    elif unit is not None:
         threshold='POZIOM UTRWALONY'
     else:
         threshold=f'ZA {3-card.hand_turns%3} TUR' if card.hand_turns%3 else 'ZA 3 TURY'
@@ -113,6 +115,7 @@ def card_cue(card, unit=None) -> CardCue:
         trigger=TRIGGER_SHORT[d.trigger],family=FAMILY_SYMBOLS[family],
         color=FAMILY_COLORS[family],base=cue,upgrade=upgrade,
         effect_value=value,ability_level=level,
-        growth=f'+{d.growth_atk} ATAK  +{d.growth_hp} PŻ / wł. turę na ręce',
+        growth=('Bez skalowania na ręce' if d.id.startswith('AUC') else
+                f'+{d.growth_atk} ATAK  +{d.growth_hp} PŻ / wł. turę na ręce'),
         next_threshold=threshold,
     )

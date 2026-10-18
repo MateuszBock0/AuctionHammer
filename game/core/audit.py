@@ -19,7 +19,8 @@ import os
 FORMAT="AuctionHammer.MatchAudit"
 SCHEMA=1
 FILENAME="AuctionHammer-OSTATNI-MECZ.json"
-ACTIONS=("mulligan_toggle","finish_mulligan","play","attack","end_turn","choose")
+ACTIONS=("mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
+         "auction_bid","auction_pass","auction_pick")
 
 
 def audit_path() -> Path:
@@ -146,7 +147,11 @@ def state_snapshot(game):
             "defenses":_plain(game._wave_defense_ops)
         },
         "death_disabled":_plain(game._death_disabled),
-        "death_levels":_plain(game._death_levels)
+        "death_levels":_plain(game._death_levels),
+        "auctions_enabled":getattr(game,"auctions_enabled",False),
+        "auction":_plain(getattr(game,"auction",None)),
+        "auction_history":_plain(getattr(game,"auction_history",[])),
+        "auction_awards":_plain(getattr(game,"auction_awards",{}))
     }
 
 
@@ -397,7 +402,14 @@ def verify_replay(payload,match_factory):
     """
     if not payload.get("complete_from_start"):
         raise ValueError("Niepełny audyt: brak początku rozgrywki")
-    game=match_factory(payload["seed"])
+    auction_enabled=bool(payload.get("initial_state",{}).get("auctions_enabled",False))
+    if auction_enabled:
+        try:
+            game=match_factory(payload["seed"],auctions_enabled=True)
+        except TypeError as exc:
+            raise ValueError("Odtwarzanie aukcji wymaga fabryki z auctions_enabled") from exc
+    else:
+        game=match_factory(payload["seed"])
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
         raise ValueError("Początkowy stan nie odpowiada wskazanemu seed")
     for record in payload["actions"]:

@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.18: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.19: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
@@ -63,10 +63,12 @@ class SoloApp:
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
-        self.game=Match(audit_enabled=True)
+        self.game=Match(audit_enabled=True,auctions_enabled=True)
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
+        self.auction_bid_text=''
+        self.auction_status=''
         self.ai.step(self.game)  # AI mulligan is committed, player's hand still hidden from it.
         self.selected=None
         self.hover=None
@@ -339,6 +341,9 @@ class SoloApp:
         g=self.game
         if self.details_card is not None:
             self.details_card=None;return
+        if g.phase=='auction':
+            self._auction_click(pos)
+            return
         if g.phase=='finished':
             if pygame.Rect(608,637,260,52).collidepoint(pos):
                 self.restart()
@@ -414,6 +419,113 @@ class SoloApp:
                 self.tooltip_open=True;return
         if target in g.units:self.selected=target;self.tooltip_open=True
 
+    @staticmethod
+    def auction_offer_rect(index):
+        return pygame.Rect(271+index*318,254,278,364)
+
+    @staticmethod
+    def auction_control_rect(action):
+        return {
+            'pass':pygame.Rect(444,734,178,49),
+            'min':pygame.Rect(642,734,178,49),
+            'bid':pygame.Rect(840,734,178,49)
+        }[action]
+
+    def _auction_do(self,operation,uid=None):
+        game=self.game
+        if game.phase!='auction' or game.auction is None or game.auction.turn!=0:
+            return
+        try:
+            if operation=='pass':
+                game.auction_pass(0)
+            elif operation=='bid':
+                minimum=game.auction.current_bid+1
+                amount=int(self.auction_bid_text) if self.auction_bid_text else minimum
+                game.auction_bid(0,amount)
+            elif operation=='min':
+                game.auction_bid(0,game.auction.current_bid+1)
+            elif operation=='pick':
+                game.auction_pick(0,uid)
+            self.auction_status=''
+            self.auction_bid_text=''
+        except (IllegalMove,ValueError) as exc:
+            self.auction_status=str(exc)
+
+    def _auction_click(self,pos):
+        a=self.game.auction
+        if a is None or a.turn!=0:return
+        if a.phase=='picking':
+            for i,offer in enumerate(a.offers):
+                if self.auction_offer_rect(i).collidepoint(pos):
+                    self._auction_do('pick',offer.uid)
+                    return
+        elif a.phase=='bidding':
+            for action in ('pass','min','bid'):
+                if self.auction_control_rect(action).collidepoint(pos):
+                    self._auction_do(action)
+                    return
+
+    def _draw_auction(self):
+        a=self.game.auction
+        if self.game.phase!='auction' or a is None:return
+        overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        overlay.fill((4,8,13,229))
+        self.screen.blit(overlay,(0,0))
+        self._panel(pygame.Rect(203,112,1076,732),(34,44,46),cfg.GOLD,16)
+        self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
+                   741,152,cfg.GOLD,center=True)
+        self._text('TESTOWY KATALOG  ·  3 ATAK  ·  PROWOKACJA + TARCZA',16,
+                   741,205,cfg.TEXT,center=True)
+        self.theme.ornament(self.screen,565,228,350,22)
+        for i,off in enumerate(a.offers):
+            rect=self.auction_offer_rect(i)
+            claimed=off.uid in a.picks.values()
+            selected=a.phase=='picking' and a.turn==0 and not claimed
+            self._panel(rect,(40,53,54) if not claimed else (37,39,42),
+                        cfg.GOLD if selected else cfg.PANEL_BORDER,14)
+            self._text(f'WARIANT {i+1}',16,rect.centerx,rect.y+19,cfg.GOLD,center=True)
+            self._text('STRAŻNIK AUKCJI',18,rect.centerx,rect.y+54,cfg.TEXT,center=True)
+            self._text(f'{off.hp} PŻ',34,rect.centerx,rect.y+98,
+                       cfg.GREEN if not claimed else cfg.MUTED,center=True)
+            self._text('3 ATAK',22,rect.centerx,rect.y+161,cfg.GOLD,center=True)
+            self._text('PROWOKACJA',16,rect.centerx,rect.y+208,cfg.TEXT,center=True)
+            self._text('1 TARCZA',16,rect.centerx,rect.y+239,cfg.TEXT,center=True)
+            self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
+                       rect.centerx,rect.y+277,cfg.MUTED,center=True)
+            if claimed:
+                selected_by=next(p for p,card in a.picks.items() if card==off.uid)
+                self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
+                           rect.centerx,rect.y+314,cfg.MUTED,center=True)
+            elif selected:
+                self._text('KLIKNIJ, ABY WYBRAĆ',14,rect.centerx,
+                           rect.y+314,cfg.GOLD,center=True)
+        who=self.game.players[a.turn].name
+        if a.phase=='bidding':
+            self._text(f'LICYTUJE: {who}  ·  NAJWYŻSZA: {a.current_bid}  ·  '
+                       f'TWOJE MONETY: {self.game.players[0].coins}',16,
+                       741,650,cfg.TEXT,center=True)
+            leader='BRAK' if a.highest_bidder is None else self.game.players[a.highest_bidder].name
+            self._text(f'PROWADZI: {leader}  ·  WYMAGANE MIN. {a.current_bid+1}  '
+                       f'·  KWOTA: {self.auction_bid_text or str(a.current_bid+1)}',14,
+                       741,690,cfg.MUTED,center=True)
+            if a.turn==0:
+                for action,label in (('pass','PASUJ'),('min','PODBIJ +1'),
+                                     ('bid','LICYTUJ [ENTER]')):
+                    self._button(self.auction_control_rect(action),label,
+                                 accent=action=='bid',small=True)
+            else:
+                self._text('RUCH KOMPUTERA...',16,741,753,cfg.GOLD,center=True)
+        else:
+            self._text(f'WYBIERA: {who}  ·  ZWYCIĘZCA LICYTACJI: '
+                       f'{self.game.players[a.winner].name}  ·  CENA: {a.price}',16,
+                       741,656,cfg.TEXT,center=True)
+            self._text('Kliknij jedną z dostępnych ofert' if a.turn==0
+                       else 'Komputer wybiera kartę...',16,741,757,
+                       cfg.GOLD,center=True)
+        if self.auction_status:
+            self._text(self.cards_view.clip(self.auction_status,self.fonts[13],920),
+                       13,741,810,cfg.RED,center=True)
+
     def _try_play(self,uid,replace=None):
         try:
             self.game.play(uid,replace)
@@ -481,6 +593,27 @@ class SoloApp:
                 self.details_scroll=max(0,min(getattr(self,'details_maxscroll',0),self.details_scroll-event.y*35))
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
                 self.details_card=None
+            return True
+        if self.game.phase=='auction':
+            if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
+                self.menu_page='main'
+                self.menu_open=True
+                return True
+            if event.type==pygame.KEYDOWN and self.game.auction.turn==0:
+                state=self.game.auction
+                if state.phase=='bidding':
+                    if pygame.K_0<=event.key<=pygame.K_9:
+                        self.auction_bid_text=(self.auction_bid_text+str(event.key-pygame.K_0))[-7:]
+                    elif event.key==pygame.K_BACKSPACE:
+                        self.auction_bid_text=self.auction_bid_text[:-1]
+                    elif event.key==pygame.K_RETURN:
+                        self._auction_do('bid')
+                    elif event.key==pygame.K_ESCAPE:
+                        self._auction_do('pass')
+                elif state.phase=='picking' and pygame.K_1<=event.key<=pygame.K_3:
+                    self._auction_do('pick',state.offers[event.key-pygame.K_1].uid)
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                self._auction_click(self._physical_to_virtual(event.pos))
             return True
         if event.type==pygame.KEYDOWN:
             if event.key==pygame.K_ESCAPE:
@@ -592,7 +725,7 @@ class SoloApp:
                 self._old_pending=g.pending
             t=pygame.time.get_ticks()
             if t-self.last_ai_ms>self.AI_ACTION_DELAY_MS:
-                if (g.phase=='turn' and
+                if (g.phase=='auction' and g.auction and g.auction.turn==1) or (g.phase=='turn' and
                     (g.active==1 or (g.pending and g.pending.owner==1))):
                     try:self.ai.step(g)
                     except IllegalMove as e:self.last_error=str(e)
@@ -1125,6 +1258,7 @@ class SoloApp:
             self._draw_log()
             self._draw_choices()
             self._draw_gameover()
+            self._draw_auction()
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw(self.screen,pygame.time.get_ticks(),
                                          self.fonts_bold[16])

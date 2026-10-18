@@ -19,9 +19,11 @@ from game.core.engine import Match, ROOT
 from game.core.models import (Card,CardDefinition,Unit,Player,Effect,Choice,Pending,
                               load_catalog)
 
+from game.core.auction import AuctionState, AuctionOffer
+
 SCHEMA=1
 TYPES={cls.__name__:cls for cls in
-       (Card,CardDefinition,Unit,Player,Effect,Choice,Pending)}
+       (Card,CardDefinition,Unit,Player,Effect,Choice,Pending,AuctionState,AuctionOffer)}
 
 
 def save_path():
@@ -127,14 +129,25 @@ def load_match(path: Path | None = None) -> Match:
         raise ValueError('Nieprawidłowy stan meczu')
     # Minimalne sprawdzenie zgodności z lokalnym katalogiem kart v19.
     ids=set(load_catalog(ROOT/'data'/'cards_base_70.json'))
-    if not isinstance(data.get('cards'),dict) or set(data['cards'])!=ids:
+    awards=data.get('auction_awards',{})
+    if not isinstance(awards,dict):
+        raise ValueError('Zapis zawiera nieprawidłowe karty aukcyjne')
+    expected=ids|set(awards)
+    if (not isinstance(data.get('cards'),dict)
+            or set(data['cards'])!=expected
+            or any(not uid.startswith('AUC') for uid in awards)):
         raise ValueError('Zapis zawiera niezgodny katalog kart')
     if not isinstance(data.get('players'),list) or len(data['players'])!=2:
         raise ValueError('Nieprawidłowa liczba graczy')
     if not isinstance(data.get('rng'),random.Random):
         raise ValueError('Brak prawidłowego stanu losowania')
-    if data.get('phase') not in ('mulligan','turn','finished'):
+    if data.get('phase') not in ('mulligan','turn','auction','finished'):
         raise ValueError('Nieprawidłowa faza meczu')
+    # Compatible with 0.9.18 saves created before the auction subsystem.
+    data.setdefault('auctions_enabled',False)
+    data.setdefault('auction',None)
+    data.setdefault('auction_history',[])
+    data.setdefault('auction_awards',{})
     match=Match.__new__(Match)
     match.__dict__.update(data)
     return match

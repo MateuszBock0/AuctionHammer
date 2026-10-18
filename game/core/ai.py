@@ -38,6 +38,22 @@ class ComputerOpponent:
 
     def step(self,game):
         if game.phase=='finished':return
+        if game.phase=='auction':
+            state=game.auction
+            if state is None or state.turn!=self.player:return
+            if state.phase=='bidding':
+                # Deterministic affordable bidding; the player may outbid.
+                budget=game.players[self.player].coins
+                ceiling=min(budget,2+state.number*2 if self.difficulty!='łatwy' else 1)
+                if state.current_bid<ceiling:
+                    game.auction_bid(self.player,state.current_bid+1)
+                else:
+                    game.auction_pass(self.player)
+            else:
+                remaining=[x for x in state.offers if x.uid not in state.picks.values()]
+                best=max(remaining,key=lambda x:(x.hp,{'podstawowa':0,'rzadka':1,'legendarna':2}[x.rarity]))
+                game.auction_pick(self.player,best.uid)
+            return
         if game.phase=='mulligan':
             if self.player not in game.mulligan_done:
                 game.finish_mulligan(self.player,[])
