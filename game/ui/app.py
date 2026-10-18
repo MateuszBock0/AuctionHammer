@@ -535,10 +535,21 @@ class SoloApp:
                        f'·  KWOTA: {self.auction_bid_text or str(a.current_bid+1)}',14,
                        741,690,cfg.MUTED,center=True)
             if a.turn==0:
+                minimum=max(1,a.current_bid+1)
+                coins=self.game.players[0].coins
+                affordable=coins>=minimum
+                typed=int(self.auction_bid_text) if self.auction_bid_text else minimum
+                custom_valid=affordable and minimum<=typed<=coins
+                if not affordable:
+                    self._text('NIE MASZ MONET NA PODBICIE — WYBIERZ PASUJ',13,
+                               741,708,cfg.RED,center=True)
                 for action,label in (('pass','PASUJ'),('min','PODBIJ +1'),
                                      ('bid','LICYTUJ [ENTER]')):
+                    enabled=(action=='pass' or
+                             (affordable if action=='min' else custom_valid))
                     self._button(self.auction_control_rect(action),label,
-                                 accent=action=='bid',small=True)
+                                 active=enabled,accent=action=='bid' and enabled,
+                                 small=True)
             else:
                 self._text('RUCH KOMPUTERA...',16,741,753,cfg.GOLD,center=True)
         else:
