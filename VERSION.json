@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.26",
+  "mvp": "0.9.27",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v4-12-archetypes-36-live-abilities",
@@ -32,5 +32,9 @@
   "auction_supply": "v4-return-unbought-to-auction-bag-only",
   "auction_archetypes": 12,
   "auction_ability_variants": 36,
-  "auction_max_completed_auctions": 5
+  "auction_max_completed_auctions": 5,
+  "auction_description_contract": "36-v4-variants-canonical-live-ui",
+  "match_death_counter": "lifetime-real-deaths-not-grave-size",
+  "shield_combat_feedback": "explicit-absorbed-damage-log",
+  "auction_minimum_distinct_offers": 3
 }

@@ -33,6 +33,10 @@ class Match:
         self.auction_bag=list(CATALOG) if auction_catalog=='v4' else []
         self.auction_discarded=[]  # historical unsold offer UIDs (audit only)
         self.auction_supply_version=2 if auction_catalog=='v4' else 0
+        # Lifetime actual death events (per owner), not current grave sizes.
+        # Board replacements, captures and exile do not increment losses.
+        self.death_counts=[0,0]
+        self.death_counts_complete=True
         self.auction_used=[]       # acquired then removed; never redrawn
         self.exiled=[]
         self.vanished=[]
@@ -659,7 +663,14 @@ class Match:
             u=self.units[target]
             if not ignore_defense:
                 if u.shield:
-                    u.shield=0;u.shield_source="";return 0
+                    source=u.shield_source
+                    u.shield=0
+                    u.shield_source=""
+                    self._log(f'{self.label(target)}: Tarcza blokuje '
+                              f'{amount} obrażeń i zostaje zużyta.'
+                              +(f' (źródło: {self.label(source)})'
+                                if source in self.cards else ''))
+                    return 0
                 absorb=min(amount,u.armor_temp);u.armor_temp-=absorb;amount-=absorb
                 if not u.armor_temp:u.armor_temp_source=""
                 for key in list(u.temporary_armor):
@@ -841,6 +852,8 @@ class Match:
     @trace_effect('_remove_unit')
     def _remove_unit(self,uid,death):
         u=self.units.pop(uid)
+        if death:
+            self.death_counts[u.owner]+=1
         self.players[u.owner].board.remove(uid)
         card=self.cards[uid];card.hand_turns=0;card.quick_next_turn=None
         card.quick_on_first_summon=False;card.double_on_first_eligible=False

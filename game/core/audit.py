@@ -356,7 +356,7 @@ def make_report(game):
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.23" if game.auction_catalog=="v4" else "0.9.21",
+        "version":"0.9.27" if game.auction_catalog=="v4" else "0.9.21",
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
@@ -380,7 +380,11 @@ def make_report(game):
             "internal_operations":len(game.audit_internal),
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
-            "hero_hp":{str(p.idx):p.hp for p in game.players}
+            "hero_hp":{str(p.idx):p.hp for p in game.players},
+            "unit_deaths":{str(p.idx):game.death_counts[p.idx]
+                           for p in game.players}
+            if (getattr(game,'death_counts',None) is not None and
+                getattr(game,'death_counts_complete',False)) else None
         }
     }
     return {"payload":payload,"sha256":digest(payload)}

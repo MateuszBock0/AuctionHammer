@@ -28,6 +28,16 @@ FAMILY_COLORS = {
     'Prowokacja':(243,174,70),'Oczyszczanie':(193,223,244),'Odporność':(114,164,255),
     'Szybki atak':(79,223,223),'Podwójny atak':(255,155,99),
 }
+# Auction-only mechanic labels. The shared base-card family taxonomy is
+# insufficient for coins, copying, exile and hand swaps; those historical
+# classifications remain engine metadata but must not mislabel a v4 card in UI.
+AUCTION_MECHANIC_LABELS = {
+    'A001':'PRZEJĘCIA', 'A002':'AURA', 'A003':'WSKRZESZ.',
+    'A004':'KOPIE', 'A005':'MONETY', 'A006':'WYCISZ.',
+    'A007':'RATUNEK', 'A008':'WYGNANIE', 'A009':'WYMIANA',
+    'A010':'PRZYWOŁ.', 'A011':'ZGONY', 'A012':'PŻ BOH.',
+}
+
 UPGRADES = {
     'Obrażenia':'+1 OBR / 3T','Leczenie':'+1 LECZ / 3T',
     'ATK ±':'±1 ATAK / 3T','MAX HP ±':'±1 PŻ / 3T','Pancerz':'+1 PANC / 3T',
@@ -47,6 +57,10 @@ def highlighted_numeric_ranges(definition) -> tuple[tuple[int,int],...]:
     explicitly says TOTAL, avoiding the claim that ticks become stronger.
     """
     text=definition.effect
+    # Auction descriptions give fixed values at their current rarity.
+    # None of these numbers scale with the card's time spent in hand.
+    if definition.id.startswith(('A0','AUC')):
+        return ()
     family=definition.family
     if family in {'Tarcza','Prowokacja','Oczyszczanie','Odporność','Szybki atak','Podwójny atak'}:
         return ()
@@ -85,12 +99,28 @@ def card_cue(card, unit=None) -> CardCue:
     family=d.family
     level=unit.ability_level if unit is not None else card.ability_level
     if d.id.startswith('A0'):
+        old_v3=d.effect.startswith('NIEAKTYWNA')
+        from game.core.auction_catalog import V4_CARDS
+        variants=V4_CARDS.get(d.id,{}).get('variants',{})
+        current=next((label for key,label in
+                      (('basic','PODSTAWOWA'),('rare','RZADKA'),('legendary','LEGENDARNA'))
+                      if variants.get(key)==d.effect),None)
+        # An auction purchase level is NOT a standard hand ability level.
+        purchase_level=re.search(r'POZIOM\s+(\d+)',d.scaling)
+        level=int(purchase_level.group(1)) if purchase_level else level
         return CardCue(trigger=TRIGGER_SHORT[d.trigger],
-                       family=FAMILY_SYMBOLS[family],
+                       family=(AUCTION_MECHANIC_LABELS[d.id] if current else
+                               FAMILY_SYMBOLS[family]),
                        color=FAMILY_COLORS[family],
-                       base='NIEAKTYWNA',upgrade='ZDOLNOŚĆ W PRZYGOTOWANIU',
+                       base=('NIEAKTYWNA' if old_v3 else
+                             'AKTYWNA' if current else 'OPIS DO WERYFIKACJI'),
+                       upgrade=('ZDOLNOŚĆ W PRZYGOTOWANIU' if old_v3 else
+                                f'AUKCJA V4 · {current}' if current else
+                                'NIEZNANY WARIANT AUKCYJNY'),
                        effect_value=None,ability_level=level,
-                       growth='STAŁE ATAK / PŻ',next_threshold='RZADKOŚĆ CO 3 RUNDY')
+                       growth='BEZ SKALOWANIA NA RĘCE',
+                       next_threshold=('RZADKOŚĆ MAKSYMALNA' if current=='LEGENDARNA'
+                                       else 'AWANS CO 3 RUNDY OD ZAKUPU'))
     base=first_scalable_value(d)
     if family=='Ogłuszenie' and base is None:base=0
     value=base

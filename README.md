@@ -1,6 +1,27 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.26** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+**AuctionHammer 0.9.27** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Poprawki po prawdziwym meczu — 0.9.27
+
+- Ekran zwycięstwa pokazuje **faktyczną liczbę zgonów jednostek od
+  początku meczu**, nie bieżącą długość cmentarza. Ponowne dobranie
+  i śmierć tej samej karty zwiększa licznik ponownie; wygnanie, zamiana
+  i zastępowanie kart bez zgonu nie są liczone. W starych niekompletnych
+  zapisach UI uczciwie oznacza zgony liczone dopiero od wczytania.
+- Atak zablokowany przez Tarczę jest widoczny w dzienniku zdarzeń jako
+  **Tarcza blokuje ... obrażeń**, wraz z nazwą chronionej jednostki.
+- Wszystkie **36 aktywnych wariantów aukcji v4** prezentują dokładnie
+  tekst z kanonicznego katalogu, aktualną rzadkość oraz poprawny
+  poziom zakupionej karty. Historyczne karty v3 pozostają nieaktywne.
+- A008, A009, A010 nie prezentują wyborów niemożliwych do wykonania,
+  gdy brakuje odpowiednich celów.
+- Po pięciu pełnych aukcjach pozostają dwa niekupione archetypy; **nie
+  rozpoczynamy kolejnej aukcji**, gdy dostępne są mniej niż trzy oferty.
+- Testy regresyjne obejmują również rzeczywisty scenariusz
+  **Widmo Otchłani → Tkacz Run (Tarcza nadana przez Mistrza Tarczy)**.
+
+[Szczegółowy audyt i testy 0.9.27](docs/auction/AUDIT_AND_FIXES_0927.md).
 
 ## Domknięcie kompletnego demo 0.9.26 — zachowane niewykupione aukcje
 
