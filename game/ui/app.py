@@ -380,6 +380,42 @@ class SoloApp:
 
     def handle(self,event):
         if event.type==pygame.QUIT:return False
+        # Panele modalne odcinają interakcje od żywego silnika.
+        if self.menu_open:
+            if event.type==pygame.KEYDOWN:
+                if event.key in (pygame.K_m,pygame.K_ESCAPE):
+                    self.menu_open=False
+                elif event.key==pygame.K_RETURN and self.menu_page=='main':
+                    self.menu_open=False
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                self._menu_click(self._physical_to_virtual(event.pos))
+            return True
+        if self.replay_index is not None:
+            if event.type==pygame.KEYDOWN:
+                if event.key in (pygame.K_ESCAPE,pygame.K_p,pygame.K_h):
+                    self.replay_index=None
+                elif event.key in (pygame.K_RIGHT,pygame.K_PERIOD):
+                    self.replay_index=min(self.recorder.last_index,self.replay_index+1)
+                elif event.key in (pygame.K_LEFT,pygame.K_COMMA):
+                    self.replay_index=max(0,self.replay_index-1)
+            elif event.type==pygame.MOUSEWHEEL:
+                self.replay_index=max(0,min(self.recorder.last_index,self.replay_index+event.y))
+            return True
+        if self.history_open:
+            if event.type==pygame.KEYDOWN:
+                if event.key in (pygame.K_ESCAPE,pygame.K_h):
+                    self.history_open=False
+                elif event.key==pygame.K_p and self.recorder.frames:
+                    self.history_open=False
+                    self.replay_index=self.recorder.last_index
+                elif event.key in (pygame.K_UP,pygame.K_PAGEUP):
+                    self.history_scroll=min(max(0,len(self.game.event_journal)-24),self.history_scroll+5)
+                elif event.key in (pygame.K_DOWN,pygame.K_PAGEDOWN):
+                    self.history_scroll=max(0,self.history_scroll-5)
+            elif event.type==pygame.MOUSEWHEEL:
+                self.history_scroll=max(0,min(max(0,len(self.game.event_journal)-24),
+                                              self.history_scroll+event.y*3))
+            return True
         if event.type==pygame.VIDEORESIZE:
             if not self.window.get_flags() & pygame.FULLSCREEN:
                 dw,dh=self._desktop_resolution()
@@ -405,6 +441,14 @@ class SoloApp:
                 self.selected=None;self.tooltip_open=False
                 if self.game.phase=='finished':self.restart()
             elif event.key==pygame.K_r and not self.game.pending:self.restart()
+            elif event.key==pygame.K_m:
+                self.menu_page='main'
+                self.menu_open=True
+            elif event.key==pygame.K_h:
+                self.history_open=True
+                self.history_scroll=0
+            elif event.key==pygame.K_p and self.recorder.frames:
+                self.replay_index=self.recorder.last_index
             elif event.key==pygame.K_a:
                 self.animations_enabled=not self.animations_enabled
                 self._recent_feedback=[]
