@@ -213,7 +213,7 @@ class WspolneFaleZgonow(unittest.TestCase):
             return chosen
         self.assertEqual(wyniki(False),wyniki(True))
 
-    def test_gdy_umarl_bohater_kolejne_fale_nie_rozdaja_nagrod(self):
+    def test_leczenie_wspolnej_fali_moze_uratowac_bohatera(self):
         g=setup_game(713)
         force_unit(g,'S21',0)
         force_unit(g,'S17',1)
@@ -224,6 +224,29 @@ class WspolneFaleZgonow(unittest.TestCase):
         self.assertEqual(g.phase,'turn')
         self.assertEqual(g.players[1].hp,3)
         self.assertIsNone(g.winner)
+
+    def test_wiele_pelnych_meczy_bez_blokady_kolejki_i_duplikatow(self):
+        # Stress test silnika na realnych decyzjach obu przeciwników AI.
+        from game.core.ai import ComputerOpponent
+        from game.core.engine import Match
+        for seed in range(740,752):
+            with self.subTest(ziarno=seed):
+                g=Match(seed)
+                g.finish_mulligan(1,[])
+                g.finish_mulligan(0,[])
+                opponents=[ComputerOpponent(0),ComputerOpponent(1)]
+                for step in range(450):
+                    if g.phase=='finished':
+                        break
+                    if g.pending is not None:
+                        opponents[g.pending.owner].choose(g)
+                    else:
+                        opponents[g.active].step(g)
+                    if step%25==0:
+                        g.assert_integrity()
+                    self.assertLessEqual(len(g.death_waves),70)
+                g.assert_integrity()
+                self.assertIn(g.phase,('turn','finished'))
 
     def test_zamkniecie_fali_wstrzymuje_nowe_deklaracje(self):
         g=setup_game(708)
