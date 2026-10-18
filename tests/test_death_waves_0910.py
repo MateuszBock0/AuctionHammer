@@ -72,6 +72,31 @@ class WspolneFaleZgonow(unittest.TestCase):
         self.assertEqual(sum('Zamknięto falę śmierci' in x for x in g.events),1)
         g.assert_integrity()
 
+    def test_monety_za_prog_75_liczone_od_koncowego_hp_fali(self):
+        g=setup_game(714)
+        force_unit(g,'S21',0)
+        force_unit(g,'S17',1)
+        g.players[1].hp=76
+        g._kill_batch(['S21','S17'])
+        g._drain()
+        self.assertEqual(g.players[1].hp,78)
+        # 76 -> 72 -> 78 to jedna fala, a nie dwa osobne zdarzenia.
+        self.assertNotIn(75,g.players[1].thresholds)
+        self.assertFalse(any('75 PŻ' in x for x in g.events))
+        g.assert_integrity()
+
+    def test_monety_za_prog_po_fali_z_rzeczywistym_spadkiem(self):
+        g=setup_game(715)
+        force_unit(g,'S21',0)
+        g.players[1].hp=77
+        old_coins=g.players[1].coins
+        g._kill_batch(['S21'])
+        g._drain()
+        self.assertEqual(g.players[1].hp,73)
+        self.assertEqual(g.players[1].coins,old_coins+2)
+        self.assertIn(75,g.players[1].thresholds)
+        g.assert_integrity()
+
     def test_kaskadowy_zgon_tworzony_w_nastepnej_fali(self):
         g=setup_game(703)
         force_unit(g,'S81',0)  # Po śmierci zmniejsza MAX PŻ wroga o 5
