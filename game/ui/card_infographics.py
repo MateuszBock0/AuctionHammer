@@ -28,6 +28,16 @@ FAMILY_COLORS = {
     'Prowokacja':(243,174,70),'Oczyszczanie':(193,223,244),'Odporność':(114,164,255),
     'Szybki atak':(79,223,223),'Podwójny atak':(255,155,99),
 }
+# Auction-only mechanic labels. The shared base-card family taxonomy is
+# insufficient for coins, copying, exile and hand swaps; those historical
+# classifications remain engine metadata but must not mislabel a v4 card in UI.
+AUCTION_MECHANIC_LABELS = {
+    'A001':'PRZEJĘCIA', 'A002':'AURA', 'A003':'WSKRZESZ.',
+    'A004':'KOPIE', 'A005':'MONETY', 'A006':'WYCISZ.',
+    'A007':'RATUNEK', 'A008':'WYGNANIE', 'A009':'WYMIANA',
+    'A010':'PRZYWOŁ.', 'A011':'ZGONY', 'A012':'PŻ BOH.',
+}
+
 UPGRADES = {
     'Obrażenia':'+1 OBR / 3T','Leczenie':'+1 LECZ / 3T',
     'ATK ±':'±1 ATAK / 3T','MAX HP ±':'±1 PŻ / 3T','Pancerz':'+1 PANC / 3T',
@@ -99,7 +109,8 @@ def card_cue(card, unit=None) -> CardCue:
         purchase_level=re.search(r'POZIOM\s+(\d+)',d.scaling)
         level=int(purchase_level.group(1)) if purchase_level else level
         return CardCue(trigger=TRIGGER_SHORT[d.trigger],
-                       family=FAMILY_SYMBOLS[family],
+                       family=(AUCTION_MECHANIC_LABELS[d.id] if current else
+                               FAMILY_SYMBOLS[family]),
                        color=FAMILY_COLORS[family],
                        base=('NIEAKTYWNA' if old_v3 else
                              'AKTYWNA' if current else 'OPIS DO WERYFIKACJI'),
