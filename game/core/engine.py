@@ -37,6 +37,8 @@ class Match:
         self._next_death_wave_id = 1
         self._wave_damage = []
         self._wave_healing = []
+        self._wave_status_ops = []
+        self._wave_defense_ops = []
         self.deferred_attack: tuple[str,str] | None = None
         self.end_queue: deque[str] | None = None
         self._next_turn_due = False
@@ -440,6 +442,12 @@ class Match:
                 if u.ability_level:
                     self._heal(uid,u.ability_level)
                 return False
+        if self._resolving_death_wave:
+            # Dopóki nie poznamy wszystkich wyników, nowe statusy nie mogą
+            # wpływać na ocenę kolejnej zdolności z TEJ SAMEJ migawki.
+            self._wave_status_ops.append(('add',uid,kind,value,remaining,expires,
+                                          source,positive,bonus_once,expire_action))
+            return True
         if kind=='stun':
             existing=[e.expires or 0 for e in u.effects if e.kind=='stun']
             if existing:expires=max(expires or 0,max(existing)+1)
@@ -465,6 +473,9 @@ class Match:
 
     def _grant_immunity(self,target,types,expires=None,source=''):
         if target not in self.units:return
+        if self._resolving_death_wave:
+            self._wave_status_ops.append(('immune',target,tuple(types),expires,source))
+            return
         u=self.units[target]
         for kind in types:
             u.effects=[e for e in u.effects if e.kind!=kind]
@@ -472,7 +483,14 @@ class Match:
 
     def _clean(self,target,negative=True):
         if target not in self.units:return False
-        u=self.units[target];oldmax=u.max_hp
+        u=self.units[target]
+        if self._resolving_death_wave:
+            useful=any(e.positive!=negative and
+                       (e.expires is not None or e.expire_action is not None
+                        or e.kind in ('poison','regen')) for e in u.effects)
+            self._wave_status_ops.append(('clean',target,negative))
+            return useful
+        oldmax=u.max_hp
         old_effects=list(u.effects)
         before=len(u.effects)
         u.effects=[e for e in u.effects if not (e.positive!=negative and (e.expires is not None or e.expire_action is not None or e.kind in ('poison','regen')))]
@@ -600,6 +618,8 @@ class Match:
         self._resolving_death_wave=True
         self._wave_damage=[]
         self._wave_healing=[]
+        self._wave_status_ops=[]
+        self._wave_defense_ops=[]
         try:
             for uid,choice in wave['decisions']:
                 self._execute(uid,'death',choice)
@@ -610,8 +630,46 @@ class Match:
         # rozdzielane są deterministycznie według kolejności źródeł.
         damage=self._wave_damage
         healing=self._wave_healing
+        statuses=self._wave_status_ops
+        defenses=self._wave_defense_ops
         self._wave_damage=[]
         self._wave_healing=[]
+        self._wave_status_ops=[]
+        self._wave_defense_ops=[]
+        # Rozstrzygamy operacje oparte na ORYGINALNYCH statusach, a nowe
+        # statusy nakładamy dopiero potem. Dwie zdolności oczyszczania
+        # korzystają z tej samej migawki, lecz nie usuwają nawzajem
+        # efektów przyznanych w tej samej fali.
+        for operation in statuses:
+            if operation[0]=='clean':
+                _,target,negative=operation
+                self._clean(target,negative)
+        for operation in statuses:
+            if operation[0]=='immune':
+                _,target,kinds,expires,source=operation
+                self._grant_immunity(target,kinds,expires,source)
+            elif operation[0]=='add':
+                (_,target,kind,value,remaining,expires,
+                 source,positive,bonus_once,expire_action)=operation
+                self._add_effect(target,kind,value,remaining,expires,
+                                 source,positive,bonus_once,expire_action)
+        # Cała osłona i pancerz fali są przyznane, zanim jakiekolwiek
+        # źródło tej fali zada obrażenia.
+        for operation in defenses:
+            kind,target,amount,source=operation
+            if kind=='hero_armor':
+                self.players[int(target.split(':')[1])].hero_armor+=amount
+            elif kind=='hero_shield':
+                self.players[int(target.split(':')[1])].hero_shield=1
+            elif target in self.units:
+                unit=self.units[target]
+                if kind=='shield':
+                    unit.shield=1
+                    unit.shield_source=source
+                elif kind=='armor':
+                    unit.armor_perm+=amount
+                    unit.armor_perm_source=source
+                    unit.armor_perm_grants[source]=unit.armor_perm_grants.get(source,0)+amount
         # Bohaterowie i jednostki dostają zbiorcze konsekwencje przed
         # usunięciem ofiar i weryfikacją wyniku meczu.
         for target,amount,ignore_defense in damage:
@@ -737,6 +795,10 @@ class Match:
                              positive=(val>0 if positive is None else positive),
                              expire_action=(self.action_turn if action else None))
         def arm(t,val,temporary=False,expires=None):
+            if self._resolving_death_wave:
+                if t in self.units:
+                    self._wave_defense_ops.append(('armor',t,val,uid))
+                return
             if t in self.units:
                 if temporary:
                     self.units[t].armor_temp+=val
@@ -838,15 +900,25 @@ class Match:
         elif cid=='S23':mod(target,'atk',(2+level) if mode=='Wzmocnij' else -(2+level))
         elif cid=='S81':mod(target,'max_hp',(5+level) if mode=='Wzmocnij' else -(5+level))
         elif cid=='S82':
-            if target==f'hero:{owner}':self.players[owner].hero_armor+=6+level
+            if target==f'hero:{owner}':
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('hero_armor',target,6+level,uid))
+                else:self.players[owner].hero_armor+=6+level
             else:arm(target,6+level)
         elif cid=='S20':
             if target==f'hero:{owner}':
-                self.players[owner].hero_shield=1
-                self.players[owner].hero_armor+=2
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('hero_shield',target,1,uid))
+                    self._wave_defense_ops.append(('hero_armor',target,2,uid))
+                else:
+                    self.players[owner].hero_shield=1
+                    self.players[owner].hero_armor+=2
             elif target in self.units:
-                self.units[target].shield=1
-                self.units[target].shield_source=uid
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('shield',target,1,uid))
+                else:
+                    self.units[target].shield=1
+                    self.units[target].shield_source=uid
                 arm(target,2)
         elif cid=='S83':self._add_poison(target,2,3,uid,level)
         elif cid=='S84':
@@ -915,5 +987,6 @@ class Match:
         else:
             raise AssertionError('Missing ability handler for: '+cid)
         self.position_reactions_due=False
-        self._update_auras()
+        if not self._resolving_death_wave:
+            self._update_auras()
 
