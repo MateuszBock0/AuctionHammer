@@ -11,6 +11,20 @@ from test_engine import setup_game, force_unit
 
 
 class WspolneFaleZgonow(unittest.TestCase):
+    def test_dokument_kolejki_v19_jest_aktualnym_zrodlem(self):
+        import json
+        from pathlib import Path
+        root=Path(__file__).resolve().parents[1]
+        order=json.loads((root/'data/event_order_v19.json').read_text(encoding='utf-8'))
+        master=json.loads((root/'data/GAME_MASTER.json').read_text(encoding='utf-8'))
+        self.assertEqual(order['version'],'19.0')
+        self.assertTrue(order['simultaneous_death_batch'])
+        self.assertTrue(order['hero_death_end_of_closed_wave'])
+        self.assertIn('simultaneous_death_triggers_from_single_snapshot',
+                      order['authoritative_priority'])
+        self.assertEqual(master['canonical_event_order_file'],'data/event_order_v19.json')
+        self.assertEqual(master['rules']['version'],'19.0')
+
     def test_kolejnosc_migawki_aktywny_gracz_od_lewej(self):
         g=setup_game(700)
         force_unit(g,'S82',1)
