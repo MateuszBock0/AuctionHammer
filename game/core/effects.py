@@ -41,7 +41,7 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
     if cid == 'S67':
         return c('board_double',[x for x in ally if x in game.units])
     # v18/v19: when no allied board recipient survives a death, fall back.
-    if cid in ('S20','S82') and not ally:
+    if cid in ('S20','S82','S85') and not ally:
         return [Choice('auto',f'hero:{owner}','Bohater otrzymuje ochronę')]
     if cid == 'S91' and not ally:
         return [Choice('auto',None,'Losowa karta w ręce otrzymuje bonus')]
@@ -67,7 +67,8 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
         if attacked in game.units: arr += [Choice('Osłab cel',attacked,'Osłab atakowany cel')]
         return arr
     if cid == 'S78':
-        return c('Nadaj szybki atak', [x for x in ally if x!=uid and game.units[x].played_turn==own.turn_count])
+        recent=[x for x in ally if x!=uid and game.units[x].played_turn==own.turn_count]
+        return c('Nadaj szybki atak',recent) if recent else c('Szybki atak na rękę',own.hand)
     if cid == 'S74':
         return [Choice('auto',attacked,'Rozprosz efekty celu')]
     if cid == 'S101':
