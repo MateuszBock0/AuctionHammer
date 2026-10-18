@@ -91,11 +91,20 @@ class MatchAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             file=Path(folder)/"last.json"
             write_last_match(game,file)
+            self.assertLess(file.stat().st_size,8_000_000)
             audit=read_report(file)
         self.assertTrue(audit["complete_from_start"])
         self.assertEqual(audit["summary"]["action_commands"],len(audit["actions"]))
         self.assertEqual(audit["event_journal"],game.event_journal)
         self.assertGreater(len(audit["actions"]),8)
+        self.assertGreater(len(audit["internal_events"]),10)
+        self.assertEqual(audit["summary"]["internal_operations"],
+                         len(audit["internal_events"]))
+        self.assertTrue(any(x["operation"]=="_damage"
+                            for x in audit["internal_events"]))
+        self.assertTrue(any(x.get("action_seq") for x in audit["internal_events"]))
+        self.assertTrue(any(evt.get("internal_seq") is not None
+                            for evt in audit["event_journal"]))
         self.assertTrue(verify_replay(audit,
                                     lambda seed:Match(seed,audit_enabled=True)))
 
