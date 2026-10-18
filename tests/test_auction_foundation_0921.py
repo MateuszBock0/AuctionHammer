@@ -145,6 +145,28 @@ class CatalogFoundationTests(unittest.TestCase):
             self.assertEqual(meta["last_evolve_round"],6)
         m.assert_integrity()
 
+    def test_rarity_reward_is_1_2_3_coins_at_unit_death(self):
+        from game.core.models import Unit
+        for rarity,reward in (("podstawowa",1),("rzadka",2),
+                              ("legendarna",3)):
+            m=ready(2190)
+            take_two(m)
+            uid=next(iter(m.auction_awards))
+            owner=m.cards[uid].owner
+            m.auction_awards[uid]["rarity"]=rarity
+            m.cards[uid].zone="board"
+            m.players[owner].hand.remove(uid)
+            m.players[owner].board.append(uid)
+            card=m.cards[uid]
+            m.units[uid]=Unit(uid,owner,card.attack,card.max_hp,card.max_hp,
+                              card.ability_level,m.players[owner].turn_count)
+            before=m.players[1-owner].coins
+            m._kill_batch([uid])
+            with self.subTest(rarity=rarity):
+                self.assertEqual(m.players[1-owner].coins-before,reward)
+                self.assertEqual(m.cards[uid].zone,"grave")
+                m.assert_integrity()
+
     def test_save_load_during_v3_bid_and_after_picking(self):
         m=ready(2109)
         m.auction_bid(m.auction.turn,1)
