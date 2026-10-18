@@ -56,3 +56,7 @@ Wybór celu i wariantu zajmuje odrębny panel. Legalne cele na planszy oraz — 
 Testy uruchamia się poleceniem `python -m unittest discover -s tests -v`. Testy v19 znajdują się w `tests/test_v19_integration.py`; sprawdzają m.in. wybory S66/S67, powiązanie premii z konkretną kartą, skutki śmierci S20/S82/S90/S91, brak odnawiania pancerza S105, regenerację S109 i rysowanie wszystkich 70 kart.
 
 **Ważne ograniczenie:** silnik w dalszym ciągu wymaga odrębnego audytu grup jednoczesnych zgonów. Testy nie dowodzą pełnej zgodności atomowej kolejki zdarzeń ani zbalansowania wszystkich zestawień kart. Żaden dokument nie powinien przedstawiać tych zagadnień jako zakończonych.
+
+## MVP 0.9.10 — atomowe fale jednoczesnych zgonów
+
+Zaimplementowano wspólne migawki i zbiorowe konsekwencje źródeł „Przy śmierci”. Testy są w `tests/test_death_waves_0910.py`, a opis, ograniczenia i scenariusze w `docs/FALE_ZGONOW_v19_MVP_0910.md`. Obowiązujący dokument kolejności to `data/event_order_v19.json`; starsze dokumenty v17 są archiwalne. Pełna wielofalowa walidacja wszystkich kombinacji kart pozostaje otwarta.

@@ -27,7 +27,19 @@ class Match:
         self.round = 1
         self.phase = 'mulligan'
         self.pending: Pending | None = None
-        self.trigger_queue = deque()  # (uid, context, target)
+        self.trigger_queue = deque()  # zwykłe wyzwalacze: (uid, context, target)
+        # Każda fala przechowuje *zamrożone* wybory wszystkich źródeł zgonu.
+        # Efekty śmierci z jednej fali wykonują się dopiero po zebraniu
+        # wszystkich decyzji, bez usuwania nowych ofiar w jej środku.
+        self.death_waves = deque()
+        self.active_death_wave = None
+        self._resolving_death_wave = False
+        self._next_death_wave_id = 1
+        self._wave_damage = []
+        self._wave_healing = []
+        self._wave_status_ops = []
+        self._wave_defense_ops = []
+        self._suspend_hero_thresholds = False
         self.deferred_attack: tuple[str,str] | None = None
         self.end_queue: deque[str] | None = None
         self._next_turn_due = False
@@ -39,6 +51,7 @@ class Match:
         self._death_disabled = {}
         self._death_levels = {}
         self.action_turn = 0
+        self.rng_draw_index = 0  # v19: licznik rzeczywistych losowań efektów
         self.mulligan_done = set()
         self.mulligan_requests: dict[int,list[str]] = {}
         self.excluded: list[str] = []
@@ -253,7 +266,15 @@ class Match:
         self._check(0<=index<len(pending.choices),'Nieprawidłowy wybór')
         choice=pending.choices[index]
         self.pending=None
-        self._execute(pending.uid,pending.context,choice,pending.attack_target)
+        if pending.context=='death' and self.active_death_wave is not None:
+            wave=self.active_death_wave
+            self._check(wave['cursor'] < len(wave['sources'])
+                        and wave['sources'][wave['cursor']][0]==pending.uid,
+                        'Niezgodność kolejki wspólnej fali śmierci')
+            wave['decisions'].append((pending.uid,choice))
+            wave['cursor']+=1
+        else:
+            self._execute(pending.uid,pending.context,choice,pending.attack_target)
         self._drain()
 
     def _queue(self,uid,context,target=None):
@@ -266,6 +287,24 @@ class Match:
             limit=0
             while self.phase=='turn' and self.pending is None and limit<300:
                 limit+=1
+                # Otwarta fala ma pierwszeństwo nad nowymi efektami. Najpierw
+                # zbieramy wszystkie wybory, potem rozpatrujemy wspólny wynik.
+                if self.active_death_wave is not None:
+                    wave=self.active_death_wave
+                    if wave['cursor']<len(wave['sources']):
+                        uid,choices=wave['sources'][wave['cursor']]
+                        if not choices:
+                            wave['cursor']+=1
+                        elif len(choices)==1 and choices[0].mode=='auto':
+                            wave['decisions'].append((uid,choices[0]))
+                            wave['cursor']+=1
+                        else:
+                            self.pending=Pending(uid,self.cards[uid].owner,
+                                                 'death',list(choices))
+                        continue
+                    self.active_death_wave=None
+                    self._resolve_death_wave(wave)
+                    continue
                 if self.trigger_queue:
                     uid,ctx,tgt=self.trigger_queue.popleft()
                     if ctx not in ('death',) and uid not in self.units:continue
@@ -276,6 +315,9 @@ class Match:
                         self._execute(uid,ctx,choices[0],tgt)
                     else:
                         self.pending=Pending(uid,self.cards[uid].owner,ctx,choices,tgt)
+                    continue
+                if self.death_waves:
+                    self.active_death_wave=self.death_waves.popleft()
                     continue
                 if self.position_reactions_due:
                     self.position_reactions_due=False
@@ -306,7 +348,8 @@ class Match:
                     continue
                 break
             self._check(limit<300,'Zbyt długa kolejka efektów')
-            if not self.trigger_queue and not self.deferred_attack and self.pending is None:
+            if (not self.trigger_queue and not self.deferred_attack and self.pending is None
+                    and not self.death_waves and self.active_death_wave is None):
                 self._check_winner()
         finally:
             self._draining=False
@@ -401,6 +444,12 @@ class Match:
                 if u.ability_level:
                     self._heal(uid,u.ability_level)
                 return False
+        if self._resolving_death_wave:
+            # Dopóki nie poznamy wszystkich wyników, nowe statusy nie mogą
+            # wpływać na ocenę kolejnej zdolności z TEJ SAMEJ migawki.
+            self._wave_status_ops.append(('add',uid,kind,value,remaining,expires,
+                                          source,positive,bonus_once,expire_action))
+            return True
         if kind=='stun':
             existing=[e.expires or 0 for e in u.effects if e.kind=='stun']
             if existing:expires=max(expires or 0,max(existing)+1)
@@ -426,6 +475,9 @@ class Match:
 
     def _grant_immunity(self,target,types,expires=None,source=''):
         if target not in self.units:return
+        if self._resolving_death_wave:
+            self._wave_status_ops.append(('immune',target,tuple(types),expires,source))
+            return
         u=self.units[target]
         for kind in types:
             u.effects=[e for e in u.effects if e.kind!=kind]
@@ -433,7 +485,14 @@ class Match:
 
     def _clean(self,target,negative=True):
         if target not in self.units:return False
-        u=self.units[target];oldmax=u.max_hp
+        u=self.units[target]
+        if self._resolving_death_wave:
+            useful=any(e.positive!=negative and
+                       (e.expires is not None or e.expire_action is not None
+                        or e.kind in ('poison','regen')) for e in u.effects)
+            self._wave_status_ops.append(('clean',target,negative))
+            return useful
+        oldmax=u.max_hp
         old_effects=list(u.effects)
         before=len(u.effects)
         u.effects=[e for e in u.effects if not (e.positive!=negative and (e.expires is not None or e.expire_action is not None or e.kind in ('poison','regen')))]
@@ -445,6 +504,9 @@ class Match:
         return len(u.effects)!=before
 
     def _heal(self,target,amount,ability=True):
+        if self._resolving_death_wave:
+            self._wave_healing.append((target,amount,ability))
+            return
         if target in self.units:
             u=self.units[target]
             if ability:
@@ -477,6 +539,11 @@ class Match:
     def _damage(self,target,amount,ignore_defense=False,defer_death=False):
         amount=max(0,amount)
         if amount<=0:return 0
+        if self._resolving_death_wave:
+            # Obrażenia zdolności śmierci nakładamy razem, po przygotowaniu
+            # konsekwencji WSZYSTKICH źródeł z tej samej fali.
+            self._wave_damage.append((target,amount,ignore_defense))
+            return 0
         if target in self.units:
             u=self.units[target]
             if not ignore_defense:
@@ -498,26 +565,137 @@ class Match:
                 if p.hero_shield:p.hero_shield=0;return 0
                 a=min(amount,p.hero_armor);p.hero_armor-=a;amount-=a
             old=p.hp;p.hp-=amount
-            for threshold in (75,50,25):
-                if old>threshold>=p.hp and threshold not in p.thresholds:
-                    p.thresholds.add(threshold);p.coins+=2
-                    self._log(f'{p.name}: +2 monety za przekroczenie {threshold} HP.')
+            if not self._suspend_hero_thresholds:
+                for threshold in (75,50,25):
+                    if old>threshold>=p.hp and threshold not in p.thresholds:
+                        p.thresholds.add(threshold);p.coins+=2
+                        self._log(f'{p.name}: +2 monety za przekroczenie {threshold} PŻ.')
             return amount
         return 0
 
+    def _ordered_deaths(self,fallen):
+        """Porządek v19: najpierw aktywny gracz od lewej, potem drugi."""
+        positions={}
+        for pid in (self.active,1-self.active):
+            for pos,uid in enumerate(self.players[pid].board):
+                positions[uid]=(0 if pid==self.active else 1,pos,uid)
+        return sorted({uid for uid in fallen if uid in self.units},
+                      key=lambda uid:positions.get(uid,(2,999,uid)))
+
     def _kill_batch(self,fallen):
-        fallen=list(dict.fromkeys(fallen))
-        for uid in fallen:
-            if uid not in self.units:continue
-            u=self.units[uid]
-            self._death_disabled[uid]=self._disabled(u)
-            self._death_levels[uid]=u.ability_level
+        ordered=self._ordered_deaths(fallen)
+        if not ordered:return
+        # Zbieramy stan wszystkich umierających PRZED usunięciem pierwszej
+        # jednostki. Nagrody naliczamy dokładnie raz za fizyczną instancję.
+        snapshot=[]
+        for uid in ordered:
+            unit=self.units[uid]
+            blocked=self._disabled(unit)
+            self._death_disabled[uid]=blocked
+            self._death_levels[uid]=unit.ability_level
+            snapshot.append((uid,unit.owner,blocked,
+                             self.cards[uid].definition.faction=='Potwory'))
+        for uid,owner,_,_ in snapshot:
             self._remove_unit(uid,death=True)
-            self.players[1-u.owner].coins+=1
+            self.players[1-owner].coins+=1
             self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
-            if self.cards[uid].definition.faction=='Potwory' and not self._death_disabled[uid]:
-                self._queue(uid,'death')
-        if fallen:self._update_auras()
+        # Po usunięciu CAŁEJ grupy utrwalamy dostępne cele raz. Kolejne
+        # efekty w tej samej grupie NIE zmieniają wyborów swoich sąsiadów.
+        sources=[]
+        for uid,_,blocked,monster in snapshot:
+            if monster and not blocked:
+                sources.append((uid,tuple(options(self,uid,'death'))))
+        if sources:
+            wave={'id':self._next_death_wave_id,'fallen':tuple(ordered),
+                  'sources':tuple(sources),'cursor':0,'decisions':[]}
+            self._next_death_wave_id+=1
+            self.death_waves.append(wave)
+            self._log(f'Fala śmierci {wave["id"]}: {len(ordered)} zgonów, '
+                      f'{len(sources)} zdolności z jednej migawki.')
+        # Śmierć od zaniku aury jest następną falą; bieżąca została już
+        # zarejestrowana przed przeliczeniem aury.
+        self._update_auras()
+
+    def _resolve_death_wave(self,wave):
+        """Jedna faza konsekwencji, po wszystkich wyborach z migawki."""
+        self._resolving_death_wave=True
+        self._wave_damage=[]
+        self._wave_healing=[]
+        self._wave_status_ops=[]
+        self._wave_defense_ops=[]
+        try:
+            for uid,choice in wave['decisions']:
+                self._execute(uid,'death',choice)
+        finally:
+            self._resolving_death_wave=False
+        # Stosujemy sumę obrażeń i leczenia tej samej fali; pośredni zgon
+        # nie blokuje dalszych zdolności. Zużywalne tarcze/pancerz
+        # rozdzielane są deterministycznie według kolejności źródeł.
+        damage=self._wave_damage
+        healing=self._wave_healing
+        statuses=self._wave_status_ops
+        defenses=self._wave_defense_ops
+        self._wave_damage=[]
+        self._wave_healing=[]
+        self._wave_status_ops=[]
+        self._wave_defense_ops=[]
+        # Rozstrzygamy operacje oparte na ORYGINALNYCH statusach, a nowe
+        # statusy nakładamy dopiero potem. Dwie zdolności oczyszczania
+        # korzystają z tej samej migawki, lecz nie usuwają nawzajem
+        # efektów przyznanych w tej samej fali.
+        for operation in statuses:
+            if operation[0]=='clean':
+                _,target,negative=operation
+                self._clean(target,negative)
+        for operation in statuses:
+            if operation[0]=='immune':
+                _,target,kinds,expires,source=operation
+                self._grant_immunity(target,kinds,expires,source)
+            elif operation[0]=='add':
+                (_,target,kind,value,remaining,expires,
+                 source,positive,bonus_once,expire_action)=operation
+                self._add_effect(target,kind,value,remaining,expires,
+                                 source,positive,bonus_once,expire_action)
+        # Cała osłona i pancerz fali są przyznane, zanim jakiekolwiek
+        # źródło tej fali zada obrażenia.
+        for operation in defenses:
+            kind,target,amount,source=operation
+            if kind=='hero_armor':
+                self.players[int(target.split(':')[1])].hero_armor+=amount
+            elif kind=='hero_shield':
+                self.players[int(target.split(':')[1])].hero_shield=1
+            elif target in self.units:
+                unit=self.units[target]
+                if kind=='shield':
+                    unit.shield=1
+                    unit.shield_source=source
+                elif kind=='armor':
+                    unit.armor_perm+=amount
+                    unit.armor_perm_source=source
+                    unit.armor_perm_grants[source]=unit.armor_perm_grants.get(source,0)+amount
+        # Bohaterowie i jednostki dostają zbiorcze konsekwencje przed
+        # usunięciem ofiar i weryfikacją wyniku meczu.
+        original_hero_hp=[p.hp for p in self.players]
+        self._suspend_hero_thresholds=True
+        try:
+            for target,amount,ignore_defense in damage:
+                self._damage(target,amount,ignore_defense=ignore_defense,defer_death=True)
+            for target,amount,ability in healing:
+                self._heal(target,amount,ability=ability)
+        finally:
+            self._suspend_hero_thresholds=False
+        # Progi bohatera sprawdzamy dla KOŃCOWEGO wyniku wspólnej fali,
+        # nie dla przejściowej wartości pomiędzy jednoczesnymi efektami.
+        for player,old in zip(self.players,original_hero_hp):
+            for threshold in (75,50,25):
+                if old>threshold>=player.hp and threshold not in player.thresholds:
+                    player.thresholds.add(threshold)
+                    player.coins+=2
+                    self._log(f'{player.name}: +2 monety za przekroczenie {threshold} PŻ.')
+        self._update_auras()
+        self._kill_batch([uid for uid,u in list(self.units.items()) if u.hp<=0])
+        self._log(f'Zamknięto falę śmierci {wave["id"]}.')
+        self._check_winner()
 
     def _remove_unit(self,uid,death):
         u=self.units.pop(uid)
@@ -567,10 +745,11 @@ class Match:
                 if src not in u.aura_armor:u.aura_armor[src]=2+self.units[src].ability_level
         # S108: on first facing a new opponent. Deferred during PLAY_CARD
         # so ON_PLAY resolves before newly generated reactive passives.
-        if not defer_reactive:
+        if not defer_reactive and not self._resolving_death_wave:
             self._apply_position_reactions()
-        dead=[uid for uid,u in list(self.units.items()) if u.hp<=0]
-        if dead:self._kill_batch(dead)
+        if not self._resolving_death_wave:
+            dead=[uid for uid,u in list(self.units.items()) if u.hp<=0]
+            if dead:self._kill_batch(dead)
 
     def _apply_position_reactions(self):
         for uid,u in list(self.units.items()):
@@ -632,6 +811,10 @@ class Match:
                              positive=(val>0 if positive is None else positive),
                              expire_action=(self.action_turn if action else None))
         def arm(t,val,temporary=False,expires=None):
+            if self._resolving_death_wave:
+                if t in self.units:
+                    self._wave_defense_ops.append(('armor',t,val,uid))
+                return
             if t in self.units:
                 if temporary:
                     self.units[t].armor_temp+=val
@@ -733,15 +916,25 @@ class Match:
         elif cid=='S23':mod(target,'atk',(2+level) if mode=='Wzmocnij' else -(2+level))
         elif cid=='S81':mod(target,'max_hp',(5+level) if mode=='Wzmocnij' else -(5+level))
         elif cid=='S82':
-            if target==f'hero:{owner}':self.players[owner].hero_armor+=6+level
+            if target==f'hero:{owner}':
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('hero_armor',target,6+level,uid))
+                else:self.players[owner].hero_armor+=6+level
             else:arm(target,6+level)
         elif cid=='S20':
             if target==f'hero:{owner}':
-                self.players[owner].hero_shield=1
-                self.players[owner].hero_armor+=2
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('hero_shield',target,1,uid))
+                    self._wave_defense_ops.append(('hero_armor',target,2,uid))
+                else:
+                    self.players[owner].hero_shield=1
+                    self.players[owner].hero_armor+=2
             elif target in self.units:
-                self.units[target].shield=1
-                self.units[target].shield_source=uid
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('shield',target,1,uid))
+                else:
+                    self.units[target].shield=1
+                    self.units[target].shield_source=uid
                 arm(target,2)
         elif cid=='S83':self._add_poison(target,2,3,uid,level)
         elif cid=='S84':
@@ -755,8 +948,12 @@ class Match:
             if useful and level:self._heal(target,level)
         elif cid=='S88':immune(target,('poison','stun'))
         elif cid=='S90':
-            available=list(self.players[owner].hand)
+            available=sorted(self.players[owner].hand)  # migawka fizycznych identyfikatorów
             chosen=self.rng.sample(available,min(2,len(available)))
+            if chosen:
+                self.rng_draw_index+=1
+                self._log(f'Losowanie S90 #{self.rng_draw_index}: źródło {uid}, '
+                          f'kandydaci {available}, wybrano {chosen}.')
             for hand_uid in chosen:
                 self.cards[hand_uid].quick_on_first_summon=True
                 self._log(f'{self.label(hand_uid)} otrzymuje Szybki atak na najbliższe wystawienie (S90).')
@@ -764,7 +961,11 @@ class Match:
             if target in self.units:
                 mod(target,'double',0,True)
             elif self.players[owner].hand:
-                hand_uid=self.rng.choice(self.players[owner].hand)
+                available=sorted(self.players[owner].hand)
+                hand_uid=self.rng.choice(available)
+                self.rng_draw_index+=1
+                self._log(f'Losowanie S91 #{self.rng_draw_index}: źródło {uid}, '
+                          f'kandydaci {available}, wybrano {[hand_uid]}.')
                 self.cards[hand_uid].double_on_first_eligible=True
                 self._log(f'{self.label(hand_uid)} otrzymuje Podwójny atak na pierwszą legalną turę (S91).')
         # Krasnoludy
@@ -810,5 +1011,6 @@ class Match:
         else:
             raise AssertionError('Missing ability handler for: '+cid)
         self.position_reactions_due=False
-        self._update_auras()
+        if not self._resolving_death_wave:
+            self._update_auras()
 

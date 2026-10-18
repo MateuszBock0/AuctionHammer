@@ -246,7 +246,7 @@
     "disconnect_recovery": "implementation_detail_no_match_timer"
   },
   "base_game_design_status": "LOCKED_FOR_IMPLEMENTATION",
-  "base_engine_implementation_status": "MVP_SOLO_0.9.9_Z_TESTAMI_NIEPELNA_WALIDACJA_JEDNOCZESNYCH_ZGONOW",
+  "base_engine_implementation_status": "MVP_SOLO_0.9.10_Z_TESTAMI_ATOMOWYCH_FAL_ZGONOW",
   "mvp_scope": {
     "starter_cards": 70,
     "starter_card_copies_per_archetype": 1,
@@ -255,11 +255,21 @@
     "later_auction_design": "DEFERRED_SEPARATE_STAGE",
     "persistent_coins_and_standard_income": true
   },
-  "rules_source_priority": "Zatwierdzona specyfikacja Game Master v19 oraz data/cards_base_70.json (karty). docs/GAME_MASTER_v17.md to archiwum; data/event_order_v17.json pozostaje materiałem historycznym do weryfikacji wspólnych fal zgonów.",
+  "rules_source_priority": "Game Master v19, data/cards_base_70.json (karty), data/event_order_v19.json (priorytet i fale zgonów); pliki v17 stanowią archiwum.",
   "no_timer_decision_confirmed": true,
   "canonical_bank_file": "data/starter_bank_v17.json",
   "verified_catalog_version": "Game Master v19",
   "known_unverified_scenarios": [
-    "Jednoczesne zgony i kaskady efektów śmierci wymagają potwierdzenia zgodności z zasadą wspólnej fali."
-  ]
+    "Rzadkie kombinacje wielu jednoczesnych modyfikatorów w ponad dwóch falach mogą wymagać dalszej walidacji.",
+    "Pełny bilans wszystkich kombinacji 70 kart nie został potwierdzony statystycznie."
+  ],
+  "death_wave_implementation": {
+    "status": "MVP_0.9.10_REGRESSION_TESTED",
+    "source": "data/event_order_v19.json",
+    "snapshot": "Wszystkie legalne cele zdolności Przy śmierci wyznacza się raz po usunięciu całej grupy.",
+    "choice_collection": "Wszystkie wybory są zbierane przed nałożeniem skutków grupy.",
+    "wave_effects": "Oczyszczanie na migawej grupy, nowe statusy, osłony i pancerze, zbiorcze obrażenia i leczenie, usunięcie kolejnych ofiar.",
+    "cascade": "Ofiary powstałe ze skutków fali trafiają do następnej grupy.",
+    "hero_end": "Weryfikacja końca meczu po zamknięciu fali, bez przerywania skutków pozostałych źródeł tej samej grupy."
+  }
 }
