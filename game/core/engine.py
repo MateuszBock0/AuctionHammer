@@ -281,6 +281,15 @@ class Match:
                 limit+=1
                 if self.death_waves:
                     wave=self.death_waves[0]
+                    if wave['options'] is None:
+                        # The next cohort takes its own fresh post-previous-wave
+                        # snapshot. A death due to aura collapse may already be
+                        # queued, but its legal targets must not be frozen
+                        # before the preceding cohort finishes.
+                        wave['options']={uid:tuple(options(self,uid,'death'))
+                                         for uid in wave['triggers']}
+                        self.death_wave_log.append(('migawka',wave['id'],
+                                                    tuple(wave['triggers'])))
                     undecided=next((uid for uid in wave['triggers'] if uid not in wave['choices']),None)
                     if undecided is not None:
                         opts=wave['options'][undecided]
@@ -574,11 +583,11 @@ class Match:
             self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
         self._death_wave_id+=1
         wave={'id':self._death_wave_id,'fallen':tuple(ids),
-              'triggers':tuple(eligible),'options':{},'choices':{},
+              'triggers':tuple(eligible),'options':None,'choices':{},
               'waiting':None}
-        # Freeze legal targets for the whole group; do NOT execute anything.
-        for uid in eligible:
-            wave['options'][uid]=tuple(options(self,uid,'death'))
+        # A later aura-induced cohort may be detected before earlier effects
+        # finish. Snapshot its legal choices only when it reaches the queue's
+        # front. Never execute one trigger during another cohort's selection.
         self.death_waves.append(wave)
         self.death_wave_log.append(('wykryto',wave['id'],tuple(ids)))
         self._log(f'Fala zgonów {wave["id"]}: '+', '.join(self.label(uid) for uid in ids))
