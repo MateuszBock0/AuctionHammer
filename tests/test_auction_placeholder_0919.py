@@ -204,6 +204,36 @@ class AuctionCoreTests(unittest.TestCase):
             report,lambda seed,auctions_enabled=False:
                 Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled)))
 
+    def test_intrinsic_auction_taunt_is_disabled_by_stun(self):
+        m=auction_game(1915)
+        first=free_pick(m)
+        for _ in range(2):
+            if m.active==first:break
+            m.end_turn()
+        uid=m.auction_history[0]['picks'][first]
+        m.players[first].played_this_turn=False
+        m.play(uid)
+        unit=m.units[uid]
+        self.assertTrue(m._taunt(unit))
+        m._add_effect(uid,'stun',expires=99,source='S59',positive=False)
+        self.assertFalse(m._taunt(unit))
+        self.assertEqual(unit.shield,1)
+        self.assertEqual(unit.atk,3)
+
+    def test_old_save_without_any_auction_fields_is_migrated(self):
+        m=Match(1916)
+        for field in ('auctions_enabled','auction','auction_history','auction_awards'):
+            delattr(m,field)
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/'save.json'
+            save_match(m,path)
+            restored=load_match(path)
+        self.assertFalse(restored.auctions_enabled)
+        self.assertIsNone(restored.auction)
+        self.assertEqual(restored.auction_awards,{})
+        self.assertEqual(restored.auction_history,[])
+        restored.assert_integrity()
+
     def test_rarity_uses_independent_60_30_10_thresholds(self):
         from game.core.auction import begin
         class Rng:
@@ -257,6 +287,46 @@ class AuctionUITests(unittest.TestCase):
         app._draw_auction()
         app.draw()
         self.assertTrue(app.game.auction is not None)
+
+    def test_text_geometry_does_not_overlap_on_auction_modal(self):
+        from game.ui.app import SoloApp
+        with patch.object(SoloApp,'_desktop_resolution',return_value=(1536,864)):
+            app=SoloApp()
+        app.game=auction_game(1917)
+        for stage in ('bidding','picking'):
+            if stage=='picking':
+                app.game.auction_pass(app.game.auction.turn)
+                app.game.auction_pass(app.game.auction.turn)
+            boxes=[]
+            original=app._text
+            def trace(text,size,x,y,color=None,center=False):
+                rect=original(text,size,x,y,color,center)
+                boxes.append((str(text),rect))
+                return rect
+            with patch.object(app,'_text',side_effect=trace):
+                app._draw_auction()
+            area=pygame.Rect(203,112,1076,732)
+            for text,rect in boxes:
+                self.assertTrue(area.contains(rect),(stage,text,rect))
+            for i,(a,ra) in enumerate(boxes):
+                for b,rb in boxes[i+1:]:
+                    self.assertFalse(ra.colliderect(rb),
+                                     (stage,a,ra,b,rb))
+
+    def test_menu_accessible_during_auction_for_saving(self):
+        from game.ui.app import SoloApp
+        with patch.object(SoloApp,'_desktop_resolution',return_value=(1536,864)):
+            app=SoloApp()
+        app.game=auction_game(1918)
+        app.handle(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_m))
+        self.assertTrue(app.menu_open)
+        app.menu_page='settings'
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/'save.json'
+            with patch('game.ui.app.save_match',side_effect=lambda game:save_match(game,path)):
+                app._menu_click(pygame.Rect(535,322+3*81,420,61).center)
+            self.assertTrue(path.exists())
+            self.assertEqual(load_match(path).phase,'auction')
 
     def test_sold_cards_render_in_existing_card_view(self):
         from game.ui.card_view import CardView
