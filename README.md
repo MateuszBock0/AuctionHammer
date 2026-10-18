@@ -1,59 +1,56 @@
-# AuctionHammer
+# AuctionHammer — gra karciana
 
-AuctionHammer is a turn-based fantasy card game for one player against a computer opponent. The current solo prototype follows **Game Master v19** and includes 70 unique starter cards, with one copy of each card in the shared pool. Auctions and card play costs are not part of this version.
+**AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Aukcje, karty aukcyjne i koszt zagrywania kart nie są jeszcze dostępne.**
 
-## Play on Windows
+## Uruchamianie w Windows
 
-Download the latest [Windows release](https://github.com/MateuszBock0/AuctionHammer/releases/latest), extract the `AuctionHammer` folder, and open **`URUCHOM_AUCTIONHAMMER.bat`**. The Windows release includes the game executable and its runtime dependencies. No separate Python installation is needed to play.
+Pobierz [najnowsze wydanie gry](https://github.com/MateuszBock0/AuctionHammer/releases/latest), rozpakuj folder `AuctionHammer`, a następnie kliknij dwukrotnie plik **`URUCHOM_AUCTIONHAMMER.bat`**. Nie musisz instalować Pythona, dodatkowych bibliotek, Gita ani edytora kodu.
 
-- **`URUCHOM_AUCTIONHAMMER.bat`** checks for a newer release and then starts the game. If the update check is unavailable, it uses the installed version.
-- **`GRAJ_BEZ_INTERNETU.bat`** starts the installed version without checking for updates.
-- **`AuctionHammer.exe`** starts the game directly.
+- **`URUCHOM_AUCTIONHAMMER.bat`** sprawdza dostępność aktualizacji i uruchamia grę. Gdy nie ma internetu, uruchamia dostępną wersję lokalną.
+- **`GRAJ_BEZ_INTERNETU.bat`** uruchamia zainstalowaną grę bez sprawdzania aktualizacji.
+- **`AuctionHammer.exe`** uruchamia grę bezpośrednio.
 
-Keep `AuctionHammer.exe` and the `_internal` directory together. An internet connection is needed to download updates, but not to play offline.
+Plik `AuctionHammer.exe` musi znajdować się w tym samym folderze co katalog `_internal`. Internet jest potrzebny do pobrania aktualizacji, **nie do rozgrywki**.
 
-## Controls
+## Sterowanie
 
-- Select a card in your hand, then click your board to play it. You can also drag a card onto the board.
-- Select one of your ready units, then choose an enemy unit or the opposing hero to attack.
-- When a skill requires a target or mode, use the **selection panel on the right**. Eligible targets are highlighted on the board; a direct click works when there is only one available mode for that target.
-- Press **1–8** to select a visible choice, or use the panel's navigation controls for additional choices.
-- Press **I** to open a card's full description. Mouse wheel scrolls the description.
-- Press **Space** to end your turn. Press **F11** to switch between fullscreen and your previous window size.
-- Resize the window at any time using its borders. The battlefield and click targets stay aligned, with the original aspect ratio preserved.
+1. Kliknij kartę na ręce, a następnie wolne pole własnej planszy. Możesz również przeciągnąć kartę.
+2. Zaznacz gotową do ataku jednostkę i kliknij dopuszczalny cel: wrogą jednostkę albo bohatera przeciwnika. Jeśli wróg ma aktywną **Prowokację**, wybór celu jest ograniczony do jednostek z tą cechą.
+3. Gdy zdolność wymaga decyzji, wybierz odpowiedni wariant w osobnym panelu po prawej stronie. Legalne cele są podświetlone, również na ręce (np. w przypadku S66). Jeżeli nie ma żadnego legalnego celu, gra pomija efekt, ale pozwala wystawić kartę.
+4. Klawisze **1–6** odpowiadają pozycjom na bieżącej stronie wyboru. Strony zmienia się strzałkami lub przyciskami na panelu.
+5. **I** otwiera pełne informacje o wskazanej karcie. Kółko myszy przewija opis.
+6. **Spacja** kończy turę. **F11** przełącza tryb pełnoekranowy. **R** rozpoczyna nowy mecz.
 
-Each card displays a large family-specific emblem, a prominently bolded effect quantity where applicable, and a separate green upgrade ribbon showing exactly what improves after every three completed own turns in hand. The full card description (I) highlights the scalable number in green bold, without confusing it with durations or attack limits.
+Przy pierwszym rozdaniu można wymienić do trzech wybranych kart. Zaznaczone karty mają złotą ramkę i numer wyboru.
 
-Each card identifies its activation timing: **On Play, On Attack, On Death, End of Turn,** or **Passive** (these labels currently appear in Polish in the game interface). When an On Play effect has legal selectable options, choosing one is required; when no legal option exists, the card can still be played without resolving that effect.
+## Karty, efekty i skalowanie
 
-## Display and scaling
+Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.
 
-On Windows, AuctionHammer detects the current desktop size at launch and opens a window that fits within the screen, leaving room for Windows UI such as the taskbar. The game supports Full HD and common 125% or 150% Windows display scaling. It also adapts to manually resized windows while keeping the entire board and controls visible.
+Przykładowe oznaczenia: **OBR** — obrażenia, **LECZ** — leczenie, **PANC** — pancerz, **PŻ** — punkty życia, **SZYBKI** — Szybki atak, **2 ATAKI** — Podwójny atak, **PROW** — Prowokacja.
 
-For the largest game view, press **F11** to enter fullscreen. Press **F11** again to return to the previous window size. The game does not require a specific screen resolution and does not change the Windows scaling setting.
+Karty otrzymują indywidualny przyrost statystyk po każdej zakończonej własnej turze na ręce. Zdolności zwiększają poziom **co trzy takie tury** (po 3, 6, 9 itd.). Zielony pasek wskazuje *co dokładnie* się wzmacnia. W dużym podglądzie pogrubiona zielona liczba oznacza wartość podlegającą skalowaniu, ale nie czas trwania statusu ani liczbę dozwolonych ataków.
 
-## Project files
+## Dopasowanie do ekranu
 
-| Path | Purpose |
+Gra automatycznie dostosowuje początkowy rozmiar okna do dostępnej przestrzeni, w tym do skalowania obrazu w Windows. Można zmieniać rozmiar okna bez rozciągania kart i bez przesuwania obszarów klikalnych względem grafiki. Klawisz **F11** przełącza pełny ekran.
+
+## Obowiązujące zasady i dokumenty
+
+| Plik | Przeznaczenie |
 | --- | --- |
-| `game/` | Game engine, AI, and Pygame client |
-| `data/` | Card catalogue and structured rule data |
-| `assets/` | Card artwork and other game assets |
-| `tests/` | Automated regression tests |
-| `AUCTIONHAMMER_MASTER.md` | Canonical project specification and implementation notes |
-| `docs/GAME_MASTER_v17.md` | Full v19 rules and card descriptions |
-| `.github/workflows/` | Automated tests and Windows release build |
+| `AUCTIONHAMMER_MASTER.md` | Aktualny opis projektu i wskazanie obowiązujących źródeł |
+| `data/GAME_MASTER.json` | Aktualny uporządkowany zapis zasad i katalogu v19 |
+| `data/cards_base_70.json` | **Jedyne bieżące źródło definicji 70 kart**, wczytywane przez silnik |
+| `docs/V19_INTEGRATION_AND_UI.md` | Zmiany zasad v19 i ich implementacja |
+| `docs/GAME_MASTER_v17.md` | **Archiwum** wcześniejszej specyfikacji v17 — nie jest katalogiem aktualnych kart |
+| `data/event_order_v17.json` | Historyczny dokument kolejności zdarzeń nadal przywoływany w zasadach; atomowe fale zgonów wymagają dalszej weryfikacji |
+| `game/core/` | Silnik meczu |
+| `game/ui/` | Interfejs gry |
+| `tests/` | Automatyczne testy |
 
-To work on the source code, open this folder in VS Code. Source development requires Python 3.11+ and the dependencies in `requirements.txt`. The packaged Windows game does not.
+Zmiany S66, S67, S79, S114 i S115 z v19 są zaimplementowane, podobnie jak zatwierdzone zmiany S20, S82, S90, S91, S105 i S109. Mechanizm grup **jednoczesnych zgonów** wymaga nadal dalszych testów zgodności z zasadą wspólnej fali. Nie przedstawiamy bieżącego prototypu jako ostatecznie zbalansowanej ani w pełni zweryfikowanej wersji gry.
 
-## Releases and contributions
+## Rozwój i aktualizacje
 
-Changes merged to `main` run automated tests and build a new Windows release through GitHub Actions. Published builds are available under [Releases](https://github.com/MateuszBock0/AuctionHammer/releases/latest).
-
-The solo engine is an MVP. Some complex chains of simultaneous effects still require additional rules-validation tests. The rules in Game Master v19 take precedence over earlier prototype behaviour.
-
-## Game Master v19 integration
-
-The approved v19 card changes are now implemented in the executable: **S66** chooses Quick Attack for itself or one particular hand card, **S67** grants Double Attack to itself or a selected allied unit, **S79** is 2 ATK / 6 HP with its conditional second attack, and **S114/S115** have updated HP and self-only traits. This version also implements the v18/v19 death fallbacks (S20/S82/S90/S91), the one-time S105 aura armor, and per-turn S109 quality healing. The 70-card shared pool and no-auction MVP remain unchanged.
-
-For the original, complete rules archive, see the project Game Master v19 source package. See also `docs/V19_INTEGRATION_AND_UI.md` for the integration mapping and tests.
+Po zatwierdzeniu zmian w gałęzi `main` GitHub automatycznie uruchamia testy i przygotowuje przenośne wydanie dla Windows. Kod można edytować lokalnie po zainstalowaniu Pythona i zależności z `requirements.txt`. **Do zwykłego grania te narzędzia nie są potrzebne.**
