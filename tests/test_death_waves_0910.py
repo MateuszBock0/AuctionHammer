@@ -93,7 +93,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g._kill_batch(['S21'])
         g._drain()
         self.assertEqual(g.players[1].hp,73)
-        self.assertEqual(g.players[1].coins,old_coins+2)
+        self.assertEqual(g.players[1].coins,old_coins+3)  # +1 za zgon S21, +2 za próg 75
         self.assertIn(75,g.players[1].thresholds)
         g.assert_integrity()
 
