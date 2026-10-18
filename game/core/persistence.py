@@ -75,8 +75,18 @@ def _decode(obj):
         cls=TYPES.get(obj.get('name'))
         if cls is None:raise ValueError('Nieznana klasa w zapisie')
         data=obj.get('fields')
-        if not isinstance(data,dict) or set(data)!={x.name for x in fields(cls)}:
+        if not isinstance(data,dict):
             raise ValueError('Niezgodne pola w zapisie')
+        from dataclasses import MISSING
+        specs={x.name:x for x in fields(cls)}
+        if set(data)-set(specs):
+            raise ValueError('Nieznane pola klasy w zapisie')
+        required={k for k,f in specs.items()
+                  if f.default is MISSING and f.default_factory is MISSING}
+        if required-set(data):
+            raise ValueError('Brak wymaganych pól klasy w zapisie')
+        # Optional fields added in newer releases retain their dataclass
+        # defaults; valid 0.9.19 AuctionOffer files can still load safely.
         return cls(**{k:_decode(v) for k,v in data.items()})
     if kind=='deque':
         return deque(_decode(v) for v in obj['items'])
