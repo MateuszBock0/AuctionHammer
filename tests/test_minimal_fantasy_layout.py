@@ -139,6 +139,23 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
         self.assertEqual(boxes,[app.slot_rect(1,game.players[1].board.index('S33'))])
         self.assertNotIn(app.hero_rect(1),boxes)
 
+    def test_event_animation_is_optional_and_read_only(self):
+        game=self.app.game
+        previous=(game.phase,game.active,len(game.events))
+        self.assertTrue(self.app.animations_enabled)
+        self.app.handle(pygame.event.Event(pygame.KEYDOWN,{'key':pygame.K_a}))
+        self.assertFalse(self.app.animations_enabled)
+        game._log('Jednostka otrzymuje 3 obrażenia.')
+        self.app._capture_visual_feedback()
+        self.assertEqual(self.app._recent_feedback,[])
+        self.app.handle(pygame.event.Event(pygame.KEYDOWN,{'key':pygame.K_a}))
+        self.assertTrue(self.app.animations_enabled)
+        game._log('Jednostka otrzymuje tarczę.')
+        self.app._capture_visual_feedback()
+        self.assertTrue(self.app._recent_feedback)
+        self.assertEqual((game.phase,game.active),(previous[0],previous[1]))
+        self.assertEqual(len(game.events),previous[2]+2)
+
     def test_right_click_opens_details_and_left_click_only_selects(self):
         uid,rect=next(iter(self.app.hand_layout().items()))
         self.app.click(rect.center)
