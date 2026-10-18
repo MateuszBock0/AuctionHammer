@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.21: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.22: audit-driven UI safeguards, gameplay v19."""
 from __future__ import annotations
 import os
 import re
@@ -411,8 +411,12 @@ class SoloApp:
                     return
                 if target is None:return
             if self.selected in g.players[0].board and target is not None and (target in g.players[1].board or target=='hero:1'):
-                try:g.attack(self.selected,target);self.last_error=''
-                except IllegalMove as e:self.last_error=str(e)
+                issue=self._attack_issue(self.selected,target)
+                if issue:
+                    self.last_error=issue
+                else:
+                    try:g.attack(self.selected,target);self.last_error=''
+                    except IllegalMove as e:self.last_error=str(e)
                 if self.selected not in g.units:self.selected=None
                 return
             if target in g.players[0].board:
@@ -563,12 +567,52 @@ class SoloApp:
             self._text(self.cards_view.clip(self.auction_status,self.fonts[13],920),
                        13,741,810,cfg.RED,center=True)
 
+    def _play_replacement_targets(self):
+        """Only highlight friendly units eligible for replacement."""
+        g=self.game
+        if (g.phase!='turn' or g.pending or g.active!=0 or
+                self.selected not in g.players[0].hand):
+            return []
+        p=g.players[0]
+        if p.played_this_turn or len(p.board)!=5:
+            return []
+        return [uid for uid in p.board if g.can_play(0,self.selected,uid)]
+
+    def _attack_issue(self,uid,target):
+        """Explain illegal targets before they become failed audit commands."""
+        legal=self.game.legal_attacks(uid)
+        if target in legal:
+            return ''
+        if not legal:
+            return 'Ta jednostka nie może teraz atakować (gotowość, ogłuszenie lub limit ataków).'
+        if ('hero:1' not in legal and
+                all(t in self.game.players[1].board for t in legal)):
+            return 'PROWOKACJA: najpierw zaatakuj turkusowo podświetlonego obrońcę.'
+        return 'Nielegalny cel. Dozwolone cele są podświetlone turkusową ramką.'
+
     def _try_play(self,uid,replace=None):
+        g=self.game
+        if not g.can_play(0,uid,replace):
+            p=g.players[0]
+            if g.phase!='turn' or g.active!=0 or g.pending:
+                self.last_error='Wystawianie jest teraz niedostępne.'
+            elif p.played_this_turn:
+                self.last_error='Możesz wystawić tylko jedną kartę w turze.'
+            elif len(p.board)==5 and replace is None:
+                self.last_error='Plansza 5/5: kliknij podświetloną własną jednostkę do zastąpienia.'
+            elif len(p.board)==5 and replace in p.board:
+                self.last_error='Tej jednostki nie można zastąpić po wykorzystaniu ataku.'
+            else:
+                self.last_error='Wskaż wolne pole własnej planszy.'
+            return False
         try:
-            self.game.play(uid,replace)
-            self.selected=uid if self.game.legal_attacks(uid) else None
+            g.play(uid,replace)
+            self.selected=uid if g.legal_attacks(uid) else None
             self.last_error=''
-        except IllegalMove as e:self.last_error=str(e)
+            return True
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+            return False
 
     def handle(self,event):
         if event.type==pygame.QUIT:return False
@@ -811,7 +855,20 @@ class SoloApp:
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
                       attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit)
         self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
-        self._text('TWOJA RĘKA  ·  wybierz kartę i pole lub przeciągnij',14,100,721,cfg.MUTED)
+        for uid in self._play_replacement_targets():
+            rect=self.slot_rect(0,self.game.players[0].board.index(uid))
+            pygame.draw.rect(self.screen,cfg.GREEN,rect.inflate(8,8),
+                             4,border_radius=13)
+        p0=self.game.players[0]
+        if (self.game.phase=='turn' and self.game.active==0 and
+                self.selected in p0.hand and len(p0.board)==5):
+            hint=('PLANSZA 5/5: WYBIERZ PODŚWIETLONĄ JEDNOSTKĘ DO WYMIANY'
+                  if not p0.played_this_turn else
+                  'WYSTAWIONO JUŻ KARTĘ W TEJ TURZE')
+            self._text(hint,13,100,721,cfg.GREEN if not p0.played_this_turn else cfg.MUTED)
+        else:
+            self._text('TWOJA RĘKA  ·  wybierz kartę i pole lub przeciągnij',
+                       14,100,721,cfg.MUTED)
         hand=self.hand_layout()
         for uid,rect in hand.items():
             pygame.draw.rect(self.screen,(18,32,41),rect.inflate(11,10),border_radius=13)
