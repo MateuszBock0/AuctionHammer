@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.8: responsive Pygame v19 client with semantic card infographics."""
+"""AuctionHammer MVP 0.9.11: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
@@ -606,8 +606,30 @@ class SoloApp:
         if self.last_error:
             self._text(self.last_error[:105],13,280,954,cfg.RED)
 
+    def _attack_target_rects(self):
+        """Ask the engine for *currently legal* attack targets only."""
+        g=self.game
+        if g.pending or g.phase!='turn' or g.active!=0:
+            return []
+        if self.selected not in g.players[0].board:
+            return []
+        result=[]
+        for target in g.legal_attacks(self.selected):
+            if target.startswith('hero:'):
+                result.append(self.hero_rect(int(target.split(':')[1])))
+            elif target in g.players[1].board:
+                result.append(self.slot_rect(1,g.players[1].board.index(target)))
+        return result
+
+    def _draw_attack_targets(self):
+        for rect in self._attack_target_rects():
+            # Cyan means legal ATTACK, distinct from the gold selected card,
+            # purple ability target and red numbered mulligan badge.
+            pygame.draw.rect(self.screen,(115,223,238),rect.inflate(7,7),
+                             3,border_radius=14)
+
     def _draw_choices(self):
-        """Highlight legal targets without hiding the battlefield or its labels."""
+        """Highlight legal ability targets without covering information."""
         pending = self.game.pending
         if pending is None or pending.owner != 0:
             return
@@ -627,8 +649,8 @@ class SoloApp:
                 if target in self.game.players[0].hand:
                     rect = self.hand_layout().get(target)
             if rect is not None:
-                pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(8,8),4,border_radius=13)
-                pygame.draw.circle(self.screen,cfg.GOLD,(rect.right-3,rect.y+3),7)
+                pygame.draw.rect(self.screen,(189,143,240),rect.inflate(8,8),3,border_radius=13)
+                pygame.draw.circle(self.screen,(189,143,240),(rect.right-3,rect.y+3),6)
 
     def _draw_choice_sidebar(self):
         """Dedicated selection panel below the skill description."""
@@ -770,6 +792,7 @@ class SoloApp:
         self.screen.blit(self.bg,(0,0))
         self._draw_header()
         self._draw_board()
+        self._draw_attack_targets()
         self._draw_sidebar()
         self._draw_log()
         self._draw_choices()
