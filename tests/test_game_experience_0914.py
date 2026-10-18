@@ -191,6 +191,52 @@ class SuppliedIconsTests(unittest.TestCase):
                     surface=icons.get(path.split('/')[1],'statuses',20)
                     self.assertIsNotNone(surface)
 
+    def test_upgraded_atlas_preserves_all_35_icons_at_real_ui_sizes(self):
+        """Sprawdź rzeczywistą bitmapę Pygame: 35 ikon, 13 i 20 px."""
+        from game.ui.game_icons import GameIcons, ATLAS_FILES, ATLAS_SIZE
+        icons=GameIcons()
+        source=icons._atlas_image()
+        self.assertIsNotNone(source)
+        self.assertEqual(ATLAS_SIZE,40)
+        self.assertEqual(source.get_size(),(280,200))
+        self.assertEqual(len(ATLAS_FILES),35)
+        seen=set()
+        for group in ('families','statuses','factions'):
+            from game.ui.game_icons import FAMILY,FACTION
+            if group=='families':
+                keys=list(FAMILY)
+            elif group=='factions':
+                keys=list(FACTION)
+            else:
+                keys=[key.split('/')[1] for key in ATLAS_FILES
+                      if key.startswith('statusy/')]
+            for key in keys:
+                for size in (13,20):
+                    with self.subTest(group=group,key=key,size=size):
+                        icon=icons.get(key,group,size)
+                        self.assertIsNotNone(icon)
+                        self.assertEqual(icon.get_size(),(size,size))
+                        alpha=pygame.surfarray.array_alpha(icon)
+                        self.assertGreater(int(alpha.max()),100)
+                        self.assertTrue(int((alpha==0).sum())>0)
+                        seen.add((group,key))
+        self.assertEqual(len(seen),35)
+
+    def test_atlas_has_more_detail_than_previous_24_color_version(self):
+        """Test regresji jakości: nie wracaj do palety z 24 kolorami."""
+        from pathlib import Path
+        from game.ui.game_icons import BASE
+        path=BASE/'icon_atlas_35.png'
+        self.assertTrue(path.is_file())
+        image=pygame.image.load(str(path))
+        self.assertEqual(image.get_size(),(280,200))
+        # 256-kolorowy atlas zachowuje detale i kanał alfa.
+        pixels=pygame.surfarray.array3d(image)
+        colors=len(set(zip(pixels[::3,::3,0].ravel().tolist(),
+                           pixels[::3,::3,1].ravel().tolist(),
+                           pixels[::3,::3,2].ravel().tolist())))
+        self.assertGreater(colors,80)
+
     def test_immunity_icon_is_resolved_from_actual_status(self):
         from game.ui.game_icons import status_icon_key
         from game.core.status_view import VisibleStatus
