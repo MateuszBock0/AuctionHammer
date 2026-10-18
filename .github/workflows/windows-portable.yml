@@ -38,6 +38,11 @@ jobs:
         with:
           name: AuctionHammer-Minimal-Fantasy-Preview
           path: preview/*.png
+      - name: Stamp exact GitHub build commit for match audits
+        shell: pwsh
+        run: |
+          $info = @{ commit = '${{ github.sha }}'; version = '0.9.18' } | ConvertTo-Json -Compress
+          Set-Content -Path 'data/BUILD_INFO.json' -Value $info -Encoding utf8
       - name: Build AuctionHammer.exe with Python and pygame-ce included
         run: |
           python -m PyInstaller --noconfirm --clean --onedir --windowed --name AuctionHammer --paths . --add-data "data;data" --add-data "assets;assets" --collect-all pygame game/main.py
