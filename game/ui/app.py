@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.20: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.21: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
@@ -1192,7 +1192,7 @@ class SoloApp:
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
-        self._text('70 kart + testowe aukcje · [O] FOLDER OSTATNIEGO AUDYTU',13,
+        self._text('70 bazowych · 12 aukcyjnych (zdolności nieaktywne) · [O] AUDYT',13,
                    746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
