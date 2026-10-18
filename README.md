@@ -1,6 +1,25 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.23** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+**AuctionHammer 0.9.26** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Domknięcie kompletnego demo 0.9.26 — zachowane niewykupione aukcje
+
+- **Wszystkie 12 archetypów / 36 wersji zdolności już działa** (zakres pierwotnie
+  proponowanych wydań 0.9.23–0.9.26). Zachowano lokalną grę i obecne AI.
+- **Niewykupiony archetyp wraca WYŁĄCZNIE do puli aukcyjnej** i może pojawić
+  się ponownie po kolejnych trzech rundach. Rzadkość i statystyki są
+  losowane / wyliczane na nowo zgodnie z rundą zakupu.
+- Archetyp kupiony przez gracza jest usuwany z dostępnej puli, a jego
+  fizyczna karta nie przechodzi do zwykłego stosu dobierania nawet po śmierci.
+- Bank **70 podstawowych kart** pozostaje oddzielny przez cały mecz.
+- Aukcja wymaga trzech różnych ofert i przyznaje dwie karty; maksymalnie
+  pięć aukcji po rundach 3/6/9/12/15 przy skończonej puli 12 archetypów.
+  Pozostałe dwa niewykupione archetypy nie giną, ale do kolejnej aukcji
+  brakuje trzeciej oferty.
+- Automatyczne testy obejmują 36 wariantów, woreczek, 0 ATK, zapis/wczytanie,
+  deterministyczną powtórkę meczu i render headless Pygame.
+
+Pełne zasady i lista testów: [release demo 0.9.26](docs/auction/RELEASE_V4_0926.md).
 
 ## Nowości 0.9.23 — aktywne zdolności aukcyjne v4
 
@@ -18,7 +37,7 @@
 - Dodano testy regresyjne interfejsu i kombinacji **S91 + S09** zaobserwowanej w meczu 0.9.21; nie zmieniano wartości kart ani reguł walki.
 - Szczegóły: [audyt 0.9.22](docs/UX_AUDIT_0922.md).
 
-W 0.9.23 obowiązuje **ścisłe rozdzielenie kart**: 70 kart bazowych dobieranych tylko z własnej talii/cmentarza i 12 unikalnych kart aukcyjnych dostępnych wyłącznie przez aukcje. Przy czterech aukcjach (po 3., 6., 9. i 12. rundzie) 8 kart trafia do kupujących, a 4 niewybrane są trwale odrzucane do osobnego woreczka. Po czwartej aukcji nowe oferty się kończą. Nawet kupione karty aukcyjne, kiedy opuszczą planszę, **nie wracają do standardowego dobierania**. [Dokładne reguły woreczków](docs/auction/RELEASE_V4_0923.md).
+**Uwaga dotycząca 0.9.23:** ta wersja błędnie wykluczała trzecie, niewykupione oferty z przyszłych aukcji. **W 0.9.26 jest to naprawione:** niewykupiony archetyp wraca wyłącznie do puli aukcyjnej; nie trafia do zwykłego banku 70 kart. Także zapisy gier z 0.9.23 są migrowane. [Nowe zasady](docs/auction/RELEASE_V4_0926.md).
 
 ## Uruchamianie w Windows
 
