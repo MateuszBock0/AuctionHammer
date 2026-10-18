@@ -1,0 +1,135 @@
+{
+  "version": "v20",
+  "modified_ids": [
+    "S01",
+    "S09",
+    "S12",
+    "S15",
+    "S21",
+    "S27",
+    "S59",
+    "S74",
+    "S78",
+    "S84",
+    "S85",
+    "S95",
+    "S97",
+    "S99",
+    "S103",
+    "S108"
+  ],
+  "changes": [
+    {
+      "id": "S01",
+      "name": "Mag Zorzy",
+      "old": "Zadaj 3 obrażenia wybranej wrogiej jednostce.",
+      "new": "Zadaj 5 obrażeń wybranej wrogiej jednostce.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg)."
+    },
+    {
+      "id": "S59",
+      "name": "Tkaczka Uśpienia",
+      "old": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 1 obrażenie.",
+      "new": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 3 obrażenia.",
+      "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura."
+    },
+    {
+      "id": "S09",
+      "name": "Wilk Szponiasty",
+      "old": "Przed standardową walką zadaj 1 dodatkowe obrażenie celowi ataku.",
+      "new": "Przed standardową walką zadaj 2 dodatkowe obrażenia celowi ataku.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg)."
+    },
+    {
+      "id": "S12",
+      "name": "Żarłacz Pancerzy",
+      "old": "Przed standardową walką usuń do 2 punktów pancerza z celu ataku.",
+      "new": "Przed standardową walką usuń do 2 punktów pancerza z celu ataku (jednostki lub bohatera). Jeśli cel nie ma pancerza, zadaj mu zamiast tego 2 dodatkowe obrażenia.",
+      "scaling": "Co 3 własne tury na ręce: +1 do liczby zdejmowanych punktów pancerza ALBO do dodatkowych obrażeń bez pancerza."
+    },
+    {
+      "id": "S15",
+      "name": "Niedźwiedź Grzmotu",
+      "old": "Gdy atakujesz jednostkę, ogłusz ją na 1 jej własną turę przed standardową walką.",
+      "new": "Gdy atakujesz jednostkę, ogłusz ją na 1 jej własną turę i — jeśli ogłuszenie zadziała — zadaj jej 1 dodatkowe obrażenie przed standardową walką.",
+      "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura."
+    },
+    {
+      "id": "S74",
+      "name": "Lis Oczyszczający",
+      "old": "Gdy atakujesz jednostkę, usuń z niej wszystkie tymczasowe pozytywne efekty przed standardową walką.",
+      "new": "Gdy atakujesz jednostkę, usuń z niej wszystkie tymczasowe pozytywne efekty przed standardową walką. Jeśli cokolwiek usunąłeś, zadaj 3 dodatkowe obrażenia; w przeciwnym razie zadaj 2 dodatkowe obrażenia.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń gałęzi skutecznego oczyszczenia lub gałęzi bez efektu. Brak dodatkowych ataków."
+    },
+    {
+      "id": "S78",
+      "name": "Gepard Burzowy",
+      "old": "Przed standardową walką nadaj wybranej innej sojuszniczej jednostce wystawionej w tej turze możliwość atakowania już teraz.",
+      "new": "Przed standardową walką nadaj Szybki atak wybranej innej sojuszniczej jednostce wystawionej w tej turze. Jeśli takiej nie ma, nadaj Szybki atak wybranej karcie z własnej ręki na jej najbliższe wystawienie.",
+      "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP."
+    },
+    {
+      "id": "S21",
+      "name": "Widmo Otchłani",
+      "old": "Zadaj 4 obrażenia wrogiemu bohaterowi.",
+      "new": "Zadaj 6 obrażeń wrogiemu bohaterowi.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg)."
+    },
+    {
+      "id": "S84",
+      "name": "Banshee Krzyku",
+      "old": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 2 obrażenia.",
+      "new": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 4 obrażenia.",
+      "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura."
+    },
+    {
+      "id": "S85",
+      "name": "Życiodajne Widmo",
+      "old": "Nałóż na wybraną pozostałą sojuszniczą jednostkę regenerację 3 HP przez 3 jej własne tury.",
+      "new": "Przy śmierci nałóż na wybraną pozostałą własną jednostkę regenerację 3 HP przez 3 jej własne tury. Jeśli nie ma pozostałej własnej jednostki, ulecz własnego bohatera o 4 HP.",
+      "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; przy braku celu +1 do jednorazowego leczenia bohatera za poziom."
+    },
+    {
+      "id": "S27",
+      "name": "Kusznik Runiczny",
+      "old": "Zadaj 1 obrażenie wrogiej jednostce z najniższym aktualnym HP.",
+      "new": "Zadaj 2 obrażenia wrogiej jednostce z najniższym aktualnym HP. Gdy przeciwnik nie ma jednostek, zadaj 2 obrażenia jego bohaterowi.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg)."
+    },
+    {
+      "id": "S95",
+      "name": "Młotnik Wstrząsów",
+      "old": "Na koniec tury ogłusz wrogą jednostkę z najniższym aktualnym ATK na 1 jej własną turę. Nie możesz ogłuszać tej samej jednostki w dwóch kolejnych własnych turach.",
+      "new": "Na koniec tury ogłusz wrogą jednostkę z najniższym aktualnym ATK na 1 jej własną turę i — jeśli ogłuszenie zadziała — zadaj jej 1 obrażenie. Nie możesz ogłuszać tej samej jednostki w dwóch kolejnych własnych turach.",
+      "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura."
+    },
+    {
+      "id": "S97",
+      "name": "Czyściciel Run",
+      "old": "Usuń wszystkie tymczasowe negatywne efekty z wybranej sojuszniczej jednostki.",
+      "new": "Usuń wszystkie tymczasowe negatywne efekty z wybranej sojuszniczej jednostki. Jeśli cokolwiek usunięto, ulecz tę jednostkę o 2 HP; w przeciwnym razie ulecz ją o 1 HP.",
+      "scaling": "Co 3 własne tury na ręce: +1 do leczenia w obu gałęziach; liczba usuniętych efektów się nie skaluje."
+    },
+    {
+      "id": "S99",
+      "name": "Górski Odtruwacz",
+      "old": "Nadaj wybranej sojuszniczej jednostce odporność na truciznę do końca jej najbliższej własnej tury.",
+      "new": "Nadaj wybranej sojuszniczej jednostce odporność na truciznę oraz 1 tymczasowego pancerza do końca jej najbliższej własnej tury. Przyznany pancerz nie odnawia się przez samo przeliczenie statusów.",
+      "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom)."
+    },
+    {
+      "id": "S103",
+      "name": "Weteran Odwetu",
+      "old": "Każda wroga jednostka, która atakuje tę jednostkę, otrzymuje 1 obrażenie przed standardową walką.",
+      "new": "Każda wroga jednostka, która atakuje tę jednostkę, otrzymuje 2 obrażenia przed standardową walką.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg)."
+    },
+    {
+      "id": "S108",
+      "name": "Królewski Trębacz",
+      "old": "Gdy wroga jednostka po raz pierwszy znajdzie się naprzeciw Trębacza, jest ogłuszona na 1 własną turę. Ta sama jednostka nie może być ogłuszona ponownie przez Trębacza podczas jego bieżącego wystawienia.",
+      "new": "Gdy wroga jednostka po raz pierwszy znajdzie się naprzeciw Trębacza, jest ogłuszona na 1 własną turę i — jeśli ogłuszenie zadziała — otrzymuje 1 obrażenie. Ta sama jednostka nie może być ogłuszona ponownie przez Trębacza podczas jego bieżącego wystawienia.",
+      "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura."
+    }
+  ]
+}

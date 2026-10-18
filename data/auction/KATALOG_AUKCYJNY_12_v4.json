@@ -1,0 +1,526 @@
+{
+  "project": "AuctionHammer",
+  "version": "DRAFT_v4_reviewed",
+  "status": "REVIEWED_DRAFT_DO_NOT_MERGE_INTO_MAIN_GAME_ENGINE_UNTIL_AUCTION_STAGE",
+  "reference": "GAME_MASTER_v19 + DRAFT_AUCTION_12_v2 + user revisions 2026-10-18",
+  "count_archetypes": 12,
+  "count_effect_variants": 36,
+  "auction_rules": {
+    "first_offer_after_completed_round": 3,
+    "every_completed_rounds": 3,
+    "three_offers_per_auction": 3,
+    "independent_rarity_probabilities": {
+      "basic": 0.6,
+      "rare": 0.3,
+      "legendary": 0.1
+    },
+    "starting_stats_rule": "ATK+MAX_HP=R+8, where R is completed round at acquisition",
+    "first_auction_stats_example": "R=3, sum=11",
+    "freeze_stats_at_acquisition": true,
+    "no_hand_scaling": true,
+    "evolution_every_completed_rounds_after_acquisition": 3,
+    "evolution_chain": [
+      "basic",
+      "rare",
+      "legendary"
+    ],
+    "legendary_evolution": false,
+    "evolution_does_not_retrigger_on_play_effect": true,
+    "card_play_limit_per_turn": 1,
+    "board_limit": 5,
+    "no_timers": true,
+    "auction_ability_activation_costs": "not_set_in_this_draft",
+    "status": "PROPOSED_DRAFT_NOT_APPROVED",
+    "two_cards_awarded_per_auction": true,
+    "each_player_wins_max_one_card_per_auction": true,
+    "third_offer_returns_to_auction_pool": true,
+    "offers_are_not_played_or_summoned": true,
+    "auction_cards_are_added_to_private_hands": true,
+    "auction_cards_still_obey_one_normal_play_per_turn": true,
+    "rarity_draw_independent_per_offer": true,
+    "auction_archetype_may_recur_at_later_auctions": true,
+    "physical_instance_id_required": true,
+    "rarity_upgrades_after_acquisition_completed_rounds": [
+      3,
+      6
+    ],
+    "rarity_transitions_apply_in_hand_deck_grave_board": true,
+    "base_atk_by_acquisition_round_rule": "ATK_R3 + (R-3)//3; R in {3,6,9,...}; HP=R+8-ATK",
+    "hero_damage_and_status_not_autoplayed_by_auction": true,
+    "copy_casts_do_not_consume_extra_normal_hand_play": true,
+    "all_passive_or_triggered_abilities_no_separately_paid_activation_in_v4": true,
+    "effect_wording_preservation": "All 36 v3 variant texts kept verbatim; clarifications outside variants",
+    "no_auction_engine_implemented_in_repo": false,
+    "auction_integration_scope": "0.9.21 implements the v3 auction foundation (offers, bids, rarities, rewards); v4 ability execution and proposed v4 stats formula remain inactive."
+  },
+  "cards": [
+    {
+      "id": "A001",
+      "name": "Władca Dusz",
+      "trigger": "Przy śmierci",
+      "mechanic": "Przejęcia / łańcuchy",
+      "stats_at_round_3_example": {
+        "atk": 3,
+        "hp": 8
+      },
+      "variants": {
+        "basic": "Zabij jedną wskazaną wrogą jednostkę. Wywołuje jej zwykłą śmierć i legalne efekty „Przy śmierci”.",
+        "rare": "Wybierz: zabij jedną wskazaną wrogą jednostkę ALBO przejmij jedną wskazaną wrogą jednostkę na stałe, jeśli masz wolne miejsce na planszy. Przejęta zachowuje rany i statusy.",
+        "legendary": "Wybierz efekt podstawowy, efekt rzadki ALBO przejmij jedną wskazaną wrogą jednostkę i nadaj jej „Przy śmierci: przejmij jedną wskazaną wrogą jednostkę”. Nadanie nie kumuluje się na tej samej jednostce."
+      },
+      "limits_and_counterplay": "Przeciwnik może zabić źródło bez przygotowanego miejsca na przejęcie; ogłuszenie/wyciszenie blokuje efekt śmierci.",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Przejęcie rozpatruje się dopiero, jeśli jest wolne pole po usunięciu źródła i całej fali zgonów; brak wolnego pola = nie można wybrać trybu przejęcia.",
+        "Wersja legendarna dodaje efekt po śmierci tylko przejętej jednostce, nie kopiuje go łańcuchowo bez następnego rzeczywistego zgonu."
+      ]
+    },
+    {
+      "id": "A002",
+      "name": "Generał Oddziału Natarcia",
+      "trigger": "Pasywna",
+      "mechanic": "Aura ofensywna / podwójne ataki i obrażenia",
+      "stats_at_round_3_example": {
+        "atk": 3,
+        "hp": 8
+      },
+      "variants": {
+        "basic": "Gdy Generał jest na polu bitwy, wszystkie jednostki na obu planszach (także wrogie i sam Generał) mają +1 ATK. Premia znika po opuszczeniu przez Generała planszy.",
+        "rare": "Gdy Generał jest na polu bitwy, jedna wybrana własna jednostka otrzymuje Podwójny atak i zadaje podwójne obrażenia swoimi atakami. Premia działa tylko, gdy Generał jest na planszy.",
+        "legendary": "Gdy Generał jest na polu bitwy, każda NOWO zagrana przez Ciebie jednostka otrzymuje Podwójny atak i zadaje podwójne obrażenia swoimi atakami. Premia działa tylko, gdy Generał jest na planszy."
+      },
+      "limits_and_counterplay": "Zgodnie z dosłownym „wszystkie” podstawowa premia obejmuje obie strony. Rzadka i legendarna dotyczą własnej armii (interpretacja robocza). Podwójny atak nadal daje maksymalnie 2 ataki, nie 4; podwojenie obrażeń dotyczy normalnych obrażeń z ataku, nie efektów trucizny ani umiejętności. Nowa rzadka wersja wybiera beneficjenta przy pojawieniu się Generała lub jego ewolucji; zmiana celu po śmierci beneficjenta jest jeszcze do zatwierdzenia.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": {
+        "old_atk": 2,
+        "old_hp": 9,
+        "new_atk": 3,
+        "new_hp": 8,
+        "total_unchanged": true,
+        "is_balance_hypothesis": true
+      },
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "PODSTAWOWA: zgodnie z dosłownym słowem „wszystkie” +1 ATK dotyczy obu armii i samego Generała.",
+        "RZADKA: aktywny beneficjent to jedna własna jednostka wskazana przy wejściu Generała/zmianie rzadkości; gdy umrze, cel przepada aż do ponownego uzyskania zdolności na nowej instancji Generała.",
+        "LEGENDARNA: aura dotyczy własnych jednostek zagranych lub przywołanych PO uzyskaniu legendarnej zdolności, w tym legalnie zagranych kopii; nie działa wstecz. Bonus istnieje wyłącznie przy aktywnym Generale na planszy.",
+        "Podwójny atak: maksymalnie 2 ataki, a podwojenie standardowych obrażeń z każdego uderzenia nie zwiększa efektów umiejętności ani toksyn. Dwie takie aury nie tworzą czterokrotnych obrażeń (niekumulujące się flagi)."
+      ]
+    },
+    {
+      "id": "A003",
+      "name": "Matka Kości",
+      "trigger": "Przy śmierci",
+      "mechanic": "Cmentarz / wskrzeszanie",
+      "stats_at_round_3_example": {
+        "atk": 2,
+        "hp": 9
+      },
+      "variants": {
+        "basic": "Wybierz jedną inną własną podstawową jednostkę z cmentarza. Przenieś ją na rękę.",
+        "rare": "Wybierz efekt podstawowy ALBO przywróć jedną inną własną podstawową jednostkę z cmentarza bezpośrednio na prawe wolne pole planszy z 1 HP, bez aktywowania „Przy wystawieniu”; jeśli brak pola, przenieś ją na rękę.",
+        "legendary": "Wybierz efekt podstawowy, rzadki ALBO przywróć do dwóch różnych innych własnych podstawowych jednostek z cmentarza: pierwszą na wolne prawe pole z pełnym MAX HP, drugą na rękę. Jeśli brak pola, obie na rękę. Nie uruchamiaj „Przy wystawieniu”."
+      },
+      "limits_and_counterplay": "Nie wskrzesza samej siebie, kart wykluczonych z mulliganu ani kopii efemerycznych. Zdolności śmierci wskrzeszonych kart działają dopiero przy kolejnej rzeczywistej śmierci.",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Wskrzeszenie z cmentarza nie jest wygrywaniem aukcji; maksymalnie jedno zwykłe wystawienie z ręki na turę wciąż obowiązuje."
+      ]
+    },
+    {
+      "id": "A004",
+      "name": "Regent Krzywych Zwierciadeł",
+      "trigger": "Przy wystawieniu",
+      "mechanic": "Kopiowanie jednostek",
+      "stats_at_round_3_example": {
+        "atk": 4,
+        "hp": 7
+      },
+      "variants": {
+        "basic": "Wskaż jedną inną własną jednostkę na planszy. Stwórz jej efemeryczną kopię i od razu zagraj ją na swoją planszę.",
+        "rare": "Wskaż dowolną inną jednostkę na dowolnej planszy. Stwórz jej efemeryczną kopię i od razu zagraj ją na swoją planszę.",
+        "legendary": "Wskaż dowolną inną jednostkę na dowolnej planszy. Stwórz jej efemeryczną kopię, zachowując jej bieżące bonusy i efekty, nadaj kopii Tarczę i od razu zagraj ją na swoją planszę."
+      },
+      "limits_and_counterplay": "Kopia trafia na wolne pole (maks. 5); brak wolnego pola = brak przywołania. To dodatkowe zagranie poza limitem jednej zwykłej karty na turę; jej zdolność „Przy wystawieniu” uruchamia się, chyba że została ogłuszona albo wyciszona. Podstawowa i rzadka kopia zachowują bazowy archetyp/statystyki/zdolność, ale nie przejmują dotychczasowych buffów i statusów celu. Legendarna przenosi także stan i modyfikatory bieżące. Kopie mają unikalny identyfikator, nie można kopiować kopii; po opuszczeniu planszy znikają z meczu. Źródła i czasy wygaśnięcia skopiowanych efektów należy poprawnie przypisać nowej instancji.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Wybranie i wystawienie Regenta z ręki zużywa limit jednej karty; wywołana kopia może dodatkowo wejść na wolne pole.",
+        "Kopia jest efemeryczna z unikalnym ID. Jej zdolność Przy wystawieniu może zadziałać, ale jeśli kopia jest Regentem, nie powtarza efektu kopiowania.",
+        "Podstawowa/rzadka wersja bierze bazowe ATK, MAX HP i bazową zdolność celu oraz bieżące obrażenia (rany), lecz nie przenosi aktualnych buffów/statusów. Legendarna przenosi aktualne modyfikatory i statusy oraz dodaje tarczę; bez kopiowania pola owner, event_id i czasu „raz na mecz”.",
+        "Następna karta aukcyjna nadal wymaga kolejnej tury do normalnego zagrania; kopia z efektu nie jest nowym zdobytym przedmiotem aukcyjnym i znika na dobre po opuszczeniu planszy."
+      ]
+    },
+    {
+      "id": "A005",
+      "name": "Bankier Widm",
+      "trigger": "Przy wystawieniu",
+      "mechanic": "Monety / ekonomia",
+      "stats_at_round_3_example": {
+        "atk": 2,
+        "hp": 9
+      },
+      "variants": {
+        "basic": "Ukradnij przeciwnikowi do 3 monet (przenieś je do swojego salda), a następnie DODATKOWO otrzymaj 3 nowe monety.",
+        "rare": "Ukradnij przeciwnikowi do większej z wartości: 3 monety albo połowa jego aktualnego salda (zaokrąglona w górę). Następnie DODATKOWO otrzymaj 4 nowe monety.",
+        "legendary": "Ukradnij przeciwnikowi wszystkie jego monety, a następnie DODATKOWO otrzymaj 5 nowych monet."
+      },
+      "limits_and_counterplay": "Kradzież nigdy nie może przekroczyć rzeczywistego salda przeciwnika; jeśli przeciwnik ma 0 monet, nadal tworzysz 3/4/5 nowych monet. To dwie osobne operacje: transfer + generowanie dodatkowych monet. Przykład bazowy: wróg ma 2, więc Ty dostajesz 2 skradzione + 3 nowe = +5.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": {
+        "old_atk": 1,
+        "old_hp": 10,
+        "new_atk": 2,
+        "new_hp": 9,
+        "total_unchanged": true,
+        "is_balance_hypothesis": true
+      },
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "RZADKA: „co najmniej 3” oznacza próbę min(saldo_wroga, max(3, ceil(saldo_wroga/2))) — ujemne saldo jest niedozwolone.",
+        "Wygenerowane dodatkowe monety 3/4/5 to NOWE monety, a nie transfer; do salda doliczamy zarówno przelew, jak i bonus."
+      ]
+    },
+    {
+      "id": "A006",
+      "name": "Królowa Zakazanych Słów",
+      "trigger": "Przy wystawieniu",
+      "mechanic": "Wyciszenie / kontrkontrola",
+      "stats_at_round_3_example": {
+        "atk": 2,
+        "hp": 9
+      },
+      "variants": {
+        "basic": "Wycisz jedną wskazaną wrogą jednostkę do końca jej najbliższej własnej tury.",
+        "rare": "Wycisz do dwóch różnych wskazanych wrogich jednostek do końca ich najbliższej własnej tury.",
+        "legendary": "Wycisz wszystkie jednostki przeciwnika obecne na planszy do końca ich najbliższej własnej tury."
+      },
+      "limits_and_counterplay": "Wyciszenie blokuje zdolności, w tym „Przy śmierci”, ale nie usuwa samych kart z planszy; oczyszczanie może je zdjąć. Nie cofa już rozpatrzonych zdarzeń.",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Wyciszenie nie cofa wcześniej rozpatrzonych zdolności; cel nadal może atakować standardowo, chyba że inny status go blokuje."
+      ]
+    },
+    {
+      "id": "A007",
+      "name": "Strażnik Ostatniego Tchnienia",
+      "trigger": "Pasywna",
+      "mechanic": "Ratunek bohatera",
+      "stats_at_round_3_example": {
+        "atk": 2,
+        "hp": 9
+      },
+      "variants": {
+        "basic": "Raz na mecz: jeżeli własny bohater miałby zginąć od obrażeń, poświęć tę jednostkę i pozostaw bohatera z 1 HP.",
+        "rare": "Raz na mecz: zamiast śmierci bohatera poświęć tę jednostkę i ustaw HP bohatera na 20.",
+        "legendary": "Raz na mecz: zamiast śmierci bohatera poświęć tę jednostkę, ustaw HP bohatera na 25 i ogłusz wszystkie aktualne wrogie jednostki do końca ich najbliższej własnej tury."
+      },
+      "limits_and_counterplay": "Działa wyłącznie, jeżeli Strażnik stoi na planszy na początku śmiertelnej fali obrażeń. Poświęcenie zużywa efekt trwale dla tego egzemplarza, także po ewolucji lub ewentualnym wskrzeszeniu.",
+      "stats_change_v3_to_v4": {
+        "old_atk": 1,
+        "old_hp": 10,
+        "new_atk": 2,
+        "new_hp": 9,
+        "total_unchanged": true,
+        "is_balance_hypothesis": true
+      },
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Tylko zgon od obrażeń / bezpośredniej utraty HP kwalifikuje się do ratunku; ustawienie HP za pomocą A012 nie uruchamia strażnika, jeżeli reguła ustawia HP powyżej zera.",
+        "Ten sam fizyczny egzemplarz ratuje dokładnie raz w całym meczu, niezależnie od wskrzeszenia i ewolucji; ofiara nie aktywuje własnego efektu Przy śmierci, jeśli go nie ma."
+      ]
+    },
+    {
+      "id": "A008",
+      "name": "Architekt Pustki",
+      "trigger": "Przy wystawieniu",
+      "mechanic": "Wygnanie / usuwanie zasobów",
+      "stats_at_round_3_example": {
+        "atk": 3,
+        "hp": 8
+      },
+      "variants": {
+        "basic": "Naznacz jedną wskazaną wrogą jednostkę: po zakończeniu jej najbliższej własnej tury zostanie wygnana, jeżeli nadal jest na planszy i znacznik nie został oczyszczony.",
+        "rare": "Wygnaj natychmiast jedną wskazaną wrogą jednostkę oraz jedną losową kartę z ręki przeciwnika (o ile takie cele istnieją).",
+        "legendary": "Wygnaj natychmiast do trzech wskazanych wrogich jednostek oraz jedną losową kartę z ręki przeciwnika."
+      },
+      "limits_and_counterplay": "Wygnanie usuwa kartę trwale z meczu, bez śmierci, bez monety za zabicie i bez efektów „Przy śmierci”. Nie dotyczy bohaterów.",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Wygnanie nie jest śmiercią i nie wyzwala jej efektów ani nagrody za zabicie; kopie efemeryczne zamiast trafiać do wygnania po prostu znikają."
+      ]
+    },
+    {
+      "id": "A009",
+      "name": "Złodziej Wspomnień",
+      "trigger": "Przy wystawieniu",
+      "mechanic": "Ręka / kontrola kart",
+      "stats_at_round_3_example": {
+        "atk": 2,
+        "hp": 9
+      },
+      "variants": {
+        "basic": "Wymień jedną wskazaną kartę ze swojej ręki na jedną losową kartę z ręki przeciwnika.",
+        "rare": "Podejrzyj rękę przeciwnika i wymień jedną wskazaną kartę ze swojej ręki na jedną wybraną kartę przeciwnika.",
+        "legendary": "Zamień całe aktualne ręce obu graczy miejscami, łącznie z własnością fizycznych egzemplarzy. Następnie przeciwnik wybiera i odrzuca 2 karty ze swojej nowej ręki (lub wszystkie, jeśli ma mniej niż 2)."
+      },
+      "limits_and_counterplay": "Odrzucone po legendarnej wymianie karty trafiają do prywatnego cmentarza przeciwnika, NIE do strefy EXCLUDED_FROM_MATCH z mulliganu; mogą później wrócić w cyklu talii. Przy wymianie zachowują się aktualne ulepszenia i premie przypisane do egzemplarzy. Nowy właściciel otrzymuje kontrolę nad tymi kartami.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Zmiana właściciela kart aktualizuje prywatne strefy i prawa sterowania w jednym atomowym zdarzeniu.",
+        "Dwie karty odrzucone po legendarnej wymianie wybiera przeciwnik ze swojej NOWEJ ręki; cmentarz jest przypisany do nowego właściciela."
+      ]
+    },
+    {
+      "id": "A010",
+      "name": "Królowa Tysiąca Twarzy",
+      "trigger": "Na koniec tury",
+      "mechanic": "Przywołania / przewaga planszy",
+      "stats_at_round_3_example": {
+        "atk": 4,
+        "hp": 7
+      },
+      "variants": {
+        "basic": "Na koniec własnej tury wybierz: przywołaj na wolne pole własnej planszy efemerycznego Żołnierza 1 ATK / 1 HP ALBO nadaj Królowej trwałe +1 ATK i +1 MAX HP (oraz +1 bieżącego HP).",
+        "rare": "Na koniec własnej tury wybierz: przywołaj na wolne pola do dwóch efemerycznych Żołnierzy 2 ATK / 2 HP z Prowokacją ALBO nadaj Królowej trwałe +4 ATK, +4 MAX HP (+4 bieżącego HP) i Prowokację.",
+        "legendary": "Na koniec własnej tury wybierz: przywołaj na wolne pola do dwóch efemerycznych kopii najsilniejszej innej własnej jednostki, z jej aktualnymi ATK i MAX HP, lecz BEZ zdolności; ALBO nadaj Królowej trwały bonus +ATK równy ATK tej jednostki i +MAX HP równy jej MAX HP (wraz z odpowiednim przyrostem bieżącego HP)."
+      },
+      "limits_and_counterplay": "Każdy wybór następuje raz na koniec własnej tury Królowej; bonusy własne kumulują się pomiędzy turami i są buffami na planszy, nie skalowaniem karty na ręce. Najsilniejsza inna własna jednostka = największe bieżące ATK+MAX HP, przy remisie najbardziej z lewej. Brak innego sojusznika uniemożliwia warianty legendarne zależne od jego statystyk. Kopie i Żołnierze nie aktywują „Przy wystawieniu”, nie są kartami aukcyjnymi ani bazowymi, nie powracają do talii po śmierci; maksymalnie 5 jednostek na planszy.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": {
+        "old_atk": 2,
+        "old_hp": 9,
+        "new_atk": 4,
+        "new_hp": 7,
+        "total_unchanged": true,
+        "is_balance_hypothesis": true
+      },
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Raz na KONIEC własnej tury Królowej. Nie oznacza to możliwości zagrania dwóch kart z ręki; przywołane Żołnierze i kopie są tokenami.",
+        "Wzmocnienie jest trwałe na planszy i może kumulować się między turami, ale nie jest skalowaniem samego egzemplarza aukcyjnego w ręce.",
+        "Legendarna liczy najsilniejszą inną własną jednostkę z bieżących ATK+MAX HP, przy remisie wybiera najbardziej lewą; token z tej zdolności nie posiada zdolności."
+      ]
+    },
+    {
+      "id": "A011",
+      "name": "Jeździec Czarnej Komety",
+      "trigger": "Przy śmierci",
+      "mechanic": "Katastrofa / czyszczenie planszy",
+      "stats_at_round_3_example": {
+        "atk": 6,
+        "hp": 5
+      },
+      "variants": {
+        "basic": "Przy śmierci zadaj 5 obrażeń każdej wrogiej jednostce jednocześnie.",
+        "rare": "Przy śmierci zadaj 5 obrażeń każdej wrogiej jednostce jednocześnie oraz 5 obrażeń wrogiemu bohaterowi.",
+        "legendary": "Przy śmierci zniszcz WSZYSTKIE inne jednostki na obu planszach w jednej wspólnej fali (w tym własne) i zadaj 10 obrażeń wrogiemu bohaterowi."
+      },
+      "limits_and_counterplay": "Legendarna wersja NIE daje wyboru starszego wariantu: zawsze uruchamia totalne zniszczenie + 10 obrażeń bohaterowi. Zniszczenie powoduje zwykłe zgony i legalne efekty „Przy śmierci” z tej samej atomowej fali. Obrażenia bohatera rozpatruje się według normalnej kolejki i systemu ochrony. Zdolność samego Jeźdźca nie uruchamia się, jeśli był ogłuszony/wyciszony.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": null,
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "Wariant legendarny: zaznacz wszystkich pozostałych żyjących uczestników fali jednocześnie, usuń ich po zamrożeniu snapshotu i dopiero potem ustaw kolejkę ich Przy śmierci.",
+        "Jeździec nie może ponownie wyzwalać tego samego zgonu; własne poświęcenie czy zgon już rozliczony nie uruchamia zdolności drugi raz.",
+        "10 obrażeń wrogiemu bohaterowi jest częścią tej samej akcji, ale podlega tarczy/pancerzowi i strażnikowi — to nie bezpośrednie „ustaw HP”."
+      ]
+    },
+    {
+      "id": "A012",
+      "name": "Tkaczka Drugiego Losu",
+      "trigger": "Przy wystawieniu",
+      "mechanic": "Manipulacja HP bohaterów",
+      "stats_at_round_3_example": {
+        "atk": 3,
+        "hp": 8
+      },
+      "variants": {
+        "basic": "Przy wystawieniu ustaw bieżące HP obu bohaterów na średnią ich aktualnych HP (zaokrągloną w dół), po czym ulecz swojego bohatera o 10 HP (nie ponad jego MAX HP).",
+        "rare": "Przy wystawieniu wybierz JEDEN tryb: (1) ustaw swoje bieżące HP na bieżące HP przeciwnika, pozostawiając jego HP bez zmian; ALBO (2) ustaw bieżące HP przeciwnika na swoje bieżące HP, pozostawiając swoje HP bez zmian. Następnie ulecz swojego bohatera o 10 HP, nie ponad MAX HP.",
+        "legendary": "Przy wystawieniu zabierz 20 bieżącego HP wrogiemu bohaterowi i ulecz swojego bohatera o 20 HP (maksymalnie do jego MAX HP)."
+      },
+      "limits_and_counterplay": "Podstawowa i rzadka: ustawienie HP, nie zwykłe obrażenia; nie jest blokowane przez tarczę/pancerz. Legendarna: drenaż HP bezpośrednio zmniejsza bieżące HP wroga o 20 i leczy własnego bohatera o 20; nadwyżka leczenia przepada. Jeżeli przeciwnik ma ≤20 HP, może od tego zginąć. Progi monet za spadek HP obowiązują normalnie. UWAGA interpretacyjna: zapis rzadkiej wersji „wybierz” potraktowano jako dwa kierunki kopiowania HP, a NIE równoczesną zamianę obu wartości.",
+      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "stats_change_v3_to_v4": {
+        "old_atk": 1,
+        "old_hp": 10,
+        "new_atk": 3,
+        "new_hp": 8,
+        "total_unchanged": true,
+        "is_balance_hypothesis": true
+      },
+      "stats_at_acquisition": {
+        "formula_atk": "atk_r3 + (completed_auction_round - 3)//3",
+        "formula_max_hp": "(completed_auction_round + 8) - atk_at_acquisition",
+        "requires_round_multiple_of_3": true,
+        "no_changes_after_acquisition": true
+      },
+      "review_notes_v4": [
+        "PODSTAWOWA: średnia floor((HP_twoje+HP_wroga)/2); potem ulecz siebie o 10 do maksimum.",
+        "RZADKA: wybierz KIERUNEK nadpisania HP (własne:=wroga ALBO wroga:=własne), a następnie ulecz siebie o 10. To nie jednoczesna zamiana dwóch wartości.",
+        "LEGENDARNA: przeciwnik traci 20 HP, Ty odzyskujesz do 20 HP; brak leczenia ponad maksymalne HP. Efekt omija pancerz/tarczę jak bezpośredni drenaż, ale reakcja Strażnika na śmiertelną utratę HP nadal jest możliwa."
+      ]
+    }
+  ],
+  "modified_card_ids": [
+    "A002",
+    "A004",
+    "A005",
+    "A009",
+    "A010",
+    "A011",
+    "A012"
+  ],
+  "notes_needing_confirmation": [
+    {
+      "id": "A002",
+      "point": "Bazowa premia „wszystkie jednostki”: literalnie obie plansze, także jednostki wroga. Rzadka/legendarna działają na sojuszników; wybór i zmiana beneficjenta w wersji rzadkiej do doprecyzowania."
+    },
+    {
+      "id": "A012",
+      "point": "Rzadkie „wybierz” zinterpretowano jako wybranie kierunku kopiowania HP, bez równoczesnej zamiany. Alternatywna interpretacja to zwykła zamiana obu sald HP."
+    },
+    {
+      "id": "A004",
+      "point": "Kopie są automatycznie zagrywane na wolne pole i wyzwalają Przy wystawieniu (bo użyto „zagraj”). Wymaga testu rekurencyjnych kopii i identyfikatorów."
+    },
+    {
+      "id": "A010",
+      "point": "Wzmocnienia Królowej są trwałymi i kumulującymi się buffami co koniec własnej tury, mimo braku skalowania statystyk aukcyjnych na ręce."
+    }
+  ],
+  "source_version": "DRAFT_v3",
+  "review_date": "2026-10-18",
+  "stat_balance_changes": [
+    {
+      "id": "A002",
+      "r3_previous": {
+        "atk": 2,
+        "hp": 9
+      },
+      "r3_recommended": {
+        "atk": 3,
+        "hp": 8
+      },
+      "reason": "Trwała bardzo silna aura wymaga nieco łatwiejszego usunięcia; -1 HP, +1 ATK."
+    },
+    {
+      "id": "A005",
+      "r3_previous": {
+        "atk": 1,
+        "hp": 10
+      },
+      "r3_recommended": {
+        "atk": 2,
+        "hp": 9
+      },
+      "reason": "Efekt daje całą premię od razu; minimalne przesunięcie z obrony w atak."
+    },
+    {
+      "id": "A007",
+      "r3_previous": {
+        "atk": 1,
+        "hp": 10
+      },
+      "r3_recommended": {
+        "atk": 2,
+        "hp": 9
+      },
+      "reason": "Zabezpieczenie przed przegraną stanowi już ogromną wartość; mniej HP u źródła ułatwia kontrę."
+    },
+    {
+      "id": "A010",
+      "r3_previous": {
+        "atk": 2,
+        "hp": 9
+      },
+      "r3_recommended": {
+        "atk": 4,
+        "hp": 7
+      },
+      "reason": "Kumulujące się buffy na koniec każdej tury są najsilniejszym długofalowo efektem; -2 HP zmniejsza niezawodność uruchomienia wielu razy."
+    },
+    {
+      "id": "A012",
+      "r3_previous": {
+        "atk": 1,
+        "hp": 10
+      },
+      "r3_recommended": {
+        "atk": 3,
+        "hp": 8
+      },
+      "reason": "Bardzo silny jednorazowy wpływ na HP bohaterów; mniejsza odporność samej jednostki."
+    }
+  ],
+  "approval": {
+    "status": "PROPOSAL_REVIEWED_NOT_FINAL_BALANCED",
+    "ability_text_changed_from_v3": false,
+    "stats_tuned": 5,
+    "auction_rules_vs_legacy": "v4 proposal for 12 special archetypes takes precedence where it explicitly conflicts with reserved v19 auction placeholder rules; starter 70 untouched",
+    "not_verified": "actual full v19 engine integration, ranked PvP win rates, real bidding behavior, price curve"
+  }
+}
