@@ -49,9 +49,9 @@ def card_zones(rect: pygame.Rect) -> dict[str, pygame.Rect]:
     if h>=320:
         title_h,trigger_h,art_h,stats_h,pad=(34,24,137,52,11)
     elif h>=210:
-        title_h,trigger_h,art_h,stats_h,pad=(23,17,70,41,6)
+        title_h,trigger_h,art_h,stats_h,pad=(23,17,62,41,6)
     else:
-        title_h,trigger_h,art_h,stats_h,pad=(22,17,48,37,5)
+        title_h,trigger_h,art_h,stats_h,pad=(22,17,40,37,5)
     inner_x=x+pad;inner_w=w-2*pad
     name=pygame.Rect(inner_x,y+3,inner_w,title_h-3)
     trigger=pygame.Rect(inner_x,name.bottom,inner_w,trigger_h)
