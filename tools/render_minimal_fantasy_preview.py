@@ -162,5 +162,54 @@ for index,entry in enumerate(ATLAS_FILES):
             atlas_sheet.blit(glyph,(x+delta,y+39+(40-icon_size)//2))
 pygame.image.save(atlas_sheet,DEST/'IKONY_35_WYSOKA_JAKOSC_0915.png')
 
+# 0.9.16 — rzeczywiste zrzuty wszystkich kluczowych ekranów.
+from game.ui.layout import preferred_window_size, fitted_viewport
+app=SoloApp()
+app.menu_open=False
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_PLANSZA.png')
+for factor,label in ((1.,'100'),(1.25,'125'),(1.5,'150')):
+    physical=(round(1920/factor),round(1080/factor))
+    target=pygame.Surface(physical)
+    target.fill((5,9,14))
+    vp=pygame.Rect(*fitted_viewport(physical,(1480,980)))
+    target.blit(pygame.transform.smoothscale(app.screen,vp.size),vp.topleft)
+    pygame.image.save(target,DEST/f'VISUAL_0916_DPI_{label}.png')
+app.menu_open=True
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_MENU.png')
+app.menu_open=False
+app.menu_page='settings'
+app.menu_open=True
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_USTAWIENIA.png')
+app.menu_open=False
+app.details_card=app.game.players[0].hand[0]
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_KARTA_DETALE.png')
+app.details_card=None
+for i in range(27):
+    app.game._log(f'Zdarzenie testowe {i}: efekt obrażeń, leczenia, pancerza i statusu.')
+app.history_open=True
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_HISTORIA.png')
+app.history_open=False
+t=pygame.time.get_ticks()
+app.combat_visuals._push('attack',(575,225),t,origin=(575,539))
+app.combat_visuals._push('damage',(515,205),t,'-5')
+app.combat_visuals._push('heal',(638,526),t,'+3')
+app.combat_visuals._push('shield',(716,535),t,'TARCZA')
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_ANIMACJE.png')
+app.combat_visuals.pulses.clear()
+app.replay_index=app.recorder.last_index
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_POWTORKA.png')
+app.replay_index=None
+app.game.phase='finished'
+app.game.winner=0
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0916_KONIEC.png')
+
 pygame.quit()
-print('Utworzono 16 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 26 obrazów podglądu Pygame w folderze preview.')

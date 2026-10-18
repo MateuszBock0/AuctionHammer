@@ -1,9 +1,10 @@
-"""AuctionHammer MVP 0.9.15: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.16: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
 import pygame
 from game.ui.combat_visuals import CombatVisuals
+from game.ui.visual_theme import VisualTheme
 from game.ui.match_history import MatchRecorder
 from game.core.persistence import save_match, load_match, save_path
 from game import config as cfg
@@ -43,6 +44,7 @@ class SoloApp:
         pygame.display.set_caption(cfg.WINDOW_TITLE)
         self.clock=pygame.time.Clock()
         self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,20,22,28,34,46)}
+        self.theme=VisualTheme()
         self.cards_view=CardView()
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
         self.ai=ComputerOpponent()
@@ -137,15 +139,7 @@ class SoloApp:
         self.details_scroll=0
 
     def _create_background(self):
-        bg=pygame.Surface((cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT))
-        for y in range(cfg.WINDOW_HEIGHT):
-            k=y/cfg.WINDOW_HEIGHT
-            col=(int(16+8*k),int(23+9*k),int(34+11*k))
-            pygame.draw.line(bg,col,(0,y),(cfg.WINDOW_WIDTH,y))
-        for cx,cy,r in ((380,365,320),(840,330,240)):
-            pygame.draw.circle(bg,(26,40,50),(cx,cy),r,2)
-            pygame.draw.circle(bg,(26,40,50),(cx,cy),int(r*.66),2)
-        return bg
+        return self.theme.background((cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT))
 
     def _text(self,s,size,x,y,color=None,center=False):
         font=self.fonts[size]
@@ -210,16 +204,18 @@ class SoloApp:
         return cy+size+7
 
     def _panel(self,rect,fill=None,line=None,radius=14):
-        pygame.draw.rect(self.screen,fill or cfg.PANEL,rect,border_radius=radius)
-        pygame.draw.rect(self.screen,line or cfg.PANEL_BORDER,rect,1,border_radius=radius)
+        self.theme.panel(self.screen,rect,fill or cfg.PANEL,
+                         line or cfg.PANEL_BORDER,radius)
 
     def _button(self,rect,label,active=True,accent=False,small=False):
-        mp=self.mouse_pos();hover=rect.collidepoint(mp)
-        fill=(72,109,108) if accent else (45,65,77)
-        if hover and active:fill=(88,130,132) if accent else (67,92,103)
-        if not active:fill=(38,47,56)
-        self._panel(rect,fill,cfg.GOLD if accent and active else cfg.PANEL_BORDER,9)
-        self._text(label,14 if small else 16,rect.centerx,rect.centery,cfg.TEXT if active else cfg.MUTED,center=True)
+        mp=self.mouse_pos()
+        hover=rect.collidepoint(mp)
+        pressed=bool(pygame.mouse.get_pressed()[0]) and hover
+        self.theme.button(self.screen,rect,hover,active,accent,pressed)
+        size=14 if small else 16
+        clipped=self.cards_view.clip(label,self.fonts[size],rect.width-20)
+        self._text(clipped,size,rect.centerx,rect.centery,
+                   cfg.TEXT if active else cfg.MUTED,center=True)
 
     def slot_rect(self,owner,index):
         return pygame.Rect(self.FIRST_X+index*(self.SLOT_W+self.SLOT_GAP),self.OWN_Y if owner==0 else self.OPP_Y,self.SLOT_W,self.SLOT_H)
@@ -304,7 +300,7 @@ class SoloApp:
         if self.details_card is not None:
             self.details_card=None;return
         if g.phase=='finished':
-            if pygame.Rect(1192,823,236,55).collidepoint(pos):self.restart()
+            if pygame.Rect(608,644,260,52).collidepoint(pos):self.restart()
             return
         if g.pending:
             if g.pending.owner != 0:
@@ -559,6 +555,8 @@ class SoloApp:
         rect=self.hero_rect(idx)
         border=cfg.GREEN if idx==0 else cfg.RED
         self._panel(rect,(29,45,59),border,9)
+        pygame.draw.line(self.screen,(187,147,83),(rect.x+12,rect.y+5),
+                         (rect.x+154,rect.y+5),1)
         x=rect.x+176
         hp=max(0,min(100,p.hp))
         pygame.draw.rect(self.screen,(64,71,79),(x,rect.y+14,425,17),border_radius=6)
@@ -575,7 +573,7 @@ class SoloApp:
         for owner,p in enumerate(self.game.players):
             for i in range(5):
                 rect=self.slot_rect(owner,i)
-                self._panel(rect,(28,42,52),cfg.SLOT_BORDER,12)
+                self.theme.slot(self.screen,rect,owner)
                 if i>=len(p.board):
                     self._text('+',34,rect.centerx,rect.centery-8,(64,85,100),center=True)
                     self._text(f'POLE {i+1}',12,rect.centerx,rect.bottom-21,cfg.MUTED,center=True)
@@ -590,7 +588,7 @@ class SoloApp:
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
                       attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit)
         self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
-        self._text('TWOJA RĘKA  ·  kliknij kartę, potem planszę (lub przeciągnij)',14,89,721,cfg.MUTED)
+        self._text('TWOJA RĘKA  ·  wybierz kartę i pole lub przeciągnij',14,100,721,cfg.MUTED)
         hand=self.hand_layout()
         for uid,rect in hand.items():
             pygame.draw.rect(self.screen,(18,32,41),rect.inflate(11,10),border_radius=13)
@@ -645,14 +643,14 @@ class SoloApp:
                 self._text(f'AKTYWNE EFEKTY ({len(statuses)})',15,1105,548,cfg.GOLD)
                 # Important quantities are available immediately from the
                 # sidebar, not hidden behind the full documentation window.
-                for j,st in enumerate(statuses[:3]):
+                for j,st in enumerate(statuses[:2]):
                     yy=571+j*37
                     pygame.draw.circle(self.screen,st.color,(1113,yy+7),5)
                     self._text(self.cards_view.clip(st.name,self.fonts[13],296),13,1126,yy,st.color)
                     detail=self.cards_view.clip(st.detail,self.fonts[12],302)
                     self._text(detail,12,1126,yy+17,cfg.MUTED)
-                if len(statuses)>3:
-                    self._text(f'+{len(statuses)-3} pozostałych efektów — [I]',12,1105,697,cfg.MUTED)
+                if len(statuses)>2:
+                    self._text(f'+{len(statuses)-2} pozostałych efektów — [I]',12,1105,648,cfg.MUTED)
             else:
                 grants=hand_grants(self.game,card_id)
                 if grants:
@@ -694,11 +692,27 @@ class SoloApp:
             self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ',active=can,accent=can)
         self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
 
+    @staticmethod
+    def header_regions():
+        """Separate logo, mode and shortcuts. No text may cross its cell."""
+        return (pygame.Rect(100,18,430,44),
+                pygame.Rect(548,18,430,44),
+                pygame.Rect(998,18,441,44))
+
     def _draw_header(self):
+        logo,mode,help_area=self.header_regions()
+        pygame.draw.rect(self.screen,(21,34,43),pygame.Rect(83,11,1364,56),
+                         border_radius=12)
+        pygame.draw.line(self.screen,cfg.GOLD,(104,64),(1426,64),1)
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
-        self._text('GRA SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.15 · [A] EFEKTY [H] HIST. [M] MENU',13,1260,35,cfg.GOLD)
+        self._text('SOLO  ·  70 KART  ·  GAME MASTER v19',14,
+                   mode.x+8,33,cfg.MUTED)
+        help_text='[A] EFEKTY  [H] HISTORIA  [P] POWTÓRKA  [M] MENU'
+        font=self.fonts[13]
+        # Rendered width is checked at runtime; never overflow the canvas.
+        help_text=self.cards_view.clip(help_text,font,help_area.width-12)
+        self._text(help_text,13,help_area.x+8,34,cfg.GOLD)
 
     def _draw_log(self):
         # Delikatny, możliwy do wyłączenia [A] błysk pod ostatnimi
@@ -713,11 +727,11 @@ class SoloApp:
         entries=self.game.events[-2:]
         y=378
         for s in entries:
-            trimmed=s if len(s)<117 else s[:114]+'…'
+            trimmed=self.cards_view.clip(s,self.fonts[12],920)
             self._text(trimmed,12,118,y,cfg.MUTED)
             y+=16
         if self.last_error:
-            self._text(self.last_error[:105],13,280,954,cfg.RED)
+            self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),13,280,954,cfg.RED)
 
     def _attack_target_rects(self):
         """Ask the engine for *currently legal* attack targets only."""
@@ -1022,8 +1036,8 @@ class SoloApp:
         self._text(f'Historia: {len(self.game.event_journal)} zdarzeń  ·  '
                    f'powtórka: {len(self.recorder.frames)} stanów',15,738,575,cfg.MUTED,center=True)
         self._text('H — historia  ·  P — powtórka  ·  R — nowy mecz',
-                   15,738,629,cfg.MUTED,center=True)
-        self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
+                   15,738,616,cfg.MUTED,center=True)
+        self._button(pygame.Rect(608,644,260,52),'NOWY MECZ',accent=True)
 
     def draw(self):
         # W powtórce renderujemy kopię, bez kierowania do niej jakichkolwiek

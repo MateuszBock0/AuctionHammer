@@ -17,6 +17,7 @@ from game.core.status_view import STATUS_COLORS
 from game.ui.card_infographics import card_cue, FAMILY_COLORS
 from game.ui.card_summary import ability_summary
 from game.ui.game_icons import GameIcons,status_icon_key
+from game.ui.visual_theme import VisualTheme
 
 FACTION_COLORS = {
     'Elfy': (101,194,150), 'Dzikie bestie': (220,164,89),
@@ -88,6 +89,7 @@ class CardView:
     def __init__(self):
         self.images=ImageAssets()
         self.icons=GameIcons()
+        self.theme=VisualTheme()
         self.fonts={}
         for size in (9,10,11,12,13,14,15,17,18,20,22,25):
             self.fonts[(size,False)]=pygame.font.SysFont('segoeui',size)
@@ -184,6 +186,16 @@ class CardView:
         cx,cy=w//2,h//2
         radius=max(8,min(w,h)*.32)
         pygame.draw.circle(im,accent,(cx,cy),int(radius),2)
+        # Etched fantasy filigree, deterministic for each archetype.
+        rng_seed=int(hashlib.sha1(cid.encode()).hexdigest()[:10],16)
+        for k in range(min(26,max(5,(w*h)//160))):
+            px=(rng_seed*(k+5)+k*k*19)%max(1,w)
+            py=(rng_seed//(k+7)+k*13)%max(1,h)
+            pygame.draw.circle(im,tuple(min(255,int(c*.72)) for c in accent),
+                               (int(px),int(py)),1)
+        if w>70 and h>45:
+            pygame.draw.arc(im,tuple(int(c*.7) for c in accent),
+                            pygame.Rect(7,3,w-14,h-6),.15,2.9,1)
         count=5+int(hashlib.sha1(cid.encode()).hexdigest()[:4],16)%5
         for j in range(count):
             t=2*math.pi*j/count
@@ -216,9 +228,7 @@ class CardView:
         board=unit is not None
         pad=11 if large else 6
         # BACKGROUND + FRAME
-        pygame.draw.rect(screen,(6,10,16),rect.move(0,3),border_radius=11)
-        pygame.draw.rect(screen,(25,37,49),rect,border_radius=11)
-        pygame.draw.rect(screen,color,rect,2,border_radius=11)
+        self.theme.card_lustre(screen,rect,color)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
         screen.blit(self.art(d.id,d.faction,art.size,d.family),art)
@@ -234,6 +244,11 @@ class CardView:
         name_rect=zone['name']
         pygame.draw.rect(screen,(20,31,43),name_rect,border_radius=4)
         pygame.draw.rect(screen,(19,31,41),zone['info'],border_radius=5)
+        # Brushed-metal dividers are background-only and never cover text.
+        info_zone=zone['info']
+        pygame.draw.line(screen,(66,78,74),
+                         (info_zone.x+5,info_zone.y+1),
+                         (info_zone.right-5,info_zone.y+1),1)
         trigger_text,trigger_color=TRIGGER_BADGES[d.trigger]
         pygame.draw.rect(screen,trigger_color,zone['trigger'],border_radius=4)
         stats_rect=zone['stats']
@@ -244,6 +259,12 @@ class CardView:
         pygame.draw.rect(screen,(61,34,42),health_box,border_radius=5)
         pygame.draw.rect(screen,(147,108,54),attack_box,1,border_radius=5)
         pygame.draw.rect(screen,(153,84,91),health_box,1,border_radius=5)
+        pygame.draw.line(screen,(191,153,95),
+                         (attack_box.x+4,attack_box.y+2),
+                         (attack_box.right-4,attack_box.y+2),1)
+        pygame.draw.line(screen,(174,109,117),
+                         (health_box.x+4,health_box.y+2),
+                         (health_box.right-4,health_box.y+2),1)
         # MAIN TEXT
         title_size=17 if large else (13 if rect.height>=210 else 12)
         title=self._fit_font(d.name,name_rect.width-8,(title_size,14,13,12,11,10,9))

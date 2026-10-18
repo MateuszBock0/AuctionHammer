@@ -65,6 +65,29 @@ niezmienione. Bez zmian zasad Game Master v19.
 Podgląd Pygame: `preview/IKONY_35_WYSOKA_JAKOSC_0915.png`.
 Szczegóły audytu: [Ikony Minimal Fantasy — 0.9.15](docs/IKONY_MINIMAL_FANTASY_0915.md).
 
+## Aktualizacja 0.9.16 — Visual Polish
+
+Oprawa gry przeszła całościowy pass Minimal Fantasy:
+- ciemne kamienne tło z grawerowanymi symbolami, wydzielone strefy
+  komputer/gracz/ręka i winietowanie;
+- zdobione sloty, panele i przyciski (hover/pressed/disabled),
+  metaliczne obramowania kart oraz subtelne ornamenty;
+- ulepszone animacje ataku, obrażeń, leczenia i statusów, iskry zgonu,
+  pojawianie się jednostki oraz sygnalizacja zmiany tury;
+- korekty czytelności: rozdzielony nagłówek instrukcji, prawdziwe
+  mierzenie szerokości logu, statusy oddzielone od przycisku [I],
+  ekran końcowy z przyciskiem w panelu wyniku.
+
+Wszystkie 70 kart, ich statystyki i umiejętności działają jak dotąd.
+Żadne nowe mechaniki, aukcje ani koszty kart nie zostały dodane.
+
+Testy automatycznie sprawdzają ułożenie tekstów i klikalność na
+logicznych DPI 100%, 125% oraz 150% (wymagany również test na
+rzeczywistym monitorze). Zrzuty nowych ekranów:
+`preview/VISUAL_0916_*.png`.
+
+[Raport z poprawek i ograniczeń](docs/VISUAL_POLISH_0916.md).
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.

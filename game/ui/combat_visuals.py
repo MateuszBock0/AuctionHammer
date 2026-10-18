@@ -7,7 +7,7 @@ dwóch ZATWIERDZONYCH stanów. Ruch ataku z zatwierdzonego dziennika zdarzeń.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import sin, pi
+from math import sin, cos, pi
 import re
 import pygame
 
@@ -24,6 +24,8 @@ KINDS = {
     'regen':((104,242,189),'REGEN'),
     'quick':((103,225,242),'SZYBKI'),
     'double':((255,166,106),'2×'),
+    'summon':((224,186,103),'WEJŚCIE'),
+    'turn':((208,171,102),''),
 }
 
 
@@ -44,6 +46,7 @@ class CombatVisuals:
         self.max_pulses = max_pulses
         self.last_state = None
         self.read_events = 0
+        self.last_active = None
         self.pulses: list[Pulse] = []
 
     @staticmethod
@@ -86,7 +89,15 @@ class CombatVisuals:
         fresh=journal[self.read_events:]
         self.read_events=len(journal)
         if prior is None:
+            self.last_active=game.active
             return
+        # Auras/entrances operate on confirmed board occupancy only.
+        for uid,data in current.items():
+            if uid not in prior and not uid.startswith('hero:'):
+                self._push('summon',data['at'],now,'')
+        if game.active != self.last_active:
+            self.last_active=game.active
+            self._push('turn',current[f'hero:{game.active}']['at'],now,'')
         # Przy walce oba końce są znane nawet wtedy, gdy atakujący już zginął.
         for evt in fresh:
             message=evt['text']
@@ -127,49 +138,81 @@ class CombatVisuals:
         self.pulses=[p for p in self.pulses if now-p.born < p.lifetime]
 
     def draw(self,screen: pygame.Surface,now: int,font: pygame.font.Font):
-        """Efekty nad ilustracjami, z przezroczystością i płynną interpolacją."""
-        live=[]
-        for p in self.pulses:
-            age=now-p.born
-            if age<0 or age>=p.lifetime:continue
-            live.append(p)
-            t=age/p.lifetime
-            color,title=KINDS[p.kind]
-            alpha=max(0,int(240*(1-t)))
-            if p.kind=='attack' and p.origin is not None:
-                travel=min(1.,t*2.9)
-                x=p.origin[0]+(p.at[0]-p.origin[0])*travel
-                y=p.origin[1]+(p.at[1]-p.origin[1])*travel
-                radius=max(2,int(9*(1-travel*.45)))
-                glow=pygame.Surface((radius*8,radius*8),pygame.SRCALPHA)
-                pygame.draw.circle(glow,(*color,alpha//3),
-                                   (radius*4,radius*4),radius*3)
-                pygame.draw.circle(glow,(*color,alpha),
-                                   (radius*4,radius*4),radius)
-                screen.blit(glow,(int(x)-radius*4,int(y)-radius*4))
+        """Eased projectiles, impact particles, floating text and status rings.
+
+        Effects are cosmetic, short-lived, capped, and avoid card stat plates.
+        """
+        alive=[]
+        for pulse in self.pulses:
+            age=now-pulse.born
+            if age<0 or age>=pulse.lifetime:
                 continue
-            x,y=p.at
-            y-=int(10+29*t)
-            radius=14+int(21*t)
-            surf=pygame.Surface((radius*2+4,radius*2+4),pygame.SRCALPHA)
-            if p.kind in ('shield','armor'):
-                pygame.draw.circle(surf,(*color,int(alpha*.85)),
-                                   (radius+2,radius+2),radius,3)
-            elif p.kind=='death':
-                for i in range(8):
-                    vx=int((i%4-1.5)*radius*.55)
-                    vy=int((i//4*2-1)*radius*.65)
-                    pygame.draw.circle(surf,(*color,alpha),
-                                       (radius+vx+2,radius+vy+2),3)
+            alive.append(pulse)
+            t=age/pulse.lifetime
+            color,title=KINDS[pulse.kind]
+            alpha=max(0,int(230*(1-t)**1.2))
+            x,y=pulse.at
+            if pulse.kind=='attack' and pulse.origin is not None:
+                travel=min(1.,t*3.05)
+                eased=1-(1-travel)**3
+                x=pulse.origin[0]+(pulse.at[0]-pulse.origin[0])*eased
+                y=pulse.origin[1]+(pulse.at[1]-pulse.origin[1])*eased
+                radius=4+int(7*(1-travel))
+                glow=pygame.Surface((60,60),pygame.SRCALPHA)
+                pygame.draw.circle(glow,(*color,max(0,int(alpha*.25))),
+                                   (30,30),radius*3)
+                pygame.draw.circle(glow,(*color,alpha),(30,30),radius)
+                for i in range(4):
+                    u=max(0.,eased-(i+1)*.055)
+                    tx=pulse.origin[0]+(pulse.at[0]-pulse.origin[0])*u
+                    ty=pulse.origin[1]+(pulse.at[1]-pulse.origin[1])*u
+                    pygame.draw.circle(screen,tuple(int(c*(.53+.11*i)) for c in color),
+                                       (int(tx),int(ty)),max(1,4-i))
+                screen.blit(glow,(int(x)-30,int(y)-30))
+                continue
+            if pulse.kind=='turn':
+                radius=15+int(25*t)
+                fx=pygame.Surface((radius*2+8,radius*2+8),pygame.SRCALPHA)
+                pygame.draw.circle(fx,(*color,int(alpha*.48)),
+                                   (radius+4,radius+4),radius,2)
+                screen.blit(fx,(int(x)-radius-4,int(y)-radius-4))
+                continue
+            rise=14+int(32*(1-(1-t)**2))
+            y-=rise
+            radius=11+int(24*t)
+            fx=pygame.Surface((radius*2+18,radius*2+18),pygame.SRCALPHA)
+            center=(radius+9,radius+9)
+            if pulse.kind in ('shield','armor','summon'):
+                pygame.draw.circle(fx,(*color,int(alpha*.7)),center,radius,2)
+                for k in range(6):
+                    a=2*pi*k/6 + t
+                    pygame.draw.circle(fx,(*color,int(alpha*.83)),
+                                       (int(center[0]+cos(a)*radius),
+                                        int(center[1]+sin(a)*radius)),2)
+            elif pulse.kind=='death':
+                for i in range(11):
+                    angle=2*pi*i/11
+                    length=radius*(.33+.62*t)
+                    pygame.draw.circle(fx,(*color,alpha),
+                                       (int(center[0]+cos(angle)*length),
+                                        int(center[1]+sin(angle)*length)),
+                                       2+((i+1)%3))
             else:
-                pygame.draw.circle(surf,(*color,int(alpha*.28)),
-                                   (radius+2,radius+2),radius)
-            screen.blit(surf,(int(x)-radius-2,int(y)-radius-2))
-            label=p.label or title
-            rendered=font.render(label,True,color)
-            rendered.set_alpha(alpha)
-            if rendered.get_width()>106:
+                pygame.draw.circle(fx,(*color,int(alpha*.17)),center,radius)
+                pygame.draw.circle(fx,(*color,int(alpha*.38)),center,
+                                   max(2,radius-4),2)
+            screen.blit(fx,(int(x)-radius-9,int(y)-radius-9))
+            label=pulse.label or title
+            if not label:
                 continue
-            screen.blit(rendered,(int(x)-rendered.get_width()//2,
-                                  int(y)-rendered.get_height()//2))
-        self.pulses=live
+            message=font.render(label,True,color)
+            if message.get_width()>104:
+                continue
+            shadow=font.render(label,True,(6,14,21))
+            shadow.set_alpha(alpha)
+            message.set_alpha(alpha)
+            bx=int(x)-message.get_width()//2
+            by=int(y)-message.get_height()//2
+            screen.blit(shadow,(bx+1,by+2))
+            screen.blit(message,(bx,by))
+        self.pulses=alive
