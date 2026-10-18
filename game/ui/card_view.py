@@ -16,6 +16,7 @@ from game.ui.assets import ImageAssets
 from game.core.status_view import STATUS_COLORS
 from game.ui.card_infographics import card_cue, FAMILY_COLORS
 from game.ui.card_summary import ability_summary
+from game.ui.game_icons import GameIcons,status_icon_key
 
 FACTION_COLORS = {
     'Elfy': (101,194,150), 'Dzikie bestie': (220,164,89),
@@ -86,6 +87,7 @@ def compact_context(effect: str) -> str:
 class CardView:
     def __init__(self):
         self.images=ImageAssets()
+        self.icons=GameIcons()
         self.fonts={}
         for size in (9,10,11,12,13,14,15,17,18,20,22,25):
             self.fonts[(size,False)]=pygame.font.SysFont('segoeui',size)
@@ -225,6 +227,9 @@ class CardView:
             shade.fill((6,10,17,130))
             screen.blit(shade,art.topleft)
         pygame.draw.rect(screen,(88,107,114),art,1,border_radius=5)
+        emblem=self.icons.get(d.faction,'factions',min(19,art.height-4))
+        if emblem is not None:
+            screen.blit(emblem,(art.x+2,art.y+2))
         # ALL INFORMATION PANELS are opaque and above artwork/dimming.
         name_rect=zone['name']
         pygame.draw.rect(screen,(20,31,43),name_rect,border_radius=4)
@@ -252,10 +257,25 @@ class CardView:
         family_name=d.family.upper().replace("MAX HP","MAX PŻ").replace("ATK","ATAK")
         # Bez ozdobnych znaków, które mogą być wyświetlane jako puste kwadraty
         # w niektórych czcionkach Windows.
-        self._pill(screen,family,family_name,cue.color,
-                   self._fit_font(family_name,family.width-7,
-                                  (13,12,11,10) if large else (12,11,10)),
-                   (15,23,28))
+        family_icon=self.icons.get(d.family,'families',15 if large else 13)
+        if family_icon is None:
+            self._pill(screen,family,family_name,cue.color,
+                       self._fit_font(family_name,family.width-7,
+                                      (13,12,11,10) if large else (12,11,10)),
+                       (15,23,28))
+        else:
+            pygame.draw.rect(screen,cue.color,family,border_radius=4)
+            glyph_rect=pygame.Rect(family.x+2,
+                                   family.centery-family_icon.get_height()//2,
+                                   *family_icon.get_size())
+            screen.blit(family_icon,glyph_rect)
+            text_rect=pygame.Rect(family.x+family_icon.get_width()+4,
+                                  family.y,family.width-family_icon.get_width()-5,
+                                  family.height)
+            ft=self._fit_font(family_name,text_rect.width-4,
+                              (12,11,10) if large else (11,10))
+            self._center(screen,self.clip(family_name,ft,text_rect.width-4),
+                         text_rect,ft,(15,23,28))
         main=text_plan['main']
         if main is not None:
             bfont=self._fit_font(cue.base,main.width,
@@ -281,9 +301,19 @@ class CardView:
             x=art.x+3;y=art.bottom-17
             for status in compact:
                 sf=self.font(9,True)
-                label=self.clip(status.short,sf,34)
-                width=max(23,min(39,sf.size(label)[0]+8))
-                self._pill(screen,pygame.Rect(x,y,width,14),label,status.color,sf,(14,23,29))
+                icon=self.icons.get(status_icon_key(status),'statuses',13)
+                if icon is not None:
+                    width=37
+                    pill=pygame.Rect(x,y,width,14)
+                    pygame.draw.rect(screen,status.color,pill,border_radius=4)
+                    screen.blit(icon,(x,y))
+                    label=self.clip(status.short,sf,width-16)
+                    text=sf.render(label,True,(14,23,29))
+                    screen.blit(text,(x+14,y+(14-text.get_height())//2))
+                else:
+                    label=self.clip(status.short,sf,34)
+                    width=max(23,min(39,sf.size(label)[0]+8))
+                    self._pill(screen,pygame.Rect(x,y,width,14),label,status.color,sf,(14,23,29))
                 x+=width+3
             rest=len(ordered)-len(compact)
             if rest:
