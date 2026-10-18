@@ -56,6 +56,16 @@ class ZeroAttackTargetTests(unittest.TestCase):
         app.selected='S02'
         self.assertEqual(app._attack_target_rects(),[app.slot_rect(1,0)])
 
+    def test_original_0922_v3_engine_also_allows_zero_attack_target(self):
+        from test_engine import setup_game,force_unit
+        game=setup_game(2604)
+        force_unit(game,'S02',0)
+        force_unit(game,'S33',1)
+        game.units['S33'].base_attack=0
+        self.assertEqual(game.auction_catalog,'v3')
+        self.assertEqual(game.units['S33'].atk,0)
+        self.assertEqual(game.legal_attacks('S02'),['S33'])
+
     def test_no_taunt_zero_attack_enemy_is_selectable_normally(self):
         game=ready(2603)
         place_basic(game,'S02',0)
