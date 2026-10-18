@@ -173,7 +173,7 @@ class V19InfographicTests(unittest.TestCase):
                 self.assertTrue(cue.trigger)
                 self.assertTrue(cue.family)
                 self.assertTrue(cue.base)
-                self.assertIn('/3T',cue.upgrade)
+                self.assertIn('/ 3T',cue.upgrade)
         self.assertEqual(len(FAMILY_SYMBOLS),14)
 
     def test_damage_quantity_bold_not_duration(self):
@@ -189,14 +189,14 @@ class V19InfographicTests(unittest.TestCase):
         g=setup_game(933)
         for uid in ('S66','S67','S79','S114','S115'):
             self.assertEqual(highlighted_numeric_ranges(g.defs[uid]),())
-        self.assertIn('+2 ATK',card_cue(g.cards['S115']).upgrade)
-        self.assertIn('+1 HP',card_cue(g.cards['S114']).upgrade)
+        self.assertIn('+2 ATAK',card_cue(g.cards['S115']).upgrade)
+        self.assertIn('+1 PŻ',card_cue(g.cards['S114']).upgrade)
 
     def test_v19_s109_bonus_is_per_turn(self):
         g=setup_game(934)
         g.cards['S109'].hand_turns=9
         cue=card_cue(g.cards['S109'])
-        self.assertIn('PER TURN',cue.upgrade)
+        self.assertIn('CO TURĘ',cue.upgrade)
         self.assertEqual(cue.effect_value,5)
 
 
