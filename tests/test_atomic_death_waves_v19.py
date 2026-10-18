@@ -148,6 +148,55 @@ class AtomicDeathWaveTests(unittest.TestCase):
         self.assertEqual(g.players[0].hero_armor,8)
         g.assert_integrity()
 
+    def test_simultaneous_immunity_cannot_retroactively_cancel_stun(self):
+        g=setup_game(710)
+        g.active=1
+        force_unit(g,'S88',1)
+        force_unit(g,'S84',0)
+        target=force_unit(g,'S01',1)
+        g._kill_batch(['S84','S88'])
+        self.assertEqual(g.death_waves[0]['triggers'],('S88','S84'))
+        g._drain()
+        choose_target(g,'S01')  # immune source first
+        choose_target(g,'S01')  # stun source, same state at declaration
+        kinds=[e.kind for e in target.effects]
+        self.assertIn('immune_stun',kinds)
+        self.assertIn('stun',kinds)
+        g.assert_integrity()
+
+    def test_earlier_cleanse_cannot_remove_debuff_from_same_wave(self):
+        g=setup_game(711)
+        g.active=1
+        force_unit(g,'S87',1)
+        force_unit(g,'S84',0)
+        target=force_unit(g,'S01',1)
+        g._add_effect('S01','stun',expires=3,source='S59',positive=False)
+        self.assertTrue(any(e.kind=='stun' for e in target.effects))
+        g._kill_batch(['S84','S87'])
+        g._drain()
+        choose_target(g,'S01')
+        choose_target(g,'S01')
+        # Pre-existing stun is removed; new stun from this same cohort survives.
+        self.assertEqual(sum(e.kind=='stun' for e in target.effects),1)
+        g.assert_integrity()
+
+    def test_standard_combat_places_both_dead_units_in_one_group(self):
+        g=setup_game(712)
+        attacker=force_unit(g,'S09',0)
+        defender=force_unit(g,'S21',1)
+        attacker.played_turn=0
+        attacker.hp=1
+        defender.hp=1
+        attacker.base_attack=3
+        defender.base_attack=3
+        g.attack('S09','S21')
+        self.assertNotIn('S09',g.units)
+        self.assertNotIn('S21',g.units)
+        self.assertIn(('wykryto',1,('S09','S21')),g.death_wave_log)
+        self.assertEqual(g.players[0].hp,96)
+        g.assert_integrity()
+
+
 
 if __name__=='__main__':
     unittest.main()
