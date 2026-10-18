@@ -190,6 +190,40 @@ def load_match(path: Path | None = None) -> Match:
             ('auction_general_targets',{}),('auction_general_grants',{}),
             ('auction_pending_targets',{}),('auction_wave_ops',[])):
         data.setdefault(name,default)
+    if 'death_counts' not in data:
+        # Old builds showed current grave size as "losses". Reconstruct real
+        # unit deaths only when a complete audit has enough information.
+        counts=[0,0]
+        actions=data.get('audit_actions',[])
+        events=data.get('event_journal',[])
+        if isinstance(actions,list) and isinstance(events,list):
+            for action in actions:
+                if not isinstance(action,dict):continue
+                changes=action.get('changes',{})
+                if not isinstance(changes,dict):continue
+                transitions=changes.get('units',{})
+                if not isinstance(transitions,dict):continue
+                for delta in transitions.values():
+                    if not isinstance(delta,dict):continue
+                    previous,current=delta.get('before'),delta.get('after')
+                    if isinstance(previous,dict) and current is None:
+                        owner=previous.get('owner')
+                        if owner in (0,1):counts[owner]+=1
+            logged=sum(isinstance(e,dict) and
+                       str(e.get('text','')).startswith('Zgon ')
+                       for e in events)
+            complete=(bool(data.get('audit_complete',False))
+                      and sum(counts)==logged)
+        else:
+            complete=False
+        data['death_counts']=counts if complete else [0,0]
+        data['death_counts_complete']=complete
+    else:
+        data.setdefault('death_counts_complete',True)
+    if (not isinstance(data['death_counts'],list)
+            or len(data['death_counts'])!=2
+            or any(type(n) is not int or n<0 for n in data['death_counts'])):
+        raise ValueError('Nieprawidłowy licznik zgonów jednostek')
     match=Match.__new__(Match)
     match.__dict__.update(data)
     return match
