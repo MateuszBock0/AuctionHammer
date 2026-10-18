@@ -1325,7 +1325,12 @@ class SoloApp:
         self._text(f'ROZEGRANE RUNDY: {self.game.round}',18,738,419,cfg.GOLD,center=True)
         for owner,p in enumerate(self.game.players):
             y=470+owner*47
-            label=f'{p.name}: {max(0,min(100,p.hp))} PŻ  ·  {len(p.grave)} utraconych jednostek  ·  {p.coins} monet'
+            deaths=getattr(self.game,'death_counts',[0,0])[owner]
+            complete=getattr(self.game,'death_counts_complete',False)
+            deaths_label=(f'{deaths} zgonów jednostek' if complete
+                          else f'{deaths} zgonów od wczytania')
+            label=(f'{p.name}: {max(0,min(100,p.hp))} PŻ  ·  '
+                   f'{deaths_label}  ·  {p.coins} monet')
             self._text(label,16,738,y,cfg.TEXT,center=True)
         self._text(f'Historia: {len(self.game.event_journal)} zdarzeń  ·  '
                    f'powtórka: {len(self.recorder.frames)} stanów',15,738,575,cfg.MUTED,center=True)
