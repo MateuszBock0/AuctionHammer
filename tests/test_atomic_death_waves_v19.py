@@ -39,13 +39,14 @@ class AtomicDeathWaveTests(unittest.TestCase):
 
     def test_new_lethal_outcome_is_new_group_not_same_death_wave(self):
         g=setup_game(702)
-        force_unit(g,'S84',0)
+        force_unit(g,'S81',0)
         dying=force_unit(g,'S83',1)
         target=force_unit(g,'S01',0)
+        dying.base_max_hp=4
         dying.hp=1
-        g._kill_batch(['S84'])
+        g._kill_batch(['S81'])
         g._drain()
-        choose_target(g,'S83')
+        choose_target(g,'S83','Osłab')
         self.assertIsNotNone(g.pending,(g.events[-12:],g.death_wave_log,[(x,y.hp) for x,y in g.units.items()]))
         self.assertEqual(g.pending.uid,'S83')
         self.assertEqual(g.pending.context,'death_wave')
