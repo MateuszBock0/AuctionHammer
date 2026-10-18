@@ -247,6 +247,29 @@ class AtomicDeathWaveTests(unittest.TestCase):
         g.assert_integrity()
 
 
+    def test_next_death_cohort_snapshots_targets_only_after_previous_closes(self):
+        g=setup_game(716)
+        g.active=1
+        force_unit(g,'S84',1)
+        force_unit(g,'S83',1)
+        first=force_unit(g,'S01',0)
+        force_unit(g,'S02',0)
+        first.hp=1
+        g._kill_batch(['S84'])
+        # Model an already detected later group (e.g. from aura collapse).
+        g._kill_batch(['S83'])
+        self.assertIsNone(g.death_waves[1]['options'])
+        g._drain()
+        self.assertEqual(g.pending.uid,'S84')
+        choose_target(g,'S01')
+        self.assertNotIn('S01',g.units)
+        self.assertEqual(g.pending.uid,'S83')
+        self.assertEqual([c.target for c in g.pending.choices],['S02'])
+        choose_target(g,'S02')
+        self.assertEqual(len(g.death_waves),0)
+        g.assert_integrity()
+
+
 
 if __name__=='__main__':
     unittest.main()
