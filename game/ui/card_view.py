@@ -50,9 +50,9 @@ def card_zones(rect: pygame.Rect) -> dict[str, pygame.Rect]:
     if h>=320:
         title_h,trigger_h,art_h,stats_h,pad=(34,24,112,52,11)
     elif h>=210:
-        title_h,trigger_h,art_h,stats_h,pad=(23,17,46,41,6)
+        title_h,trigger_h,art_h,stats_h,pad=(23,17,38,41,6)
     else:
-        title_h,trigger_h,art_h,stats_h,pad=(22,17,30,37,5)
+        title_h,trigger_h,art_h,stats_h,pad=(22,17,22,37,5)
     inner_x=x+pad;inner_w=w-2*pad
     name=pygame.Rect(inner_x,y+3,inner_w,title_h-3)
     trigger=pygame.Rect(inner_x,name.bottom,inner_w,trigger_h)
@@ -109,6 +109,65 @@ class CardView:
             ft=self.font(size,bold)
             if ft.size(str(text))[0]<=width:return ft
         return self.font(9,bold)
+
+    @staticmethod
+    def wrap_ability(text,font,width,max_lines):
+        """Zawijaj na granicach słów; jeśli trzeba skracać, ZAWSZE zaznacz ….
+
+        Nigdy nie ukrywaj ostatniej linii po cichu. Pełny tekst dostępny
+        pozostaje w panelu i widoku [I].
+        """
+        if max_lines<=0:return ()
+        lines=[]
+        current=''
+        for word in text.split():
+            candidate=(current+' '+word).strip()
+            if current and font.size(candidate)[0]>width:
+                lines.append(current)
+                current=word
+            else:
+                current=candidate
+        if current:lines.append(current)
+        if not lines:return ()
+        if len(lines)>max_lines:
+            lines=lines[:max_lines]
+            lines[-1]=CardView.clip(lines[-1]+'…',font,width)
+        return tuple(CardView.clip(line,font,width) for line in lines)
+
+    def summary_layout(self,card,rect,unit=None):
+        """Wyznacza faktyczne strefy tekstu, także do testowania kolizji."""
+        d=card.definition
+        cue=card_cue(card,unit)
+        short=ability_summary(card,unit)
+        zone=card_zones(rect)
+        info=zone['info']
+        large=rect.height>=320
+        label_h=18 if large else 14
+        family=pygame.Rect(info.x+3,info.y+3,info.width-6,label_h)
+        # Puste skróty ODP, SZYBKI, TARCZA, 2 ATAKI itd. dublowały
+        # nagłówek kategorii, zabierając miejsce opisowi celu i warunku.
+        show_value=cue.effect_value is not None
+        if d.family=='Ogłuszenie' and cue.effect_value==0:
+            show_value=False
+        main=None
+        if show_value:
+            main=pygame.Rect(info.x+4,family.bottom+2,info.width-8,
+                             23 if large else 16)
+        footer=pygame.Rect(info.x+3,info.bottom-(31 if large else 15),
+                           info.width-6,27 if large else 12)
+        desc_y=(main.bottom+1) if main else (family.bottom+3)
+        font=self.font(14 if large else (12 if show_value else 13))
+        step=max(font.get_height()+1,17 if large else 14)
+        free=max(0,footer.top-desc_y)
+        max_lines=min(5 if large else (2 if show_value else 3),free//step)
+        text=short.full if large else short.short
+        lines=self.wrap_ability(text,font,info.width-8,max_lines)
+        boxes=tuple(pygame.Rect(info.x+4,desc_y+i*step,info.width-8,
+                                font.get_height()) for i in range(len(lines)))
+        return {
+            'family':family,'main':main,'footer':footer,'font':font,
+            'lines':lines,'boxes':boxes,'show_value':show_value,
+        }
 
     def art(self,cid,faction,size,family=''):
         if cid in ART:
@@ -188,60 +247,32 @@ class CardView:
                                    (13,12,11,10,9))
         self._center(screen,trigger_text,zone['trigger'],trigger_font,(250,253,249))
         info=zone['info']
-        if large:
-            label_h,base_h,small_h=(18,23,15)
-        else:
-            label_h,base_h,small_h=(14,16,11)
-        family=pygame.Rect(info.x+3,info.y+3,info.width-6,label_h)
-        mark=FAMILY_MARK.get(d.family,'•')
-        family_name=f'{mark} {d.family.upper().replace("MAX HP","MAX PŻ").replace("ATK","ATAK")}'
+        text_plan=self.summary_layout(card,rect,unit)
+        family=text_plan['family']
+        family_name=d.family.upper().replace("MAX HP","MAX PŻ").replace("ATK","ATAK")
+        # Bez ozdobnych znaków, które mogą być wyświetlane jako puste kwadraty
+        # w niektórych czcionkach Windows.
         self._pill(screen,family,family_name,cue.color,
                    self._fit_font(family_name,family.width-7,
-                                  (12,11,10,9) if large else (10,9)),
+                                  (13,12,11,10) if large else (12,11,10)),
                    (15,23,28))
-        # Specific value + concise *grounded* target clue. Full rule remains [I].
-        main=pygame.Rect(info.x+4,family.bottom+2,info.width-8,base_h)
-        bfont=self._fit_font(cue.base,main.width,(20,18,17,15,13,11,10) if large else (15,14,13,12,11,10,9))
-        self._center(screen,self.clip(cue.base,bfont,main.width),main,bfont,(245,245,230))
-        # A readable short rule keeps target and condition; the full dynamically
-        # expanded explanation remains in the sidebar and the details pane.
-        cx=info.x+4
-        explanation=summary.short if not large else summary.full
-        font=self.font(12 if large else 10)
-        width=info.width-8
-        words=explanation.split()
-        lines=[]
-        current=''
-        for word in words:
-            candidate=(current+' '+word).strip()
-            if font.size(candidate)[0] > width and current:
-                lines.append(current)
-                current=word
-            else:
-                current=candidate
-        if current:
-            lines.append(current)
-        footer_top=info.bottom-(31 if large else 15)
-        line_step=16 if large else 12
-        available=max(0,footer_top-(main.bottom+1))
-        line_limit=min(3 if large else 2,available//line_step)
-        for j,line in enumerate(lines[:line_limit]):
-            if font.size(line)[0] > width:
-                line=self.clip(line,font,width)
-            screen.blit(font.render(line,True,cfg.TEXT),
-                        (cx,main.bottom+1+j*(16 if large else 12)))
-        # Scaling is distinct from per-turn STAT growth.
-        footer=pygame.Rect(info.x+3,info.bottom-(31 if large else 15),
-                           info.width-6,27 if large else 12)
+        main=text_plan['main']
+        if main is not None:
+            bfont=self._fit_font(cue.base,main.width,
+                                 (20,18,17,15,13,11) if large else (15,14,13,12,11))
+            self._center(screen,self.clip(cue.base,bfont,main.width),main,
+                         bfont,(245,245,230))
+        for line,region in zip(text_plan['lines'],text_plan['boxes']):
+            screen.blit(text_plan['font'].render(line,True,(235,240,239)),
+                        region.topleft)
+        # Pasek rozwoju jest oddzielony od opisów. Nie rysujemy nad nim
+        # dodatkowego tekstu, który w 0.9.12 kolidował z podglądem 255×380.
+        footer=text_plan['footer']
         pygame.draw.rect(screen,(39,75,65),footer,border_radius=3)
         ft=self._fit_font(cue.upgrade,footer.width-8,
-                          (13,12,11,10,9) if large else (10,9))
+                          (13,12,11,10) if large else (10,9))
         self._center(screen,self.clip(cue.upgrade,ft,footer.width-8),
                      footer,ft,(183,255,196))
-        if large:
-            note=self.font(11).render(self.clip(cue.growth,self.font(11),info.width-9),
-                                      True,(174,197,203))
-            screen.blit(note,(cx,main.bottom+21))
         # Statuses cover artwork only, never stats or ability panel.
         if statuses:
             prio=lambda st:PRIORITY.index(st.category) if st.category in PRIORITY else 99
