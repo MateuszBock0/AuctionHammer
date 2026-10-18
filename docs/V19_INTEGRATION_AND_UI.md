@@ -59,4 +59,4 @@ Testy uruchamia się poleceniem `python -m unittest discover -s tests -v`. Testy
 
 ## MVP 0.9.10 — atomowe fale jednoczesnych zgonów
 
-Zaimplementowano wspólne migawki i zbiorowe konsekwencje źródeł „Przy śmierci”. Testy są w `tests/test_death_waves_0910.py`, a opis, ograniczenia i scenariusze w `docs/FALY_ZGONOW_v19_MVP_0910.md`. Obowiązujący dokument kolejności to `data/event_order_v19.json`; starsze dokumenty v17 są archiwalne. Pełna wielofalowa walidacja wszystkich kombinacji kart pozostaje otwarta.
+Zaimplementowano wspólne migawki i zbiorowe konsekwencje źródeł „Przy śmierci”. Testy są w `tests/test_death_waves_0910.py`, a opis, ograniczenia i scenariusze w `docs/FALE_ZGONOW_v19_MVP_0910.md`. Obowiązujący dokument kolejności to `data/event_order_v19.json`; starsze dokumenty v17 są archiwalne. Pełna wielofalowa walidacja wszystkich kombinacji kart pozostaje otwarta.
