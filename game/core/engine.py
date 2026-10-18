@@ -389,6 +389,7 @@ class Match:
                             and self.round>1 and not any(
                                 item["completed_round"]==self.round-1
                                 for item in self.auction_history)):
+                        self._next_turn_due=True  # resume exactly this boundary after the auction
                         auction_rules.begin(self)
                         break
                     self.active=1-self.active
