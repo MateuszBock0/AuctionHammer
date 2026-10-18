@@ -12,6 +12,7 @@ from game.core.audit import (audit_path, write_last_match, initialize_audit,
                              configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
+from game.core.auction_catalog import CATALOG,RARITIES
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
@@ -475,32 +476,39 @@ class SoloApp:
         self.theme.carved_panel(self.screen,pygame.Rect(219,125,1044,694),opacity=82)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
-        self._text('TESTOWY KATALOG  ·  3 ATAK  ·  PROWOKACJA + TARCZA',16,
+        self._text('12 ARCHETYPÓW · 36 WARIANTÓW · ZDOLNOŚCI W PRZYGOTOWANIU',16,
                    741,205,cfg.TEXT,center=True)
         self.theme.ornament(self.screen,565,228,350,22)
         for i,off in enumerate(a.offers):
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
-            selected=a.phase=='picking' and a.turn==0 and not claimed
+            selectable=a.phase=='picking' and a.turn==0 and not claimed
             self._panel(rect,(52,37,26) if not claimed else (38,34,29),
-                        cfg.GOLD if selected else cfg.PANEL_BORDER,14)
+                        cfg.GOLD if selectable else cfg.PANEL_BORDER,14)
             self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
-            self._text(f'WARIANT {i+1}',16,rect.centerx,rect.y+19,cfg.GOLD,center=True)
-            self._text('STRAŻNIK AUKCJI',18,rect.centerx,rect.y+54,cfg.TEXT,center=True)
-            self._text(f'{off.hp} PŻ',34,rect.centerx,rect.y+98,
-                       cfg.GREEN if not claimed else cfg.MUTED,center=True)
-            self._text('3 ATAK',22,rect.centerx,rect.y+161,cfg.GOLD,center=True)
-            self._text('PROWOKACJA',16,rect.centerx,rect.y+208,cfg.TEXT,center=True)
-            self._text('1 TARCZA',16,rect.centerx,rect.y+239,cfg.TEXT,center=True)
+            adef=CATALOG.get(off.archetype)
+            self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
+                       rect.centerx,rect.y+17,cfg.GOLD,center=True)
+            name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
+            self._text(self.cards_view.clip(name,self.fonts[16],rect.width-20),16,
+                       rect.centerx,rect.y+53,cfg.TEXT,center=True)
+            self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
+                       rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
-                       rect.centerx,rect.y+277,cfg.MUTED,center=True)
+                       rect.centerx,rect.y+155,cfg.GOLD,center=True)
+            description=('PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)] if adef else
+                         'Prowokacja i 1 Tarcza po wystawieniu')
+            lines=self._wrap(description,13,rect.width-36)
+            for j,line in enumerate(lines[:4]):
+                self._text(line,13,rect.centerx,rect.y+190+24*j,
+                           cfg.TEXT,center=True)
             if claimed:
                 selected_by=next(p for p,card in a.picks.items() if card==off.uid)
                 self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
-                           rect.centerx,rect.y+314,cfg.MUTED,center=True)
-            elif selected:
+                           rect.centerx,rect.y+322,cfg.MUTED,center=True)
+            elif selectable:
                 self._text('KLIKNIJ, ABY WYBRAĆ',14,rect.centerx,
-                           rect.y+314,cfg.GOLD,center=True)
+                           rect.y+322,cfg.GOLD,center=True)
         who=self.game.players[a.turn].name
         if a.phase=='bidding':
             self._text(f'LICYTUJE: {who}  ·  NAJWYŻSZA: {a.current_bid}  ·  '
