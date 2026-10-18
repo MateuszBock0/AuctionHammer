@@ -151,7 +151,12 @@ def state_snapshot(game):
         "auctions_enabled":getattr(game,"auctions_enabled",False),
         "auction":_plain(getattr(game,"auction",None)),
         "auction_history":_plain(getattr(game,"auction_history",[])),
-        "auction_awards":_plain(getattr(game,"auction_awards",{}))
+        "auction_awards":_plain(getattr(game,"auction_awards",{})),
+        "auction_catalog_mode":getattr(game,"auction_catalog_mode","placeholders"),
+        "ephemerals":_plain(getattr(game,"ephemerals",set())),
+        "auction_copy_serial":getattr(game,"auction_copy_serial",0),
+        "auction_death_links":_plain(getattr(game,"auction_death_links",set())),
+        "auction_chain":_plain(getattr(game,"auction_chain",None))
     }
 
 
@@ -403,9 +408,11 @@ def verify_replay(payload,match_factory):
     if not payload.get("complete_from_start"):
         raise ValueError("Niepełny audyt: brak początku rozgrywki")
     auction_enabled=bool(payload.get("initial_state",{}).get("auctions_enabled",False))
+    catalog_mode=payload.get("initial_state",{}).get("auction_catalog_mode","placeholders")
     if auction_enabled:
         try:
-            game=match_factory(payload["seed"],auctions_enabled=True)
+            game=match_factory(payload["seed"],auctions_enabled=True,
+                               auction_catalog_mode=catalog_mode)
         except TypeError as exc:
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z auctions_enabled") from exc
     else:
