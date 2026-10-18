@@ -263,5 +263,28 @@ for rect in (pygame.Rect(22,34,125,195),
     cv.draw(sheet,card,rect)
 pygame.image.save(sheet,DEST/'VISUAL_0919_STRAZNIK_3_ROZMIARY.png')
 
+# 0.9.20 — exact Tavern scene/menu with the real source textures.
+app=SoloApp()
+app.menu_open=False
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0920_TAWERNA_PELNA_PLANSZA.png')
+app.menu_open=True
+app.menu_page='main'
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0920_DREWNIANE_MENU.png')
+app.menu_open=False
+app.game=auction_match
+app.game.phase='auction' if app.game.auction else app.game.phase
+# Use a fresh match to keep real auction state after previous preview choices.
+app.game=Match(202020,auctions_enabled=True)
+app.game.finish_mulligan(0,[])
+app.game.finish_mulligan(1,[])
+for _ in range(6):
+    if app.game.phase=='auction':break
+    app.game.end_turn()
+assert app.game.phase=='auction'
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0920_DREWNIANA_AUKCJA.png')
+
 pygame.quit()
-print('Utworzono 32 obrazy podglądu Pygame w folderze preview.')
+print('Utworzono 35 obrazów podglądu Pygame w folderze preview.')
