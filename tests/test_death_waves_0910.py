@@ -1,0 +1,168 @@
+"""Regresje kolejki zdarzeń — wspólne migawki, atomowe zgony i kaskady v19.
+
+Testy używają prawdziwego silnika Match, 70 fizycznych kart oraz tych
+samych komend, z których korzystają interfejs i przeciwnik komputerowy.
+"""
+import unittest
+from unittest.mock import patch
+
+from game.core.models import Choice, IllegalMove
+from test_engine import setup_game, force_unit
+
+
+class WspolneFaleZgonow(unittest.TestCase):
+    def test_kolejnosc_migawki_aktywny_gracz_od_lewej(self):
+        g=setup_game(700)
+        force_unit(g,'S82',1)
+        force_unit(g,'S84',0)
+        force_unit(g,'S21',0)
+        force_unit(g,'S17',1)
+        g._kill_batch(['S82','S17','S21','S84'])
+        # W każdej fali obowiązuje porządek przed usunięciem jednostek:
+        # bieżący gracz od lewej, potem rywal od lewej.
+        self.assertEqual(g.death_waves[0]['fallen'],('S84','S21','S82','S17'))
+        self.assertEqual(tuple(uid for uid,_ in g.death_waves[0]['sources']),
+                         ('S84','S21','S82','S17'))
+        self.assertEqual(g.players[0].grave.count('S84'),1)
+        self.assertEqual(g.players[1].grave.count('S82'),1)
+        g.assert_integrity()
+
+    def test_migawka_wyborow_podczas_wspolnej_fali(self):
+        g=setup_game(701)
+        force_unit(g,'S84',0)  # Ogłusza i zadaje 2 obrażenia
+        force_unit(g,'S82',1)  # Przyznaje 6 pancerza własnej jednostce
+        target=force_unit(g,'S01',1)
+        target.hp=2
+        g._kill_batch(['S84','S82'])
+        # Jeszcze przed wykonaniem S84 obie listy legalnych celów są ustalone.
+        wave=g.death_waves[0]
+        self.assertEqual(len(wave['sources']),2)
+        self.assertIn('S01',[c.target for c in wave['sources'][0][1]])
+        self.assertIn('S01',[c.target for c in wave['sources'][1][1]])
+        self.assertEqual(target.armor,0)
+        g._drain()
+        self.assertEqual(g.pending.uid,'S84')
+        idx=next(i for i,c in enumerate(g.pending.choices) if c.target=='S01')
+        g.choose(idx)
+        self.assertIsNotNone(g.pending)
+        self.assertEqual(g.pending.uid,'S82')
+        # Pierwszy wybór tylko rejestruje decyzję, nie zmienia HP/statusów.
+        self.assertEqual(target.hp,2)
+        self.assertEqual(target.armor,0)
+        idx=next(i for i,c in enumerate(g.pending.choices) if c.target=='S01')
+        g.choose(idx)
+        self.assertIsNone(g.pending)
+        self.assertIn('S01',g.units)
+        self.assertEqual(g.units['S01'].hp,2)
+        self.assertEqual(g.units['S01'].armor,4)
+        self.assertTrue(any(e.kind=='stun' for e in g.units['S01'].effects))
+        g.assert_integrity()
+
+    def test_skutki_zgonow_obu_stron_jedna_fala_nie_konczy_przedwczesnie(self):
+        g=setup_game(702)
+        force_unit(g,'S21',0) # 4 obrażeń wrogiemu bohaterowi
+        force_unit(g,'S17',1) # 6 leczenia własnego bohatera
+        g.players[1].hp=3
+        g._kill_batch(['S21','S17'])
+        g._drain()
+        # Obrażenia i leczenie z jednej fali rozpatrywane łącznie.
+        self.assertEqual(g.players[1].hp,5)
+        self.assertEqual(g.phase,'turn')
+        self.assertIsNone(g.winner)
+        self.assertEqual(sum('Zamknięto falę śmierci' in x for x in g.events),1)
+        g.assert_integrity()
+
+    def test_kaskadowy_zgon_tworzony_w_nastepnej_fali(self):
+        g=setup_game(703)
+        force_unit(g,'S84',0)
+        force_unit(g,'S17',1)
+        source=force_unit(g,'S82',1)
+        source.hp=2
+        g._kill_batch(['S84','S17'])
+        g._drain()
+        self.assertEqual(g.pending.uid,'S84')
+        g.choose(next(i for i,c in enumerate(g.pending.choices) if c.target=='S82'))
+        self.assertNotIn('S82',g.units)
+        self.assertEqual(g.players[1].grave.count('S82'),1)
+        self.assertEqual(g.players[0].coins,4 if g.first==1 else 1+g.players[0].coins-1)
+        closings=[x for x in g.events if x.startswith('Zamknięto falę śmierci')]
+        self.assertEqual(len(closings),2)
+        self.assertIn('fali śmierci 1',closings[0])
+        self.assertIn('fali śmierci 2',closings[1])
+        g.assert_integrity()
+
+    def test_ogluszona_zmarla_jednostka_nie_dodaje_zdolnosci(self):
+        g=setup_game(704)
+        a=force_unit(g,'S21',0)
+        force_unit(g,'S17',1)
+        g._add_effect('S21','stun',expires=g._expiry(0),source='S59',positive=False)
+        old=g.players[1].hp
+        g._kill_batch(['S21','S17'])
+        self.assertEqual([x for x,_ in g.death_waves[0]['sources']],['S17'])
+        g._drain()
+        self.assertEqual(g.players[1].hp,old)
+        self.assertEqual(g.players[1].grave.count('S17'),1)
+        g.assert_integrity()
+
+    def test_grupa_dwustronnej_walki_przed_efektami_smierci(self):
+        g=setup_game(705)
+        a=force_unit(g,'S21',0)
+        b=force_unit(g,'S17',1)
+        a.base_attack=4;b.base_attack=4
+        a.hp=3;b.hp=3
+        g.attack('S21','S17')
+        self.assertNotIn('S21',g.units)
+        self.assertNotIn('S17',g.units)
+        self.assertEqual(g.players[1].hp,96)
+        self.assertEqual(g.players[0].hp,100)
+        self.assertEqual(len([x for x in g.events if x.startswith('Zamknięto falę śmierci')]),1)
+        g.assert_integrity()
+
+    def test_powtarzalnosc_przy_jednym_ziarnie_losowym(self):
+        def trace(seed):
+            g=setup_game(seed)
+            force_unit(g,'S90',0)
+            force_unit(g,'S91',0)
+            g._kill_batch(['S91','S90'])
+            g._drain()
+            return [x for x in g.players[0].hand
+                    if g.cards[x].quick_on_first_summon or g.cards[x].double_on_first_eligible]
+        self.assertEqual(trace(706),trace(706))
+
+    def test_zwyciezca_po_zamknieciu_wspolnej_fali(self):
+        g=setup_game(707)
+        force_unit(g,'S21',0)
+        force_unit(g,'S17',1)
+        g.players[0].hp=3;g.players[1].hp=3
+        old_execute=g._execute
+        def execution(uid,ctx,choice,attacked=None):
+            if ctx=='death':
+                g._damage(f'hero:{1-g.cards[uid].owner}',5)
+            else:
+                old_execute(uid,ctx,choice,attacked)
+        with patch.object(g,'_execute',side_effect=execution):
+            g._kill_batch(['S21','S17'])
+            g._drain()
+        self.assertEqual(g.players[0].hp,-2)
+        self.assertEqual(g.players[1].hp,-2)
+        self.assertEqual(g.phase,'finished')
+        self.assertIsNotNone(g.winner)
+        self.assertEqual(sum('KONIEC MECZU!' in x for x in g.events),1)
+
+    def test_zamkniecie_fali_wstrzymuje_nowe_deklaracje(self):
+        g=setup_game(708)
+        force_unit(g,'S84',0)
+        force_unit(g,'S82',1)
+        force_unit(g,'S01',1)
+        g._kill_batch(['S84','S82'])
+        g._drain()
+        self.assertIsNotNone(g.pending)
+        with self.assertRaises(IllegalMove):
+            g.end_turn()
+        with self.assertRaises(IllegalMove):
+            g.attack('S01','hero:0')
+        g.assert_integrity()
+
+
+if __name__=='__main__':
+    unittest.main()
