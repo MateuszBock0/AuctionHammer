@@ -492,7 +492,7 @@ class SoloApp:
             name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
             self._text(self.cards_view.clip(name,self.fonts[16],rect.width-20),16,
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
-            self._text(f'{off.atk} ATAK     {off.hp} PŻ',24,rect.centerx,
+            self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
                        rect.centerx,rect.y+155,cfg.GOLD,center=True)
