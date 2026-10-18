@@ -38,7 +38,8 @@ def main():
     if args.skip_replay or not data["complete_from_start"]:
         print("Odtworzenie silnika: POMINIĘTE")
     else:
-        verify_replay(data,lambda seed:Match(seed,audit_enabled=True))
+        verify_replay(data,lambda seed,auctions_enabled=False:
+                      Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled))
         print("Odtworzenie silnika: OK — wszystkie stany i zdarzenia zgodne")
     print("Plik:",args.file)
 
