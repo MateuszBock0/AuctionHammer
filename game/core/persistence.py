@@ -19,7 +19,9 @@ from game.core.engine import Match, ROOT
 from game.core.models import (Card,CardDefinition,Unit,Player,Effect,Choice,Pending,
                               load_catalog)
 
-from game.core.auction import AuctionState, AuctionOffer\n\nSCHEMA=1
+from game.core.auction import AuctionState, AuctionOffer
+
+SCHEMA=1
 TYPES={cls.__name__:cls for cls in
        (Card,CardDefinition,Unit,Player,Effect,Choice,Pending,AuctionState,AuctionOffer)}
 
