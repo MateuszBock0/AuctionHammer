@@ -1176,9 +1176,10 @@ class SoloApp:
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((4,9,16,234))
         self.screen.blit(shade,(0,0))
-        self._panel(pygame.Rect(420,170,650,660),(23,40,53),cfg.GOLD,19)
+        self._panel(pygame.Rect(420,170,650,660),(56,35,23),cfg.GOLD,19)
+        self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
-        self._text('MINIMAL FANTASY · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
+        self._text('TAWERNA · GAME MASTER v19 · KATALOG AUKCYJNY v3',16,746,269,cfg.MUTED,center=True)
         if self.menu_page=='main':
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')
@@ -1191,7 +1192,7 @@ class SoloApp:
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
-        self._text('70 kart · bez aukcji · [O] FOLDER OSTATNIEGO AUDYTU',13,
+        self._text('70 kart startowych + 12 archetypów aukcji · [O] AUDYT',13,
                    746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
