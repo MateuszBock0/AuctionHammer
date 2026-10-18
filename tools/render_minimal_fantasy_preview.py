@@ -99,5 +99,37 @@ for label,width,height in sizes:
         view.draw(sheet,card,pygame.Rect(x,y,width,height))
     pygame.image.save(sheet,DEST/f'KATALOG_70_{label}.png')
 
+# Zrzuty rzeczywistej aplikacji: menu, historia, powtórka i VFX.
+from game.ui.app import SoloApp
+from game.core.models import Unit
+app=SoloApp(start_in_menu=True)
+app.draw()
+pygame.image.save(app.screen,DEST/'GAME_EXPERIENCE_MENU_0914.png')
+app.menu_open=False
+app.game._log('Mag Zorzy atakuje: Dwugłowa Hiena.')
+app.game._log('Bohater traci 3 PŻ; trucizna zostaje nałożona.')
+app.history_open=True
+app.draw()
+pygame.image.save(app.screen,DEST/'GAME_EXPERIENCE_HISTORIA_0914.png')
+app.history_open=False
+app.game.players[0].board.append('S115')
+app.game.units['S115']=Unit('S115',0,3,8,8,1,0,attacks=1,shield=1)
+app.combat_visuals.sync(app.game,app.slot_rect,app.hero_rect,1000)
+app.game.units['S115'].hp=5
+app.game.units['S115'].shield=0
+app.game._log('Mistrz Dwóch Ostrzy otrzymuje 3 obrażenia.')
+app.combat_visuals.sync(app.game,app.slot_rect,app.hero_rect,1010)
+app.recorder.capture(app.game)
+app.animations_enabled=True
+app.screen.blit(app.bg,(0,0))
+app._draw_header()
+app._draw_board()
+app._draw_sidebar()
+app.combat_visuals.draw(app.screen,1250,app.fonts_bold[16])
+pygame.image.save(app.screen,DEST/'GAME_EXPERIENCE_EFEKTY_0914.png')
+app.replay_index=app.recorder.last_index
+app.draw()
+pygame.image.save(app.screen,DEST/'GAME_EXPERIENCE_POWTORKA_0914.png')
+
 pygame.quit()
-print('Utworzono 11 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 15 obrazów podglądu Pygame w folderze preview.')
