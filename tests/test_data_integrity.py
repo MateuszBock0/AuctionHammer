@@ -1,4 +1,4 @@
-"""Smoke tests for Game Master v17 DATA. This does not test a game engine."""
+"""Kontrola integralności aktualnego katalogu i zasad v19; archiwum v17 pozostaje historyczne."""
 from pathlib import Path
 import unittest, json, random, sys
 ROOT = Path(__file__).resolve().parents[1]
@@ -8,7 +8,8 @@ class DataIntegrity(unittest.TestCase):
  @classmethod
  def setUpClass(cls):
   cls.cards=load('cards_base_70.json')
-  cls.rules=load('game_rules_v17.json')
+  cls.rules=load('game_rules_v19.json')
+  cls.old_rules=load('game_rules_v17.json')
   cls.bank=load('starter_bank_v17.json')
   cls.events=load('event_order_v17.json')
   cls.master=load('GAME_MASTER.json')
@@ -53,7 +54,10 @@ class DataIntegrity(unittest.TestCase):
   self.assertEqual(len(self.events['authoritative_priority']),10)
   self.assertEqual(self.events['version'],'17.0')
  def test_consistent_rule_sources(self):
+  self.assertEqual(self.rules['version'],'19.0')
+  self.assertEqual(self.old_rules['version'],'17.0')
   self.assertEqual(self.master['rules'],self.rules)
+  self.assertEqual(self.master['starter_cards'],self.cards)
   self.assertEqual(self.status['canonical_files']['cards'],'data/cards_base_70.json')
   self.assertEqual(self.status['base_design_status'],'LOCKED_FOR_MVP')
   self.assertEqual(self.master['status'],'BASE_GAME_DESIGN_LOCKED_FOR_IMPLEMENTATION_AUCTIONS_PENDING')
