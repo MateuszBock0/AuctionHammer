@@ -151,7 +151,16 @@ def state_snapshot(game):
         "auctions_enabled":getattr(game,"auctions_enabled",False),
         "auction":_plain(getattr(game,"auction",None)),
         "auction_history":_plain(getattr(game,"auction_history",[])),
-        "auction_awards":_plain(getattr(game,"auction_awards",{}))
+        "auction_awards":_plain(getattr(game,"auction_awards",{})),
+        "exiled":_plain(getattr(game,"exiled",[])),
+        "vanished":_plain(getattr(game,"vanished",[])),
+        "ephemeral_ids":_plain(getattr(game,"ephemeral_ids",set())),
+        "auction_death_grants":_plain(getattr(game,"auction_death_grants",set())),
+        "auction_rescue_spent":_plain(getattr(game,"auction_rescue_spent",set())),
+        "auction_general_targets":_plain(getattr(game,"auction_general_targets",{})),
+        "auction_general_grants":_plain(getattr(game,"auction_general_grants",{})),
+        "auction_pending_targets":_plain(getattr(game,"auction_pending_targets",{})),
+        "auction_wave_ops":_plain(getattr(game,"auction_wave_ops",[]))
     }
 
 
