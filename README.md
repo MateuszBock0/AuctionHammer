@@ -23,6 +23,35 @@ Plik `AuctionHammer.exe` musi znajdować się w tym samym folderze co katalog `_
 
 Przy pierwszym rozdaniu można wymienić do trzech wybranych kart. Zaznaczone karty mają złotą ramkę i numer wyboru.
 
+## Nowości 0.9.14 — animacje, historia, menu i zapis
+
+- Po uruchomieniu gry pojawia się **menu główne**. **M** otwiera je ponownie
+  podczas meczu. Menu pozwala rozpocząć nową grę, kontynuować bieżącą
+  rozgrywkę, wczytać zapis i wejść w ustawienia.
+- W **ustawieniach** można przełączać animacje i pełny ekran, wybrać
+  poziom AI (**łatwy, normalny, trudny**) oraz **zapisać mecz**.
+  Zapis trafia do `%LOCALAPPDATA%\\AuctionHammer\\savegame_v19.json`
+  (w systemach bez LOCALAPPDATA — do katalogu danych użytkownika).
+  Zapis obejmuje wszystkie stany kart, statusy, aktywne wybory i RNG.
+- **A** włącza lub wyłącza efekty walki. Efekty obrażeń, leczenia,
+  tarczy, pancerza, trucizny, ogłuszenia, zgonu oraz pociski ataków
+  wynikają z zatwierdzonych działań silnika. Nie wpływają na rozgrywkę.
+- **H** otwiera pełną **historię zdarzeń**; kółkiem myszy i strzałkami
+  można przewijać dziennik, bez limitu poprzednich 160 wpisów.
+- **P** otwiera **powtórkę aktualnej partii**. Strzałki lewo/prawo
+  pozwalają oglądać kolejne zapisane stany planszy, **P/Esc** wraca
+  do gry. Migawki są tylko do odczytu; obejmują maks. 480 ostatnich zmian
+  stanu i nie są zapisywane na dysku. Pełny dziennik jest zachowywany
+  w pliku zapisu meczu.
+- 35 ikon **Minimal Fantasy** z dostarczonego pakietu agenta UI
+  zostało dołączonych do wersji portable w skompresowanym atlasie PNG.
+  Ikony nie zawierają dynamicznych wartości ATAK/PŻ ani poziomu zdolności.
+- **Narzędzie AI:** `python tools/simulate_ai_levels.py --games 1000`
+  porównuje poziomy AI na rzeczywistym silniku. Poziom trudny korzysta
+  z lepszych heurystyk, nie z pełnego przeszukiwania drzewa gry.
+
+Zmiany nie dodają aukcji ani kosztów zagrania i nie zmieniają Game Master v19.
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.
