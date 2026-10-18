@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.19",
+  "mvp": "0.9.20",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "prototype-three-placeholder-offers",
@@ -11,7 +11,7 @@
   "distribution": "portable-windows-pyinstaller-github-releases",
   "interface_language": "pl-PL",
   "engine_death_waves": "ATOMIC_V19_SNAPSHOT",
-  "ui_theme": "Minimal Fantasy + Tavern accents",
+  "ui_theme": "Tavern Wood + Minimal Fantasy",
   "card_sizes": {
     "hand": [
       125,

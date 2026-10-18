@@ -242,8 +242,8 @@ class CardView:
             screen.blit(emblem,(art.x+2,art.y+2))
         # ALL INFORMATION PANELS are opaque and above artwork/dimming.
         name_rect=zone['name']
-        pygame.draw.rect(screen,(20,31,43),name_rect,border_radius=4)
-        pygame.draw.rect(screen,(19,31,41),zone['info'],border_radius=5)
+        pygame.draw.rect(screen,(42,30,22),name_rect,border_radius=4)
+        pygame.draw.rect(screen,(33,27,23),zone['info'],border_radius=5)
         # Brushed-metal dividers are background-only and never cover text.
         info_zone=zone['info']
         pygame.draw.line(screen,(66,78,74),

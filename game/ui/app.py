@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.19: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.20: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
@@ -471,7 +471,8 @@ class SoloApp:
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         overlay.fill((4,8,13,229))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(203,112,1076,732),(34,44,46),cfg.GOLD,16)
+        self._panel(pygame.Rect(203,112,1076,732),(58,39,28),cfg.GOLD,16)
+        self.theme.carved_panel(self.screen,pygame.Rect(219,125,1044,694),opacity=82)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
         self._text('TESTOWY KATALOG  ·  3 ATAK  ·  PROWOKACJA + TARCZA',16,
@@ -481,8 +482,9 @@ class SoloApp:
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
             selected=a.phase=='picking' and a.turn==0 and not claimed
-            self._panel(rect,(40,53,54) if not claimed else (37,39,42),
+            self._panel(rect,(52,37,26) if not claimed else (38,34,29),
                         cfg.GOLD if selected else cfg.PANEL_BORDER,14)
+            self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
             self._text(f'WARIANT {i+1}',16,rect.centerx,rect.y+19,cfg.GOLD,center=True)
             self._text('STRAŻNIK AUKCJI',18,rect.centerx,rect.y+54,cfg.TEXT,center=True)
             self._text(f'{off.hp} PŻ',34,rect.centerx,rect.y+98,
@@ -1166,9 +1168,10 @@ class SoloApp:
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((4,9,16,234))
         self.screen.blit(shade,(0,0))
-        self._panel(pygame.Rect(420,170,650,660),(23,40,53),cfg.GOLD,19)
+        self._panel(pygame.Rect(420,170,650,660),(56,35,23),cfg.GOLD,19)
+        self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
-        self._text('MINIMAL FANTASY · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
+        self._text('TAWERNA · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
         if self.menu_page=='main':
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')
@@ -1181,7 +1184,7 @@ class SoloApp:
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
-        self._text('70 kart · bez aukcji · [O] FOLDER OSTATNIEGO AUDYTU',13,
+        self._text('70 kart + testowe aukcje · [O] FOLDER OSTATNIEGO AUDYTU',13,
                    746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
