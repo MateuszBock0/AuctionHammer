@@ -128,7 +128,7 @@ def pick(game,player,uid):
     definition=CardDefinition(
         id=definition_id,name=name,faction='Ludzie',
         family=family,trigger=trigger,atk=offer.atk,hp=offer.hp,
-        effect=text,scaling='Karta aukcyjna: nie skaluje się w ręce.',
+        effect=text,scaling=f'POZIOM {offer.level} · {offer.rarity.upper()} · NIE SKALUJE SIĘ',
         growth_atk=0,growth_hp=0)
     card=Card(uid,definition,owner=player,zone='hand')
     game.cards[uid]=card
@@ -184,7 +184,8 @@ def advance_rarity(game,completed_round):
         card=game.cards[uid]
         old_def=card.definition
         from dataclasses import replace
-        card.definition=replace(old_def,effect=CATALOG[archetype].abilities[RARITIES.index(new)])
+        card.definition=replace(old_def,effect=CATALOG[archetype].abilities[RARITIES.index(new)],
+                                scaling=f'POZIOM {meta["level"]} · {new.upper()} · NIE SKALUJE SIĘ')
         game.defs[uid]=card.definition
         game._log(f'{card.definition.name} ewoluuje: {old} → {new}.')
         if archetype=='A002' and uid in game.units and new=='rzadka':
