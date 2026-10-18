@@ -221,7 +221,7 @@ if app.game.players[0].hp!=-5:
 
 # 0.9.19 — real pygame snapshots for both auction stages, plus wood texture.
 from game.core.engine import Match
-auction_match=Match(191919,auctions_enabled=True)
+auction_match=Match(191919,auctions_enabled=True,auction_catalog='placeholders')
 auction_match.finish_mulligan(0,[])
 auction_match.finish_mulligan(1,[])
 for _ in range(6):
@@ -276,7 +276,7 @@ app.menu_open=False
 app.game=auction_match
 app.game.phase='auction' if app.game.auction else app.game.phase
 # Use a fresh match to keep real auction state after previous preview choices.
-app.game=Match(202020,auctions_enabled=True)
+app.game=Match(202020,auctions_enabled=True,auction_catalog='placeholders')
 app.game.finish_mulligan(0,[])
 app.game.finish_mulligan(1,[])
 for _ in range(6):
@@ -286,5 +286,34 @@ assert app.game.phase=='auction'
 app.draw()
 pygame.image.save(app.screen,DEST/'VISUAL_0920_DREWNIANA_AUKCJA.png')
 
+# 0.9.21 — show three distinct v3 archetypes and evolving rarity,
+# explicitly marking all complex abilities as planned/inactive.
+from game.core.auction_catalog import CATALOG
+stage=Match(212121,auctions_enabled=True)
+for player in (0,1):
+    if stage.phase=='mulligan':stage.finish_mulligan(player,[])
+for _ in range(6):
+    if stage.phase=='auction':break
+    stage.end_turn()
+assert stage.phase=='auction'
+assert len({x.archetype for x in stage.auction.offers})==3
+app.game=stage
+app.menu_open=False
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0921_KATALOG_12_OFERTY.png')
+stage.auction_pass(stage.auction.turn)
+stage.auction_pass(stage.auction.turn)
+stage.auction_pick(stage.auction.turn,stage.auction.offers[0].uid)
+stage.auction_pick(stage.auction.turn,stage.auction.offers[1].uid)
+uid=stage.auction_history[-1]['picks'][stage.auction_history[-1]['winner']]
+sheet=pygame.Surface((680,465))
+sheet.fill((25,20,16))
+cv=CardView()
+for rect in (pygame.Rect(22,34,125,195),
+             pygame.Rect(170,34,148,220),
+             pygame.Rect(355,34,255,380)):
+    cv.draw(sheet,stage.cards[uid],rect)
+pygame.image.save(sheet,DEST/'VISUAL_0921_NIEAKTYWNE_ZDOLNOSCI_KART.png')
+
 pygame.quit()
-print('Utworzono 35 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 37 obrazów podglądu Pygame w folderze preview.')

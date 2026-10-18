@@ -15,10 +15,14 @@ ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
 class Match:
     def __init__(self, seed: int | None = None, audit_enabled: bool = False,
-                 auctions_enabled: bool = False):
+                 auctions_enabled: bool = False,
+                 auction_catalog: str = "v3"):
+        if auction_catalog not in ("v3","placeholders"):
+            raise ValueError("Unknown auction catalog mode")
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
+        self.auction_catalog=auction_catalog
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
@@ -226,7 +230,7 @@ class Match:
         if card.definition.id in ('S34','S35'):
             self._queue(uid,'play')
         if card.definition.id == 'S106':u.shield=1;u.shield_source=uid;u.used_shield_aura=False
-        if uid in self.auction_awards:
+        if uid in self.auction_awards and not self.auction_awards[uid].get('archetype'):
             u.shield=1
             u.shield_source=uid
             self._log(f'{self.label(uid)}: wrodzona Prowokacja i 1 Tarcza (karta aukcyjna).')
@@ -459,6 +463,10 @@ class Match:
             self.round+=1
             for pl in self.players:pl.coins+=1
             self._log('Pełna runda: +1 moneta dla obu graczy.')
+            # Rarity evolution is tied to full completed rounds, not hand turns.
+            # It changes draft tier metadata only; skills remain disabled.
+            if self.auctions_enabled and self.auction_catalog=="v3":
+                auction_rules.advance_rarity(self,self.round-1)
         self._next_turn_due=True
         self._update_auras()
 
@@ -476,7 +484,9 @@ class Match:
         return self._has(u,'double') or fallback or intrinsic
     def _taunt(self,u):
         return (self._has(u,'taunt') or
-                ((self.cards[u.uid].definition.id=='S33' or u.uid in self.auction_awards)
+                ((self.cards[u.uid].definition.id=='S33' or
+                  (u.uid in self.auction_awards and
+                   not self.auction_awards[u.uid].get('archetype')))
                  and not self._disabled(u)))
 
     def _expiry(self,owner,kind='next'):
@@ -657,9 +667,12 @@ class Match:
             snapshot.append((uid,unit.owner,blocked,
                              self.cards[uid].definition.faction=='Potwory'))
         for uid,owner,_,_ in snapshot:
+            reward={"podstawowa":1,"rzadka":2,"legendarna":3}.get(
+                self.auction_awards.get(uid,{}).get("rarity","podstawowa"),1)
             self._remove_unit(uid,death=True)
-            self.players[1-owner].coins+=1
-            self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
+            self.players[1-owner].coins+=reward
+            self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela '
+                      f'otrzymuje {reward} monet(y).')
         # Rejestrujemy źródła, ale ich legalne cele zamrażamy dopiero gdy
         # grupa dochodzi na początek kolejki. Wcześniejsza grupa może jeszcze
         # zmienić stan planszy, zwłaszcza po utracie dodatniej aury.
