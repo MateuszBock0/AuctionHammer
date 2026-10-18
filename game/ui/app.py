@@ -59,6 +59,9 @@ class SoloApp:
         self.details_scroll=0
         self.sidebar_card=None
         self._old_pending=None
+        self.animations_enabled=True
+        self._recent_feedback=[]
+        self._last_logged_event=len(self.game.events)
 
     @staticmethod
     def _desktop_resolution():
@@ -386,6 +389,9 @@ class SoloApp:
                 self.selected=None;self.tooltip_open=False
                 if self.game.phase=='finished':self.restart()
             elif event.key==pygame.K_r and not self.game.pending:self.restart()
+            elif event.key==pygame.K_a:
+                self.animations_enabled=not self.animations_enabled
+                self._recent_feedback=[]
             elif (self.game.pending and self.game.pending.owner == 0
                   and pygame.K_1 <= event.key <= pygame.K_6):
                 index = self.choice_page * self.CHOICES_PER_PAGE + event.key - pygame.K_1
@@ -432,8 +438,41 @@ class SoloApp:
             else:self.selected=None;self.tooltip_open=False
         return True
 
+    @staticmethod
+    def _feedback_color(message):
+        """Only colour recorded engine messages; do not predict their results."""
+        text=message.lower()
+        if any(w in text for w in ('obrażen','zadaje','rani','traci pż')):
+            return (224,116,120)
+        if any(w in text for w in ('leczy','ulecz','regeneracj')):
+            return (115,222,166)
+        if any(w in text for w in ('tarcz','pancerz')):
+            return (123,183,236)
+        if any(w in text for w in ('trucizn','ogłusz','status')):
+            return (190,145,242)
+        if any(w in text for w in ('zgon','umiera','ginie')):
+            return (236,188,132)
+        return None
+
+    def _capture_visual_feedback(self):
+        events=self.game.events
+        if len(events)<self._last_logged_event:
+            self._last_logged_event=0
+        if len(events)>self._last_logged_event:
+            if self.animations_enabled:
+                timestamp=pygame.time.get_ticks()
+                for event in events[self._last_logged_event:]:
+                    color=self._feedback_color(event)
+                    if color:
+                        self._recent_feedback.append((timestamp,color))
+                self._recent_feedback=self._recent_feedback[-2:]
+            self._last_logged_event=len(events)
+        now=pygame.time.get_ticks()
+        self._recent_feedback=[e for e in self._recent_feedback if now-e[0]<620]
+
     def update(self):
         g=self.game
+        self._capture_visual_feedback()
         if g.phase=='finished' or self.details_card is not None:return
         if self._old_pending is not g.pending:
             self.choice_page=0
@@ -593,10 +632,18 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('GRA SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.11 · v19',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.11 · v19  |  A: animacje',13,1260,35,cfg.GOLD)
 
     def _draw_log(self):
-        # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
+        # Delikatny, możliwy do wyłączenia [A] błysk pod ostatnimi
+        # zatwierdzonymi zdarzeniami. Żadna animacja nie wpływa na silnik.
+        if self.animations_enabled and self._recent_feedback:
+            latest,color=self._recent_feedback[-1]
+            elapsed=pygame.time.get_ticks()-latest
+            alpha=max(0,int(92*(1-elapsed/620)))
+            shade=pygame.Surface((940,34),pygame.SRCALPHA)
+            shade.fill((*color,alpha))
+            self.screen.blit(shade,(109,375))
         entries=self.game.events[-2:]
         y=378
         for s in entries:
