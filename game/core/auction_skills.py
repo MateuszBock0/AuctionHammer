@@ -105,6 +105,12 @@ def create_copy(game,target,owner,source,legendary=False,quiet=False,stats=None)
     original=game.cards[target]
     definition=original.definition
     if stats is not None:definition=replace(definition,atk=stats[0],hp=stats[1])
+    if quiet:
+        # Soldiers and Queen's summoned copies have no abilities, including
+        # no end-turn effect, no on-play and no death trigger.
+        definition=replace(definition,id=uid,faction='Ludzie',
+                           family='Prowokacja',trigger='Pasywna',
+                           effect='Efemeryczna jednostka bez zdolności')
     card=Card(uid,definition,owner=owner,zone='board')
     game.cards[uid]=card;game.defs[uid]=definition
     src=game.units[target]
@@ -118,7 +124,7 @@ def create_copy(game,target,owner,source,legendary=False,quiet=False,stats=None)
         unit=Unit(uid,owner,atk,hp,hp,0,game.players[owner].turn_count)
     game.units[uid]=unit;game.players[owner].board.append(uid)
     game.ephemerals.add(uid)
-    if target in game.auction_awards:game.auction_awards[uid]=dict(game.auction_awards[target])
+    if target in game.auction_awards and not quiet:game.auction_awards[uid]=dict(game.auction_awards[target])
     game._log(f'Przywołano efemeryczną kopię {game.label(target)} jako {uid}.')
     game._update_auras(defer_reactive=True)
     if not quiet and (definition.faction=='Elfy' or definition.id in ('S34','S35')):
@@ -133,6 +139,9 @@ def exile(game,uid):
             game.players[game.cards[uid].owner].grave.remove(uid)
     elif uid in game.cards and game.cards[uid].zone=='hand':
         game.players[game.cards[uid].owner].hand.remove(uid)
+    if uid not in game.cards:
+        # _remove_unit may already have purged a non-death ephemeral.
+        return
     if uid in game.ephemerals:
         game.ephemerals.remove(uid)
         game.auction_awards.pop(uid,None);game.defs.pop(uid,None);game.cards.pop(uid,None)
@@ -238,7 +247,11 @@ def execute(game,uid,context,choice):
     level=tier(game,uid)
     if name=='A001' and context=='death':
         if mode=='kill' and target in game.units:
-            game.units[target].hp=0;game._kill_batch([target])
+            if game._resolving_death_wave:
+                game._wave_damage.append((target,999999,True))
+            else:
+                game.units[target].hp=0
+                game._kill_batch([target])
         elif mode in ('take','take_link') and capture(game,target,owner):
             if mode=='take_link':game.auction_death_links.add(target)
     elif name=='A002' and context in ('play','evolve'):
@@ -361,6 +374,12 @@ def evolve(game,completed_round):
         current=RARITIES.index(a['rarity'])
         if current>=2:continue
         a['rarity']=RARITIES[current+1]
+        if uid in game.cards and a.get('archetype'):
+            from .auction_catalog import tier_text
+            card=game.cards[uid]
+            card.definition=replace(card.definition,
+                                    effect=tier_text(a['archetype'],a['rarity']))
+            game.defs[uid]=card.definition
         game._log(f'Karta {game.label(uid)} ewoluuje: {a["rarity"]}.')
         if a['archetype']=='A002' and current+1==1 and uid in game.units:
             game._queue(uid,'evolve')
@@ -369,9 +388,9 @@ def evolve(game,completed_round):
 def double_and_damage(game,uid):
     for source in game.players[game.units[uid].owner].board:
         a=award(game,source)
-        if not a or a['archetype']!='A002' or source not in game.units:return_if_false=False
-        else:return_if_false=True
-        if not return_if_false or game._disabled(game.units[source]):continue
+        if not a or a.get('archetype')!='A002' or source not in game.units:
+            continue
+        if game._disabled(game.units[source]):continue
         grade=tier(game,source)
         if grade==1 and a.get('beneficiary')==uid:return True
         if grade==2 and uid in a.get('beneficiaries',[]):return True
