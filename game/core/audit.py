@@ -383,7 +383,8 @@ def make_report(game):
             "hero_hp":{str(p.idx):p.hp for p in game.players},
             "unit_deaths":{str(p.idx):game.death_counts[p.idx]
                            for p in game.players}
-            if getattr(game,'death_counts',None) is not None else None
+            if (getattr(game,'death_counts',None) is not None and
+                getattr(game,'death_counts_complete',False)) else None
         }
     }
     return {"payload":payload,"sha256":digest(payload)}
