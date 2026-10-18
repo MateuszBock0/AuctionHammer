@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.26: base cards v20 and auction cards v4."""
+"""AuctionHammer MVP 0.9.27: auction v4 effect parity and accurate match statistics."""
 from __future__ import annotations
 import os
 import re
