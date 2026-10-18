@@ -41,7 +41,7 @@ jobs:
       - name: Stamp exact GitHub build commit for match audits
         shell: pwsh
         run: |
-          $info = @{ commit = '${{ github.sha }}'; version = '0.9.18' } | ConvertTo-Json -Compress
+          $info = @{ commit = '${{ github.sha }}'; version = '0.9.20' } | ConvertTo-Json -Compress
           Set-Content -Path 'data/BUILD_INFO.json' -Value $info -Encoding utf8
       - name: Verify stamped audit build matches the release commit
         shell: pwsh
