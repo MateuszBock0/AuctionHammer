@@ -208,8 +208,9 @@ class Match:
         p=self._player()
         self._check(self.can_play(self.active,uid,replace),'Nie można zagrać tej karty (1 na turę; pełna plansza wymaga zastąpienia niewykorzystanej jednostki)')
         if replace is not None:
+            replaced_name=self.label(replace)
             self._remove_unit(replace,death=False)
-            self._log(f'{p.name}: zastąpiono {self.label(replace)} (bez śmierci).')
+            self._log(f'{p.name}: zastąpiono {replaced_name} (bez śmierci).')
         card=self.cards[uid]
         p.hand.remove(uid)
         card.zone='board'
