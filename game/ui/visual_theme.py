@@ -7,7 +7,11 @@ from __future__ import annotations
 
 import math
 import random
+from pathlib import Path
+import sys
 import pygame
+
+ASSET_ROOT=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parents[2]))/'assets'/'ui'/'tavern'
 
 INK=(12,19,27)
 SLATE=(29,44,56)
@@ -43,6 +47,17 @@ class VisualTheme:
                              else (0,0,0,a),
                              (x,y),(min(w-1,x+rng.randrange(1,20)),y),1)
         art.blit(grain,(0,0))
+        # Tavern pack v2: *only* a quiet tabletop crop, never the busy
+        # full tavern illustration behind text/units. Optimized ~36 KB.
+        wood=ASSET_ROOT/'wood_ambient.png'
+        if wood.is_file():
+            try:
+                texture=pygame.image.load(str(wood)).convert()
+                surface=pygame.transform.smoothscale(texture,(w,h))
+                surface.set_alpha(38)
+                art.blit(surface,(0,0))
+            except (OSError,pygame.error):
+                pass
         # Broad, subdued hand-carved sigils; recessed behind play zones.
         sigils=pygame.Surface(size,pygame.SRCALPHA)
         for cx,cy,r in ((570,390,214),(540,825,278),(552,258,142)):
@@ -70,6 +85,24 @@ class VisualTheme:
                 pygame.draw.rect(overlays,(0,0,0,alpha),r,2,border_radius=15)
         art.blit(overlays,(0,0))
         return art
+
+    def ornament(self,screen,x,y,width=310,height=28):
+        """Small genuine tavern gold divider, never used beneath card text."""
+        key=('divider',int(width),int(height))
+        if key not in self._textures:
+            file=ASSET_ROOT/'gold_divider.png'
+            if file.is_file():
+                try:
+                    img=pygame.image.load(str(file)).convert_alpha()
+                    self._textures[key]=pygame.transform.smoothscale(
+                        img,(int(width),int(height)))
+                except (OSError,pygame.error):
+                    self._textures[key]=None
+            else:
+                self._textures[key]=None
+        sprite=self._textures[key]
+        if sprite is not None:
+            screen.blit(sprite,(int(x),int(y)))
 
     def panel(self,screen,rect,fill=None,line=None,radius=12):
         base=fill or SLATE
