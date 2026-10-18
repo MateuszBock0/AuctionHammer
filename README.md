@@ -88,6 +88,32 @@ rzeczywistym monitorze). Zrzuty nowych ekranów:
 
 [Raport z poprawek i ograniczeń](docs/VISUAL_POLISH_0916.md).
 
+## Aktualizacja 0.9.17 — prześlij cały ostatni mecz do audytu
+
+Po zakończeniu gry AuctionHammer automatycznie tworzy **jeden plik JSON**
+z pełną historią komend, wyborów, stanów planszy i wewnętrznych
+rozstrzygnięć zdolności oraz fal śmierci:
+
+`%LOCALAPPDATA%\\AuctionHammer\\AuctionHammer-OSTATNI-MECZ.json`
+
+Na ekranie końcowym naciśnij **O** (lub **OTWÓRZ FOLDER**) i
+prześlij plik **AuctionHammer-OSTATNI-MECZ.json** do ChatGPT.
+**E** ponawia eksport. [O] działa także z menu głównego.
+
+Nowy **ukończony** mecz nadpisuje ten sam plik. Nie przechowujemy
+wielu zakończonych partii; starszy audyt jest zastępowany automatycznie.
+Plik znajduje się poza folderem z aktualizacjami EXE i nie znika
+podczas aktualizacji przez BAT.
+
+Raport obejmuje również **ukryte karty komputera** i seed losowy,
+więc pojawia się dopiero po zakończeniu gry. Zawiera sumę SHA-256
+i pozwala ponownie odtworzyć komendy na silniku v19 poleceniem
+`python tools/verify_last_match.py`. Starsze wczytane zapisy
+będą poprawnie oznaczone jako częściowe, zamiast sugerować
+nieistniejącą pełną historię.
+
+[Dokładna specyfikacja i instrukcja](docs/LAST_MATCH_AUDIT_0917.md).
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.
