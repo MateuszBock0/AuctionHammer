@@ -71,7 +71,7 @@ SPECS = {
         "full": "Wybór: Podwójny atak dla siebie lub innego sojusznika na planszy; maks. 2 ataki, bez Szybkiego nie od razu."
     },
     "S09": {
-        "short": "Cel ataku, przed walką",
+        "short": "Cel ataku",
         "full": "Przed standardową walką zadaje {v} dodatkowych obrażeń celowi ataku."
     },
     "S10": {
