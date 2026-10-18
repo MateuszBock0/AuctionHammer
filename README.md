@@ -63,3 +63,17 @@ Dane autorytatywnej kolejności zdarzeń przechowuje `data/event_order_v19.json`
 ## Rozwój i aktualizacje
 
 Po zatwierdzeniu zmian w gałęzi `main` GitHub automatycznie uruchamia testy i przygotowuje przenośne wydanie dla Windows. Kod można edytować lokalnie po zainstalowaniu Pythona i zależności z `requirements.txt`. **Do zwykłego grania te narzędzia nie są potrzebne.**
+
+## Minimal Fantasy — wyższe karty (MVP 0.9.11)
+
+Nowy, uproszczony wygląd z zachowaniem klimatu fantasy: **125 × 195 px** na ręce, **148 × 220 px** na planszy i **255 × 380 px** w podglądzie. Dynamiczne, wyraźne plakietki **ATAK** i **PŻ** pozostają widoczne ponad ilustracjami oraz przyciemnieniem, a zdolności zachowują pełną zgodność z Game Master v19.
+
+- Lewy przycisk wybiera kartę i służy do zagrywania lub ataku; **I** i prawy przycisk otwierają duży podgląd.
+- Zielony pasek oznacza ulepszenie zdolności co trzy własne tury na ręce; oddzielny postęp jest widoczny tylko na ręce.
+- Złota ramka oznacza zaznaczoną kartę, turkusowa — legalny cel ataku, fioletowa — legalny cel zdolności.
+- Krótkie animowane podświetlenie wpisów dziennika zdarzeń można wyłączyć i ponownie włączyć klawiszem **A**.
+- Wszystkie karty są generowane z aktualnych danych 70 kart; nie ma statystyk zapisanych na sztywno w ilustracjach.
+
+Zrzuty ekranu wygenerowane prawdziwym rendererem Pygame znajdują się w katalogu `preview/` wydania Windows oraz w artefaktach GitHub Actions.
+
+**Instrukcja wdrożenia, lista testów i opis cofania:** [Minimal Fantasy — wysokie karty](docs/MINIMAL_FANTASY_WYSOKIE_KARTY.md).
