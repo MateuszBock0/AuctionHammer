@@ -197,6 +197,55 @@ class AtomicDeathWaveTests(unittest.TestCase):
         g.assert_integrity()
 
 
+    def test_lost_max_hp_aura_creates_followup_death_wave(self):
+        g=setup_game(713)
+        source=force_unit(g,'S35',0)
+        monster=force_unit(g,'S83',0)
+        enemy=force_unit(g,'S01',1)
+        source.aura_mode='ally'
+        g._update_auras()
+        self.assertGreater(monster.aura_hp,0)
+        monster.hp=1
+        g._kill_batch(['S35'])
+        self.assertNotIn('S83',g.units)
+        self.assertEqual([x[2] for x in g.death_wave_log if x[0]=='wykryto'],
+                         [('S35',),('S83',)])
+        g._drain()
+        self.assertIsNotNone(g.pending)
+        self.assertEqual(g.pending.uid,'S83')
+        choose_target(g,'S01')
+        self.assertTrue(any(e.kind=='poison' for e in enemy.effects))
+        g.assert_integrity()
+
+    def test_same_batch_hand_grants_use_distinct_physical_card_ids(self):
+        g=setup_game(714)
+        force_unit(g,'S90',0)
+        force_unit(g,'S91',0)
+        g._kill_batch(['S91','S90'])
+        self.assertEqual(g.death_waves[0]['triggers'],('S90','S91'))
+        g._drain()
+        boosted=[x for x in g.players[0].hand if g.cards[x].quick_on_first_summon]
+        doubled=[x for x in g.players[0].hand if g.cards[x].double_on_first_eligible]
+        self.assertEqual(len(boosted),min(2,len(g.players[0].hand)))
+        self.assertEqual(len(doubled),1)
+        self.assertEqual(len(set(boosted)),len(boosted))
+        g.assert_integrity()
+
+    def test_hero_threshold_payment_occurs_once_in_atomic_wave(self):
+        g=setup_game(715)
+        force_unit(g,'S21',0)
+        force_unit(g,'S17',1)
+        victim=g.players[1]
+        victim.hp=76
+        initial_coins=victim.coins
+        g._kill_batch(['S21','S17'])
+        g._drain()
+        self.assertEqual(victim.hp,78)
+        self.assertIn(75,victim.thresholds)
+        self.assertEqual(victim.coins,initial_coins+2+1)
+        g.assert_integrity()
+
+
 
 if __name__=='__main__':
     unittest.main()
