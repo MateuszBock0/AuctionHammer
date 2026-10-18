@@ -490,7 +490,7 @@ class SoloApp:
             name_lines=self._wrap(name,16,rect.width-24)[:2]
             for j,line in enumerate(name_lines):
                 self._text(line,16,rect.centerx,rect.y+41+j*20,cfg.TEXT,center=True)
-            self._text(f'{off.atk} ATAK  /  {off.hp} PŻ',23,rect.centerx,
+            self._text(f'{off.atk} ATAK  /  {off.hp} PŻ',22,rect.centerx,
                        rect.y+113,cfg.GOLD,center=True)
             if item:
                 description=tier_text(off.archetype,off.rarity)
