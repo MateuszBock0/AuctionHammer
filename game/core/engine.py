@@ -290,7 +290,7 @@ class Match:
             self._damage(target,a.atk*amplifier)
         else:
             b=self.units[target]
-            da,db=a.atk*amplifier,b.atk*(2 if auction_skills.double_and_damage(self,target) else 1)
+            da,db=a.atk*amplifier,b.atk  # retaliation is not an attack declaration
             # simultaneous damage; store victims until both are applied
             to_attacker=self._damage(uid,db,defer_death=True)
             to_defender=self._damage(target,da,defer_death=True)
@@ -657,6 +657,8 @@ class Match:
                     if old>threshold>=p.hp and threshold not in p.thresholds:
                         p.thresholds.add(threshold);p.coins+=2
                         self._log(f'{p.name}: +2 monety za przekroczenie {threshold} PŻ.')
+            if self.auction_catalog_mode=='v3' and p.hp<=0:
+                auction_skills.heroic_save(self,p.idx)
             return amount
         return 0
 
@@ -685,8 +687,12 @@ class Match:
                              self.cards[uid].definition.faction=='Potwory'))
         for uid,owner,_,_ in snapshot:
             self._remove_unit(uid,death=True)
-            self.players[1-owner].coins+=1
-            self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
+            reward=1
+            meta=self.auction_awards.get(uid)
+            if meta and meta.get('archetype') not in (None,'PLACEHOLDER'):
+                reward=1+RARITIES.index(meta['rarity'])
+            self.players[1-owner].coins+=reward
+            self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje {reward} monet.')
         # Rejestrujemy źródła, ale ich legalne cele zamrażamy dopiero gdy
         # grupa dochodzi na początek kolejki. Wcześniejsza grupa może jeszcze
         # zmienić stan planszy, zwłaszcza po utracie dodatniej aury.
@@ -809,6 +815,14 @@ class Match:
         card=self.cards[uid];card.zone='grave';card.hand_turns=0;card.quick_next_turn=None
         card.quick_on_first_summon=False;card.double_on_first_eligible=False
         self.players[u.owner].grave.append(uid)
+        if uid in self.ephemerals:
+            # Ephemeral instances vanish rather than entering a draw cycle.
+            self.players[u.owner].grave.remove(uid)
+            self.ephemerals.remove(uid)
+            self.auction_awards.pop(uid,None)
+            self.auction_death_links.discard(uid)
+            self.defs.pop(uid,None)
+            self.cards.pop(uid,None)
 
     def _update_auras(self,defer_reactive=False):
         # Dynamic auras S34 / S35 / S105. Unit order is always compacted left.
@@ -830,6 +844,10 @@ class Match:
                 value=1+u.ability_level
                 for x in (friend if u.aura_mode=='ally' else enemy):
                     if x!=uid:desired_hp[x]+=value if u.aura_mode=='ally' else -value
+            elif (uid in self.auction_awards
+                  and self.auction_awards[uid].get('archetype')=='A002'
+                  and self.auction_awards[uid]['rarity']=='podstawowa'):
+                for target in desired_atk:desired_atk[target]+=1
             elif cid=='S105':
                 for x in friend:
                     if x!=uid:armor_sources[x].add(uid)
@@ -874,6 +892,10 @@ class Match:
         if self.phase!='turn':return
         a,b=self.players
         if a.hp>0 and b.hp>0:return
+        if self.auction_catalog_mode=='v3':
+            if a.hp<=0:auction_skills.heroic_save(self,0)
+            if b.hp<=0:auction_skills.heroic_save(self,1)
+            if a.hp>0 and b.hp>0:return
         if a.hp<=0 and b.hp>0:self.winner=1
         elif b.hp<=0 and a.hp>0:self.winner=0
         else:
@@ -903,7 +925,7 @@ class Match:
         all_ids=list(self.bank)
         for p in self.players:all_ids+=p.hand+p.deck+p.grave+p.board
         all_ids+=self.excluded
-        basic=[uid for uid in all_ids if uid not in self.auction_awards]
+        basic=[uid for uid in all_ids if uid not in self.auction_awards and uid not in self.ephemerals]
         assert len(basic)==70 and len(set(basic))==70,('Bank 70x1 violated',len(basic),len(set(basic)))
         assert len(all_ids)==len(set(all_ids)), 'Auction card duplicated'
         assert set(all_ids)==set(self.cards),('Physical cards mismatch',len(all_ids),len(self.cards))
@@ -920,6 +942,10 @@ class Match:
         Dla efektów wymagających wyboru pending zatrzymuje kolejkę, co pozwala
         obsłużyć zarówno gracza jak i agenta tym samym kodem.
         """
+        if (uid in self.auction_awards and
+              self.auction_awards[uid].get('archetype')!='PLACEHOLDER') or context=='auction_chain' or uid in self.auction_death_links:
+            auction_skills.execute(self,uid,context,choice)
+            return
         card=self.cards[uid]
         cid=card.definition.id
         owner=card.owner
