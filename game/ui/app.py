@@ -648,7 +648,7 @@ class SoloApp:
                     pygame.draw.circle(self.screen,st.color,(1113,yy+7),5)
                     self._text(self.cards_view.clip(st.name,self.fonts[13],296),13,1126,yy,st.color)
                     detail=self.cards_view.clip(st.detail,self.fonts[12],302)
-                    self._text(detail,12,1126,yy+17,cfg.MUTED)
+                    self._text(detail,12,1126,yy+21,cfg.MUTED)
                 if len(statuses)>2:
                     self._text(f'+{len(statuses)-2} pozostałych efektów — [I]',12,1105,648,cfg.MUTED)
             else:
@@ -695,15 +695,15 @@ class SoloApp:
     @staticmethod
     def header_regions():
         """Separate logo, mode and shortcuts. No text may cross its cell."""
-        return (pygame.Rect(100,18,430,44),
-                pygame.Rect(548,18,430,44),
-                pygame.Rect(998,18,441,44))
+        return (pygame.Rect(100,9,430,66),
+                pygame.Rect(548,9,430,66),
+                pygame.Rect(998,9,441,66))
 
     def _draw_header(self):
         logo,mode,help_area=self.header_regions()
-        pygame.draw.rect(self.screen,(21,34,43),pygame.Rect(83,11,1364,56),
+        pygame.draw.rect(self.screen,(21,34,43),pygame.Rect(83,8,1364,67),
                          border_radius=12)
-        pygame.draw.line(self.screen,cfg.GOLD,(104,64),(1426,64),1)
+        pygame.draw.line(self.screen,cfg.GOLD,(104,73),(1426,73),1)
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('SOLO  ·  70 KART  ·  GAME MASTER v19',14,
