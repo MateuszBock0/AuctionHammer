@@ -114,6 +114,25 @@ nieistniejącą pełną historię.
 
 [Dokładna specyfikacja i instrukcja](docs/LAST_MATCH_AUDIT_0917.md).
 
+## Aktualizacja 0.9.18 — czytelne PŻ i dokładniejszy audyt
+
+- Bohater pokonany śmiertelnym ciosem wyświetla **0/100 PŻ** w UI
+  (również na ekranie zakończenia). Rzeczywista ujemna wartość
+  pozostaje w silniku i w JSON, aby nie zgubić informacji o obrażeniach.
+- Testy regresji sprawdzają oczyszczanie, truciznę (w tym odporność),
+  ogłuszenie (w tym wygaśnięcie) i Podwójny atak S115/S79/S67.
+- Audyt ostatniego meczu przechowuje **początkową trudność AI,
+  każdą zmianę jej poziomu, poziom przy poszczególnych akcjach
+  oraz pełny 40-znakowy SHA commita gry**.
+- Wydanie Windows umieszcza identyfikator buildu w środku EXE
+  i sprawdza go w GitHub Actions. Brak oryginalnego commita
+  oznaczamy jako `unknown`, zamiast zgadywać.
+- Zapis gry zachowuje ustawienie AI i przywraca je po wczytaniu.
+
+Nowy obraz Pygame: `preview/VISUAL_0918_KONIEC_0_PZ.png`.
+
+[Szczegóły testów i metadanych](docs/COMBAT_AUDIT_HOTFIX_0918.md).
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.
