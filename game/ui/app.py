@@ -1079,7 +1079,7 @@ class SoloApp:
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         overlay.fill((0,0,0,170))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(332,243,810,465),(28,44,58),cfg.GOLD,16)
+        self._panel(pygame.Rect(332,226,810,586),(28,44,58),cfg.GOLD,16)
         won=self.game.winner==0
         self._text('ZWYCIĘSTWO!' if won else 'PORAŻKA',46,738,300,
                    cfg.GREEN if won else cfg.RED,center=True)
