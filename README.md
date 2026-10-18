@@ -1,6 +1,6 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Od 0.9.19 aktywny jest pierwszy prototyp aukcji z trzema tymczasowymi Strażnikami (3/6/12 PŻ); finalny katalog i płatne zdolności jeszcze nie istnieją. Koszt zagrania kart wynosi zero.**
+**AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Od 0.9.20 gra używa roboczego katalogu aukcyjnego v3 z 12 archetypami × 3 rzadkościami (36 wariantów) oraz widocznym karczemnym UI. Karty pozostają bez kosztu zagrania; cztery interpretacje zasad katalogu są nadal robocze.**
 
 ## Uruchamianie w Windows
 
@@ -170,6 +170,41 @@ przejmowania, wskrzeszania czy finalnego katalogu 36 kart aukcyjnych.
 Mechaniki i balans pozostałych 70 kart nie zostały zmienione.
 
 [Analiza paczki i szczegóły implementacji](docs/TAVERN_AUCTION_PROTOTYPE_0919.md).
+
+## Aktualizacja 0.9.20 — katalog aukcyjny v3 i pełniejsze karczemne UI
+
+Zamiast trzech placeholderów Strażnika z 0.9.19 losujemy **trzy różne
+archetypy spośród dwunastu kart aukcyjnych**. Każdy występuje w trzech
+rzadkościach (podstawowa, rzadka, legendarna), co daje **36 opisów
+wariantów**. Statystyki przy zakupie w ukończonej rundzie R spełniają
+**ATAK + MAX PŻ = R + 8**, a rzadkość ewoluuje co trzy pełne rundy od
+zakupu. Zwykłe karty bazowe nie zmieniły parametrów.
+
+Dostępne archetypy to: Władca Dusz, Generał Oddziału Natarcia, Matka
+Kości, Regent Krzywych Zwierciadeł, Bankier Widm, Królowa Zakazanych
+Słów, Strażnik Ostatniego Tchnienia, Architekt Pustki, Złodziej
+Wspomnień, Królowa Tysiąca Twarzy, Jeździec Czarnej Komety i Tkaczka
+Drugiego Losu.
+
+**Oprawa karczmy** jest teraz wyraźna: pełna, przyciemniona sala
+karczmy z drewnianym stołem, rzeźbione panele, brązowo-mosiężne
+przyciski i nowe winietowanie. Pod kartami i napisami pozostają
+ciemne podkłady. Grafiki pochodzą z przesłanego Tavern UI Pack v2.
+
+Karty podstawowe nadal nie mają kosztu zagrania. Za monety płaci się
+tylko przy licytacji. Zapis i audyt obejmują nowe interakcje oraz
+zmiany rzadkości. Stary zapis 0.9.19 może zawierać wcześniejsze
+placeholdery — pozostają zgodne, ale nie są generowane w nowych
+meczach.
+
+**Katalog jest roboczy, a nie ostatecznie zbalansowany.** Wybór celu
+A002 po śmierci beneficjenta, interpretacja kopiowania A004,
+wzmocnienia A010 i kopiowanie PŻ A012 wymagają końcowego
+zatwierdzenia. Zastosowane zasady są opisane w raporcie i
+pochodzą z przesłanej wersji v3.
+
+[Pełny opis zmian i ograniczeń](docs/AUCTION_CATALOG_V3_TAVERN_0920.md) ·
+[Oryginalny katalog v3](docs/KATALOG_AUKCYJNY_12_v3.md).
 
 ## Karty, efekty i skalowanie
 
