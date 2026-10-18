@@ -8,7 +8,7 @@ import sys
 import random
 from .models import Card, Unit, Player, Effect, Pending, Choice, IllegalMove, load_catalog
 from .effects import options
-from .audit import initialize_audit, audit_action
+from .audit import initialize_audit, audit_action, trace_effect
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
@@ -134,6 +134,7 @@ class Match:
             self._start_turn()
             self.assert_integrity()
 
+    @trace_effect('_start_turn')
     def _start_turn(self):
         if self.phase=='finished':return
         p=self._player()
@@ -154,6 +155,7 @@ class Match:
         self._tick_poison(p.idx)
         self._drain()
 
+    @trace_effect('_tick_poison')
     def _tick_poison(self,owner):
         # One atomic poison wave for all units of this player (v17).
         fallen=[]
@@ -379,6 +381,7 @@ class Match:
             self._draining=False
 
 
+    @trace_effect('_finalize_end_turn')
     def _finalize_end_turn(self):
         p=self._player()
         for uid in list(p.board):
@@ -453,6 +456,7 @@ class Match:
         p=self.players[owner]
         return p.turn_count+(0 if self.active==owner and self.end_queue is None and self.phase=='turn' else 1)
 
+    @trace_effect('_add_effect')
     def _add_effect(self,uid,kind,value=0,remaining=0,expires=None,source='',positive=True,bonus_once=0,expire_action=None):
         u=self.units.get(uid)
         if u is None:return False
@@ -489,6 +493,7 @@ class Match:
         if uid not in self.units:return False
         return any(e.kind=='immune_'+kind for e in self.units[uid].effects) or (kind=='poison' and self.cards[uid].definition.id=='S39' and not self._disabled(self.units[uid]))
 
+    @trace_effect('_add_poison')
     def _add_poison(self,target,total,turns,source,bonus=0):
         if target in self.units:
             if self._is_immune(target,'poison'):return
@@ -497,6 +502,7 @@ class Match:
         elif target and target.startswith('hero:'):
             self.players[int(target.split(':')[1])].hero_effects.append(Effect('poison',total,turns,source=source,positive=False))
 
+    @trace_effect('_grant_immunity')
     def _grant_immunity(self,target,types,expires=None,source=''):
         if target not in self.units:return
         if self._resolving_death_wave:
@@ -507,6 +513,7 @@ class Match:
             u.effects=[e for e in u.effects if e.kind!=kind]
             self._add_effect(target,'immune_'+kind,expires=expires,source=source)
 
+    @trace_effect('_clean')
     def _clean(self,target,negative=True):
         if target not in self.units:return False
         u=self.units[target]
@@ -527,6 +534,7 @@ class Match:
         if u.hp>u.max_hp:u.hp=u.max_hp
         return len(u.effects)!=before
 
+    @trace_effect('_heal')
     def _heal(self,target,amount,ability=True):
         if self._resolving_death_wave:
             self._wave_healing.append((target,amount,ability))
@@ -560,6 +568,7 @@ class Match:
         if not u.armor_perm:u.armor_perm_source=''
         return taken
 
+    @trace_effect('_damage')
     def _damage(self,target,amount,ignore_defense=False,defer_death=False):
         amount=max(0,amount)
         if amount<=0:return 0
@@ -606,6 +615,7 @@ class Match:
         return sorted({uid for uid in fallen if uid in self.units},
                       key=lambda uid:positions.get(uid,(2,999,uid)))
 
+    @trace_effect('_kill_batch')
     def _kill_batch(self,fallen):
         ordered=self._ordered_deaths(fallen)
         if not ordered:return
@@ -640,6 +650,7 @@ class Match:
         # zarejestrowana przed przeliczeniem aury.
         self._update_auras()
 
+    @trace_effect('_resolve_death_wave')
     def _resolve_death_wave(self,wave):
         """Jedna faza konsekwencji, po wszystkich wyborach z migawki."""
         self._resolving_death_wave=True
@@ -737,6 +748,7 @@ class Match:
         self._log(f'Zamknięto falę śmierci {wave["id"]}.')
         self._check_winner()
 
+    @trace_effect('_remove_unit')
     def _remove_unit(self,uid,death):
         u=self.units.pop(uid)
         self.players[u.owner].board.remove(uid)
@@ -832,6 +844,7 @@ class Match:
         assert all(self.cards[x].zone=='excluded' and self.cards[x].owner is None for x in self.excluded)
         assert len(self.bank)+len(self.excluded)+sum(len(p.hand)+len(p.deck)+len(p.grave)+len(p.board) for p in self.players)==70
 
+    @trace_effect('_execute')
     def _execute(self,uid,context,choice,attacked=None):
         """Katalog 70 kart: parametry, warianty, cele i wszystkie wyjątki aktualnego katalogu v19.
 
