@@ -142,6 +142,39 @@ class ClientAuditTests(unittest.TestCase):
                 self.assertTrue(self.app.game.audit_enabled)
                 self.assertIsNone(self.app._export_finished_audit_once())
 
+    def test_finished_screen_export_and_open_folder_buttons_work(self):
+        app=self.app
+        app.game.phase="finished"
+        app.game.winner=1
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"AuctionHammer-OSTATNI-MECZ.json"
+            with patch("game.ui.app.write_last_match",
+                       side_effect=lambda game:write_last_match(game,path)):
+                app.click(self.pygame.Rect(392,702,325,46).center)
+                self.assertTrue(path.is_file())
+                self.assertEqual(read_report(path)["summary"]["winner"],1)
+            with patch.object(app,"_open_audit_folder") as opened:
+                app.click(self.pygame.Rect(738,702,325,46).center)
+                opened.assert_called_once_with()
+
+    def test_legacy_save_is_not_misrepresented_as_complete(self):
+        from game.core.audit import initialize_audit
+        from game.core.persistence import save_match,load_match
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"save.json"
+            old=Match(1750)
+            old._log("Zdarzenie sprzed funkcji audytu")
+            save_match(old,path)
+            loaded=load_match(path)
+            self.assertFalse(hasattr(loaded,"audit_actions"))
+            initialize_audit(loaded,complete=False)
+            loaded.audit_enabled=True
+            loaded.phase="finished"
+            loaded.winner=0
+            report=make_report(loaded)
+            self.assertFalse(report["payload"]["complete_from_start"])
+            self.assertIn("niepełna",report["payload"]["note"].lower())
+
     def test_finished_screen_audit_buttons_and_folder_instruction(self):
         app=self.app
         app.game.phase="finished"
