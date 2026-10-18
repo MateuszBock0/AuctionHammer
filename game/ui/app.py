@@ -15,6 +15,7 @@ from game.core.engine import Match
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
+from game.core.auction_catalog import BY_ID, tier_text
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.attack_view import attack_display
@@ -63,7 +64,7 @@ class SoloApp:
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
-        self.game=Match(audit_enabled=True,auctions_enabled=True)
+        self.game=Match(audit_enabled=True,auctions_enabled=True,auction_catalog_mode='v3')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -474,7 +475,7 @@ class SoloApp:
         self._panel(pygame.Rect(203,112,1076,732),(34,44,46),cfg.GOLD,16)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
-        self._text('TESTOWY KATALOG  ·  3 ATAK  ·  PROWOKACJA + TARCZA',16,
+        self._text('KATALOG V3  ·  12 ARCHETYPÓW  ·  3 RZADKOŚCI',16,
                    741,205,cfg.TEXT,center=True)
         self.theme.ornament(self.screen,565,228,350,22)
         for i,off in enumerate(a.offers):
@@ -483,13 +484,23 @@ class SoloApp:
             selected=a.phase=='picking' and a.turn==0 and not claimed
             self._panel(rect,(40,53,54) if not claimed else (37,39,42),
                         cfg.GOLD if selected else cfg.PANEL_BORDER,14)
-            self._text(f'WARIANT {i+1}',16,rect.centerx,rect.y+19,cfg.GOLD,center=True)
-            self._text('STRAŻNIK AUKCJI',18,rect.centerx,rect.y+54,cfg.TEXT,center=True)
-            self._text(f'{off.hp} PŻ',34,rect.centerx,rect.y+98,
-                       cfg.GREEN if not claimed else cfg.MUTED,center=True)
-            self._text('3 ATAK',22,rect.centerx,rect.y+161,cfg.GOLD,center=True)
-            self._text('PROWOKACJA',16,rect.centerx,rect.y+208,cfg.TEXT,center=True)
-            self._text('1 TARCZA',16,rect.centerx,rect.y+239,cfg.TEXT,center=True)
+            item=BY_ID.get(off.archetype)
+            self._text(f'OFERTA {i+1}',15,rect.centerx,rect.y+15,cfg.GOLD,center=True)
+            name=item.name if item else f'Strażnik aukcji {off.hp} PŻ'
+            name_lines=self._wrap(name,16,rect.width-24)[:2]
+            for j,line in enumerate(name_lines):
+                self._text(line,16,rect.centerx,rect.y+41+j*20,cfg.TEXT,center=True)
+            self._text(f'{off.atk} ATAK  /  {off.hp} PŻ',23,rect.centerx,
+                       rect.y+113,cfg.GOLD,center=True)
+            if item:
+                description=tier_text(off.archetype,off.rarity)
+                short_lines=self._wrap(description,13,rect.width-26)[:4]
+                for j,line in enumerate(short_lines):
+                    self._text(line,13,rect.centerx,rect.y+172+j*18,
+                               cfg.TEXT,center=True)
+            else:
+                self._text('PROWOKACJA + TARCZA',14,rect.centerx,
+                           rect.y+194,cfg.TEXT,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
                        rect.centerx,rect.y+277,cfg.MUTED,center=True)
             if claimed:
