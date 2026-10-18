@@ -5,8 +5,9 @@ from __future__ import annotations
 from .models import IllegalMove
 
 class ComputerOpponent:
-    def __init__(self,player=1):
+    def __init__(self,player=1,difficulty='normalny'):
         self.player=player
+        self.difficulty=difficulty
 
     def choose(self,game):
         p=game.pending
@@ -29,7 +30,10 @@ class ComputerOpponent:
                 return 7+(u.atk*.7)+(2 if u.hp<u.max_hp else 0)
             if target in game.cards:return 7 + game.cards[target].attack
             return 0
-        best=max(range(len(choices)),key=lambda i:(score(choices[i]),-i))
+        if self.difficulty=='łatwy':
+            best=0
+        else:
+            best=max(range(len(choices)),key=lambda i:(score(choices[i]),-i))
         game.choose(best)
 
     def step(self,game):
@@ -49,6 +53,30 @@ class ComputerOpponent:
             def unit_score(cid):
                 card=game.cards[cid]
                 f=card.definition.faction
+                if self.difficulty=='łatwy':
+                    return -(card.attack*.65+card.max_hp*.34)
+                if self.difficulty=='trudny':
+                    enemies=game.players[1-self.player].board
+                    allies=p.board
+                    family=card.definition.family
+                    estimate=card.attack*.65+card.max_hp*.34
+                    # Deterministyczna ocena z publicznego stanu planszy.
+                    if f=='Elfy' and family=='Obrażenia':
+                        estimate+=4.5 if enemies else .5
+                    elif f=='Elfy' and family=='Leczenie':
+                        wounded=any(game.units[a].hp<game.units[a].max_hp for a in allies)
+                        estimate+=4.0 if wounded or p.hp<85 else .5
+                    elif f=='Ludzie':
+                        estimate+=2.5+min(4,len(allies))*.7
+                    elif f=='Krasnoludy':
+                        estimate+=4.1
+                    elif f=='Dzikie bestie':
+                        estimate+=1.2
+                    elif f=='Potwory':
+                        estimate+=2.4 if enemies else .5
+                    if len(p.board)==4:
+                        estimate+=.7
+                    return estimate
                 return card.attack*.65+card.max_hp*.34+(2.5 if f in ('Elfy','Ludzie') else 1.0)
             best=max(candidates,key=unit_score)
             game.play(best)
@@ -80,7 +108,22 @@ class ComputerOpponent:
                 kill=15 if attacker.atk>=defender.hp+defender.armor and not defender.shield else 0
                 survive=5 if attacker.hp>defender.atk else -1
                 return kill+survive+defender.atk*.7-defender.armor*.2
-            tgt=max(targets,key=target_score)
+            if self.difficulty=='łatwy':
+                tgt=targets[0]
+            elif self.difficulty=='trudny':
+                def expert_score(t):
+                    basic=target_score(t)
+                    if t.startswith('hero:'):
+                        hero=game.players[1-self.player]
+                        return (10000 if hero.hp<=attacker.atk else 0) + basic + (11 if hero.hp<35 else 0)
+                    target=game.units[t]
+                    effective=max(0,attacker.atk-target.armor)
+                    kill=(target.hp<=effective and not target.shield)
+                    survive=attacker.hp>target.atk
+                    return basic+(13 if kill else 0)+(4 if survive else -4)-(3 if target.shield or target.armor else 0)
+                tgt=max(targets,key=expert_score)
+            else:
+                tgt=max(targets,key=target_score)
             game.attack(uid,tgt)
             return
         game.end_turn()
