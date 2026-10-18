@@ -10,6 +10,8 @@ from .models import Card, Unit, Player, Effect, Pending, Choice, IllegalMove, lo
 from .effects import options
 from .audit import initialize_audit, audit_action, trace_effect
 from . import auction as auction_rules
+from . import auction_abilities as auction_ability_rules
+from .auction_catalog import CATALOG
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
@@ -17,7 +19,7 @@ class Match:
     def __init__(self, seed: int | None = None, audit_enabled: bool = False,
                  auctions_enabled: bool = False,
                  auction_catalog: str = "v3"):
-        if auction_catalog not in ("v3","placeholders"):
+        if auction_catalog not in ("v3","v4","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
@@ -26,6 +28,15 @@ class Match:
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
+        self.exiled=[]
+        self.vanished=[]
+        self.ephemeral_ids=set()
+        self.auction_death_grants=set()
+        self.auction_rescue_spent=set()
+        self.auction_general_targets={}
+        self.auction_general_grants={}
+        self.auction_pending_targets={}
+        self.auction_wave_ops=[]
         self.seed = seed if seed is not None else random.SystemRandom().randrange(2**31)
         self.rng = random.Random(self.seed)
         self.defs = load_catalog(ROOT / 'data' / 'cards_base_70.json')
@@ -234,6 +245,11 @@ class Match:
             u.shield=1
             u.shield_source=uid
             self._log(f'{self.label(uid)}: wrodzona Prowokacja i 1 Tarcza (karta aukcyjna).')
+        if self.auction_catalog=='v4':
+            auction_ability_rules.mark_general_new_ally(self,uid)
+            if card.definition.id in CATALOG and (card.definition.trigger=='Przy wystawieniu'
+                                                    or card.definition.id=='A002'):
+                self._queue(uid,'play')
         if card.definition.id == 'S39' and u.ability_level:
             u.armor_perm+=u.ability_level
             u.armor_perm_source=uid
@@ -272,10 +288,12 @@ class Match:
             return
         a=self.units[uid]
         if target.startswith('hero:'):
-            self._damage(target,a.atk)
+            boosted=(self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,uid))
+            self._damage(target,a.atk*(2 if boosted else 1))
         else:
             b=self.units[target]
-            da,db=a.atk,b.atk
+            da,db=(a.atk*(2 if self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,uid) else 1),
+                   b.atk*(2 if self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,target) else 1))
             # simultaneous damage; store victims until both are applied
             to_attacker=self._damage(uid,db,defer_death=True)
             to_defender=self._damage(target,da,defer_death=True)
@@ -347,7 +365,11 @@ class Match:
                     uid,ctx,tgt=self.trigger_queue.popleft()
                     if ctx not in ('death',) and uid not in self.units:continue
                     if ctx in ('death',) and self._death_disabled.get(uid,False):continue
-                    choices=options(self,uid,ctx,tgt)
+                    auction_context=(self.auction_catalog=='v4' and
+                                     (self.auction_awards.get(uid,{}).get('archetype') or
+                                      ctx.startswith('auction_') or uid in self.auction_death_grants))
+                    choices=(auction_ability_rules.options(self,uid,ctx,tgt)
+                             if auction_context else options(self,uid,ctx,tgt))
                     if not choices:continue
                     if len(choices)==1 and choices[0].mode=='auto':
                         self._execute(uid,ctx,choices[0],tgt)
@@ -361,7 +383,11 @@ class Match:
                         # due to aura collapse. It receives its OWN choice
                         # snapshot only after the preceding group has closed.
                         wave['sources']=tuple(
-                            (uid,tuple(options(self,uid,'death')))
+                            (uid,tuple(auction_ability_rules.options(self,uid,'death')
+                                       if self.auction_catalog=='v4' and
+                                          (self.auction_awards.get(uid,{}).get('archetype') or
+                                           uid in self.auction_death_grants)
+                                       else options(self,uid,'death')))
                             for uid in wave['source_ids'])
                     self.active_death_wave=wave
                     continue
@@ -377,8 +403,11 @@ class Match:
                 if self.end_queue is not None:
                     if self.end_queue:
                         uid=self.end_queue.popleft()
-                        if uid in self.units and self.cards[uid].definition.faction=='Krasnoludy' and not self._disabled(self.units[uid]):
-                            self._queue(uid,'end')
+                        if uid in self.units and not self._disabled(self.units[uid]):
+                            if (self.cards[uid].definition.faction=='Krasnoludy'
+                                or (self.auction_catalog=='v4' and
+                                    self.cards[uid].definition.id=='A010')):
+                                self._queue(uid,'end')
                         continue
                     self.end_queue=None
                     self._finalize_end_turn()
@@ -481,7 +510,8 @@ class Match:
         fallback=u.fallback_double_pending and eligible
         intrinsic=(self.cards[u.uid].definition.id in ('S115','S79') and not self._disabled(u)
                    and (self.cards[u.uid].definition.id!='S79' or u.attacks>0))
-        return self._has(u,'double') or fallback or intrinsic
+        return (self._has(u,'double') or fallback or intrinsic or
+                (self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,u.uid)))
     def _taunt(self,u):
         return (self._has(u,'taunt') or
                 ((self.cards[u.uid].definition.id=='S33' or
@@ -635,6 +665,9 @@ class Match:
                 if p.hero_shield:p.hero_shield=0;return 0
                 a=min(amount,p.hero_armor);p.hero_armor-=a;amount-=a
             old=p.hp;p.hp-=amount
+            if (self.auction_catalog=='v4' and p.hp<=0 and
+                    not self._resolving_death_wave and not defer_death):
+                auction_ability_rules.rescue_heroes(self)
             if not self._suspend_hero_thresholds:
                 for threshold in (75,50,25):
                     if old>threshold>=p.hp and threshold not in p.thresholds:
