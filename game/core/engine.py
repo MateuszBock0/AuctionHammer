@@ -8,11 +8,14 @@ import sys
 import random
 from .models import Card, Unit, Player, Effect, Pending, Choice, IllegalMove, load_catalog
 from .effects import options
+from .audit import initialize_audit, audit_action
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
 class Match:
-    def __init__(self, seed: int | None = None):
+    def __init__(self, seed: int | None = None, audit_enabled: bool = False):
+        # Opt in from the real game client; bulk simulations remain lightweight.
+        self.audit_enabled=bool(audit_enabled)
         self.seed = seed if seed is not None else random.SystemRandom().randrange(2**31)
         self.rng = random.Random(self.seed)
         self.defs = load_catalog(ROOT / 'data' / 'cards_base_70.json')
@@ -68,6 +71,8 @@ class Match:
             self.rng.shuffle(p.deck)
         self._log('Rozdano po 5 kart na rękę i do talii. Po jednym egzemplarzu na typ.')
         self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
+        if self.audit_enabled:
+            initialize_audit(self)
 
     def _log(self, line):
         self.event_journal.append({'seq':len(self.event_journal)+1,
@@ -87,6 +92,7 @@ class Match:
 
     def _player(self): return self.players[self.active]
 
+    @audit_action('mulligan_toggle')
     def mulligan_toggle(self, uid):
         self._check(self.phase=='mulligan','Mulligan zakończony')
         p=self.players[0]
@@ -97,6 +103,7 @@ class Match:
             self._check(len(p.mulligan_selected)<3,'Maksymalnie 3 karty')
             p.mulligan_selected.append(uid)
 
+    @audit_action('finish_mulligan')
     def finish_mulligan(self, player_idx=0, selected=None):
         self._check(self.phase=='mulligan','Nie ten etap')
         self._check(player_idx not in self.mulligan_done,'Mulligan już zakończony')
@@ -174,6 +181,7 @@ class Match:
         if len(p.board)<5:return replace is None
         return replace in p.board and self.units[replace].attacks==0
 
+    @audit_action('play')
     def play(self,uid,replace=None):
         p=self._player()
         self._check(self.can_play(self.active,uid,replace),'Nie można zagrać tej karty (1 na turę; pełna plansza wymaga zastąpienia niewykorzystanej jednostki)')
@@ -221,6 +229,7 @@ class Match:
         taunts=[x for x in target_units if self._taunt(self.units[x])]
         return taunts if taunts else target_units+['hero:'+str(1-u.owner)]
 
+    @audit_action('attack')
     def attack(self,uid,target):
         self._check(target in self.legal_attacks(uid),'Nielegalny cel ataku')
         a=self.units[uid];a.attacks+=1
@@ -259,12 +268,14 @@ class Match:
             self._kill_batch(fallen)
         self._update_auras()
 
+    @audit_action('end_turn')
     def end_turn(self):
         self._check(self.phase=='turn' and self.pending is None and self.end_queue is None and self.deferred_attack is None,'Nie można zakończyć tury')
         self.end_queue=deque(self._player().board)
         self._log(f'{self._player().name} kończy turę.')
         self._drain()
 
+    @audit_action('choose')
     def choose(self,index):
         self._check(self.pending is not None,'Brak wyboru')
         pending=self.pending
