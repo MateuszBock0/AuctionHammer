@@ -538,12 +538,16 @@ class SoloApp:
             if u:
                 statuses=active_statuses(self.game,card_id)
                 self._text(f'AKTYWNE EFEKTY ({len(statuses)})',15,1105,548,cfg.GOLD)
-                for j,st in enumerate(statuses[:4]):
-                    yy=576+j*24
-                    pygame.draw.circle(self.screen,st.color,(1113,yy+8),5)
-                    self._text(self.cards_view.clip(st.name,self.fonts[13],295),13,1126,yy,st.color)
-                if len(statuses)>4:
-                    self._text(f'+{len(statuses)-4} w pełnym opisie [I]',12,1105,676,cfg.MUTED)
+                # Important quantities are available immediately from the
+                # sidebar, not hidden behind the full documentation window.
+                for j,st in enumerate(statuses[:3]):
+                    yy=571+j*37
+                    pygame.draw.circle(self.screen,st.color,(1113,yy+7),5)
+                    self._text(self.cards_view.clip(st.name,self.fonts[13],296),13,1126,yy,st.color)
+                    detail=self.cards_view.clip(st.detail,self.fonts[12],302)
+                    self._text(detail,12,1126,yy+17,cfg.MUTED)
+                if len(statuses)>3:
+                    self._text(f'+{len(statuses)-3} pozostałych efektów — [I]',12,1105,697,cfg.MUTED)
             else:
                 grants=hand_grants(self.game,card_id)
                 if grants:
@@ -689,9 +693,16 @@ class SoloApp:
         self._panel(box,(24,38,52),FACTION_COLORS[d.faction],18)
         pygame.draw.line(self.screen,(66,91,106),(489,160),(489,843),2)
         self._text('PODGLĄD KARTY',16,186,105,cfg.GOLD)
+        details_total=(2 if self.game._double(u) else 1) if u else None
+        details_ready=(bool(self.game.legal_attacks(uid)) if u and
+                       self.game.phase=='turn' and self.game.active==u.owner
+                       and not self.game.pending else False)
         self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
                              unit=u,selected=True,
-                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid))
+                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
+                             ready=details_ready,attacks_total=details_total,
+                             attacks_remaining=(max(0,details_total-u.attacks)
+                                                if details_ready else 0) if u else None)
         self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
         self._text(f'Aktywacja: {d.trigger}',16,194,600)
         self._text(f'Rodzina: {d.family}',16,194,629)
