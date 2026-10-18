@@ -72,7 +72,7 @@ class SoloApp:
         self._old_pending=None
         self.animations_enabled=True
         self._recent_feedback=[]
-        self._last_logged_event=len(self.game.events)
+        self._last_logged_event=len(self.game.event_journal)
         self.combat_visuals=CombatVisuals()
         self.combat_visuals.sync(self.game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
         self.recorder=MatchRecorder()
@@ -517,7 +517,7 @@ class SoloApp:
         return None
 
     def _capture_visual_feedback(self):
-        events=self.game.events
+        events=[event['text'] for event in self.game.event_journal]
         if len(events)<self._last_logged_event:
             self._last_logged_event=0
         if len(events)>self._last_logged_event:
@@ -698,7 +698,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('GRA SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.14 · v19  |  A: EFEKTY  H: HISTORIA  M: MENU',13,1260,35,cfg.GOLD)
+        self._text('MVP 0.9.14 · [A] EFEKTY [H] HIST. [M] MENU',13,1260,35,cfg.GOLD)
 
     def _draw_log(self):
         # Delikatny, możliwy do wyłączenia [A] błysk pod ostatnimi
@@ -917,7 +917,7 @@ class SoloApp:
                         self.details_card=None
                         self._old_pending=None
                         self.last_error=''
-                        self._last_logged_event=len(game.events)
+                        self._last_logged_event=len(game.event_journal)
                         self._recent_feedback=[]
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
