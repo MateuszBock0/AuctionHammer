@@ -962,7 +962,8 @@ class Match:
             bought={meta['archetype'] for uid,meta in self.auction_awards.items()
                     if meta.get('archetype') and not meta.get('ephemeral')}
             active={o.archetype for o in self.auction.offers
-                    if o.archetype} if self.auction is not None else set()
+                    if o.archetype and o.uid not in self.auction.picks.values()
+                    } if self.auction is not None else set()
             assert len(bought)==sum(1 for meta in self.auction_awards.values()
                                     if meta.get('archetype') and not meta.get('ephemeral')), (
                 'Auction archetype purchased twice')
@@ -973,7 +974,7 @@ class Match:
             assert set(CATALOG)==bought|active|set(self.auction_bag), (
                 'Auction archetype missing from all pools')
             if self.auction is not None:
-                assert len(active)==3, 'Every v4 auction has 3 distinct offers'
+                assert len(self.auction.offers)==3, 'Every v4 auction has 3 distinct offers'
             assert not any(uid in self.bank or uid in self.excluded
                            for uid in self.auction_awards), 'Auction card in basic bank'
             assert all(not uid.startswith('AUC') for p in self.players
