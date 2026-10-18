@@ -129,7 +129,13 @@ def load_match(path: Path | None = None) -> Match:
         raise ValueError('Nieprawidłowy stan meczu')
     # Minimalne sprawdzenie zgodności z lokalnym katalogiem kart v19.
     ids=set(load_catalog(ROOT/'data'/'cards_base_70.json'))
-    if not isinstance(data.get('cards'),dict) or set(data['cards'])!=ids:
+    awards=data.get('auction_awards',{})
+    if not isinstance(awards,dict):
+        raise ValueError('Zapis zawiera nieprawidłowe karty aukcyjne')
+    expected=ids|set(awards)
+    if (not isinstance(data.get('cards'),dict)
+            or set(data['cards'])!=expected
+            or any(not uid.startswith('AUC') for uid in awards)):
         raise ValueError('Zapis zawiera niezgodny katalog kart')
     if not isinstance(data.get('players'),list) or len(data['players'])!=2:
         raise ValueError('Nieprawidłowa liczba graczy')
