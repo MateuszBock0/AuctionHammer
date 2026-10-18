@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.22: audit-driven UI safeguards, gameplay v19."""
+"""AuctionHammer MVP 0.9.26: base cards v20 and auction cards v4."""
 from __future__ import annotations
 import os
 import re

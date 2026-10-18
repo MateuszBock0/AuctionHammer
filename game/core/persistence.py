@@ -167,10 +167,23 @@ def load_match(path: Path | None = None) -> Match:
         data.setdefault('auction_used',
                         [uid for uid,card in data['cards'].items()
                          if card.zone=='auction_used'])
+        # 0.9.23 mistakenly retired each third offer permanently. Restore
+        # those unsold archetypes when migrating old v4 savegames.
+        if data.get('auction_supply_version',1)<2:
+            bought={meta.get('archetype') for meta in data['auction_awards'].values()
+                    if meta.get('archetype') and not meta.get('ephemeral')}
+            active={offer.archetype for offer in data['auction'].offers
+                    if offer.archetype} if data['auction'] is not None else set()
+            for aid in CATALOG:
+                if (aid not in bought and aid not in active and
+                        aid not in data['auction_bag']):
+                    data['auction_bag'].append(aid)
+        data['auction_supply_version']=2
     else:
         data.setdefault('auction_bag',[])
         data.setdefault('auction_discarded',[])
         data.setdefault('auction_used',[])
+        data.setdefault('auction_supply_version',0)
     for name,default in (
             ('exiled',[]),('vanished',[]),('ephemeral_ids',set()),
             ('auction_death_grants',set()),('auction_rescue_spent',set()),

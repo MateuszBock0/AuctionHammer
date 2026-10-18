@@ -53,6 +53,9 @@ def award(game,aid,tier=0,owner=0,zone='hand',number=1):
                    atk,hp,v4_variant(aid,RARITIES[tier]),'v4',0,0)
     card=Card(uid,definition,owner=owner,zone=zone)
     game.cards[uid]=card;game.defs[uid]=definition
+    # This synthetic purchase consumes its archetype just like real auction.pick.
+    if game.auction_catalog=='v4' and aid in game.auction_bag:
+        game.auction_bag.remove(aid)
     game.auction_awards[uid]={'number':number,'level':1,
         'rarity':RARITIES[tier],'initial_rarity':RARITIES[tier],
         'atk':atk,'hp':hp,'archetype':aid,'purchase_round':3,

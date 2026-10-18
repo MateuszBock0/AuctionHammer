@@ -28,10 +28,11 @@ class Match:
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
-        # Auction cards live in a wholly separate per-match supply.
-        # Exactly 12 archetypes are offered ONCE: 3 per auction, at most 4.
+        # Separate finite archetype supply: 3 offered, 2 bought, third
+        # returned to the auction bag ONLY, never to the 70-card bank.
         self.auction_bag=list(CATALOG) if auction_catalog=='v4' else []
-        self.auction_discarded=[]  # unchosen offer UIDs, never returned
+        self.auction_discarded=[]  # historical unsold offer UIDs (audit only)
+        self.auction_supply_version=2 if auction_catalog=='v4' else 0
         self.auction_used=[]       # acquired then removed; never redrawn
         self.exiled=[]
         self.vanished=[]
@@ -958,12 +959,22 @@ class Match:
             assert len(self.auction_bag)==len(set(self.auction_bag))
             assert len(self.auction_discarded)==len(set(self.auction_discarded))
             assert len(self.auction_used)==len(set(self.auction_used))
-            offered={o['archetype'] for row in self.auction_history
-                     for o in row['offers'] if o.get('archetype')}
+            bought={meta['archetype'] for uid,meta in self.auction_awards.items()
+                    if meta.get('archetype') and not meta.get('ephemeral')}
+            active={o.archetype for o in self.auction.offers
+                    if o.archetype and o.uid not in self.auction.picks.values()
+                    } if self.auction is not None else set()
+            assert len(bought)==sum(1 for meta in self.auction_awards.values()
+                                    if meta.get('archetype') and not meta.get('ephemeral')), (
+                'Auction archetype purchased twice')
+            assert len(bought)+len(active)+len(self.auction_bag)==len(CATALOG), (
+                'Auction supply corrupted')
+            assert not (bought & active or bought & set(self.auction_bag) or
+                        active & set(self.auction_bag)), 'Auction pools overlap'
+            assert set(CATALOG)==bought|active|set(self.auction_bag), (
+                'Auction archetype missing from all pools')
             if self.auction is not None:
-                offered.update(o.archetype for o in self.auction.offers if o.archetype)
-            assert len(offered)+len(self.auction_bag)==len(CATALOG), 'Auction supply corrupted'
-            assert not offered.intersection(self.auction_bag), 'Offered archetype recycled'
+                assert len(self.auction.offers)==3, 'Every v4 auction has 3 distinct offers'
             assert not any(uid in self.bank or uid in self.excluded
                            for uid in self.auction_awards), 'Auction card in basic bank'
             assert all(not uid.startswith('AUC') for p in self.players
