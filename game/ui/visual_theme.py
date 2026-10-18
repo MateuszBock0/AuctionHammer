@@ -105,7 +105,15 @@ class VisualTheme:
             screen.blit(sprite,(int(x),int(y)))
 
     def panel(self,screen,rect,fill=None,line=None,radius=12):
-        base=fill or SLATE
+        if fill is None:
+            base=SLATE
+        else:
+            # Older screens pass cool, hard-coded panel fills. Convert them to
+            # warm, readable oak rather than leaving blue islands on the board.
+            luma=sum(fill)/3
+            base=(min(145,int(luma*1.48+17)),
+                  min(116,int(luma*.90+9)),
+                  min(92,int(luma*.59+8)))
         accent=line or SILVER
         shadow=pygame.Surface((rect.width+12,rect.height+12),pygame.SRCALPHA)
         pygame.draw.rect(shadow,(0,0,0,79),
