@@ -64,5 +64,24 @@ for i,(label,w,h) in enumerate(sizes):
     text=caption.render(f'{w} × {h} px',True,(180,198,211))
     canvas.blit(text,(x+8,58+h+3))
 pygame.image.save(canvas,DEST/'MINIMAL_FANTASY_POROWNANIE.png')
+# Komplet 70 kart: rzeczywisty renderer i wszystkie trzy wymiary.
+# Pojedyncze arkusze służą porównaniu hierarchii tekstów, celów i statystyk.
+for label,width,height in sizes:
+    cols=7
+    rows=10
+    pitch_x=width+14
+    pitch_y=height+29
+    sheet=pygame.Surface((cols*pitch_x+14,rows*pitch_y+45))
+    sheet.fill((13,21,31))
+    top=pygame.font.SysFont('segoeui',20,bold=True)
+    sheet.blit(top.render(f'70 KART V19 — {width} × {height}',True,(243,237,217)),(14,8))
+    tiny=pygame.font.SysFont('segoeui',12)
+    for index,card in enumerate(game.cards.values()):
+        row,col=divmod(index,cols)
+        x,y=8+col*pitch_x,43+row*pitch_y
+        sheet.blit(tiny.render(card.definition.id,True,(225,225,221)),(x+6,y-14))
+        view.draw(sheet,card,pygame.Rect(x,y,width,height))
+    pygame.image.save(sheet,DEST/f'KATALOG_70_{label}.png')
+
 pygame.quit()
-print('Utworzono 7 obrazów podglądu w folderze preview.')
+print('Utworzono 10 obrazów podglądu Pygame w folderze preview.')
