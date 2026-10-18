@@ -169,7 +169,7 @@ def advance_rarity(game,completed_round):
     """
     for uid,meta in sorted(game.auction_awards.items()):
         archetype=meta.get('archetype')
-        if not archetype or archetype not in CATALOG or uid not in game.cards:
+        if not archetype or archetype not in CATALOG or uid not in game.cards or meta.get('ephemeral'):
             continue
         purchased=meta['purchase_round']
         if completed_round<=purchased or (completed_round-purchased)%3:
