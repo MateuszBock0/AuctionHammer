@@ -11,6 +11,7 @@ from .effects import options
 from .audit import initialize_audit, audit_action, trace_effect
 from . import auction as auction_rules
 from . import auction_skills
+from .auction_catalog import RARITIES
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
