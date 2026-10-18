@@ -13,7 +13,8 @@ from game.core import auction_abilities as abilities
 from game.core.auction_catalog import CATALOG, V4_CARDS, v4_variant
 from game.core.audit import make_report
 from game.core.persistence import save_match, load_match
-from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
+from game.ui.card_infographics import (
+    card_cue, highlighted_numeric_ranges, AUCTION_MECHANIC_LABELS)
 from game.ui.card_summary import ability_summary
 from test_auction_v4_engine import ready, award, place_basic, settle
 from test_auction_bags_and_zero_attack import finish_auction
@@ -100,6 +101,7 @@ class AuctionDescriptionContract(unittest.TestCase):
                     self.assertIn('AKTYWNA',summary.short)
                     self.assertIn(expected,summary.full)
                     self.assertEqual(cue.base,'AKTYWNA')
+                    self.assertEqual(cue.family,AUCTION_MECHANIC_LABELS[aid])
                     self.assertEqual(highlighted_numeric_ranges(card.definition),())
                     self.assertNotIn('W PRZYGOTOWANIU',cue.upgrade)
                     self.assertNotIn('NIEAKTYWNA',summary.full)
