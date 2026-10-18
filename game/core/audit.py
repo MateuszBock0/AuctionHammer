@@ -29,6 +29,40 @@ def audit_path() -> Path:
     return home/"AuctionHammer"/FILENAME
 
 
+def configure_audit_context(game, difficulty, build=None, fresh=False):
+    """Keep AI settings and build identity alongside, not inside, game state.
+
+    An older imported save has unknown ORIGINAL code revision: stamping it with
+    today's checkout would incorrectly claim reproducibility.
+    """
+    from .build_info import build_identity
+    metadata=getattr(game,"audit_metadata",None)
+    if not isinstance(metadata,dict):
+        metadata={
+            "ai_difficulty_initial":difficulty if fresh else None,
+            "ai_difficulty_current":difficulty,
+            "ai_difficulty_history":[],
+            "build":(build or build_identity()) if fresh
+                    else {"commit":None,"source":"legacy-save","version":"unknown"}
+        }
+        game.audit_metadata=metadata
+    return metadata
+
+
+def record_ai_difficulty(game, difficulty):
+    metadata=configure_audit_context(game,difficulty,fresh=False)
+    previous=metadata["ai_difficulty_current"]
+    if previous==difficulty:
+        return
+    metadata["ai_difficulty_history"].append({
+        "after_action_seq":len(getattr(game,"audit_actions",[])),
+        "round":game.round,
+        "from":previous,
+        "to":difficulty
+    })
+    metadata["ai_difficulty_current"]=difficulty
+
+
 def _plain(value):
     """Deterministic, JSON-only representation; never imports executable code."""
     if value is None or isinstance(value,(str,int,float,bool)):
@@ -264,6 +298,7 @@ def audit_action(operation):
                     "kwargs":_plain(kwargs),
                     "actor_before":before["active"],
                     "command_owner":command_owner,
+                    "ai_difficulty":getattr(game,"audit_metadata",{}).get("ai_difficulty_current"),
                     "round_before":before["round"],
                     "round_after":after["round"],
                     "phase_before":before["phase"],
@@ -300,6 +335,12 @@ def make_report(game):
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
+        "environment":getattr(game,"audit_metadata",{
+            "ai_difficulty_initial":None,
+            "ai_difficulty_current":None,
+            "ai_difficulty_history":[],
+            "build":{"commit":None,"source":"unknown","version":"unknown"}
+        }),
         "complete_from_start":bool(game.audit_complete),
         "note":"Historia niepełna: mecz wczytano z zapisu starszej wersji" if not game.audit_complete else "",
         "initial_state":initial,
