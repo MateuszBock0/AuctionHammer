@@ -210,6 +210,14 @@ app.game.phase='finished'
 app.game.winner=0
 app.draw()
 pygame.image.save(app.screen,DEST/'VISUAL_0916_KONIEC.png')
+# One separate UI regression screenshot: real engine HP remains -5 while
+# the player's visible HP counter and end-screen summary show 0.
+app.game.winner=1
+app.game.players[0].hp=-5
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0918_KONIEC_0_PZ.png')
+if app.game.players[0].hp!=-5:
+    raise AssertionError('Render must not change the authoritative hero HP')
 
 pygame.quit()
-print('Utworzono 26 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 27 obrazów podglądu Pygame w folderze preview.')
