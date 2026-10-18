@@ -472,10 +472,11 @@ class SoloApp:
         overlay.fill((4,8,13,229))
         self.screen.blit(overlay,(0,0))
         self._panel(pygame.Rect(203,112,1076,732),(34,44,46),cfg.GOLD,16)
-        self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',30,
+        self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
         self._text('TESTOWY KATALOG  ·  3 ATAK  ·  PROWOKACJA + TARCZA',16,
                    741,205,cfg.TEXT,center=True)
+        self.theme.ornament(self.screen,565,228,350,22)
         for i,off in enumerate(a.offers):
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
@@ -484,9 +485,9 @@ class SoloApp:
                         cfg.GOLD if selected else cfg.PANEL_BORDER,14)
             self._text(f'WARIANT {i+1}',16,rect.centerx,rect.y+19,cfg.GOLD,center=True)
             self._text('STRAŻNIK AUKCJI',18,rect.centerx,rect.y+54,cfg.TEXT,center=True)
-            self._text(f'{off.hp} PŻ',32,rect.centerx,rect.y+98,
+            self._text(f'{off.hp} PŻ',34,rect.centerx,rect.y+98,
                        cfg.GREEN if not claimed else cfg.MUTED,center=True)
-            self._text('3 ATAK',23,rect.centerx,rect.y+161,cfg.GOLD,center=True)
+            self._text('3 ATAK',22,rect.centerx,rect.y+161,cfg.GOLD,center=True)
             self._text('PROWOKACJA',16,rect.centerx,rect.y+208,cfg.TEXT,center=True)
             self._text('1 TARCZA',16,rect.centerx,rect.y+239,cfg.TEXT,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
