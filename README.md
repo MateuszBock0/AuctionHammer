@@ -52,6 +52,19 @@ Przy pierwszym rozdaniu można wymienić do trzech wybranych kart. Zaznaczone ka
 
 Zmiany nie dodają aukcji ani kosztów zagrania i nie zmieniają Game Master v19.
 
+## Aktualizacja 0.9.15 — ikony wysokiej jakości
+
+Po kontroli przesłanej paczki ikon usunięto stratną wizualnie wersję
+atlasu 24 px/24 kolory. Nowy atlas ma 40 px na piktogram, 256 kolorów
+i przezroczystość, a mimo to zajmuje tylko około 29 KB. Wszystkie
+35 wzorów są takie same, jak w paczce źródłowej; pozostają zachowane
+ich znaczenia (14 rodzin zdolności, 16 statusów, 5 frakcji).
+
+Wszystkie opisy, wartości ATAK/PŻ oraz rozmiary kart pozostają
+niezmienione. Bez zmian zasad Game Master v19.
+Podgląd Pygame: `preview/IKONY_35_WYSOKA_JAKOSC_0915.png`.
+Szczegóły audytu: [Ikony Minimal Fantasy — 0.9.15](docs/IKONY_MINIMAL_FANTASY_0915.md).
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.

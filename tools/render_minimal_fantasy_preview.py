@@ -131,5 +131,36 @@ app.replay_index=app.recorder.last_index
 app.draw()
 pygame.image.save(app.screen,DEST/'GAME_EXPERIENCE_POWTORKA_0914.png')
 
+# Audyt wszystkich 35 ikon w rzeczywistych rozmiarach interfejsu.
+from game.ui.game_icons import GameIcons, ATLAS_FILES, FAMILY, FACTION
+icons=GameIcons()
+atlas_sheet=pygame.Surface((1000,815))
+atlas_sheet.fill((13,21,31))
+atlas_sheet.blit(title.render('35 IKON MINIMAL FANTASY — 40 PX ATLAS',True,
+                              (243,237,217)),(18,12))
+atlas_sheet.blit(caption.render('Po lewej rozmiar karty 13 px, dalej 20 px i podgląd 40 px',True,
+                                (180,202,214)),(18,48))
+for index,entry in enumerate(ATLAS_FILES):
+    cat,key=entry.split('/')
+    if cat=='zdolnosci':
+        group='families'
+        lookup=next(k for k,v in FAMILY.items() if v==key)
+    elif cat=='frakcje':
+        group='factions'
+        lookup=next(k for k,v in FACTION.items() if v==key)
+    else:
+        group='statuses'
+        lookup=key
+    column,row=index%5,index//5
+    x,y=14+column*197,80+row*104
+    pygame.draw.rect(atlas_sheet,(39,56,67),pygame.Rect(x,y,189,98),border_radius=8)
+    atlas_sheet.blit(caption.render(view.clip(key,caption,166),True,
+                                   (228,234,235)),(x+11,y+8))
+    for delta,icon_size in ((14,13),(70,20),(130,40)):
+        glyph=icons.get(lookup,group,icon_size)
+        if glyph is not None:
+            atlas_sheet.blit(glyph,(x+delta,y+39+(40-icon_size)//2))
+pygame.image.save(atlas_sheet,DEST/'IKONY_35_WYSOKA_JAKOSC_0915.png')
+
 pygame.quit()
-print('Utworzono 15 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 16 obrazów podglądu Pygame w folderze preview.')

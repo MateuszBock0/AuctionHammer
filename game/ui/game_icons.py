@@ -1,7 +1,7 @@
-"""Ikony z pakietu Minimal Fantasy v1 — 35 rzeczywistych PNG.
+"""Ikony z pakietu Minimal Fantasy v1 — 35 oryginalnych wzorów.
 
-Preferuje dostarczone pliki w assets/ui/icons/, a jeśli nie są dostępne
-korzysta z miniaturowego atlasu. Brak assetu zawsze daje bezpieczny fallback.
+Priorytet mają indywidualne PNG; wydanie portable zawiera 40-pikselowy
+atlas o 256 kolorach i zachowanej przezroczystości. Brak pliku -> fallback.
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ ATLAS_FILES=[
     'frakcje/ludzie','frakcje/potwory',
 ]
 ATLAS_INDEX={key:i for i,key in enumerate(ATLAS_FILES)}
-ATLAS_SIZE=24
+ATLAS_SIZE=40
 
 
 def status_icon_key(status):
