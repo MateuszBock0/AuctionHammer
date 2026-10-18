@@ -502,7 +502,7 @@ class SoloApp:
         who=self.game.players[a.turn].name
         if a.phase=='bidding':
             self._text(f'LICYTUJE: {who}  ·  NAJWYŻSZA: {a.current_bid}  ·  '
-                       f'TWOJE MONETY: {self.game.players[0].coins}',17,
+                       f'TWOJE MONETY: {self.game.players[0].coins}',16,
                        741,650,cfg.TEXT,center=True)
             leader='BRAK' if a.highest_bidder is None else self.game.players[a.highest_bidder].name
             self._text(f'PROWADZI: {leader}  ·  WYMAGANE MIN. {a.current_bid+1}  '
