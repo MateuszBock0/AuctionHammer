@@ -157,6 +157,9 @@ def state_snapshot(game):
     # Legacy v3 snapshots retain byte-identical fields for old replay files.
     if getattr(game,'auction_catalog',None)=='v4':
         state['auction_v4']={
+            'bag':_plain(game.auction_bag),
+            'unchosen_discarded':_plain(game.auction_discarded),
+            'purchased_spent':_plain(game.auction_used),
             'exiled':_plain(game.exiled),
             'vanished':_plain(game.vanished),
             'ephemeral_ids':_plain(game.ephemeral_ids),
