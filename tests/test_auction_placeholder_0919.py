@@ -59,8 +59,8 @@ class AuctionCoreTests(unittest.TestCase):
         self.assertEqual(m.round,4)
         self.assertEqual([p.coins for p in m.players],
                          [x+1 for x in before])
-        self.assertEqual([o.hp for o in m.auction.offers],[3,6,12])
-        self.assertEqual([o.atk for o in m.auction.offers],[3,3,3])
+        self.assertEqual(len({o.archetype for o in m.auction.offers}),3)
+        self.assertTrue(all(o.atk+o.hp==11 for o in m.auction.offers))
         self.assertEqual(m.auction.free_first,m.first)
         self.assertEqual(m.auction.level if hasattr(m.auction,'level') else
                          m.auction.offers[0].level,1)
@@ -118,8 +118,8 @@ class AuctionCoreTests(unittest.TestCase):
         ids=m.auction_history[0]['picks']
         for player,uid in ids.items():
             card=m.cards[uid]
-            self.assertEqual(card.attack,3)
-            self.assertIn(card.max_hp,PLACEHOLDER_HP)
+            self.assertEqual(card.attack,m.auction_awards[uid]['atk'])
+            self.assertEqual(card.max_hp,m.auction_awards[uid]['hp'])
             self.assertEqual(card.owner,player)
             self.assertEqual(card.zone,'hand')
         # Skip until the selected winner's own turn.
@@ -132,10 +132,8 @@ class AuctionCoreTests(unittest.TestCase):
         self.assertIn(uid,p.hand)
         m.play(uid)
         unit=m.units[uid]
-        self.assertEqual(unit.atk,3)
+        self.assertEqual(unit.atk,m.auction_awards[uid]['atk'])
         self.assertEqual(unit.hp,m.auction_awards[uid]['hp'])
-        self.assertEqual(unit.shield,1)
-        self.assertTrue(m._taunt(unit))
         other=1-selected
         enemy_uid=m.auction_history[0]['picks'][other]
         # Full rule: existing taunt overrides hero targeting.
@@ -179,7 +177,7 @@ class AuctionCoreTests(unittest.TestCase):
         self.assertEqual(loaded.phase,'auction')
         self.assertEqual(loaded.auction.current_bid,1)
         self.assertEqual(loaded.auction.turn,m.auction.turn)
-        self.assertEqual([o.hp for o in loaded.auction.offers],[3,6,12])
+        self.assertTrue(all(o.atk+o.hp==11 for o in loaded.auction.offers))
         loaded.assert_integrity()
 
     def test_full_auction_audit_deterministic_replay(self):
@@ -204,21 +202,24 @@ class AuctionCoreTests(unittest.TestCase):
             report,lambda seed,auctions_enabled=False:
                 Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled)))
 
-    def test_intrinsic_auction_taunt_is_disabled_by_stun(self):
+    def test_archived_0919_placeholder_remains_compatible_with_taunt(self):
+        from dataclasses import replace
         m=auction_game(1915)
         first=free_pick(m)
         for _ in range(2):
             if m.active==first:break
             m.end_turn()
         uid=m.auction_history[0]['picks'][first]
+        # Simulate an imported 0.9.19 placeholder with the old metadata.
+        m.auction_awards[uid]['archetype']=''
+        m.cards[uid].definition=replace(m.cards[uid].definition,id=uid)
         m.players[first].played_this_turn=False
         m.play(uid)
         unit=m.units[uid]
         self.assertTrue(m._taunt(unit))
+        self.assertEqual(unit.shield,1)
         m._add_effect(uid,'stun',expires=99,source='S59',positive=False)
         self.assertFalse(m._taunt(unit))
-        self.assertEqual(unit.shield,1)
-        self.assertEqual(unit.atk,3)
 
     def test_old_save_without_any_auction_fields_is_migrated(self):
         m=Match(1916)
@@ -239,6 +240,7 @@ class AuctionCoreTests(unittest.TestCase):
         class Rng:
             def __init__(self):self.seq=iter((.0,.60,.90))
             def random(self):return next(self.seq)
+            def sample(self,seq,count):return list(seq)[:count]
         m=Match(1910,auctions_enabled=True)
         m.rng=Rng()
         m.round=4
@@ -246,7 +248,7 @@ class AuctionCoreTests(unittest.TestCase):
         self.assertEqual([x.rarity for x in m.auction.offers],
                          ['podstawowa','rzadka','legendarna'])
         self.assertEqual(m.rng_draw_index,3)
-        self.assertEqual([x.hp for x in m.auction.offers],[3,6,12])
+        self.assertTrue(all(x.atk+x.hp==11 for x in m.auction.offers))
 
     def test_ai_handles_full_auction_without_manual_choices(self):
         m=auction_game(1911)
