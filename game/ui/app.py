@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.8: responsive Pygame v19 client with semantic card infographics."""
+"""AuctionHammer MVP 0.9.11: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
@@ -15,14 +15,14 @@ from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_s
 class SoloApp:
     SIDEBAR_X=1082
     SLOT_W=148
-    SLOT_H=180
+    SLOT_H=220
     SLOT_GAP=26
     FIRST_X=107
-    OPP_Y=169
-    OWN_Y=451
-    HAND_Y=722
+    OPP_Y=152
+    OWN_Y=431
+    HAND_Y=746
     HAND_W=125
-    HAND_H=169
+    HAND_H=195
 
     def __init__(self):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
@@ -37,7 +37,7 @@ class SoloApp:
         self.screen=pygame.Surface(logical_size).convert()
         pygame.display.set_caption(cfg.WINDOW_TITLE)
         self.clock=pygame.time.Clock()
-        self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,22,28,34,46)}
+        self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,20,22,28,34,46)}
         self.cards_view=CardView()
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
         self.ai=ComputerOpponent()
@@ -59,6 +59,9 @@ class SoloApp:
         self.details_scroll=0
         self.sidebar_card=None
         self._old_pending=None
+        self.animations_enabled=True
+        self._recent_feedback=[]
+        self._last_logged_event=len(self.game.events)
 
     @staticmethod
     def _desktop_resolution():
@@ -213,7 +216,7 @@ class SoloApp:
         return result
 
     def hero_rect(self,idx):
-        return pygame.Rect(110,113,935,44) if idx==1 else pygame.Rect(110,648,935,44)
+        return pygame.Rect(110,98,935,44) if idx==1 else pygame.Rect(110,662,935,44)
 
     def card_under(self,pos):
         for uid,rect in self.hand_layout().items():
@@ -326,9 +329,9 @@ class SoloApp:
             return
         if pygame.Rect(1093,869,145,33).collidepoint(pos):
             self.restart();return
-        if pygame.Rect(924,851,40,37).collidepoint(pos):
+        if pygame.Rect(1016,861,40,37).collidepoint(pos):
             self.scroll=min(self.scroll+1,max(0,len(g.players[0].hand)-6));return
-        if pygame.Rect(42,851,40,37).collidepoint(pos):
+        if pygame.Rect(42,861,40,37).collidepoint(pos):
             self.scroll=max(0,self.scroll-1);return
         hand_card=next((uid for uid,r in self.hand_layout().items() if r.collidepoint(pos)),None)
         if hand_card and g.active==0:
@@ -386,6 +389,9 @@ class SoloApp:
                 self.selected=None;self.tooltip_open=False
                 if self.game.phase=='finished':self.restart()
             elif event.key==pygame.K_r and not self.game.pending:self.restart()
+            elif event.key==pygame.K_a:
+                self.animations_enabled=not self.animations_enabled
+                self._recent_feedback=[]
             elif (self.game.pending and self.game.pending.owner == 0
                   and pygame.K_1 <= event.key <= pygame.K_6):
                 index = self.choice_page * self.CHOICES_PER_PAGE + event.key - pygame.K_1
@@ -426,11 +432,47 @@ class SoloApp:
                     return
             self.click(pos)
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==3:
-            self.selected=None;self.tooltip_open=False
+            point=self._physical_to_virtual(event.pos)
+            uid=self.card_under(point)
+            if uid in self.game.cards:self._open_details(uid)
+            else:self.selected=None;self.tooltip_open=False
         return True
+
+    @staticmethod
+    def _feedback_color(message):
+        """Only colour recorded engine messages; do not predict their results."""
+        text=message.lower()
+        if any(w in text for w in ('obrażen','zadaje','rani','traci pż')):
+            return (224,116,120)
+        if any(w in text for w in ('leczy','ulecz','regeneracj')):
+            return (115,222,166)
+        if any(w in text for w in ('tarcz','pancerz')):
+            return (123,183,236)
+        if any(w in text for w in ('trucizn','ogłusz','status')):
+            return (190,145,242)
+        if any(w in text for w in ('zgon','umiera','ginie')):
+            return (236,188,132)
+        return None
+
+    def _capture_visual_feedback(self):
+        events=self.game.events
+        if len(events)<self._last_logged_event:
+            self._last_logged_event=0
+        if len(events)>self._last_logged_event:
+            if self.animations_enabled:
+                timestamp=pygame.time.get_ticks()
+                for event in events[self._last_logged_event:]:
+                    color=self._feedback_color(event)
+                    if color:
+                        self._recent_feedback.append((timestamp,color))
+                self._recent_feedback=self._recent_feedback[-2:]
+            self._last_logged_event=len(events)
+        now=pygame.time.get_ticks()
+        self._recent_feedback=[e for e in self._recent_feedback if now-e[0]<620]
 
     def update(self):
         g=self.game
+        self._capture_visual_feedback()
         if g.phase=='finished' or self.details_card is not None:return
         if self._old_pending is not g.pending:
             self.choice_page=0
@@ -458,8 +500,8 @@ class SoloApp:
         self._text(f'MONETY  {p.coins}',16,rect.right-172,rect.y+11,cfg.GOLD)
 
     def _draw_board(self):
-        self._text('STREFA KOMPUTERA',15,107,92,cfg.MUTED)
-        self._text('TWOJA STREFA',15,107,425,cfg.MUTED)
+        self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
+        self._text('TWOJA STREFA',15,107,412,cfg.MUTED)
         self._draw_hero(1)
         self._draw_hero(0)
         for owner,p in enumerate(self.game.players):
@@ -473,11 +515,17 @@ class SoloApp:
                 uid=p.board[i]
                 if uid not in self.game.units:continue
                 selected=self.selected==uid
-                self.cards_view.draw(self.screen,self.game.cards[uid],rect,self.game.units[uid],selected=selected,hover=rect.collidepoint(self.mouse_pos()),statuses=active_statuses(self.game,uid))
-                if owner==0 and self.game.active==0 and self.game.legal_attacks(uid):
-                    pygame.draw.circle(self.screen,cfg.GREEN,(rect.right-12,rect.y+9),5)
-        self._text('ARENA   ·   WYSTAWIANIE OD PRAWEJ   ·   ATAKI W DOWOLNEJ KOLEJNOŚCI',14,508,406,cfg.GOLD,center=True)
-        self._text('TWOJA RĘKA  ·  kliknij kartę, następnie planszę (lub przeciągnij)',14,89,705,cfg.MUTED)
+                u=self.game.units[uid]
+                attack_ready=(self.game.phase=='turn' and self.game.active==owner
+                              and not self.game.pending and bool(self.game.legal_attacks(uid)))
+                attacks_total=2 if self.game._double(u) else 1
+                attacks_left=max(0,attacks_total-u.attacks) if attack_ready else 0
+                self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
+                     selected=selected,hover=rect.collidepoint(self.mouse_pos()),
+                     statuses=active_statuses(self.game,uid),ready=attack_ready,
+                     attacks_remaining=attacks_left,attacks_total=attacks_total)
+        self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
+        self._text('TWOJA RĘKA  ·  kliknij kartę, potem planszę (lub przeciągnij)',14,89,721,cfg.MUTED)
         hand=self.hand_layout()
         for uid,rect in hand.items():
             pygame.draw.rect(self.screen,(18,32,41),rect.inflate(11,10),border_radius=13)
@@ -489,19 +537,19 @@ class SoloApp:
                                  statuses=hand_grants(self.game,uid))
             if marked:
                 pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(9,9),4,border_radius=12)
-                badge=pygame.Rect(rect.x+6,rect.y+79,rect.width-12,29)
+                badge=pygame.Rect(rect.x+6,rect.y+72,rect.width-12,29)
                 pygame.draw.rect(self.screen,(130,56,54),badge,border_radius=6)
                 pygame.draw.rect(self.screen,cfg.GOLD,badge,2,border_radius=6)
                 rank=self.game.players[0].mulligan_selected.index(uid)+1
                 self._text(f'✓  WYMIANA {rank}/3',13,badge.centerx,badge.centery,
                            (255,250,238),center=True)
         if len(self.game.players[0].hand)>6:
-            self._button(pygame.Rect(42,851,40,37),'‹',active=self.scroll>0,small=True)
-            self._button(pygame.Rect(924,851,40,37),'›',active=self.scroll+6<len(self.game.players[0].hand),small=True)
-            self._text(f'{self.scroll+1}–{min(self.scroll+6,len(self.game.players[0].hand))} / {len(self.game.players[0].hand)}',13,850,701,cfg.MUTED)
+            self._button(pygame.Rect(42,861,40,37),'‹',active=self.scroll>0,small=True)
+            self._button(pygame.Rect(1016,861,40,37),'›',active=self.scroll+6<len(self.game.players[0].hand),small=True)
+            self._text(f'{self.scroll+1}–{min(self.scroll+6,len(self.game.players[0].hand))} / {len(self.game.players[0].hand)}',13,866,721,cfg.MUTED)
 
     def _draw_sidebar(self):
-        rect=pygame.Rect(self.SIDEBAR_X,87,364,819)
+        rect=pygame.Rect(self.SIDEBAR_X,78,364,872)
         self._panel(rect,(23,35,47),cfg.PANEL_BORDER,16)
         if self.game.pending and self.game.pending.owner == 0:
             self._draw_choice_sidebar()
@@ -529,12 +577,16 @@ class SoloApp:
             if u:
                 statuses=active_statuses(self.game,card_id)
                 self._text(f'AKTYWNE EFEKTY ({len(statuses)})',15,1105,548,cfg.GOLD)
-                for j,st in enumerate(statuses[:4]):
-                    yy=576+j*24
-                    pygame.draw.circle(self.screen,st.color,(1113,yy+8),5)
-                    self._text(self.cards_view.clip(st.name,self.fonts[13],295),13,1126,yy,st.color)
-                if len(statuses)>4:
-                    self._text(f'+{len(statuses)-4} w pełnym opisie [I]',12,1105,676,cfg.MUTED)
+                # Important quantities are available immediately from the
+                # sidebar, not hidden behind the full documentation window.
+                for j,st in enumerate(statuses[:3]):
+                    yy=571+j*37
+                    pygame.draw.circle(self.screen,st.color,(1113,yy+7),5)
+                    self._text(self.cards_view.clip(st.name,self.fonts[13],296),13,1126,yy,st.color)
+                    detail=self.cards_view.clip(st.detail,self.fonts[12],302)
+                    self._text(detail,12,1126,yy+17,cfg.MUTED)
+                if len(statuses)>3:
+                    self._text(f'+{len(statuses)-3} pozostałych efektów — [I]',12,1105,697,cfg.MUTED)
             else:
                 grants=hand_grants(self.game,card_id)
                 if grants:
@@ -580,21 +632,51 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('GRA SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.10 · v19',14,1310,35,cfg.GOLD)
+        self._text('MVP 0.9.11 · v19  |  A: animacje',13,1260,35,cfg.GOLD)
 
     def _draw_log(self):
-        # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
+        # Delikatny, możliwy do wyłączenia [A] błysk pod ostatnimi
+        # zatwierdzonymi zdarzeniami. Żadna animacja nie wpływa na silnik.
+        if self.animations_enabled and self._recent_feedback:
+            latest,color=self._recent_feedback[-1]
+            elapsed=pygame.time.get_ticks()-latest
+            alpha=max(0,int(92*(1-elapsed/620)))
+            shade=pygame.Surface((940,34),pygame.SRCALPHA)
+            shade.fill((*color,alpha))
+            self.screen.blit(shade,(109,375))
         entries=self.game.events[-2:]
-        y=367
+        y=378
         for s in entries:
             trimmed=s if len(s)<117 else s[:114]+'…'
             self._text(trimmed,12,118,y,cfg.MUTED)
             y+=16
         if self.last_error:
-            self._text(self.last_error[:105],13,280,899,cfg.RED)
+            self._text(self.last_error[:105],13,280,954,cfg.RED)
+
+    def _attack_target_rects(self):
+        """Ask the engine for *currently legal* attack targets only."""
+        g=self.game
+        if g.pending or g.phase!='turn' or g.active!=0:
+            return []
+        if self.selected not in g.players[0].board:
+            return []
+        result=[]
+        for target in g.legal_attacks(self.selected):
+            if target.startswith('hero:'):
+                result.append(self.hero_rect(int(target.split(':')[1])))
+            elif target in g.players[1].board:
+                result.append(self.slot_rect(1,g.players[1].board.index(target)))
+        return result
+
+    def _draw_attack_targets(self):
+        for rect in self._attack_target_rects():
+            # Cyan means legal ATTACK, distinct from the gold selected card,
+            # purple ability target and red numbered mulligan badge.
+            pygame.draw.rect(self.screen,(115,223,238),rect.inflate(7,7),
+                             3,border_radius=14)
 
     def _draw_choices(self):
-        """Highlight legal targets without hiding the battlefield or its labels."""
+        """Highlight legal ability targets without covering information."""
         pending = self.game.pending
         if pending is None or pending.owner != 0:
             return
@@ -614,8 +696,8 @@ class SoloApp:
                 if target in self.game.players[0].hand:
                     rect = self.hand_layout().get(target)
             if rect is not None:
-                pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(8,8),4,border_radius=13)
-                pygame.draw.circle(self.screen,cfg.GOLD,(rect.right-3,rect.y+3),7)
+                pygame.draw.rect(self.screen,(189,143,240),rect.inflate(8,8),3,border_radius=13)
+                pygame.draw.circle(self.screen,(189,143,240),(rect.right-3,rect.y+3),6)
 
     def _draw_choice_sidebar(self):
         """Dedicated selection panel below the skill description."""
@@ -676,19 +758,26 @@ class SoloApp:
         cue=card_cue(card,u)
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((1,5,10,226));self.screen.blit(shade,(0,0))
-        box=pygame.Rect(146,94,1190,745)
+        box=pygame.Rect(146,75,1190,831)
         self._panel(box,(24,38,52),FACTION_COLORS[d.faction],18)
-        pygame.draw.line(self.screen,(66,91,106),(489,180),(489,766),2)
-        self._text('PODGLĄD KARTY',16,186,124,cfg.GOLD)
-        self.cards_view.draw(self.screen,card,pygame.Rect(194,198,255,338),
+        pygame.draw.line(self.screen,(66,91,106),(489,160),(489,843),2)
+        self._text('PODGLĄD KARTY',16,186,105,cfg.GOLD)
+        details_total=(2 if self.game._double(u) else 1) if u else None
+        details_ready=(bool(self.game.legal_attacks(uid)) if u and
+                       self.game.phase=='turn' and self.game.active==u.owner
+                       and not self.game.pending else False)
+        self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
                              unit=u,selected=True,
-                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid))
-        self._text(f'{d.id} • {d.faction}',18,194,554,FACTION_COLORS[d.faction])
-        self._text(f'Aktywacja: {d.trigger}',16,194,585)
-        self._text(f'Rodzina: {d.family}',16,194,615)
-        self._text(f'Poziom zdolności: {cue.ability_level}',18,194,652,cfg.GOLD)
+                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
+                             ready=details_ready,attacks_total=details_total,
+                             attacks_remaining=(max(0,details_total-u.attacks)
+                                                if details_ready else 0) if u else None)
+        self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
+        self._text(f'Aktywacja: {d.trigger}',16,194,600)
+        self._text(f'Rodzina: {d.family}',16,194,629)
+        self._text(f'Poziom zdolności: {cue.ability_level}',18,194,660,cfg.GOLD)
         self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
-                   14,194,684,cfg.MUTED)
+                   14,194,689,cfg.MUTED)
 
         self._text(self.cards_view.clip(d.name,self.fonts[28],760),28,520,115,FACTION_COLORS[d.faction])
         self._infographic_box(pygame.Rect(520,159,228,70),'AKTUALNY EFEKT',cue.base,cue.color,
@@ -699,7 +788,7 @@ class SoloApp:
                               cue.family)
         pygame.draw.line(self.screen,cfg.PANEL_BORDER,(518,243),(1297,243),1)
 
-        content_top=264;content_bottom=749
+        content_top=264;content_bottom=817
         y=content_top-self.details_scroll
         if content_top<=y<content_bottom-27:self._text('ZDOLNOŚĆ — WARTOŚĆ SKALUJĄCA POGRUBIONA',18,520,y,cfg.GOLD)
         y+=37
@@ -732,9 +821,9 @@ class SoloApp:
         if not statuses and content_top<=y<content_bottom-23:
             self._text('Brak dodatkowych statusów',15,549,y,cfg.MUTED)
         y+=26
-        self.details_maxscroll=max(0,y-722)
-        self._text('Kółko myszy: przewiń tekst • Zielone pogrubienie: wartość rosnąca',13,524,777,cfg.MUTED)
-        self._button(pygame.Rect(1095,777,201,39),'ZAMKNIJ [I / ESC]',small=True)
+        self.details_maxscroll=max(0,y-780)
+        self._text('Kółko myszy: przewiń opis • Zielone pogrubienie: wartość rosnąca',13,524,857,cfg.MUTED)
+        self._button(pygame.Rect(1095,853,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
     def _draw_gameover(self):
         if self.game.phase!='finished':return
@@ -750,6 +839,7 @@ class SoloApp:
         self.screen.blit(self.bg,(0,0))
         self._draw_header()
         self._draw_board()
+        self._draw_attack_targets()
         self._draw_sidebar()
         self._draw_log()
         self._draw_choices()
