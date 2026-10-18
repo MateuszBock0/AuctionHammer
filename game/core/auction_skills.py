@@ -369,6 +369,7 @@ def execute(game,uid,context,choice):
 def evolve(game,completed_round):
     for uid,a in list(game.auction_awards.items()):
         if uid in game.ephemerals:continue
+        if uid not in game.cards or game.cards[uid].zone=='excluded':continue
         elapsed=completed_round-a.get('completed_round',completed_round)
         if elapsed<=0 or elapsed%3!=0:continue
         current=RARITIES.index(a['rarity'])
