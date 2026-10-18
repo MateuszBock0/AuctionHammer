@@ -18,7 +18,7 @@
 - Dodano testy regresyjne interfejsu i kombinacji **S91 + S09** zaobserwowanej w meczu 0.9.21; nie zmieniano wartości kart ani reguł walki.
 - Szczegóły: [audyt 0.9.22](docs/UX_AUDIT_0922.md).
 
-**AuctionHammer** to turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi. Obecna wersja korzysta z zatwierdzonych zmian **Game Master v19**. Zawiera 70 unikalnych kart podstawowych, po jednym egzemplarzu każdej. **Od 0.9.19 aktywny jest pierwszy prototyp aukcji z trzema tymczasowymi Strażnikami (3/6/12 PŻ); finalny katalog i płatne zdolności jeszcze nie istnieją. Koszt zagrania kart wynosi zero.**
+W 0.9.23 obowiązuje **ścisłe rozdzielenie kart**: 70 kart bazowych dobieranych tylko z własnej talii/cmentarza i 12 unikalnych kart aukcyjnych dostępnych wyłącznie przez aukcje. Przy czterech aukcjach (po 3., 6., 9. i 12. rundzie) 8 kart trafia do kupujących, a 4 niewybrane są trwale odrzucane do osobnego woreczka. Po czwartej aukcji nowe oferty się kończą. Nawet kupione karty aukcyjne, kiedy opuszczą planszę, **nie wracają do standardowego dobierania**. [Dokładne reguły woreczków](docs/auction/RELEASE_V4_0923.md).
 
 ## Uruchamianie w Windows
 
