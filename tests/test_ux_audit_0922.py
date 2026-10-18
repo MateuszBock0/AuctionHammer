@@ -20,6 +20,7 @@ def shell(game,selected=None):
     app.game=game
     app.selected=selected
     app.last_error=''
+    app.scroll=0
     app.auction_bid_text=''
     app.auction_status=''
     app.details_card=None
