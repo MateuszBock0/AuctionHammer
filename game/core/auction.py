@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from .models import Card, CardDefinition, IllegalMove
+from .auction_catalog import CATALOG, BY_ID, stats, tier_text
 
 PLACEHOLDER_HP=(3,6,12)
 RARITY=("podstawowa","rzadka","legendarna")
@@ -20,6 +21,7 @@ class AuctionOffer:
     atk: int
     rarity: str
     level: int
+    archetype: str = 'PLACEHOLDER'
 
 
 @dataclass
@@ -45,17 +47,28 @@ def begin(game):
     number=len(game.auction_history)+1
     level=number
     offers=[]
-    for hp in PLACEHOLDER_HP:
-        roll=game.rng.random()
-        game.rng_draw_index+=1
-        rarity=RARITY[0 if roll<.60 else 1 if roll<.90 else 2]
-        offers.append(AuctionOffer(f"AUC{number:03d}H{hp:02d}",hp,3,rarity,level))
+    if getattr(game,'auction_catalog_mode','placeholders')=='v3':
+        entries=game.rng.sample(CATALOG,3)  # distinct within this auction
+        for item in entries:
+            roll=game.rng.random()
+            game.rng_draw_index+=1
+            rarity=RARITY[0 if roll<.60 else 1 if roll<.90 else 2]
+            atk,hp=stats(item,game.round-1)
+            offers.append(AuctionOffer(f"AUC{number:03d}{item.ident}",hp,atk,
+                                       rarity,level,item.ident))
+    else:
+        for hp in PLACEHOLDER_HP:
+            roll=game.rng.random()
+            game.rng_draw_index+=1
+            rarity=RARITY[0 if roll<.60 else 1 if roll<.90 else 2]
+            offers.append(AuctionOffer(f"AUC{number:03d}H{hp:02d}",hp,3,rarity,level))
     free_first=game.first if number%2 else 1-game.first
     game.auction=AuctionState(number,game.round-1,offers,free_first,
                               game.first)
     game.phase="auction"
-    game._log(f"AUKCJA {number}: 3/6/12 PŻ, 3 ATK, Prowokacja + Tarcza. "
-              f"Rzadkości: {', '.join(o.rarity for o in offers)}.")
+    game._log(f"AUKCJA {number}: "+', '.join(
+        (BY_ID[o.archetype].name if o.archetype!='PLACEHOLDER' else
+         f'Strażnik {o.hp} PŻ')+' ('+o.rarity+')' for o in offers)+'.')
     return game.auction
 
 
@@ -119,26 +132,42 @@ def pick(game,player,uid):
     if uid not in offered or uid in state.picks.values():
         raise IllegalMove("Nieprawidłowa lub już wybrana karta aukcyjna")
     offer=offered[uid]
-    definition=CardDefinition(
-        id=uid,
-        name=f"Strażnik aukcji {offer.hp} PŻ",
-        faction="Ludzie",
-        family="Prowokacja",
-        trigger="Pasywna",
-        atk=3,
-        hp=offer.hp,
-        effect="Prowokacja. Przy wystawieniu zyskuje 1 Tarczę.",
-        scaling="Karta aukcyjna: stałe parametry, brak skalowania na ręce.",
-        growth_atk=0,
-        growth_hp=0
-    )
+    if offer.archetype!='PLACEHOLDER':
+        item=BY_ID[offer.archetype]
+        faction={'play':'Elfy','death':'Potwory','end':'Krasnoludy',
+                 'passive':'Ludzie'}[item.trigger]
+        trigger={'play':'Przy wystawieniu','death':'Przy śmierci',
+                 'end':'Na koniec tury','passive':'Pasywna'}[item.trigger]
+        family={'A001':'Oczyszczanie','A002':'Podwójny atak',
+                'A003':'Regeneracja','A004':'Podwójny atak',
+                'A005':'Pancerz','A006':'Ogłuszenie',
+                'A007':'Odporność','A008':'Oczyszczanie',
+                'A009':'ATK ±','A010':'Regeneracja',
+                'A011':'Obrażenia','A012':'Leczenie'}[offer.archetype]
+        definition=CardDefinition(offer.uid,item.name,faction,family,trigger,
+                                  offer.atk,offer.hp,
+                                  tier_text(offer.archetype,offer.rarity),
+                                  'Aukcyjna: nie skaluje się na ręce.',
+                                  0,0)
+    else:
+        definition=CardDefinition(
+            id=uid,name=f"Strażnik aukcji {offer.hp} PŻ",
+            faction="Ludzie",family="Prowokacja",trigger="Pasywna",
+            atk=3,hp=offer.hp,
+            effect="Prowokacja. Przy wystawieniu zyskuje 1 Tarczę.",
+            scaling="Karta aukcyjna: stałe parametry, brak skalowania na ręce.",
+            growth_atk=0,growth_hp=0
+        )
     card=Card(uid,definition,owner=player,zone="hand")
     game.cards[uid]=card
     game.defs[uid]=definition
     game.auction_awards[uid]={
         "number":state.number,"level":offer.level,
         "rarity":offer.rarity,"atk":offer.atk,"hp":offer.hp,
-        "abilities":("Prowokacja","Tarcza")
+        "archetype":offer.archetype,
+        "completed_round":state.completed_round,
+        "abilities":("Prowokacja","Tarcza") if offer.archetype=="PLACEHOLDER"
+                    else (offer.archetype,)
     }
     game.players[player].hand.append(uid)
     state.picks[player]=uid
