@@ -41,6 +41,7 @@ Gra automatycznie dostosowuje początkowy rozmiar okna do dostępnej przestrzeni
 | --- | --- |
 | `AUCTIONHAMMER_MASTER.md` | Aktualny opis projektu i wskazanie obowiązujących źródeł |
 | `data/GAME_MASTER.json` | Aktualny uporządkowany zapis zasad i katalogu v19 |
+| `data/game_rules_v19.json` | Aktualny, odrębny zbiór zasad v19; zgodny z `GAME_MASTER.json` |
 | `data/cards_base_70.json` | **Jedyne bieżące źródło definicji 70 kart**, wczytywane przez silnik |
 | `docs/V19_INTEGRATION_AND_UI.md` | Zmiany zasad v19 i ich implementacja |
 | `docs/GAME_MASTER_v17.md` | **Archiwum** wcześniejszej specyfikacji v17 — nie jest katalogiem aktualnych kart |
