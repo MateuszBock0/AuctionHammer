@@ -132,10 +132,13 @@ def load_match(path: Path | None = None) -> Match:
     awards=data.get('auction_awards',{})
     if not isinstance(awards,dict):
         raise ValueError('Zapis zawiera nieprawidłowe karty aukcyjne')
-    expected=ids|set(awards)
+    v4=data.get('auction_catalog')=='v4'
+    ephemeral=set(data.get('ephemeral_ids',set())) if v4 else set()
+    expected=ids|set(awards)|ephemeral
     if (not isinstance(data.get('cards'),dict)
             or set(data['cards'])!=expected
-            or any(not uid.startswith('AUC') for uid in awards)):
+            or any(not (uid.startswith('AUC') or (v4 and uid in ephemeral))
+                   for uid in awards)):
         raise ValueError('Zapis zawiera niezgodny katalog kart')
     if not isinstance(data.get('players'),list) or len(data['players'])!=2:
         raise ValueError('Nieprawidłowa liczba graczy')
@@ -151,6 +154,12 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('auction',None)
     data.setdefault('auction_history',[])
     data.setdefault('auction_awards',{})
+    for name,default in (
+            ('exiled',[]),('vanished',[]),('ephemeral_ids',set()),
+            ('auction_death_grants',set()),('auction_rescue_spent',set()),
+            ('auction_general_targets',{}),('auction_general_grants',{}),
+            ('auction_pending_targets',{}),('auction_wave_ops',[])):
+        data.setdefault(name,default)
     match=Match.__new__(Match)
     match.__dict__.update(data)
     return match
