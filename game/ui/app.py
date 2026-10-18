@@ -5,6 +5,7 @@ import re
 import pygame
 from game.ui.combat_visuals import CombatVisuals
 from game.ui.match_history import MatchRecorder
+from game.core.persistence import save_match, load_match, save_path
 from game import config as cfg
 from game.core.engine import Match
 from game.core.ai import ComputerOpponent
@@ -49,6 +50,7 @@ class SoloApp:
         self.restart()
         self.menu_open=bool(start_in_menu)
         self.menu_page='main'
+        self.menu_message=''
         self.history_open=False
         self.history_scroll=0
         self.replay_index=None
@@ -896,9 +898,10 @@ class SoloApp:
         self._button(pygame.Rect(1095,853,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
     def _menu_click(self,pos):
-        buttons=[pygame.Rect(535,325+i*88,420,64) for i in range(4)]
+        buttons=[pygame.Rect(535,322+i*81,420,61) for i in range(5)]
         for i,rect in enumerate(buttons):
             if not rect.collidepoint(pos):continue
+            self.menu_message=''
             if self.menu_page=='main':
                 if i==0:
                     self.restart()
@@ -906,6 +909,26 @@ class SoloApp:
                 elif i==1:
                     self.menu_open=False
                 elif i==2:
+                    try:
+                        game=load_match()
+                        self.game=game
+                        self.selected=None
+                        self.sidebar_card=None
+                        self.details_card=None
+                        self._old_pending=None
+                        self.last_error=''
+                        self._last_logged_event=len(game.events)
+                        self._recent_feedback=[]
+                        self.combat_visuals=CombatVisuals()
+                        self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
+                        self.recorder=MatchRecorder()
+                        self.recorder.capture(game)
+                        self.replay_index=None
+                        self.history_open=False
+                        self.menu_open=False
+                    except (OSError,ValueError,TypeError,KeyError) as exc:
+                        self.menu_message=f'Nie można wczytać meczu: {exc}'
+                elif i==3:
                     self.menu_page='settings'
                 else:
                     self.menu_open=False
@@ -918,6 +941,12 @@ class SoloApp:
                     choices=('łatwy','normalny','trudny')
                     index=choices.index(self.ai.difficulty)
                     self.ai.difficulty=choices[(index+1)%len(choices)]
+                elif i==3:
+                    try:
+                        save_match(self.game)
+                        self.menu_message='ZAPISANO MECZ — można kontynuować po restarcie'
+                    except (OSError,ValueError,TypeError) as exc:
+                        self.menu_message=f'Nie można zapisać meczu: {exc}'
                 else:
                     self.menu_page='main'
             return
@@ -927,18 +956,22 @@ class SoloApp:
         shade.fill((4,9,16,234))
         self.screen.blit(shade,(0,0))
         self._panel(pygame.Rect(420,170,650,660),(23,40,53),cfg.GOLD,19)
-        self._text('AUCTIONHAMMER',46,746,231,cfg.GOLD,center=True)
-        self._text('MINIMAL FANTASY · GAME MASTER v19',16,746,280,cfg.MUTED,center=True)
+        self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
+        self._text('MINIMAL FANTASY · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
         if self.menu_page=='main':
-            items=('NOWY MECZ','KONTYNUUJ','USTAWIENIA','WRÓĆ DO GRY')
+            items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
+                   'USTAWIENIA','WRÓĆ DO GRY')
         else:
             items=(f'ANIMACJE: {"WŁ." if self.animations_enabled else "WYŁ."}',
                    'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
-                   'POWRÓT DO MENU')
+                   'ZAPISZ MECZ','POWRÓT DO MENU')
         for i,label in enumerate(items):
-            self._button(pygame.Rect(535,325+i*88,420,64),label,accent=i==0)
-        self._text('70 unikalnych kart · bez aukcji',14,746,736,cfg.MUTED,center=True)
-        self._text('H: HISTORIA   P: POWTÓRKA   A: EFEKTY',13,746,777,cfg.MUTED,center=True)
+            self._button(pygame.Rect(535,322+i*81,420,61),label,accent=i==0)
+        if self.menu_message:
+            status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
+            self._text(status,14,746,753,cfg.GOLD,center=True)
+        self._text('70 kart · brak aukcji · H: HISTORIA · P: POWTÓRKA',13,
+                   746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
