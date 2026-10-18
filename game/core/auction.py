@@ -40,7 +40,9 @@ class AuctionState:
 def begin(game):
     assert game.auctions_enabled and game.auction is None
     if game.auction_catalog=='v4' and len(game.auction_bag)<3:
-        game._log('Aukcje: woreczek 12 archetypów wyczerpany. Dalsze oferty niedostępne.')
+        # The canonical auction requires three distinct offers. Any remaining
+        # one or two archetypes stay in their dedicated bag, never the basic deck.
+        game._log('Aukcje: w woreczku są mniej niż trzy dostępne archetypy.')
         return None
     number=len(game.auction_history)+1
     completed=game.round-1
@@ -171,14 +173,18 @@ def pick(game,player,uid):
         return
     unchosen=[o.uid for o in state.offers if o.uid not in state.picks.values()]
     if game.auction_catalog=='v4':
-        # Separate discarded-offers bag: neither basic bank nor future auction bag.
+        # Keep unbought archetypes exclusively in the auction supply, not the
+        # 70-card bank. A future offer rerolls rarity and R-based stats, per v4.
+        for offer in state.offers:
+            if offer.uid in unchosen:
+                assert offer.archetype not in game.auction_bag
+                game.auction_bag.append(offer.archetype)
+        # Historical offer IDs are not instantiated as cards; this list is
+        # the audit trail, NOT a pile of permanently lost archetypes.
         game.auction_discarded.extend(unchosen)
-        game._log(f'Aukcja {state.number}: niewybrana karta {unchosen[0]} '
-                  'trafia do osobnego woreczka ODRZUCONYCH AUKCYJNYCH. '
-                  'Nie będzie ponownie dostępna.')
-        if not game.auction_bag:
-            game._log('Woreczek 12 kart aukcyjnych został wyczerpany. '
-                      'W tym meczu nie będzie kolejnych aukcji.')
+        game._log(f'Aukcja {state.number}: niewykupiony archetyp '
+                  f'{CATALOG[offered[unchosen[0]].archetype].name} wraca '
+                  'WYŁĄCZNIE do woreczka aukcyjnego na przyszłe aukcje.')
     else:
         game._log(f'Aukcja {state.number}: niewybrany archetyp {unchosen[0]} wraca do puli.')
     game.auction_history.append({
