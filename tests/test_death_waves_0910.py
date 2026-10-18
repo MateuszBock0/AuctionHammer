@@ -91,8 +91,8 @@ class WspolneFaleZgonow(unittest.TestCase):
         self.assertEqual(g.players[0].coins,initial_coins+2)
         closings=[x for x in g.events if x.startswith('Zamknięto falę śmierci')]
         self.assertEqual(len(closings),2)
-        self.assertIn('fali śmierci 1',closings[0])
-        self.assertIn('fali śmierci 2',closings[1])
+        self.assertIn('falę śmierci 1',closings[0])
+        self.assertIn('falę śmierci 2',closings[1])
         g.assert_integrity()
 
     def test_ogluszona_zmarla_jednostka_nie_dodaje_zdolnosci(self):
@@ -132,6 +132,51 @@ class WspolneFaleZgonow(unittest.TestCase):
             return [x for x in g.players[0].hand
                     if g.cards[x].quick_on_first_summon or g.cards[x].double_on_first_eligible]
         self.assertEqual(trace(706),trace(706))
+
+    def test_trucizna_i_oczyszczanie_jednej_fali_nie_usuwaja_nowych_efektow(self):
+        g=setup_game(709)
+        force_unit(g,'S83',0)  # Trucizna 2 na 3 aktywacje
+        force_unit(g,'S87',1)  # Oczyszczenie sojusznika przy śmierci
+        victim=force_unit(g,'S01',1)
+        g._kill_batch(['S83','S87'])
+        g._drain()
+        self.assertEqual(g.pending.uid,'S83')
+        g.choose(next(i for i,c in enumerate(g.pending.choices) if c.target=='S01'))
+        self.assertEqual(g.pending.uid,'S87')
+        # Oba wybory są zamrożone; nie ma jeszcze zatrucia.
+        self.assertFalse(any(e.kind=='poison' for e in victim.effects))
+        g.choose(next(i for i,c in enumerate(g.pending.choices) if c.target=='S01'))
+        # Oczyszczanie widziało początek fali, nie usuwa więc trucizny
+        # powstałej jednocześnie (efekty te nie działają sekwencyjnie).
+        self.assertTrue(any(e.kind=='poison' for e in victim.effects))
+        g.assert_integrity()
+
+    def test_oczyszczanie_usunie_stary_status_a_nowy_z_jednej_fali_zostanie(self):
+        g=setup_game(710)
+        force_unit(g,'S83',0)
+        force_unit(g,'S87',1)
+        victim=force_unit(g,'S01',1)
+        g._add_effect('S01','poison',1,2,source='S58',positive=False)
+        g._kill_batch(['S83','S87'])
+        g._drain()
+        g.choose(next(i for i,c in enumerate(g.pending.choices) if c.target=='S01'))
+        g.choose(next(i for i,c in enumerate(g.pending.choices) if c.target=='S01'))
+        poisons=[e for e in victim.effects if e.kind=='poison']
+        self.assertEqual([e.source for e in poisons],['S83'])
+        g.assert_integrity()
+
+    def test_ochrona_bohatera_i_obrazenia_tej_samej_fali(self):
+        g=setup_game(711)
+        force_unit(g,'S20',0)
+        force_unit(g,'S21',1)
+        before=g.players[0].hp
+        g._kill_batch(['S20','S21'])
+        g._drain()
+        self.assertEqual(g.players[0].hp,before)
+        self.assertEqual(g.players[0].hero_shield,0)
+        self.assertEqual(g.players[0].hero_armor,2)
+        self.assertEqual(g.players[1].grave.count('S21'),1)
+        g.assert_integrity()
 
     def test_zwyciezca_po_zamknieciu_wspolnej_fali(self):
         g=setup_game(707)
