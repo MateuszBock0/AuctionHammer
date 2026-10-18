@@ -66,7 +66,8 @@ class CatalogTests(unittest.TestCase):
             self.assertTrue(n.basic and n.rare and n.legendary)
 
     def test_three_distinct_draft_offers(self):
-        g=game_for(92001)
+        g=Match(92001,auctions_enabled=True,auction_catalog_mode='v3')
+        g.finish_mulligan(0,[]);g.finish_mulligan(1,[])
         for _ in range(6):g.end_turn()
         self.assertEqual(g.phase,'auction')
         self.assertEqual(len(g.auction.offers),3)
