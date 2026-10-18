@@ -477,7 +477,7 @@ class SoloApp:
                 if owner==0 and self.game.active==0 and self.game.legal_attacks(uid):
                     pygame.draw.circle(self.screen,cfg.GREEN,(rect.right-12,rect.y+9),5)
         self._text('ARENA   ·   WYSTAWIANIE OD PRAWEJ   ·   ATAKI W DOWOLNEJ KOLEJNOŚCI',14,508,406,cfg.GOLD,center=True)
-        self._text('RĘKA GRACZA  ·  kliknij kartę, potem planszę (lub przeciągnij)',14,89,705,cfg.MUTED)
+        self._text('TWOJA RĘKA  ·  kliknij kartę, następnie planszę (lub przeciągnij)',14,89,705,cfg.MUTED)
         hand=self.hand_layout()
         for uid,rect in hand.items():
             pygame.draw.rect(self.screen,(18,32,41),rect.inflate(11,10),border_radius=13)
@@ -562,7 +562,7 @@ class SoloApp:
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
-            self._button(pygame.Rect(1182,808,243,59),'ZATWIERDŹ MULLIGAN',accent=True)
+            self._button(pygame.Rect(1182,808,243,59),'ZATWIERDŹ WYMIANĘ',accent=True)
         elif self.game.phase=='finished':
             self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
         else:
@@ -641,7 +641,7 @@ class SoloApp:
         self._panel(pane,(22,37,49),cfg.GOLD,12)
         self._text(f'WYBIERZ CEL / WARIANT ({len(pending.choices)})',
                    14,1107,410,cfg.GOLD)
-        self._text('Wybór jest wymagany.',13,1107,437,cfg.TEXT)
+        self._text('Wybierz cel lub sposób działania.',13,1107,437,cfg.TEXT)
         pygame.draw.line(self.screen,cfg.PANEL_BORDER,(1107,458),(1421,458),1)
         for index,rect in self.choice_bounds():
             choice=pending.choices[index]
