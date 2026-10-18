@@ -10,15 +10,22 @@ from .models import Card, Unit, Player, Effect, Pending, Choice, IllegalMove, lo
 from .effects import options
 from .audit import initialize_audit, audit_action, trace_effect
 from . import auction as auction_rules
+from . import auction_skills
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
 class Match:
     def __init__(self, seed: int | None = None, audit_enabled: bool = False,
-                 auctions_enabled: bool = False):
+                 auctions_enabled: bool = False,
+                 auction_catalog_mode: str = 'placeholders'):
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
+        self.auction_catalog_mode=auction_catalog_mode
+        self.ephemerals=set()
+        self.auction_copy_serial=0
+        self.auction_death_links=set()
+        self.auction_chain=None
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
@@ -223,10 +230,21 @@ class Match:
         self._update_auras(defer_reactive=True)
         self.position_reactions_due=True
         if card.definition.faction=='Elfy':self._queue(uid,'play')
+        if uid in self.auction_awards and self.auction_awards[uid].get('archetype')=='A002':
+            self._queue(uid,'play')
+        # Legendary Generals empower only subsequently played allies.
+        if uid not in self.ephemerals:
+            for src in list(p.board):
+                if src==uid:continue
+                meta=self.auction_awards.get(src)
+                if (meta and meta.get('archetype')=='A002'
+                        and meta.get('rarity')=='legendarna'
+                        and not self._disabled(self.units[src])):
+                    meta.setdefault('beneficiaries',[]).append(uid)
         if card.definition.id in ('S34','S35'):
             self._queue(uid,'play')
         if card.definition.id == 'S106':u.shield=1;u.shield_source=uid;u.used_shield_aura=False
-        if uid in self.auction_awards:
+        if uid in self.auction_awards and self.auction_awards[uid].get('archetype','PLACEHOLDER')=='PLACEHOLDER':
             u.shield=1
             u.shield_source=uid
             self._log(f'{self.label(uid)}: wrodzona Prowokacja i 1 Tarcza (karta aukcyjna).')
@@ -267,11 +285,12 @@ class Match:
         if uid not in self.units or (target not in self.units and not target.startswith('hero:')):
             return
         a=self.units[uid]
+        amplifier=2 if auction_skills.double_and_damage(self,uid) else 1
         if target.startswith('hero:'):
-            self._damage(target,a.atk)
+            self._damage(target,a.atk*amplifier)
         else:
             b=self.units[target]
-            da,db=a.atk,b.atk
+            da,db=a.atk*amplifier,b.atk*(2 if auction_skills.double_and_damage(self,target) else 1)
             # simultaneous damage; store victims until both are applied
             to_attacker=self._damage(uid,db,defer_death=True)
             to_defender=self._damage(target,da,defer_death=True)
@@ -343,7 +362,7 @@ class Match:
                     uid,ctx,tgt=self.trigger_queue.popleft()
                     if ctx not in ('death',) and uid not in self.units:continue
                     if ctx in ('death',) and self._death_disabled.get(uid,False):continue
-                    choices=options(self,uid,ctx,tgt)
+                    choices=(auction_skills.options(self,uid,ctx) if (uid in self.auction_awards or uid in self.auction_death_links) else options(self,uid,ctx,tgt))
                     if not choices:continue
                     if len(choices)==1 and choices[0].mode=='auto':
                         self._execute(uid,ctx,choices[0],tgt)
@@ -357,7 +376,7 @@ class Match:
                         # due to aura collapse. It receives its OWN choice
                         # snapshot only after the preceding group has closed.
                         wave['sources']=tuple(
-                            (uid,tuple(options(self,uid,'death')))
+                            (uid,tuple(auction_skills.options(self,uid,'death') if (uid in self.auction_awards or uid in self.auction_death_links) else options(self,uid,'death')))
                             for uid in wave['source_ids'])
                     self.active_death_wave=wave
                     continue
@@ -417,9 +436,14 @@ class Match:
                 self._heal(uid,sum(e.value+(e.bonus_once if e.remaining==e.initial_ticks else 0) for e in portions))
                 for e in portions:e.remaining-=1
                 u.effects=[e for e in u.effects if e.kind!='regen' or e.remaining>0]
+        # End of the controller's turn is the boundary for pending exile marks.
+        for marked in list(p.board):
+            if marked in self.units and any(e.kind=='banish_mark' and e.expires is not None
+                                             and e.expires<=p.turn_count for e in self.units[marked].effects):
+                auction_skills.exile(self,marked)
         for uid in p.hand:
             card=self.cards[uid]
-            if uid not in self.auction_awards:
+            if uid not in self.auction_awards and uid not in self.ephemerals:
                 card.hand_turns+=1
         # v19 S91: the deferred grant expires after the first own turn when
         # the unit was legally able to attack; stun delays that first turn.
@@ -459,6 +483,8 @@ class Match:
             self.round+=1
             for pl in self.players:pl.coins+=1
             self._log('Pełna runda: +1 moneta dla obu graczy.')
+            if self.auction_catalog_mode=='v3':
+                auction_skills.evolve(self,self.round-1)
         self._next_turn_due=True
         self._update_auras()
 
@@ -466,6 +492,7 @@ class Match:
     def _disabled(self,u):return self._has(u,'stun') or self._has(u,'silence')
     def _fast(self,u):return self._has(u,'quick') or (self.cards[u.uid].definition.id=='S114' and not self._disabled(u))
     def _double(self,u):
+        if self.auction_catalog_mode=='v3' and auction_skills.double_and_damage(self,u.uid):return True
         # S67 grants a status on play; it no longer has innate double attack.
         # S91's hand fallback grants double for the first *eligible* own turn.
         p=self.players[u.owner]
