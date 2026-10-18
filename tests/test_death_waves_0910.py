@@ -198,6 +198,33 @@ class WspolneFaleZgonow(unittest.TestCase):
         self.assertIsNotNone(g.winner)
         self.assertEqual(sum('KONIEC MECZU!' in x for x in g.events),1)
 
+    def test_losowanie_s90_niezalezne_od_kolejnosci_kart_na_rece(self):
+        def wyniki(odwroc):
+            g=setup_game(712)
+            force_unit(g,'S90',0)
+            if odwroc:
+                g.players[0].hand.reverse()
+            g._kill_batch(['S90'])
+            g._drain()
+            chosen=sorted(x for x in g.players[0].hand
+                          if g.cards[x].quick_on_first_summon)
+            self.assertTrue(any(x.startswith('Losowanie S90 #1:') for x in g.events))
+            self.assertEqual(g.rng_draw_index,1)
+            return chosen
+        self.assertEqual(wyniki(False),wyniki(True))
+
+    def test_gdy_umarl_bohater_kolejne_fale_nie_rozdaja_nagrod(self):
+        g=setup_game(713)
+        force_unit(g,'S21',0)
+        force_unit(g,'S17',1)
+        g.players[1].hp=1
+        g._kill_batch(['S21','S17'])
+        g._drain()
+        # Leczenie S17 ratuje bohatera w tej samej fali.
+        self.assertEqual(g.phase,'turn')
+        self.assertEqual(g.players[1].hp,3)
+        self.assertIsNone(g.winner)
+
     def test_zamkniecie_fali_wstrzymuje_nowe_deklaracje(self):
         g=setup_game(708)
         force_unit(g,'S84',0)
