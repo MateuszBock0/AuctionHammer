@@ -15,6 +15,7 @@ from game import config as cfg
 from game.ui.assets import ImageAssets
 from game.core.status_view import STATUS_COLORS
 from game.ui.card_infographics import card_cue, FAMILY_COLORS
+from game.ui.card_summary import ability_summary
 
 FACTION_COLORS = {
     'Elfy': (101,194,150), 'Dzikie bestie': (220,164,89),
@@ -47,11 +48,11 @@ def card_zones(rect: pygame.Rect) -> dict[str, pygame.Rect]:
     """Deterministic nonoverlapping zones for the three approved card sizes."""
     x,y,w,h=rect
     if h>=320:
-        title_h,trigger_h,art_h,stats_h,pad=(34,24,137,52,11)
+        title_h,trigger_h,art_h,stats_h,pad=(34,24,112,52,11)
     elif h>=210:
-        title_h,trigger_h,art_h,stats_h,pad=(23,17,62,41,6)
+        title_h,trigger_h,art_h,stats_h,pad=(23,17,46,41,6)
     else:
-        title_h,trigger_h,art_h,stats_h,pad=(22,17,40,37,5)
+        title_h,trigger_h,art_h,stats_h,pad=(22,17,30,37,5)
     inner_x=x+pad;inner_w=w-2*pad
     name=pygame.Rect(inner_x,y+3,inner_w,title_h-3)
     trigger=pygame.Rect(inner_x,name.bottom,inner_w,trigger_h)
@@ -147,6 +148,7 @@ class CardView:
              attacks_total=None):
         d=card.definition
         cue=card_cue(card,unit)
+        summary=ability_summary(card,unit)
         color=FACTION_COLORS[d.faction]
         zone=card_zones(rect)
         large=rect.height>=320
@@ -201,19 +203,33 @@ class CardView:
         main=pygame.Rect(info.x+4,family.bottom+2,info.width-8,base_h)
         bfont=self._fit_font(cue.base,main.width,(20,18,17,15,13,11,10) if large else (15,14,13,12,11,10,9))
         self._center(screen,self.clip(cue.base,bfont,main.width),main,bfont,(245,245,230))
-        context=compact_context(d.effect)
+        # A readable short rule keeps target and condition; the full dynamically
+        # expanded explanation remains in the sidebar and the details pane.
         cx=info.x+4
-        if large:
-            # One full, safely truncated rule line, marked as partial if necessary.
-            f=self.font(12)
-            first=d.effect.strip()
-            if f.size(first)[0]>info.width-8:
-                first=self.clip(first,f,info.width-10)
-            screen.blit(f.render(first,True,cfg.TEXT),(cx,main.bottom+1))
-        else:
-            f=self.font(9,True)
-            context=self.clip(context,f,info.width-8)
-            screen.blit(f.render(context,True,(183,198,205)),(cx,main.bottom+1))
+        explanation=summary.short if not large else summary.full
+        font=self.font(12 if large else 10)
+        width=info.width-8
+        words=explanation.split()
+        lines=[]
+        current=''
+        for word in words:
+            candidate=(current+' '+word).strip()
+            if font.size(candidate)[0] > width and current:
+                lines.append(current)
+                current=word
+            else:
+                current=candidate
+        if current:
+            lines.append(current)
+        footer_top=info.bottom-(31 if large else 15)
+        line_step=16 if large else 12
+        available=max(0,footer_top-(main.bottom+1))
+        line_limit=min(3 if large else 2,available//line_step)
+        for j,line in enumerate(lines[:line_limit]):
+            if font.size(line)[0] > width:
+                line=self.clip(line,font,width)
+            screen.blit(font.render(line,True,cfg.TEXT),
+                        (cx,main.bottom+1+j*(16 if large else 12)))
         # Scaling is distinct from per-turn STAT growth.
         footer=pygame.Rect(info.x+3,info.bottom-(31 if large else 15),
                            info.width-6,27 if large else 12)
