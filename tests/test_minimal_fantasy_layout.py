@@ -102,6 +102,7 @@ class MinimalFantasyLayout(unittest.TestCase):
 
     def test_s64_immunity_and_s09_damage_have_readable_complete_small_text(self):
         from game.ui.card_view import CardView
+        from game.ui.card_summary import ability_summary
         game=setup_game(1314)
         view=CardView()
         for w,h in ((125,195),(148,220)):
