@@ -48,11 +48,11 @@ def card_zones(rect: pygame.Rect) -> dict[str, pygame.Rect]:
     """Deterministic nonoverlapping zones for the three approved card sizes."""
     x,y,w,h=rect
     if h>=320:
-        title_h,trigger_h,art_h,stats_h,pad=(34,24,137,52,11)
+        title_h,trigger_h,art_h,stats_h,pad=(34,24,112,52,11)
     elif h>=210:
-        title_h,trigger_h,art_h,stats_h,pad=(23,17,62,41,6)
+        title_h,trigger_h,art_h,stats_h,pad=(23,17,46,41,6)
     else:
-        title_h,trigger_h,art_h,stats_h,pad=(22,17,40,37,5)
+        title_h,trigger_h,art_h,stats_h,pad=(22,17,30,37,5)
     inner_x=x+pad;inner_w=w-2*pad
     name=pygame.Rect(inner_x,y+3,inner_w,title_h-3)
     trigger=pygame.Rect(inner_x,name.bottom,inner_w,trigger_h)
@@ -221,7 +221,10 @@ class CardView:
                 current=candidate
         if current:
             lines.append(current)
-        line_limit=3 if large else 2
+        footer_top=info.bottom-(31 if large else 15)
+        line_step=16 if large else 12
+        available=max(0,footer_top-(main.bottom+1))
+        line_limit=min(3 if large else 2,available//line_step)
         for j,line in enumerate(lines[:line_limit]):
             if font.size(line)[0] > width:
                 line=self.clip(line,font,width)
