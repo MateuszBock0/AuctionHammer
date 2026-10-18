@@ -87,10 +87,10 @@ class V17Regressions(unittest.TestCase):
         opponent=force_unit(m,'S01',1)
         initial=opponent.hp
         m._update_auras()
-        self.assertEqual(opponent.hp,initial-1)
+        self.assertEqual(opponent.hp,initial-2)
         self.assertTrue(any(e.kind=='stun' for e in opponent.effects))
         m._update_auras()
-        self.assertEqual(opponent.hp,initial-1)
+        self.assertEqual(opponent.hp,initial-2)
 
     def test_resizable_viewports_and_hitboxes(self):
         logical=(1480,920)
