@@ -42,15 +42,23 @@ Gra automatycznie dostosowuje początkowy rozmiar okna do dostępnej przestrzeni
 | `AUCTIONHAMMER_MASTER.md` | Aktualny opis projektu i wskazanie obowiązujących źródeł |
 | `data/GAME_MASTER.json` | Aktualny uporządkowany zapis zasad i katalogu v19 |
 | `data/game_rules_v19.json` | Aktualny, odrębny zbiór zasad v19; zgodny z `GAME_MASTER.json` |
+| `data/event_order_v19.json` | Obowiązująca kolejność zdarzeń, wspólne fale zgonów i kaskady |
+| `docs/FALY_ZGONOW_v19_MVP_0910.md` | Opis naprawy kolejki zdarzeń i testów |
 | `data/cards_base_70.json` | **Jedyne bieżące źródło definicji 70 kart**, wczytywane przez silnik |
 | `docs/V19_INTEGRATION_AND_UI.md` | Zmiany zasad v19 i ich implementacja |
 | `docs/GAME_MASTER_v17.md` | **Archiwum** wcześniejszej specyfikacji v17 — nie jest katalogiem aktualnych kart |
-| `data/event_order_v17.json` | Historyczny dokument kolejności zdarzeń nadal przywoływany w zasadach; atomowe fale zgonów wymagają dalszej weryfikacji |
+| `data/event_order_v17.json` | Historyczny dokument kolejności zdarzeń; wersję aktualną określa `event_order_v19.json` |
 | `game/core/` | Silnik meczu |
 | `game/ui/` | Interfejs gry |
 | `tests/` | Automatyczne testy |
 
-Zmiany S66, S67, S79, S114 i S115 z v19 są zaimplementowane, podobnie jak zatwierdzone zmiany S20, S82, S90, S91, S105 i S109. Mechanizm grup **jednoczesnych zgonów** wymaga nadal dalszych testów zgodności z zasadą wspólnej fali. Nie przedstawiamy bieżącego prototypu jako ostatecznie zbalansowanej ani w pełni zweryfikowanej wersji gry.
+Zmiany S66, S67, S79, S114 i S115 z v19 są zaimplementowane, podobnie jak zatwierdzone zmiany S20, S82, S90, S91, S105 i S109. Mechanizm grup **jednoczesnych zgonów** został przebudowany i objęty testami w MVP 0.9.10, lecz nadal nie przeprowadzono wyczerpującej walidacji wszystkich możliwych kombinacji. Nie przedstawiamy bieżącego prototypu jako ostatecznie zbalansowanej ani w pełni zweryfikowanej wersji gry.
+
+## MVP 0.9.10 — jednoczesne zgony i kolejka zdarzeń
+
+Grupy jednostek ginących jednocześnie są obecnie rozpatrywane we **wspólnej fali**. Najpierw ustalane są wszystkie legalne cele i zbierane wybory, a dopiero potem wykonywane są konsekwencje. Kolejne zgony wywołane tą falą trafiają do następnej grupy. Uzupełniono testy kaskad, osłon, statusów i śmierci bohaterów, a losowania kart S90/S91 zapisują odtwarzalne informacje w dzienniku. Szczegółowe zasady i ograniczenia znajdują się w [opisie wdrożenia fal śmierci](docs/FALY_ZGONOW_v19_MVP_0910.md).
+
+Dane autorytatywnej kolejności zdarzeń przechowuje `data/event_order_v19.json`. Historyczny plik `data/event_order_v17.json` służy wyłącznie do porównywania starszych decyzji.
 
 ## Rozwój i aktualizacje
 
