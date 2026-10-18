@@ -47,6 +47,50 @@ class HistoryTests(unittest.TestCase):
         self.assertGreater(len(game.event_journal),20)
 
 
+class SafeSaveTests(unittest.TestCase):
+    def test_save_roundtrip_preserves_rng_statuses_and_journal(self):
+        import tempfile
+        from pathlib import Path
+        from game.core.persistence import save_match,load_match
+        game=Match(91014)
+        game._log('Kontrola powtórki po wczytaniu')
+        game.players[0].hp=68
+        game.players[0].coins=15
+        game.players[1].hero_shield=1
+        expected_rng=game.rng.getstate()
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/'save.json'
+            save_match(game,path)
+            loaded=load_match(path)
+        self.assertEqual(loaded.players[0].hp,68)
+        self.assertEqual(loaded.players[0].coins,15)
+        self.assertEqual(loaded.players[1].hero_shield,1)
+        self.assertEqual(loaded.rng.getstate(),expected_rng)
+        self.assertEqual(loaded.event_journal,game.event_journal)
+        self.assertEqual(set(loaded.cards),set(game.cards))
+        loaded.players[0].hp=1
+        self.assertEqual(game.players[0].hp,68)
+
+    def test_corrupted_and_incompatible_save_is_rejected(self):
+        import tempfile
+        import json
+        from pathlib import Path
+        from game.core.persistence import save_match,load_match
+        game=Match(91015)
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/'save.json'
+            save_match(game,path)
+            document=json.loads(path.read_text(encoding='utf-8'))
+            document['state']['items'][0][1]='naruszenie'
+            path.write_text(json.dumps(document),encoding='utf-8')
+            with self.assertRaises(ValueError):load_match(path)
+
+    def test_save_does_not_execute_arbitrary_classes(self):
+        from game.core.persistence import _decode
+        with self.assertRaises(ValueError):
+            _decode({'_type':'dataclass','name':'os.system','fields':{}})
+
+
 class EffectsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
