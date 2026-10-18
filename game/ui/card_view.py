@@ -242,6 +242,18 @@ class CardView:
             screen.blit(emblem,(art.x+2,art.y+2))
         # ALL INFORMATION PANELS are opaque and above artwork/dimming.
         name_rect=zone['name']
+        if d.id.startswith('A0'):
+            # The draft ability is NOT executable yet. Tier/name are genuine
+            # but the card must not masquerade as fully implemented.
+            parts=d.scaling.split(' · ')
+            tag=('P'+parts[0].replace('POZIOM ','')+' '+
+                 (parts[1] if len(parts)>1 else 'PODSTAWOWA'))
+            badge_font=self.font(9,True)
+            badge_w=min(art.width-10,max(24,badge_font.size(tag)[0]+7))
+            badge=pygame.Rect(art.right-badge_w-3,art.y+3,badge_w,14)
+            pygame.draw.rect(screen,(92,64,36),badge,border_radius=3)
+            self._center(screen,self.clip(tag,badge_font,badge.width-4),
+                         badge,badge_font,(255,240,188))
         pygame.draw.rect(screen,(42,30,22),name_rect,border_radius=4)
         pygame.draw.rect(screen,(33,27,23),zone['info'],border_radius=5)
         # Brushed-metal dividers are background-only and never cover text.
