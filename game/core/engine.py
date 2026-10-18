@@ -440,6 +440,9 @@ class Match:
     @trace_effect('_finalize_end_turn')
     def _finalize_end_turn(self):
         p=self._player()
+        # Delayed exile must run before ordinary expiry deletes its marker.
+        if self.auction_catalog=='v4':
+            auction_ability_rules.expire_exile_marks(self,p.idx)
         for uid in list(p.board):
             if uid not in self.units:continue
             u=self.units[uid]
@@ -496,8 +499,6 @@ class Match:
             # It changes draft tier metadata only; skills remain disabled.
             if self.auctions_enabled and self.auction_catalog in ("v3","v4"):
                 auction_rules.advance_rarity(self,self.round-1)
-        if self.auction_catalog=='v4':
-            auction_ability_rules.expire_exile_marks(self,p.idx)
         self._next_turn_due=True
         self._update_auras()
 
