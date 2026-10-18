@@ -37,7 +37,7 @@ class SoloApp:
         self.screen=pygame.Surface(logical_size).convert()
         pygame.display.set_caption(cfg.WINDOW_TITLE)
         self.clock=pygame.time.Clock()
-        self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,22,28,34,46)}
+        self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,20,22,28,34,46)}
         self.cards_view=CardView()
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
         self.ai=ComputerOpponent()
