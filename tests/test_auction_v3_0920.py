@@ -178,7 +178,7 @@ class AbilityTests(unittest.TestCase):
         force_unit(g,'S09',0)
         g._kill_batch(['S09'])
         uid=add(g,'A003',board=True)
-        g._kill_batch([uid]);choose(g,'grave_hand','S09')
+        g._kill_batch([uid]);g._drain();choose(g,'grave_hand','S09')
         self.assertIn('S09',g.players[0].hand)
         self.assertNotIn('S09',g.players[0].grave)
         g.assert_integrity()
@@ -231,7 +231,7 @@ class AbilityTests(unittest.TestCase):
         g=game_for(92021)
         force_unit(g,'S09',1)
         uid=add(g,'A001',board=True)
-        g._kill_batch([uid]);choose(g,'kill','S09')
+        g._kill_batch([uid]);g._drain();choose(g,'kill','S09')
         self.assertNotIn('S09',g.units)
 
 
