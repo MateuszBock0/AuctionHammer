@@ -1,6 +1,14 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.22** to turowa gra karciana fantasy solo przeciwko komputerowi: 70 unikalnych kart podstawowych, zasady **GAME_MASTER_v19**, aktywny **balans zdolności v20**. Aukcje działają na fundamencie **katalogu v3** (12 archetypów, trzy poziomy rzadkości, 36 opisów); specjalne zdolności A001–A012 pozostają nieaktywne. Katalog v4 jest udokumentowany jako przyszła zmiana, a nie część aktualnego silnika. Zagrywanie kart nie kosztuje monet.
+**AuctionHammer 0.9.23** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Nowości 0.9.23 — aktywne zdolności aukcyjne v4
+
+- 12 odrębnych archetypów aukcyjnych (A001–A012), 36 wykonywanych wariantów podstawowych, rzadkich i legendarnych.
+- Aukcja co trzy pełne rundy; wzrost statystyk NOWYCH ofert: `ATK(R)=ATK(3)+(R-3)//3`, `PŻ(R)=R+8-ATK(R)`. Karty zakupione wcześniej nie rosną dalej.
+- Efekty zgonów, przejmowania, kopiowania, wygnania, przywołania, wymiany rąk, wyciszania, leczenia i ochrony bohatera są wykonywane przez rzeczywistą kolejkę Match.
+- Stare zapisy v3 zachowują dawną logikę bez aktywowania nowych zdolności; nowe mecze lokalne używają v4.
+- Szczegóły: [implementacja aukcji v4](docs/auction/RELEASE_V4_0923.md).
 
 ## Nowości 0.9.22 — poprawki po audycie meczu
 
