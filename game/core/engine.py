@@ -50,6 +50,7 @@ class Match:
         self._death_disabled = {}
         self._death_levels = {}
         self.action_turn = 0
+        self.rng_draw_index = 0  # v19: licznik rzeczywistych losowań efektów
         self.mulligan_done = set()
         self.mulligan_requests: dict[int,list[str]] = {}
         self.excluded: list[str] = []
@@ -932,8 +933,12 @@ class Match:
             if useful and level:self._heal(target,level)
         elif cid=='S88':immune(target,('poison','stun'))
         elif cid=='S90':
-            available=list(self.players[owner].hand)
+            available=sorted(self.players[owner].hand)  # migawka fizycznych identyfikatorów
             chosen=self.rng.sample(available,min(2,len(available)))
+            if chosen:
+                self.rng_draw_index+=1
+                self._log(f'Losowanie S90 #{self.rng_draw_index}: źródło {uid}, '
+                          f'kandydaci {available}, wybrano {chosen}.')
             for hand_uid in chosen:
                 self.cards[hand_uid].quick_on_first_summon=True
                 self._log(f'{self.label(hand_uid)} otrzymuje Szybki atak na najbliższe wystawienie (S90).')
@@ -941,7 +946,11 @@ class Match:
             if target in self.units:
                 mod(target,'double',0,True)
             elif self.players[owner].hand:
-                hand_uid=self.rng.choice(self.players[owner].hand)
+                available=sorted(self.players[owner].hand)
+                hand_uid=self.rng.choice(available)
+                self.rng_draw_index+=1
+                self._log(f'Losowanie S91 #{self.rng_draw_index}: źródło {uid}, '
+                          f'kandydaci {available}, wybrano {[hand_uid]}.')
                 self.cards[hand_uid].double_on_first_eligible=True
                 self._log(f'{self.label(hand_uid)} otrzymuje Podwójny atak na pierwszą legalną turę (S91).')
         # Krasnoludy
