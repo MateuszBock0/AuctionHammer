@@ -115,6 +115,7 @@ def card_cue(card, unit=None) -> CardCue:
         trigger=TRIGGER_SHORT[d.trigger],family=FAMILY_SYMBOLS[family],
         color=FAMILY_COLORS[family],base=cue,upgrade=upgrade,
         effect_value=value,ability_level=level,
-        growth=('Bez skalowania na ręce' if d.id.startswith('AUC') else\n                f'+{d.growth_atk} ATAK  +{d.growth_hp} PŻ / wł. turę na ręce'),
+        growth=('Bez skalowania na ręce' if d.id.startswith('AUC') else
+                f'+{d.growth_atk} ATAK  +{d.growth_hp} PŻ / wł. turę na ręce'),
         next_threshold=threshold,
     )
