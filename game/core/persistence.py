@@ -143,6 +143,11 @@ def load_match(path: Path | None = None) -> Match:
         raise ValueError('Brak prawidłowego stanu losowania')
     if data.get('phase') not in ('mulligan','turn','auction','finished'):
         raise ValueError('Nieprawidłowa faza meczu')
+    # Compatible with 0.9.18 saves created before the auction subsystem.
+    data.setdefault('auctions_enabled',False)
+    data.setdefault('auction',None)
+    data.setdefault('auction_history',[])
+    data.setdefault('auction_awards',{})
     match=Match.__new__(Match)
     match.__dict__.update(data)
     return match
