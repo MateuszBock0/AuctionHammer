@@ -83,13 +83,16 @@ def options(game,uid,context,attacked=None):
     if aid=='A008' and context=='play':
         return pick_choices(game,'mark' if tier==0 else 'exile',opponents,
                             'Naznacz' if tier==0 else 'Wygnaj') or (
-                            [Choice('auto',None,'Wygnaj kartę z ręki')] if tier>=1 else [])
+                            [Choice('auto',None,'Wygnaj kartę z ręki')]
+                            if tier>=1 and enemy.hand else [])
     if aid=='A009' and context=='play':
         if tier==2:return [Choice('swap_all',None,'Wymień obie ręce')]
-        return pick_choices(game,'exchange_own',own.hand,'Wymień własną')
+        return pick_choices(game,'exchange_own',own.hand,'Wymień własną') if enemy.hand else []
     if aid=='A010' and context=='end':
         result=[]
-        if len(own.board)<5:
+        # A legendary Queen has no legal summon/stat-copy target without a
+        # different allied unit; do not offer a button which does nothing.
+        if len(own.board)<5 and (tier<2 or myboard):
             result.append(Choice('summon',None,'Przywołaj jednostki'))
         if tier<2 or myboard:
             result.append(Choice('grow',None,'Wzmocnij Królową'))
