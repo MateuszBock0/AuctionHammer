@@ -317,7 +317,15 @@ class Match:
                         self.pending=Pending(uid,self.cards[uid].owner,ctx,choices,tgt)
                     continue
                 if self.death_waves:
-                    self.active_death_wave=self.death_waves.popleft()
+                    wave=self.death_waves.popleft()
+                    if wave['sources'] is None:
+                        # A subsequent cohort can already have been detected
+                        # due to aura collapse. It receives its OWN choice
+                        # snapshot only after the preceding group has closed.
+                        wave['sources']=tuple(
+                            (uid,tuple(options(self,uid,'death')))
+                            for uid in wave['source_ids'])
+                    self.active_death_wave=wave
                     continue
                 if self.position_reactions_due:
                     self.position_reactions_due=False
@@ -599,19 +607,19 @@ class Match:
             self._remove_unit(uid,death=True)
             self.players[1-owner].coins+=1
             self._log(f'Zgon {self.label(uid)}. Przeciwnik właściciela otrzymuje 1 monetę.')
-        # Po usunięciu CAŁEJ grupy utrwalamy dostępne cele raz. Kolejne
-        # efekty w tej samej grupie NIE zmieniają wyborów swoich sąsiadów.
-        sources=[]
-        for uid,_,blocked,monster in snapshot:
-            if monster and not blocked:
-                sources.append((uid,tuple(options(self,uid,'death'))))
-        if sources:
+        # Rejestrujemy źródła, ale ich legalne cele zamrażamy dopiero gdy
+        # grupa dochodzi na początek kolejki. Wcześniejsza grupa może jeszcze
+        # zmienić stan planszy, zwłaszcza po utracie dodatniej aury.
+        source_ids=tuple(uid for uid,_,blocked,monster in snapshot
+                         if monster and not blocked)
+        if source_ids:
             wave={'id':self._next_death_wave_id,'fallen':tuple(ordered),
-                  'sources':tuple(sources),'cursor':0,'decisions':[]}
+                  'source_ids':source_ids,'sources':None,
+                  'cursor':0,'decisions':[]}
             self._next_death_wave_id+=1
             self.death_waves.append(wave)
             self._log(f'Fala śmierci {wave["id"]}: {len(ordered)} zgonów, '
-                      f'{len(sources)} zdolności z jednej migawki.')
+                      f'{len(source_ids)} zdolności z jednej migawki.')
         # Śmierć od zaniku aury jest następną falą; bieżąca została już
         # zarejestrowana przed przeliczeniem aury.
         self._update_auras()
@@ -651,9 +659,25 @@ class Match:
             if operation[0]=='immune':
                 _,target,kinds,expires,source=operation
                 self._grant_immunity(target,kinds,expires,source)
-            elif operation[0]=='add':
-                (_,target,kind,value,remaining,expires,
-                 source,positive,bonus_once,expire_action)=operation
+        for operation in statuses:
+            if operation[0]!='add':continue
+            (_,target,kind,value,remaining,expires,
+             source,positive,bonus_once,expire_action)=operation
+            if target not in self.units:continue
+            # For poison/stun, legality against prior immunities and
+            # self-cleansing was checked while ALL declarations shared the
+            # same initial snapshot. A newly granted immunity in this group
+            # must not retroactively cancel a simultaneous legal status.
+            if kind in ('poison','stun'):
+                unit=self.units[target]
+                if kind=='stun':
+                    stacked=[e.expires or 0 for e in unit.effects if e.kind=='stun']
+                    if stacked:expires=max(expires or 0,max(stacked)+1)
+                unit.effects.append(Effect(kind,value,remaining,expires,
+                                           source,positive,bonus_once,
+                                           expire_action,remaining))
+                self._log(f'{self.label(target)} otrzymuje {kind} (wspólna fala śmierci).')
+            else:
                 self._add_effect(target,kind,value,remaining,expires,
                                  source,positive,bonus_once,expire_action)
         # Cała osłona i pancerz fali są przyznane, zanim jakiekolwiek

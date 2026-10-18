@@ -35,8 +35,9 @@ class WspolneFaleZgonow(unittest.TestCase):
         # W każdej fali obowiązuje porządek przed usunięciem jednostek:
         # bieżący gracz od lewej, potem rywal od lewej.
         self.assertEqual(g.death_waves[0]['fallen'],('S84','S21','S82','S17'))
-        self.assertEqual(tuple(uid for uid,_ in g.death_waves[0]['sources']),
+        self.assertEqual(g.death_waves[0]['source_ids'],
                          ('S84','S21','S82','S17'))
+        self.assertIsNone(g.death_waves[0]['sources'])
         self.assertEqual(g.players[0].grave.count('S84'),1)
         self.assertEqual(g.players[1].grave.count('S82'),1)
         g.assert_integrity()
@@ -50,11 +51,12 @@ class WspolneFaleZgonow(unittest.TestCase):
         g._kill_batch(['S84','S82'])
         # Jeszcze przed wykonaniem S84 obie listy legalnych celów są ustalone.
         wave=g.death_waves[0]
+        self.assertIsNone(wave['sources'])
+        self.assertEqual(target.armor,0)
+        g._drain()
         self.assertEqual(len(wave['sources']),2)
         self.assertIn('S01',[c.target for c in wave['sources'][0][1]])
         self.assertIn('S01',[c.target for c in wave['sources'][1][1]])
-        self.assertEqual(target.armor,0)
-        g._drain()
         self.assertEqual(g.pending.uid,'S84')
         idx=next(i for i,c in enumerate(g.pending.choices) if c.target=='S01')
         g.choose(idx)
@@ -141,7 +143,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g._add_effect('S21','stun',expires=g._expiry(0),source='S59',positive=False)
         old=g.players[1].hp
         g._kill_batch(['S21','S17'])
-        self.assertEqual([x for x,_ in g.death_waves[0]['sources']],['S17'])
+        self.assertEqual(g.death_waves[0]['source_ids'],('S17',))
         g._drain()
         self.assertEqual(g.players[1].hp,old)
         self.assertEqual(g.players[1].grave.count('S17'),1)
