@@ -11,7 +11,8 @@ class DataIntegrity(unittest.TestCase):
   cls.rules=load('game_rules_v19.json')
   cls.old_rules=load('game_rules_v17.json')
   cls.bank=load('starter_bank_v17.json')
-  cls.events=load('event_order_v17.json')
+  cls.events=load('event_order_v19.json')
+  cls.events_v17=load('event_order_v17.json')
   cls.master=load('GAME_MASTER.json')
   cls.status=load('PROJECT_STATUS_v17.json')
  def test_counts(self):
@@ -52,7 +53,10 @@ class DataIntegrity(unittest.TestCase):
  def test_locked_event_order(self):
   self.assertEqual(self.events['status'],'LOCKED_GLOBAL_PRIORITY')
   self.assertEqual(len(self.events['authoritative_priority']),10)
-  self.assertEqual(self.events['version'],'17.0')
+  self.assertEqual(self.events['version'],'19.0')
+  self.assertEqual(self.events_v17['version'],'17.0')
+  self.assertEqual(self.master['canonical_event_order_file'],'data/event_order_v19.json')
+  self.assertEqual(self.rules['canonical_event_order_file'],'data/event_order_v19.json')
  def test_consistent_rule_sources(self):
   self.assertEqual(self.rules['version'],'19.0')
   self.assertEqual(self.old_rules['version'],'17.0')
