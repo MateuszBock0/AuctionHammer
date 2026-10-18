@@ -1,7 +1,7 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.6",
-  "specification": "GAME_MASTER_v17",
+  "mvp": "0.9.8",
+  "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": false,
   "card_costs": false,

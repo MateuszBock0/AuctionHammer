@@ -8,7 +8,7 @@ from .models import Choice
 
 # Efekty bez celu i bez możliwości wyboru rozstrzyga engine._execute.
 SELF_OR_AUTOMATIC = {
-    'S66', 'S67', 'S09', 'S10', 'S12', 'S70', 'S11', 'S15', 'S71', 'S72', 'S74', 'S76', 'S79',
+    'S09', 'S10', 'S12', 'S70', 'S11', 'S15', 'S71', 'S72', 'S74', 'S76', 'S79',
     'S21', 'S17', 'S27', 'S95', 'S90', 'S103', 'S104', 'S105', 'S106', 'S107', 'S108',
     'S109', 'S33', 'S111', 'S39', 'S114', 'S115',
 }
@@ -26,6 +26,19 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
         ally = [c for c in ally if c != uid]
     def c(mode, targets):
         return [Choice(mode, target, f"{mode}  →  {game.label(target)}") for target in targets]
+
+    # v19: elven traits are mutually exclusive on-play choices.
+    if cid == 'S66':
+        choices=[Choice('self_quick',uid,'Szybki atak: Mag otrzymuje cechę teraz')]
+        choices += c('hand_quick',[x for x in own.hand if x!=uid])
+        return choices
+    if cid == 'S67':
+        return c('board_double',[x for x in ally if x in game.units])
+    # v18/v19: when no allied board recipient survives a death, fall back.
+    if cid in ('S20','S82') and not ally:
+        return [Choice('auto',f'hero:{owner}','Bohater otrzymuje ochronę')]
+    if cid == 'S91' and not ally:
+        return [Choice('auto',None,'Losowa karta w ręce otrzymuje bonus')]
     if cid in SELF_OR_AUTOMATIC:
         return [Choice('auto', attacked, 'Aktywuj')]  # may resolve without a modal
     if cid in ('S01','S58','S59','S83','S84','S32'):

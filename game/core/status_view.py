@@ -134,13 +134,15 @@ def active_statuses(game, uid: str) -> list[VisibleStatus]:
     if u.aura_hp:
         add('hp_up' if u.aura_hp>0 else 'hp_down',f'HP{u.aura_hp:+}', 'Aura MAX HP', f'{u.aura_hp:+} MAX HP, efekt dynamiczny', ', '.join(aura_sources('S35')))
 
+    if u.fallback_double_pending and (u.played_turn != player.turn_count or game._fast(u)) and not game._has(u,'stun'):
+        add('double','2×','Podwójny atak — awaryjny (S91)','Pierwsza własna tura, w której możliwy jest legalny atak; maksymalnie dwa ataki', 'S91')
     disabled=game._disabled(u)
     active_kinds={e.kind for e in u.effects}
     if d.id=='S33' and not disabled and 'taunt' not in active_kinds:
         add('taunt','PROW','Prowokacja (wrodzona)','Wrogie ataki muszą celować w jednostki z prowokacją',uid)
-    if d.id in ('S66','S114') and not disabled and 'quick' not in active_kinds:
+    if d.id == 'S114' and not disabled and 'quick' not in active_kinds:
         add('quick','SZYB','Szybki atak (wrodzony)','Może atakować w turze wystawienia',uid)
-    if d.id in ('S67','S115','S79') and not disabled and (d.id!='S79' or u.attacks>0) and 'double' not in active_kinds:
+    if d.id in ('S115','S79') and not disabled and (d.id!='S79' or u.attacks>0) and 'double' not in active_kinds:
         add('double','2×','Podwójny atak (wrodzony)','Maksymalnie dwa ataki w turze',uid)
     if d.id=='S39' and not disabled and 'immune_poison' not in active_kinds:
         add('immune','ODP','Odporność na truciznę (wrodzona)','Nie otrzymuje trucizny',uid)
@@ -156,9 +158,14 @@ def active_statuses(game, uid: str) -> list[VisibleStatus]:
 
 
 def hand_grants(game, uid: str) -> list[VisibleStatus]:
-    """Temporary *bestowed* powers on a card still in hand."""
+    """Show every actual instance-scoped bonus waiting on a card in hand."""
     c=game.cards.get(uid)
     if c is None or c.zone!='hand':return []
+    result=[]
     if c.quick_next_turn is not None and c.owner is not None:
-        return [VisibleStatus('quick','SZYB','Nadany Szybki atak',f'Zadziała, jeśli wystawisz kartę w swojej turze nr {c.quick_next_turn}','Konstruktor Sprężyn')]
-    return []
+        result.append(VisibleStatus('quick','SZYB','Nadany Szybki atak',f'Tylko jeśli wystawisz kartę w swojej turze nr {c.quick_next_turn}','Konstruktor Sprężyn'))
+    if c.quick_on_first_summon:
+        result.append(VisibleStatus('quick','SZYB','Szybki atak na pierwsze wystawienie','Bonus zostanie zużyty przy najbliższym wystawieniu tej konkretnej karty','S66 / S90'))
+    if c.double_on_first_eligible:
+        result.append(VisibleStatus('double','2×','Podwójny atak (pierwsza legalna tura)','Jedna najbliższa własna tura, w której jednostka może zaatakować po wystawieniu','S91'))
+    return result

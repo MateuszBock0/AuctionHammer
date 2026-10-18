@@ -278,18 +278,23 @@ class FullScalingAudit(unittest.TestCase):
                                 self.assertTrue(g._fast(ally))
                             elif cid=="S90":
                                 skill("death")
-                                self.assertTrue(g.players[0].next_fast)
+                                self.assertEqual(sum(g.cards[x].quick_on_first_summon for x in g.players[0].hand),
+                                                 min(2,len(g.players[0].hand)))
                             elif cid=="S101":
                                 held=g.players[0].hand[0]
                                 skill("end","Szybki atak w kolejnej turze",held)
                                 self.assertEqual(g.cards[held].quick_next_turn,
                                                  g.players[0].turn_count+1)
+                            elif cid=="S66":
+                                skill("play","self_quick",cid)
+                                self.assertTrue(g._fast(source))
                             else:self.assertTrue(g._fast(source))
                             if cid in ("S66","S114"):
                                 self.assertEqual(2 if g._double(source) else 1,1)
                         else:
                             if cid=="S79":source.attacks=1
                             elif cid=="S91":skill("death","Pozostała jednostka",aid)
+                            elif cid=="S67":skill("play","board_double",cid)
                             elif cid=="S102":skill("end","Podwójny atak na następną turę",aid)
                             recipient=ally if cid in ("S91","S102") else source
                             self.assertTrue(g._double(recipient))

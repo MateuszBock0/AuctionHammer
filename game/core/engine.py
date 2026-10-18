@@ -1,4 +1,4 @@
-"""AuctionHammer: deterministyczny silnik meczu solo oparty na Game Master v17.
+"""AuctionHammer: deterministyczny silnik meczu solo oparty na Game Master v19.
 Wszystkie mutacje stanu gry odbywają się tutaj — UI i AI wysyłają komendy.
 """
 from __future__ import annotations
@@ -168,9 +168,12 @@ class Match:
         u=Unit(uid,p.idx,card.attack,card.max_hp,card.max_hp,card.ability_level,p.turn_count)
         self.units[uid]=u;p.board.append(uid)
         p.played_this_turn=True
-        if p.next_fast or card.quick_next_turn==p.turn_count:
-            self._add_effect(uid,'quick',source='temporary',expires=p.turn_count)
+        if p.next_fast or card.quick_next_turn==p.turn_count or card.quick_on_first_summon:
+            self._add_effect(uid,'quick',source='S66' if card.quick_on_first_summon else 'temporary',expires=p.turn_count)
             p.next_fast=False
+        u.fallback_double_pending=card.double_on_first_eligible
+        card.quick_on_first_summon=False
+        card.double_on_first_eligible=False
         card.quick_next_turn=None
         self._log(f'{p.name} wystawia {self.label(uid)} {u.atk}/{u.hp}.')
         if self._fast(u):
@@ -324,6 +327,13 @@ class Match:
         for uid in p.hand:
             card=self.cards[uid]
             card.hand_turns+=1
+        # v19 S91: the deferred grant expires after the first own turn when
+        # the unit was legally able to attack; stun delays that first turn.
+        for uid in list(p.board):
+            if uid not in self.units:continue
+            unit=self.units[uid]
+            if unit.fallback_double_pending and not self._has(unit,'stun') and (unit.played_turn!=p.turn_count or self._fast(unit)):
+                unit.fallback_double_pending=False
         for uid in list(p.board):
             if uid not in self.units:continue
             u=self.units[uid]
@@ -360,8 +370,16 @@ class Match:
 
     def _has(self,u,kind):return any(e.kind==kind for e in u.effects)
     def _disabled(self,u):return self._has(u,'stun') or self._has(u,'silence')
-    def _fast(self,u):return self._has(u,'quick') or (self.cards[u.uid].definition.id in ('S66','S114') and not self._disabled(u))
-    def _double(self,u):return self._has(u,'double') or (self.cards[u.uid].definition.id in ('S67','S115','S79') and not self._disabled(u) and (self.cards[u.uid].definition.id!='S79' or u.attacks>0))
+    def _fast(self,u):return self._has(u,'quick') or (self.cards[u.uid].definition.id=='S114' and not self._disabled(u))
+    def _double(self,u):
+        # S67 grants a status on play; it no longer has innate double attack.
+        # S91's hand fallback grants double for the first *eligible* own turn.
+        p=self.players[u.owner]
+        eligible=(u.played_turn!=p.turn_count or self._fast(u)) and not self._has(u,'stun')
+        fallback=u.fallback_double_pending and eligible
+        intrinsic=(self.cards[u.uid].definition.id in ('S115','S79') and not self._disabled(u)
+                   and (self.cards[u.uid].definition.id!='S79' or u.attacks>0))
+        return self._has(u,'double') or fallback or intrinsic
     def _taunt(self,u):return self._has(u,'taunt') or (self.cards[u.uid].definition.id=='S33' and not self._disabled(u))
 
     def _expiry(self,owner,kind='next'):
@@ -505,6 +523,7 @@ class Match:
         u=self.units.pop(uid)
         self.players[u.owner].board.remove(uid)
         card=self.cards[uid];card.zone='grave';card.hand_turns=0;card.quick_next_turn=None
+        card.quick_on_first_summon=False;card.double_on_first_eligible=False
         self.players[u.owner].grave.append(uid)
 
     def _update_auras(self,defer_reactive=False):
@@ -595,7 +614,7 @@ class Match:
         assert len(self.bank)+len(self.excluded)+sum(len(p.hand)+len(p.deck)+len(p.grave)+len(p.board) for p in self.players)==70
 
     def _execute(self,uid,context,choice,attacked=None):
-        """Katalog 70 kart: parametry, warianty, cele i wszystkie wyjątki aktualnego katalogu v17.
+        """Katalog 70 kart: parametry, warianty, cele i wszystkie wyjątki aktualnego katalogu v19.
 
         Dla efektów wymagających wyboru pending zatrzymuje kolejkę, co pozwala
         obsłużyć zarówno gracza jak i agenta tym samym kodem.
@@ -663,7 +682,14 @@ class Match:
             if mode=='Oczyść własną':self._heal(target,1+(level if useful else 0))
             elif useful:self._damage(target,level)
         elif cid=='S64':immune(target,('poison',))
-        elif cid in ('S66','S67'):pass  # innate: checked in _fast/_double
+        elif cid=='S66':
+            if mode=='self_quick' and target==uid and uid in self.units:
+                self._add_effect(uid,'quick',source=uid)
+            elif mode=='hand_quick' and target in self.players[owner].hand and target!=uid:
+                self.cards[target].quick_on_first_summon=True
+        elif cid=='S67':
+            if target in self.players[owner].board and target in self.units:
+                self._add_effect(target,'double',source=uid)
         # Dzikie bestie
         elif cid=='S09':self._damage(attacked,1+level)
         elif cid=='S10':self._heal(uid,2+level)
@@ -706,12 +732,17 @@ class Match:
         elif cid=='S17':self._heal(f'hero:{owner}',6+level)
         elif cid=='S23':mod(target,'atk',(2+level) if mode=='Wzmocnij' else -(2+level))
         elif cid=='S81':mod(target,'max_hp',(5+level) if mode=='Wzmocnij' else -(5+level))
-        elif cid=='S82':arm(target,6+level)
+        elif cid=='S82':
+            if target==f'hero:{owner}':self.players[owner].hero_armor+=6+level
+            else:arm(target,6+level)
         elif cid=='S20':
-            if target in self.units:
+            if target==f'hero:{owner}':
+                self.players[owner].hero_shield=1
+                self.players[owner].hero_armor+=2
+            elif target in self.units:
                 self.units[target].shield=1
                 self.units[target].shield_source=uid
-            arm(target,2)
+                arm(target,2)
         elif cid=='S83':self._add_poison(target,2,3,uid,level)
         elif cid=='S84':
             applied = (self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
@@ -723,8 +754,19 @@ class Match:
             useful=self._clean(target,True);arm(target,2)
             if useful and level:self._heal(target,level)
         elif cid=='S88':immune(target,('poison','stun'))
-        elif cid=='S90':self.players[owner].next_fast=True
-        elif cid=='S91':mod(target,'double',0,True)
+        elif cid=='S90':
+            available=list(self.players[owner].hand)
+            chosen=self.rng.sample(available,min(2,len(available)))
+            for hand_uid in chosen:
+                self.cards[hand_uid].quick_on_first_summon=True
+                self._log(f'{self.label(hand_uid)} otrzymuje Szybki atak na najbliższe wystawienie (S90).')
+        elif cid=='S91':
+            if target in self.units:
+                mod(target,'double',0,True)
+            elif self.players[owner].hand:
+                hand_uid=self.rng.choice(self.players[owner].hand)
+                self.cards[hand_uid].double_on_first_eligible=True
+                self._log(f'{self.label(hand_uid)} otrzymuje Podwójny atak na pierwszą legalną turę (S91).')
         # Krasnoludy
         elif cid=='S27':
             enemy=self.players[1-owner].board

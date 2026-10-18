@@ -189,11 +189,12 @@ class IntegrationStatusTests(unittest.TestCase):
         g=setup_game(39)
         force_unit(g,'S90',0)
         g._execute('S90','death',Choice('auto',None,''))
-        self.assertTrue(g.players[0].next_fast)
-        next_uid=g.players[0].hand[0]
+        recipients=[x for x in g.players[0].hand if g.cards[x].quick_on_first_summon]
+        self.assertEqual(len(recipients),min(2,len(g.players[0].hand)))
+        next_uid=recipients[0]
         g.players[0].played_this_turn=False
         g.play(next_uid)
-        self.assertFalse(g.players[0].next_fast)
+        self.assertFalse(g.cards[next_uid].quick_on_first_summon)
         self.assertTrue(matching(g,next_uid,'quick'))
 
 class ArmorSynchronizationTests(unittest.TestCase):

@@ -140,6 +140,9 @@ class SelectionLayoutTests(unittest.TestCase):
         self.app.game=setup_game(307)
         playable(self.app.game,'S66')
         self.app._try_play('S66')
+        self.assertIsNotNone(self.app.game.pending)
+        idx=next(i for i,c in enumerate(self.app.game.pending.choices) if c.mode=='self_quick')
+        self.app._choose(idx)
         self.assertEqual(self.app.selected,'S66')
         self.assertIn('hero:1',self.app.game.legal_attacks('S66'))
 
