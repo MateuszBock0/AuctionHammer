@@ -105,7 +105,9 @@ def card_cue(card, unit=None) -> CardCue:
         cue=FAMILY_SYMBOLS[family]
     upgrade='STAŁE PARAMETRY' if d.id.startswith('AUC') else UPGRADES[family]
     if family=='Regeneracja' and d.id=='S109':upgrade='+1 CO TURĘ / 3T'
-    if unit is not None:
+    if d.id.startswith('AUC'):
+        threshold='KARTA AUKCYJNA'
+    elif unit is not None:
         threshold='POZIOM UTRWALONY'
     else:
         threshold=f'ZA {3-card.hand_turns%3} TUR' if card.hand_turns%3 else 'ZA 3 TURY'
