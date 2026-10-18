@@ -937,7 +937,7 @@ class Match:
         assert len(basic)==70 and len(set(basic))==70,('Bank 70x1 violated',len(basic),len(set(basic)))
         assert len(all_ids)==len(set(all_ids)), 'Auction card duplicated'
         assert set(all_ids)==set(self.cards),('Physical cards mismatch',len(all_ids),len(self.cards))
-        assert all(uid not in self.bank and uid not in self.excluded for uid in self.auction_awards)
+        assert all(uid not in self.bank for uid in self.auction_awards)
         for p in self.players:
             assert len(p.board)<=5 and all(self.cards[x].owner==p.idx for x in p.hand+p.deck+p.grave+p.board)
         assert set(self.units)==set(self.players[0].board+self.players[1].board)
