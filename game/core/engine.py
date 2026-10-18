@@ -36,6 +36,7 @@ class Match:
         # Lifetime actual death events (per owner), not current grave sizes.
         # Board replacements, captures and exile do not increment losses.
         self.death_counts=[0,0]
+        self.death_counts_complete=True
         self.auction_used=[]       # acquired then removed; never redrawn
         self.exiled=[]
         self.vanished=[]
