@@ -171,6 +171,22 @@ Mechaniki i balans pozostałych 70 kart nie zostały zmienione.
 
 [Analiza paczki i szczegóły implementacji](docs/TAVERN_AUCTION_PROTOTYPE_0919.md).
 
+## Wydanie 0.9.20 — pełny wygląd drewnianej karczmy
+
+Warstwa graficzna **Tavern UI Pack v2** jest teraz widoczna w całej grze:
+tło z kominkiem i drewnianymi stołami, ciemne drewniane strefy
+planszy, mosiężne ramy slotów, przyciski i ornamenty menu/aukcji.
+Wykorzystano skompresowane, dostarczone wcześniej oryginalne grafiki,
+bez pobierania czegokolwiek przez internet podczas rozgrywki.
+
+Zachowano nieprzezroczyste strefy pod kartami i napisami. Teksty,
+rozmiary kart i hitboxy nie uległy zmianom. **Wydanie 0.9.20 nie
+zmienia zasad aukcji 0.9.19 ani zestawu 70 podstawowych kart.**
+
+Podglądy: `preview/VISUAL_0920_TAWERNA_PELNA_PLANSZA.png`,
+`preview/VISUAL_0920_DREWNIANE_MENU.png` i
+`preview/VISUAL_0920_DREWNIANA_AUKCJA.png`.
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.
