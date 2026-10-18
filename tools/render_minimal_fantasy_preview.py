@@ -64,6 +64,22 @@ for i,(label,w,h) in enumerate(sizes):
     text=caption.render(f'{w} × {h} px',True,(180,198,211))
     canvas.blit(text,(x+8,58+h+3))
 pygame.image.save(canvas,DEST/'MINIMAL_FANTASY_POROWNANIE.png')
+# Zdjęcie regresyjne odpowiadające zgłoszeniu: S64 i S09, trzy formaty.
+# Oryginalny renderer, prawdziwe karty i bieżąca specyfikacja v19.
+comparison=pygame.Surface((1280,510))
+comparison.fill((13,21,31))
+comparison.blit(title.render('POPRAWKA CZYTELNOŚCI — ODPORNOŚĆ I OBRAŻENIA',True,
+                             (243,237,217)),(20,12))
+for x,tag,w,h in ((16,'REKA',125,195),(325,'PLANSZA',148,220),
+                  (691,'SZCZEGOLY',255,380)):
+    comparison.blit(caption.render(f'{tag}: {w}×{h}',True,(203,224,232)),
+                    (x+8,56))
+    for ix,uid in enumerate(('S64','S09')):
+        xx=x+ix*(w+16)
+        comparison.blit(caption.render(uid,True,(203,224,232)),(xx+7,82))
+        view.draw(comparison,game.cards[uid],pygame.Rect(xx,106,w,h))
+pygame.image.save(comparison,DEST/'S64_S09_CZYTELNOSC_0913.png')
+
 # Komplet 70 kart: rzeczywisty renderer i wszystkie trzy wymiary.
 # Pojedyncze arkusze służą porównaniu hierarchii tekstów, celów i statystyk.
 for label,width,height in sizes:
@@ -84,4 +100,4 @@ for label,width,height in sizes:
     pygame.image.save(sheet,DEST/f'KATALOG_70_{label}.png')
 
 pygame.quit()
-print('Utworzono 10 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 11 obrazów podglądu Pygame w folderze preview.')
