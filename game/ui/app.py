@@ -613,7 +613,7 @@ class SoloApp:
         pygame.draw.rect(self.screen,(64,71,79),(x,rect.y+14,425,17),border_radius=6)
         pygame.draw.rect(self.screen,(66,171,125) if idx==0 else (181,78,87),(x,rect.y+14,int(hp/100*425),17),border_radius=6)
         self._text(p.name,18,rect.x+15,rect.y+9)
-        self._text(f'{p.hp}/100',14,x+173,rect.y+14,(255,255,255))
+        self._text(f'{hp}/100',14,x+173,rect.y+14,(255,255,255))
         self._text(f'MONETY  {p.coins}',16,rect.right-172,rect.y+11,cfg.GOLD)
 
     def _draw_board(self):
@@ -1088,7 +1088,7 @@ class SoloApp:
         self._text(f'ROZEGRANE RUNDY: {self.game.round}',18,738,419,cfg.GOLD,center=True)
         for owner,p in enumerate(self.game.players):
             y=470+owner*47
-            label=f'{p.name}: {p.hp} PŻ  ·  {len(p.grave)} utraconych jednostek  ·  {p.coins} monet'
+            label=f'{p.name}: {max(0,min(100,p.hp))} PŻ  ·  {len(p.grave)} utraconych jednostek  ·  {p.coins} monet'
             self._text(label,16,738,y,cfg.TEXT,center=True)
         self._text(f'Historia: {len(self.game.event_journal)} zdarzeń  ·  '
                    f'powtórka: {len(self.recorder.frames)} stanów',15,738,575,cfg.MUTED,center=True)
