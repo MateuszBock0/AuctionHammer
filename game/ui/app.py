@@ -432,6 +432,19 @@ class SoloApp:
             'bid':pygame.Rect(840,734,178,49)
         }[action]
 
+    def _auction_bid_issue(self,amount):
+        """Check affordability in UI; Match remains authoritative."""
+        a=self.game.auction
+        if a is None or a.phase!='bidding' or a.turn!=0:
+            return 'Teraz nie możesz licytować.'
+        minimum=max(1,a.current_bid+1)
+        coins=self.game.players[0].coins
+        if amount<minimum:
+            return f'Minimalna oferta to {minimum} monet.'
+        if amount>coins:
+            return f'Masz {coins} monet, potrzeba {amount}. Wybierz PASUJ.'
+        return ''
+
     def _auction_do(self,operation,uid=None):
         game=self.game
         if game.phase!='auction' or game.auction is None or game.auction.turn!=0:
@@ -439,12 +452,15 @@ class SoloApp:
         try:
             if operation=='pass':
                 game.auction_pass(0)
-            elif operation=='bid':
-                minimum=game.auction.current_bid+1
-                amount=int(self.auction_bid_text) if self.auction_bid_text else minimum
+            elif operation in ('bid','min'):
+                minimum=max(1,game.auction.current_bid+1)
+                amount=(int(self.auction_bid_text)
+                        if operation=='bid' and self.auction_bid_text else minimum)
+                issue=self._auction_bid_issue(amount)
+                if issue:
+                    self.auction_status=issue
+                    return
                 game.auction_bid(0,amount)
-            elif operation=='min':
-                game.auction_bid(0,game.auction.current_bid+1)
             elif operation=='pick':
                 game.auction_pick(0,uid)
             self.auction_status=''
