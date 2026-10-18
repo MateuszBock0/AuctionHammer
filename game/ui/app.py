@@ -595,6 +595,10 @@ class SoloApp:
                 self.details_card=None
             return True
         if self.game.phase=='auction':
+            if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
+                self.menu_page='main'
+                self.menu_open=True
+                return True
             if event.type==pygame.KEYDOWN and self.game.auction.turn==0:
                 state=self.game.auction
                 if state.phase=='bidding':
