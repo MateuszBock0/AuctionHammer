@@ -484,6 +484,9 @@ class Match:
         return len(u.effects)!=before
 
     def _heal(self,target,amount,ability=True):
+        if self._resolving_death_wave:
+            self._wave_healing.append((target,amount,ability))
+            return
         if target in self.units:
             u=self.units[target]
             if ability:
@@ -613,8 +616,8 @@ class Match:
         # usunięciem ofiar i weryfikacją wyniku meczu.
         for target,amount,ignore_defense in damage:
             self._damage(target,amount,ignore_defense=ignore_defense,defer_death=True)
-        for target,amount in healing:
-            self._heal(target,amount)
+        for target,amount,ability in healing:
+            self._heal(target,amount,ability=ability)
         self._update_auras()
         self._kill_batch([uid for uid,u in list(self.units.items()) if u.hp<=0])
         self._log(f'Zamknięto falę śmierci {wave["id"]}.')
@@ -668,10 +671,11 @@ class Match:
                 if src not in u.aura_armor:u.aura_armor[src]=2+self.units[src].ability_level
         # S108: on first facing a new opponent. Deferred during PLAY_CARD
         # so ON_PLAY resolves before newly generated reactive passives.
-        if not defer_reactive:
+        if not defer_reactive and not self._resolving_death_wave:
             self._apply_position_reactions()
-        dead=[uid for uid,u in list(self.units.items()) if u.hp<=0]
-        if dead:self._kill_batch(dead)
+        if not self._resolving_death_wave:
+            dead=[uid for uid,u in list(self.units.items()) if u.hp<=0]
+            if dead:self._kill_batch(dead)
 
     def _apply_position_reactions(self):
         for uid,u in list(self.units.items()):
