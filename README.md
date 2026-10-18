@@ -45,12 +45,13 @@ Gra automatycznie dostosowuje początkowy rozmiar okna do dostępnej przestrzeni
 | `data/cards_base_70.json` | **Jedyne bieżące źródło definicji 70 kart**, wczytywane przez silnik |
 | `docs/V19_INTEGRATION_AND_UI.md` | Zmiany zasad v19 i ich implementacja |
 | `docs/GAME_MASTER_v17.md` | **Archiwum** wcześniejszej specyfikacji v17 — nie jest katalogiem aktualnych kart |
-| `data/event_order_v17.json` | Historyczny dokument kolejności zdarzeń nadal przywoływany w zasadach; atomowe fale zgonów wymagają dalszej weryfikacji |
+| `data/event_order_v19.json` | Aktualna nadrzędna kolejność zdarzeń, wspólne fale zgonów i kaskady |
+| `data/event_order_v17.json` | Archiwalny kontrakt zdarzeń v17 |
 | `game/core/` | Silnik meczu |
 | `game/ui/` | Interfejs gry |
 | `tests/` | Automatyczne testy |
 
-Zmiany S66, S67, S79, S114 i S115 z v19 są zaimplementowane, podobnie jak zatwierdzone zmiany S20, S82, S90, S91, S105 i S109. Mechanizm grup **jednoczesnych zgonów** wymaga nadal dalszych testów zgodności z zasadą wspólnej fali. Nie przedstawiamy bieżącego prototypu jako ostatecznie zbalansowanej ani w pełni zweryfikowanej wersji gry.
+Zmiany S66, S67, S79, S114 i S115 z v19 są zaimplementowane, podobnie jak zatwierdzone zmiany S20, S82, S90, S91, S105 i S109. MVP 0.9.10 obsługuje wspólne fale jednoczesnych zgonów: zamrożenie celów i deklaracji, rozpatrzenie skutków jednej grupy oraz kolejne fale kaskad z kontrolą zakończenia meczu. Testy sprawdzają wielokrotne zgony, odporność, ogłuszenie, utratę aur, efekty śmierci i bohaterów. Nie przedstawiamy bieżącego prototypu jako ostatecznie zbalansowanej ani w pełni zweryfikowanej wersji wszystkich możliwych kombinacji kart.
 
 ## Rozwój i aktualizacje
 
