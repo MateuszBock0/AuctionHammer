@@ -1,6 +1,6 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.9  
+**Wersja gry:** MVP 0.9.10  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
 **Aukcje i karty aukcyjne:** poza bieżącym etapem.  
@@ -21,7 +21,8 @@ Ten dokument opisuje **aktualny stan gry**. Fragment od nagłówka „ARCHIWUM �
 | `game/ui/` | Polski interfejs użytkownika |
 | `tests/` | Testy zgodności i zabezpieczenia przed regresją |
 | `docs/GAME_MASTER_v17.md` | **Archiwum v17** — do porównywania historycznych decyzji |
-| `data/event_order_v17.json` | Historyczny zapis kolejki zdarzeń. Jego atomowe fale zgonów nadal wymagają osobnej weryfikacji w silniku |
+| `data/event_order_v19.json` | **Obowiązująca nadrzędna kolejka zdarzeń Game Master v19** |
+| `data/event_order_v17.json` | Archiwum historycznej kolejki v17 |
 
 ### Uruchomienie i aktualizacje
 
@@ -38,9 +39,13 @@ Po rozpakowaniu gotowej wersji Windows kliknij `URUCHOM_AUCTIONHAMMER.bat`, aby 
 - Wszystkie etykiety interfejsu, informacje o efektach, komunikaty o wyborach oraz paski rozwoju zdolności mają być wyświetlane po polsku.
 - Rozgrywka obecnie przebiega przeciwko komputerowi. Gra sieciowa oraz aukcje są planowane w osobnych etapach.
 
+### Poprawność silnika w MVP 0.9.10
+
+Wprowadzono deterministyczne grupy jednoczesnych zgonów, migawkę uprawnień i celów wszystkich umierających jednostek, zebranie wymaganych wyborów przed skutkami, wspólny etap rozpatrywania ich efektów oraz odrębne kolejne grupy wywołane kaskadą. Po każdej zamkniętej fali sprawdzany jest wynik meczu. Obowiązuje `data/event_order_v19.json`, a nie archiwalny `data/event_order_v17.json`.
+
 ### Ograniczenia i ryzyka
 
-Automatyczne testy obejmują podstawowe interakcje i zmiany zatwierdzone w v19, ale **nie dowodzą pełnej zgodności z kolejką jednoczesnych zdarzeń**. W szczególności wspólne migawki celów dla grup zgonów, atomowe rozstrzyganie efektów „Przy śmierci” i wywołane nimi kaskady wymagają dalszych testów. Wersja nie ma także udowodnionego balansu na podstawie dużej liczby meczów.
+Testy dotyczące wspólnych fal obejmują m.in. dwustronne obrażenia, ogłuszenie blokujące zdolność śmierci, równoczesne nadanie odporności i ogłuszenia, oczyszczanie, utratę aur oraz decyzje gracza. **Nie jest to matematyczny dowód pełnej zgodności wszystkich kombinacji 70 kart ani kompletna walidacja wszystkich innych etapów nadrzędnej kolejki.** Wersja nie ma również zweryfikowanego balansu na podstawie dużej liczby meczów.
 
 ---
 
