@@ -245,6 +245,7 @@ class CatalogFoundationTests(unittest.TestCase):
         # fabricated terminal state; it reconstructs every command.
         report={
             "seed":m.seed,
+            "complete_from_start":m.audit_complete,
             "initial_state":m.audit_initial,
             "actions":m.audit_actions,
             "event_journal":list(m.event_journal),
