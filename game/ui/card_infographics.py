@@ -84,6 +84,13 @@ def card_cue(card, unit=None) -> CardCue:
     d=card.definition
     family=d.family
     level=unit.ability_level if unit is not None else card.ability_level
+    if d.id.startswith('A0'):
+        return CardCue(trigger=TRIGGER_SHORT[d.trigger],
+                       family=FAMILY_SYMBOLS[family],
+                       color=FAMILY_COLORS[family],
+                       base='NIEAKTYWNA',upgrade='ZDOLNOŚĆ W PRZYGOTOWANIU',
+                       effect_value=None,ability_level=level,
+                       growth='STAŁE ATAK / PŻ',next_threshold='RZADKOŚĆ CO 3 RUNDY')
     base=first_scalable_value(d)
     if family=='Ogłuszenie' and base is None:base=0
     value=base
