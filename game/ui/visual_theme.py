@@ -84,6 +84,18 @@ class VisualTheme:
             if r.width>0 and r.height>0:
                 pygame.draw.rect(overlays,(0,0,0,alpha),r,2,border_radius=15)
         art.blit(overlays,(0,0))
+        # Restrict cinematic tavern art to the header band; detailed scenery
+        # never crosses the battle cards or text panels.
+        header=ASSET_ROOT/'header_interior.jpg'
+        if header.is_file():
+            try:
+                img=pygame.image.load(str(header)).convert()
+                header_surface=pygame.transform.smoothscale(img,(w,140))
+                header_surface.set_alpha(182)
+                art.blit(header_surface,(0,0))
+                pygame.draw.line(art,(168,111,51),(85,139),(w-85,139),2)
+            except (OSError,pygame.error):
+                pass
         return art
 
     def ornament(self,screen,x,y,width=310,height=28):
