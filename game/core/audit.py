@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import fields, is_dataclass
-from datetime import datetime, timezone
 from functools import wraps
 from hashlib import sha256
 from pathlib import Path
@@ -139,8 +138,77 @@ def _changes(before,after):
 def initialize_audit(game, complete=True):
     game.audit_initial=state_snapshot(game)
     game.audit_actions=[]
+    game.audit_internal=[]
+    game._audit_open_action=None
     game.audit_complete=bool(complete)
     game.audit_first_event=len(game.event_journal)
+
+
+def _targets(game,args):
+    """Inspect only directly referenced heroes/units during one micro-effect."""
+    ids=set()
+    def collect(item):
+        if isinstance(item,str) and (item in game.cards or
+                                      item.startswith("hero:")):
+            ids.add(item)
+        elif isinstance(item,(tuple,list,set,frozenset)):
+            for value in item:
+                collect(value)
+    for value in args:
+        collect(value)
+    result={}
+    for uid in sorted(ids):
+        if uid.startswith("hero:"):
+            try:
+                p=game.players[int(uid.split(":")[1])]
+            except (IndexError,ValueError):
+                continue
+            result[uid]={"hp":p.hp,"armor":p.hero_armor,
+                         "shield":p.hero_shield,"effects":_plain(p.hero_effects)}
+        elif uid in game.units:
+            u=game.units[uid]
+            result[uid]={"hp":u.hp,"atk":u.atk,"max_hp":u.max_hp,
+                         "shield":u.shield,"armor":u.armor,
+                         "effects":_plain(u.effects)}
+        else:
+            result[uid]=None
+    return result
+
+
+def trace_effect(kind):
+    """Exact nested engine operation order, without altering resolution rules."""
+    def decorate(method):
+        @wraps(method)
+        def traced(game,*args,**kwargs):
+            if not getattr(game,"audit_enabled",False):
+                return method(game,*args,**kwargs)
+            if not hasattr(game,"audit_internal"):
+                initialize_audit(game,complete=False)
+            record={
+                "seq":len(game.audit_internal)+1,
+                "action_seq":getattr(game,"_audit_open_action",None),
+                "operation":kind,
+                "args":_plain(args),
+                "kwargs":_plain(kwargs),
+                "before":_targets(game,args),
+                "round":game.round,
+                "action_turn":game.action_turn,
+                "result":None,
+                "error":None,
+                "after":None
+            }
+            game.audit_internal.append(record)
+            try:
+                outcome=method(game,*args,**kwargs)
+                record["result"]=_plain(outcome)
+                return outcome
+            except Exception as exc:
+                record["error"]={"type":type(exc).__name__,"message":str(exc)}
+                raise
+            finally:
+                record["after"]=_targets(game,args)
+        return traced
+    return decorate
 
 
 def audit_action(operation):
@@ -157,6 +225,9 @@ def audit_action(operation):
                 initialize_audit(game,complete=False)
             before=state_snapshot(game)
             start_event=len(game.event_journal)
+            start_internal=len(game.audit_internal)
+            old_open=getattr(game,"_audit_open_action",None)
+            game._audit_open_action=len(game.audit_actions)+1
             error=None
             selected=None
             if operation=="choose" and game.pending and args:
@@ -170,6 +241,7 @@ def audit_action(operation):
                 raise
             finally:
                 after=state_snapshot(game)
+                game._audit_open_action=old_open
                 seq=len(game.audit_actions)+1
                 record={
                     "seq":seq,
@@ -186,6 +258,8 @@ def audit_action(operation):
                     "error":error,
                     "event_seq_start":start_event+1,
                     "event_seq_end":len(game.event_journal),
+                    "internal_seq_start":start_internal+1,
+                    "internal_seq_end":len(game.audit_internal),
                     "before_sha256":digest(before),
                     "after_sha256":digest(after),
                     "changes":_changes(before,after)
@@ -214,12 +288,14 @@ def make_report(game):
         "note":"Historia niepełna: mecz wczytano z zapisu starszej wersji" if not game.audit_complete else "",
         "initial_state":initial,
         "actions":game.audit_actions,
+        "internal_events":game.audit_internal,
         "event_journal":list(game.event_journal),
         "final_state":final,
         "summary":{
             "winner":game.winner,
             "rounds":game.round,
             "action_commands":len(game.audit_actions),
+            "internal_operations":len(game.audit_internal),
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
             "hero_hp":{str(p.idx):p.hp for p in game.players}
@@ -284,6 +360,8 @@ def verify_replay(payload,match_factory):
             raise ValueError(f"Niezgodny stan po akcji {record['seq']}")
     if game.event_journal!=payload["event_journal"]:
         raise ValueError("Niezgodny dziennik zdarzeń silnika")
+    if game.audit_internal!=payload["internal_events"]:
+        raise ValueError("Niezgodna wewnętrzna kolejność efektów")
     if digest(state_snapshot(game))!=digest(payload["final_state"]):
         raise ValueError("Niezgodny stan końcowy")
     return True
