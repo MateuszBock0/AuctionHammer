@@ -154,6 +154,27 @@ class SeparateAuctionSupplyTests(unittest.TestCase):
         self.assertEqual(restored.auction_bag,game.auction_bag)
         restored.assert_integrity()
 
+    def test_a009_discarding_stolen_auction_card_goes_to_spent_not_grave(self):
+        from test_auction_v4_engine import award
+        game=ready(2615)
+        thief=award(game,'A009',2,owner=0,zone='hand',number=1)
+        victim=award(game,'A005',0,owner=0,zone='hand',number=2)
+        game.play(thief)
+        # Swap the hands; the opposite player must choose up to two discards.
+        index=next(i for i,c in enumerate(game.pending.choices)
+                   if c.mode=='swap_all')
+        game.choose(index)
+        self.assertIn(victim,game.players[1].hand)
+        index=next(i for i,c in enumerate(game.pending.choices)
+                   if c.target==victim and c.mode=='discard')
+        game.choose(index)
+        self.assertIn(victim,game.auction_used)
+        self.assertEqual(game.cards[victim].zone,'auction_used')
+        self.assertNotIn(victim,game.players[1].grave)
+        while game.pending:
+            game.choose(0)
+        game.assert_integrity()
+
     def test_v3_old_saves_keep_legacy_rule_mode(self):
         from game.core.engine import Match
         game=Match(2614,auctions_enabled=True,auction_catalog='v3')
