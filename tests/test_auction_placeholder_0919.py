@@ -22,7 +22,7 @@ from game.core.audit import make_report,verify_replay
 
 
 def auction_game(seed=919):
-    game=Match(seed,auctions_enabled=True)
+    game=Match(seed,auctions_enabled=True,auction_catalog='placeholders')
     game.finish_mulligan(0,[])
     game.finish_mulligan(1,[])
     for _ in range(6):
@@ -47,7 +47,7 @@ def free_pick(game):
 
 class AuctionCoreTests(unittest.TestCase):
     def test_after_three_full_rounds_and_income_auction_opens(self):
-        m=Match(1901,auctions_enabled=True)
+        m=Match(1901,auctions_enabled=True,auction_catalog='placeholders')
         m.finish_mulligan(0,[])
         m.finish_mulligan(1,[])
         for turn in range(5):
@@ -183,7 +183,7 @@ class AuctionCoreTests(unittest.TestCase):
         loaded.assert_integrity()
 
     def test_full_auction_audit_deterministic_replay(self):
-        m=Match(1908,audit_enabled=True,auctions_enabled=True)
+        m=Match(1908,audit_enabled=True,auctions_enabled=True,auction_catalog='placeholders')
         players=[ComputerOpponent(0),ComputerOpponent(1)]
         for step in range(1500):
             if m.phase=='finished':break
@@ -201,8 +201,9 @@ class AuctionCoreTests(unittest.TestCase):
         report=make_report(m)['payload']
         self.assertTrue(any(a['operation']=='auction_pick' for a in report['actions']))
         self.assertTrue(verify_replay(
-            report,lambda seed,auctions_enabled=False:
-                Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled)))
+            report,lambda seed,auctions_enabled=False,auction_catalog='v3':
+                Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled,
+                      auction_catalog=auction_catalog)))
 
     def test_intrinsic_auction_taunt_is_disabled_by_stun(self):
         m=auction_game(1915)
@@ -239,7 +240,7 @@ class AuctionCoreTests(unittest.TestCase):
         class Rng:
             def __init__(self):self.seq=iter((.0,.60,.90))
             def random(self):return next(self.seq)
-        m=Match(1910,auctions_enabled=True)
+        m=Match(1910,auctions_enabled=True,auction_catalog='placeholders')
         m.rng=Rng()
         m.round=4
         begin(m)

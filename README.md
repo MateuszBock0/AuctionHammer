@@ -171,6 +171,51 @@ Mechaniki i balans pozostałych 70 kart nie zostały zmienione.
 
 [Analiza paczki i szczegóły implementacji](docs/TAVERN_AUCTION_PROTOTYPE_0919.md).
 
+## Wydanie 0.9.20 — pełny wygląd drewnianej karczmy
+
+Warstwa graficzna **Tavern UI Pack v2** jest teraz widoczna w całej grze:
+tło z kominkiem i drewnianymi stołami, ciemne drewniane strefy
+planszy, mosiężne ramy slotów, przyciski i ornamenty menu/aukcji.
+Wykorzystano skompresowane, dostarczone wcześniej oryginalne grafiki,
+bez pobierania czegokolwiek przez internet podczas rozgrywki.
+
+Zachowano nieprzezroczyste strefy pod kartami i napisami. Teksty,
+rozmiary kart i hitboxy nie uległy zmianom. **Wydanie 0.9.20 nie
+zmienia zasad aukcji 0.9.19 ani zestawu 70 podstawowych kart.**
+
+Podglądy: `preview/VISUAL_0920_TAWERNA_PELNA_PLANSZA.png`,
+`preview/VISUAL_0920_DREWNIANE_MENU.png` i
+`preview/VISUAL_0920_DREWNIANA_AUKCJA.png`.
+
+## Wydanie 0.9.21 — 12 archetypów aukcyjnych i ewolucja rzadkości
+
+Nowa partia korzysta z roboczego katalogu v3: **12 unikalnych
+archetypów** i **36 tekstów wariantów** (podstawowa / rzadka /
+legendarna). Na aukcji losowane są trzy różne archetypy;
+rzadkości niezależnie **60% / 30% / 10%**. Statystyki karty
+wynikają z zakończonej rundy: **ATK + MAX PŻ = R + 8**.
+Po zakupie ATK i MAX PŻ nie rosną, także w ręce.
+
+**Rzadkość ewoluuje co 3 pełne rundy od zakupu** aż do
+legendarnej. Pokonanie karty aukcyjnej daje odpowiednio
+**1 / 2 / 3 monety** według rzadkości.
+
+**Złożone zdolności A001–A012 nie działają jeszcze.**
+Na ekranie aukcji i na kartach są jawnie oznaczone jako
+*NIEAKTYWNA / PLANOWANA*. Nazwy i docelowe opisy są
+dostępne, ale żadne niezaprojektowane rozstrzygnięcie
+kopiowania, wyciszenia, przejęcia czy wskrzeszenia nie
+jest wykonywane. Są to grywalne jednostki o swoich
+bazowych ATK i PŻ, bez zdolności specjalnych.
+
+**Wczytane partie z 0.9.19/0.9.20** zachowują dawnych
+Strażników 3/6/12 i ich Prowokację + Tarczę, bez zmiany
+reguł istniejącego meczu. Audyt JSON zapisuje tryb katalogu
+oraz każdą ewolucję rzadkości.
+
+[Opis etapu i testów](docs/AUCTION_FOUNDATION_0921.md) ·
+[Oryginalny katalog v3](docs/KATALOG_AUKCYJNY_12_v3.md).
+
 ## Karty, efekty i skalowanie
 
 Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.

@@ -144,6 +144,9 @@ def load_match(path: Path | None = None) -> Match:
     if data.get('phase') not in ('mulligan','turn','auction','finished'):
         raise ValueError('Nieprawidłowa faza meczu')
     # Compatible with 0.9.18 saves created before the auction subsystem.
+    # Saves from 0.9.19/0.9.20 predate the v3 catalog; keep their rule mode.
+    data.setdefault('auction_catalog','placeholders'
+                    if data.get('auctions_enabled',False) else 'v3')
     data.setdefault('auctions_enabled',False)
     data.setdefault('auction',None)
     data.setdefault('auction_history',[])
