@@ -9,6 +9,8 @@ from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
+from game.ui.card_summary import ability_summary
+from game.ui.attack_view import attack_display
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 
@@ -516,14 +518,11 @@ class SoloApp:
                 if uid not in self.game.units:continue
                 selected=self.selected==uid
                 u=self.game.units[uid]
-                attack_ready=(self.game.phase=='turn' and self.game.active==owner
-                              and not self.game.pending and bool(self.game.legal_attacks(uid)))
-                attacks_total=2 if self.game._double(u) else 1
-                attacks_left=max(0,attacks_total-u.attacks) if attack_ready else 0
+                attack_info=attack_display(self.game,uid)
                 self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
                      selected=selected,hover=rect.collidepoint(self.mouse_pos()),
-                     statuses=active_statuses(self.game,uid),ready=attack_ready,
-                     attacks_remaining=attacks_left,attacks_total=attacks_total)
+                     statuses=active_statuses(self.game,uid),ready=attack_info.ready,
+                      attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit)
         self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
         self._text('TWOJA RĘKA  ·  kliknij kartę, potem planszę (lub przeciągnij)',14,89,721,cfg.MUTED)
         hand=self.hand_layout()
@@ -560,6 +559,7 @@ class SoloApp:
         if card_id and card_id in self.game.cards:
             c=self.game.cards[card_id];d=c.definition;u=self.game.units.get(card_id)
             cue=card_cue(c,u)
+            summary=ability_summary(c,u)
             self._text(self.cards_view.clip(d.name,self.fonts[18],310),18,1105,150,FACTION_COLORS[d.faction])
             self._text(f'{d.id} • {d.faction} • POZ. {cue.ability_level}',13,1105,181,cfg.MUTED)
             self._infographic_box(pygame.Rect(1104,210,153,70),'AKTYWACJA',cue.trigger,(142,215,238),cue.family)
@@ -568,9 +568,9 @@ class SoloApp:
                                   f'ATAK {u.atk if u else c.attack} / PŻ {u.hp if u else c.max_hp}')
             self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
             yy=405
-            for line in self._wrap(d.effect,13,312)[:3]:
+            for line in self._wrap(summary.full,13,312)[:3]:
                 self._text(line,13,1105,yy,cfg.TEXT);yy+=18
-            if len(self._wrap(d.effect,13,312))>3:
+            if len(self._wrap(summary.full,13,312))>3:
                 self._text('Pełny opis i wartości: [I]',12,1105,464,cfg.MUTED)
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
             self._text(self.cards_view.clip(cue.growth,self.fonts[13],309),13,1105,517,cfg.MUTED)
@@ -756,22 +756,20 @@ class SoloApp:
         if uid not in self.game.cards:return
         card=self.game.cards[uid];d=card.definition;u=self.game.units.get(uid)
         cue=card_cue(card,u)
+        summary=ability_summary(card,u)
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((1,5,10,226));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,75,1190,831)
         self._panel(box,(24,38,52),FACTION_COLORS[d.faction],18)
         pygame.draw.line(self.screen,(66,91,106),(489,160),(489,843),2)
         self._text('PODGLĄD KARTY',16,186,105,cfg.GOLD)
-        details_total=(2 if self.game._double(u) else 1) if u else None
-        details_ready=(bool(self.game.legal_attacks(uid)) if u and
-                       self.game.phase=='turn' and self.game.active==u.owner
-                       and not self.game.pending else False)
+        details_attack=attack_display(self.game,uid) if u else None
         self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
                              unit=u,selected=True,
                              statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
-                             ready=details_ready,attacks_total=details_total,
-                             attacks_remaining=(max(0,details_total-u.attacks)
-                                                if details_ready else 0) if u else None)
+                             ready=details_attack.ready if u else None,
+                             attacks_total=details_attack.limit if u else None,
+                             attacks_remaining=details_attack.remaining if u else None)
         self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
         self._text(f'Aktywacja: {d.trigger}',16,194,600)
         self._text(f'Rodzina: {d.family}',16,194,629)
@@ -792,7 +790,15 @@ class SoloApp:
         y=content_top-self.details_scroll
         if content_top<=y<content_bottom-27:self._text('ZDOLNOŚĆ — WARTOŚĆ SKALUJĄCA POGRUBIONA',18,520,y,cfg.GOLD)
         y+=37
-        y=self._rich_effect_text(d,520,y,750,18,content_top,content_bottom)
+        for line in self._wrap(summary.full,16,750):
+            if content_top<=y<content_bottom-24:self._text(line,16,520,y,cfg.GREEN)
+            y+=24
+        y+=12
+        if content_top<=y<content_bottom-24:self._text('ORYGINALNY OPIS (WARTOŚCI BAZOWE)',16,520,y,cfg.GOLD)
+        y+=31
+        for line in self._wrap(d.effect,16,750):
+            if content_top<=y<content_bottom-24:self._text(line,16,520,y,cfg.TEXT)
+            y+=24
         y+=24
         if content_top<=y<content_bottom-25:self._text('ULEPSZENIE ZDOLNOŚCI',20,520,y,cfg.GOLD)
         y+=36
