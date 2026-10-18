@@ -1,3 +1,7 @@
+> **ARCHIWUM 0.9.23.** Ten dokument opisuje poprzednią implementację, w której niekupione oferty były błędnie trwale usuwane. Od 0.9.26 obowiązuje **powrót niewykupionego archetypu do osobnej puli aukcyjnej** (bez dostępu do zwykłego dobierania). [Aktualne zasady i pełne demo](RELEASE_V4_0926.md).
+
+---
+
 # AuctionHammer 0.9.23 — karty aukcyjne v4 i oddzielne woreczki
 
 ## Zakres
