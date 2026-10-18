@@ -8,6 +8,7 @@ No hidden state is exposed in the live UI before the match has finished.
 from __future__ import annotations
 
 from collections import deque
+from datetime import datetime, timezone
 from dataclasses import fields, is_dataclass
 from functools import wraps
 from hashlib import sha256
@@ -228,6 +229,15 @@ def audit_action(operation):
                 # reconstructed history is complete.
                 initialize_audit(game,complete=False)
             before=state_snapshot(game)
+            choice_owner=(game.pending.owner if game.pending else None)
+            if operation=="finish_mulligan":
+                command_owner=(args[0] if args else kwargs.get("player_idx",0))
+            elif operation=="mulligan_toggle":
+                command_owner=0
+            elif operation=="choose":
+                command_owner=choice_owner
+            else:
+                command_owner=game.active
             start_event=len(game.event_journal)
             start_internal=len(game.audit_internal)
             old_open=getattr(game,"_audit_open_action",None)
@@ -253,6 +263,7 @@ def audit_action(operation):
                     "args":_plain(args),
                     "kwargs":_plain(kwargs),
                     "actor_before":before["active"],
+                    "command_owner":command_owner,
                     "round_before":before["round"],
                     "round_after":after["round"],
                     "phase_before":before["phase"],
@@ -286,6 +297,7 @@ def make_report(game):
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
         "version":"0.9.17",
+        "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
         "complete_from_start":bool(game.audit_complete),
