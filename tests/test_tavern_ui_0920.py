@@ -58,8 +58,9 @@ class TavernUIStageTests(unittest.TestCase):
                 for _ in range(6):
                     if app.game.phase=='auction':break
                     if app.game.phase=='mulligan':
-                        app.game.finish_mulligan(0,[])
-                        app.game.finish_mulligan(1,[])
+                        for player in (0,1):
+                            if app.game.phase=='mulligan':
+                                app.game.finish_mulligan(player,[])
                     else:app.game.end_turn()
             app.menu_open=draw==app._draw_menu
             with patch.object(app,"_text",side_effect=measured):
