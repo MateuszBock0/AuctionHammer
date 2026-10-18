@@ -513,11 +513,11 @@ class SoloApp:
             c=self.game.cards[card_id];d=c.definition;u=self.game.units.get(card_id)
             cue=card_cue(c,u)
             self._text(self.cards_view.clip(d.name,self.fonts[18],310),18,1105,150,FACTION_COLORS[d.faction])
-            self._text(f'{d.id} • {d.faction} • L{cue.ability_level}',13,1105,181,cfg.MUTED)
-            self._infographic_box(pygame.Rect(1104,210,153,70),'ACTIVATION',cue.trigger,(142,215,238),cue.family)
-            self._infographic_box(pygame.Rect(1267,210,157,70),'SCALES / 3 TURNS',cue.upgrade,cfg.GREEN,cue.next_threshold)
-            self._infographic_box(pygame.Rect(1104,290,320,69),'BASE EFFECT → CURRENT',cue.base,cue.color,
-                                  f'ATK {u.atk if u else c.attack} / HP {u.hp if u else c.max_hp}')
+            self._text(f'{d.id} • {d.faction} • POZ. {cue.ability_level}',13,1105,181,cfg.MUTED)
+            self._infographic_box(pygame.Rect(1104,210,153,70),'AKTYWACJA',cue.trigger,(142,215,238),cue.family)
+            self._infographic_box(pygame.Rect(1267,210,157,70),'ROZWÓJ CO 3 TURY',cue.upgrade,cfg.GREEN,cue.next_threshold)
+            self._infographic_box(pygame.Rect(1104,290,320,69),'AKTUALNY EFEKT',cue.base,cue.color,
+                                  f'ATAK {u.atk if u else c.attack} / PŻ {u.hp if u else c.max_hp}')
             self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
             yy=405
             for line in self._wrap(d.effect,13,312)[:3]:
@@ -579,8 +579,8 @@ class SoloApp:
     def _draw_header(self):
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
-        self._text('SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.8 · v19',14,1310,35,cfg.GOLD)
+        self._text('GRA SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
+        self._text('MVP 0.9.9 · v19',14,1310,35,cfg.GOLD)
 
     def _draw_log(self):
         # Zdarzenia pokazujemy pomiędzy rzędami, nie na pasku HP przeciwnika.
@@ -691,7 +691,7 @@ class SoloApp:
                    14,194,684,cfg.MUTED)
 
         self._text(self.cards_view.clip(d.name,self.fonts[28],760),28,520,115,FACTION_COLORS[d.faction])
-        self._infographic_box(pygame.Rect(520,159,228,70),'BAZOWA ZDOLNOŚĆ',cue.base,cue.color,
+        self._infographic_box(pygame.Rect(520,159,228,70),'AKTUALNY EFEKT',cue.base,cue.color,
                               'Liczba zmienna oznaczona pogrubieniem')
         self._infographic_box(pygame.Rect(763,159,227,70),'CO 3 WŁASNE TURY NA RĘCE',cue.upgrade,cfg.GREEN,
                               'Próg: 3 / 6 / 9 / 12…')
