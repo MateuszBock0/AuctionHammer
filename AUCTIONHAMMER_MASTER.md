@@ -22,7 +22,7 @@ Ten dokument opisuje **aktualny stan gry**. Fragment od nagłówka „ARCHIWUM �
 | `tests/` | Testy zgodności i zabezpieczenia przed regresją |
 | `docs/GAME_MASTER_v17.md` | **Archiwum v17** — do porównywania historycznych decyzji |
 | `data/event_order_v19.json` | **Obowiązująca kolejność zdarzeń** i wspólne fale zgonów zgodnie z Game Master v19 |
-| `docs/FALY_ZGONOW_v19_MVP_0910.md` | Techniczny opis naprawy atomowych fal zgonów i wyników testów |
+| `docs/FALE_ZGONOW_v19_MVP_0910.md` | Techniczny opis naprawy atomowych fal zgonów i wyników testów |
 | `data/event_order_v17.json` | Historyczny zapis kolejki, pozostawiony w archiwum |
 
 ### Uruchomienie i aktualizacje
