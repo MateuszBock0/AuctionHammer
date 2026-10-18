@@ -12,7 +12,7 @@ from game.core.audit import (audit_path, write_last_match, initialize_audit,
                              configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
-from game.core.auction_catalog import CATALOG,RARITIES
+from game.core.auction_catalog import CATALOG,RARITIES,v4_variant
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
@@ -64,7 +64,7 @@ class SoloApp:
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
-        self.game=Match(audit_enabled=True,auctions_enabled=True)
+        self.game=Match(audit_enabled=True,auctions_enabled=True,auction_catalog='v4')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -496,7 +496,7 @@ class SoloApp:
         self.theme.carved_panel(self.screen,pygame.Rect(219,125,1044,694),opacity=82)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
-        self._text('12 ARCHETYPÓW · 36 WARIANTÓW · ZDOLNOŚCI W PRZYGOTOWANIU',16,
+        self._text('12 ARCHETYPÓW · 36 AKTYWNYCH WARIANTÓW ZDOLNOŚCI',16,
                    741,205,cfg.TEXT,center=True)
         self.theme.ornament(self.screen,565,228,350,22)
         for i,off in enumerate(a.offers):
@@ -516,8 +516,10 @@ class SoloApp:
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
                        rect.centerx,rect.y+155,cfg.GOLD,center=True)
-            description=('PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)] if adef else
-                         'Prowokacja i 1 Tarcza po wystawieniu')
+            description=(v4_variant(off.archetype,off.rarity)
+                         if adef and self.game.auction_catalog=='v4' else
+                         'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
+                         if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
             lines=self._wrap(description,13,rect.width-36)
             for j,line in enumerate(lines[:4]):
                 self._text(line,13,rect.centerx,rect.y+190+24*j,
@@ -986,7 +988,7 @@ class SoloApp:
         pygame.draw.line(self.screen,cfg.GOLD,(104,73),(1426,73),1)
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
-        self._text('SOLO  ·  70 KART  ·  GAME MASTER v19',14,
+        self._text('SOLO  ·  70 KART + AUKCJE v4  ·  BALANS v20',14,
                    mode.x+8,33,cfg.MUTED)
         help_text='[A] EFEKTY  [H] HISTORIA  [P] POWTÓRKA  [M] MENU'
         font=self.fonts[13]
