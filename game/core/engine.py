@@ -418,6 +418,10 @@ class Match:
             self._check(limit<300,'Zbyt długa kolejka efektów')
             if (not self.trigger_queue and not self.deferred_attack and self.pending is None
                     and not self.death_waves and self.active_death_wave is None):
+                # Dead copies must persist through their own death wave, then
+                # disappear permanently (never go to hand/deck/grave cycle).
+                for ghost in list(self.ephemerals):
+                    if ghost not in self.units:self._purge_ephemeral(ghost)
                 self._check_winner()
         finally:
             self._draining=False
@@ -815,14 +819,20 @@ class Match:
         card=self.cards[uid];card.zone='grave';card.hand_turns=0;card.quick_next_turn=None
         card.quick_on_first_summon=False;card.double_on_first_eligible=False
         self.players[u.owner].grave.append(uid)
-        if uid in self.ephemerals:
-            # Ephemeral instances vanish rather than entering a draw cycle.
-            self.players[u.owner].grave.remove(uid)
-            self.ephemerals.remove(uid)
-            self.auction_awards.pop(uid,None)
-            self.auction_death_links.discard(uid)
-            self.defs.pop(uid,None)
-            self.cards.pop(uid,None)
+        if uid in self.ephemerals and not death:
+            self._purge_ephemeral(uid)
+
+    def _purge_ephemeral(self,uid):
+        if uid not in self.ephemerals:return
+        card=self.cards.get(uid)
+        if card is not None and card.owner is not None:
+            p=self.players[card.owner]
+            if uid in p.grave:p.grave.remove(uid)
+        self.ephemerals.remove(uid)
+        self.auction_awards.pop(uid,None)
+        self.auction_death_links.discard(uid)
+        self.defs.pop(uid,None)
+        self.cards.pop(uid,None)
 
     def _update_auras(self,defer_reactive=False):
         # Dynamic auras S34 / S35 / S105. Unit order is always compacted left.
@@ -892,10 +902,6 @@ class Match:
         if self.phase!='turn':return
         a,b=self.players
         if a.hp>0 and b.hp>0:return
-        if self.auction_catalog_mode=='v3':
-            if a.hp<=0:auction_skills.heroic_save(self,0)
-            if b.hp<=0:auction_skills.heroic_save(self,1)
-            if a.hp>0 and b.hp>0:return
         if a.hp<=0 and b.hp>0:self.winner=1
         elif b.hp<=0 and a.hp>0:self.winner=0
         else:
