@@ -72,8 +72,8 @@ def options(game,uid,context,attacked=None):
     if aid=='A004' and context=='play':
         if len(own.board)>=5:return []
         ids=myboard + (opponents if tier>=1 else [])
-        ids=[x for x in ids if x not in game.ephemeral_ids and kind(game,x)!='A004']
-        return pick_choices(game,'copy',ids,'Utwórz efemeryczną kopię')
+        return pick_choices(game,'copy',[x for x in ids if x in game.units],
+                            'Utwórz efemeryczną kopię')
     if aid=='A005' and context=='play':
         return [Choice('auto',None,'Przenieś monety i dodaj nowe')]
     if aid=='A006' and context=='play':
@@ -198,8 +198,7 @@ def _swap_hands(game):
 def _copy(game,uid,target,legendary=False,ephemeral_silent=False):
     owner=game.cards[uid].owner
     p=game.players[owner]
-    if (target not in game.units or len(p.board)>=5 or target in game.ephemeral_ids
-        or kind(game,target)=='A004'):
+    if target not in game.units or len(p.board)>=5:
         return None
     original=game.units[target]
     original_card=game.cards[target]
@@ -212,12 +211,15 @@ def _copy(game,uid,target,legendary=False,ephemeral_silent=False):
     game.ephemeral_ids.add(new_uid)
     if target in game.auction_awards and kind(game,target):
         game.auction_awards[new_uid]=dict(game.auction_awards[target],ephemeral=True)
-    health=original.hp if legendary else original.base_max_hp
-    clone=Unit(new_uid,owner,original.base_attack,original.base_max_hp,
-               health,original.ability_level,p.turn_count)
+    # Preserve wounds in every tier; only legendary retains current bonuses.
+    wounds=max(0,original.max_hp-original.hp)
+    base_atk=original.atk if legendary else original_card.attack
+    base_hp=original.max_hp if legendary else original_card.max_hp
+    clone=Unit(new_uid,owner,base_atk,base_hp,max(0,base_hp-wounds),
+               original.ability_level,p.turn_count)
     if legendary:
         from copy import deepcopy
-        clone.effects=deepcopy(original.effects)
+        clone.effects=deepcopy([e for e in original.effects if e.kind not in ('atk','max_hp')])
         clone.shield=1
         clone.shield_source=uid
         clone.armor_perm=original.armor_perm
@@ -230,8 +232,9 @@ def _copy(game,uid,target,legendary=False,ephemeral_silent=False):
     game._update_auras(defer_reactive=True)
     # A004 copies count as extra PLAY with source's on-play triggers; A010
     # produces silent soldiers/copies and never fires an ON_PLAY effect.
-    if not ephemeral_silent and d.trigger=='Przy wystawieniu':
+    if not ephemeral_silent and d.trigger=='Przy wystawieniu' and kind(game,new_uid)!='A004':
         game._queue(new_uid,'play')
+    mark_general_new_ally(game,new_uid)
     return new_uid
 
 
@@ -251,6 +254,7 @@ def _spawn(game,uid,atk,hp,taunt=False):
     if taunt:
         game._add_effect(cid,'taunt',source=uid,positive=True)
     game._log(f'{game.label(uid)} przywołuje Żołnierza {atk}/{hp}.')
+    mark_general_new_ally(game,cid)
     return cid
 
 
@@ -286,6 +290,16 @@ def _save_hero(game,owner):
 def rescue_heroes(game):
     for owner in (0,1):
         _save_hero(game,owner)
+
+
+def mark_general_new_ally(game,uid):
+    """Only units entering after an active legendary general receive its flag."""
+    if uid not in game.units:return
+    owner=game.units[uid].owner
+    for src,leader in list(game.units.items()):
+        if (src!=uid and leader.owner==owner and kind(game,src)=='A002'
+            and rarity(game,src)==2 and not game._disabled(leader)):
+            game.auction_general_grants.setdefault(src,set()).add(uid)
 
 
 def boosted_attack(game,uid):
@@ -456,6 +470,7 @@ def execute(game,uid,context,choice,attacked=None):
                 bonus_atk=bonus_hp=(1,4)[tier]
             game._add_effect(uid,'atk',bonus_atk,source=uid,positive=True)
             game._add_effect(uid,'max_hp',bonus_hp,source=uid,positive=True)
+            game.units[uid].hp=min(game.units[uid].max_hp,game.units[uid].hp+bonus_hp)
             if tier==1:game._add_effect(uid,'taunt',source=uid)
     elif aid=='A011' and context=='death':
         if tier<2:
