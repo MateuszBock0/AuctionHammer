@@ -55,14 +55,18 @@ class TavernUIStageTests(unittest.TestCase):
                 seen.append((label,rect))
                 return rect
             if draw==app._draw_auction:
-                for _ in range(6):
-                    if app.game.phase=='auction':break
+                from game.core.engine import Match
+                app.game=Match(92020,auctions_enabled=True)
+                for player in (0,1):
                     if app.game.phase=='mulligan':
-                        for player in (0,1):
-                            if app.game.phase=='mulligan':
-                                app.game.finish_mulligan(player,[])
-                    else:app.game.end_turn()
+                        app.game.finish_mulligan(player,[])
+                for _ in range(6):
+                    if app.game.phase=='auction':
+                        break
+                    app.game.end_turn()
+                self.assertEqual(app.game.phase,'auction')
             app.menu_open=draw==app._draw_menu
+            app.menu_page='main'
             with patch.object(app,"_text",side_effect=measured):
                 draw()
             self.assertGreater(len(seen),5)
