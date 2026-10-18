@@ -158,7 +158,9 @@ def state_snapshot(game):
     if getattr(game,'auction_catalog',None)=='v4':
         state['auction_v4']={
             'bag':_plain(game.auction_bag),
-            'unchosen_discarded':_plain(game.auction_discarded),
+            'unsold_offers_history':_plain(game.auction_discarded),
+            'unsold_archetypes_return_to_bag':True,
+            'supply_policy_version':getattr(game,'auction_supply_version',1),
             'purchased_spent':_plain(game.auction_used),
             'exiled':_plain(game.exiled),
             'vanished':_plain(game.vanished),
