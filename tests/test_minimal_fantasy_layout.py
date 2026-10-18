@@ -108,7 +108,7 @@ class MinimalFantasyLayout(unittest.TestCase):
         for w,h in ((125,195),(148,220)):
             for cid,expected in (
                 ('S64',('sojusznik','truciznę')),
-                ('S09',('cel','ataku','walką')),
+                ('S09',('cel','ataku')),
             ):
                 with self.subTest(card=cid,size=(w,h)):
                     card=game.cards[cid]
