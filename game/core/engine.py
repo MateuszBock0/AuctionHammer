@@ -9,13 +9,19 @@ import random
 from .models import Card, Unit, Player, Effect, Pending, Choice, IllegalMove, load_catalog
 from .effects import options
 from .audit import initialize_audit, audit_action, trace_effect
+from . import auction as auction_rules
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
 class Match:
-    def __init__(self, seed: int | None = None, audit_enabled: bool = False):
+    def __init__(self, seed: int | None = None, audit_enabled: bool = False,
+                 auctions_enabled: bool = False):
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
+        self.auctions_enabled=bool(auctions_enabled)
+        self.auction=None
+        self.auction_history=[]
+        self.auction_awards={}
         self.seed = seed if seed is not None else random.SystemRandom().randrange(2**31)
         self.rng = random.Random(self.seed)
         self.defs = load_catalog(ROOT / 'data' / 'cards_base_70.json')
@@ -71,6 +77,8 @@ class Match:
             self.rng.shuffle(p.deck)
         self._log('Rozdano po 5 kart na rękę i do talii. Po jednym egzemplarzu na typ.')
         self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
+        if self.auctions_enabled:
+            self._log("Wariant aukcyjny testowy: aukcje po rundach 3, 6, 9...")
         if self.audit_enabled:
             initialize_audit(self)
 
@@ -218,6 +226,11 @@ class Match:
         if card.definition.id in ('S34','S35'):
             self._queue(uid,'play')
         if card.definition.id == 'S106':u.shield=1;u.shield_source=uid;u.used_shield_aura=False
+        if uid in self.auction_awards:
+            u.shield=1
+            u.shield_source=uid
+            self._add_effect(uid,'taunt',source=uid,positive=True)
+            self._log(f'{self.label(uid)}: Prowokacja i 1 Tarcza (testowa karta aukcyjna).')
         if card.definition.id == 'S39' and u.ability_level:
             u.armor_perm+=u.ability_level
             u.armor_perm_source=uid
@@ -372,6 +385,12 @@ class Match:
                     self._next_turn_due=False
                     self._check_winner()
                     if self.phase=='finished':break
+                    if (self.auctions_enabled and (self.round-1)%3==0
+                            and self.round>1 and not any(
+                                item["completed_round"]==self.round-1
+                                for item in self.auction_history)):
+                        auction_rules.begin(self)
+                        break
                     self.active=1-self.active
                     self._update_auras()
                     self._start_turn()
@@ -400,7 +419,8 @@ class Match:
                 u.effects=[e for e in u.effects if e.kind!='regen' or e.remaining>0]
         for uid in p.hand:
             card=self.cards[uid]
-            card.hand_turns+=1
+            if uid not in self.auction_awards:
+                card.hand_turns+=1
         # v19 S91: the deferred grant expires after the first own turn when
         # the unit was legally able to attack; stun delays that first turn.
         for uid in list(p.board):
@@ -837,16 +857,31 @@ class Match:
         self.phase='finished';self.pending=None
         self._log(f'KONIEC MECZU! Zwycięzca: {self.players[self.winner].name}.')
 
+    @audit_action('auction_bid')
+    def auction_bid(self,player,amount):
+        auction_rules.bid(self,player,amount)
+
+    @audit_action('auction_pass')
+    def auction_pass(self,player):
+        auction_rules.pass_bid(self,player)
+
+    @audit_action('auction_pick')
+    def auction_pick(self,player,uid):
+        auction_rules.pick(self,player,uid)
+
     def assert_integrity(self):
         all_ids=list(self.bank)
         for p in self.players:all_ids+=p.hand+p.deck+p.grave+p.board
         all_ids+=self.excluded
-        assert len(all_ids)==70 and len(set(all_ids))==70,('Bank 70x1 violated',len(all_ids),len(set(all_ids)))
+        basic=[uid for uid in all_ids if uid not in self.auction_awards]
+        assert len(basic)==70 and len(set(basic))==70,('Bank 70x1 violated',len(basic),len(set(basic)))
+        assert len(all_ids)==len(set(all_ids)), 'Auction card duplicated'
+        assert set(all_ids)==set(self.cards),('Physical cards mismatch',len(all_ids),len(self.cards))
+        assert all(uid not in self.bank and uid not in self.excluded for uid in self.auction_awards)
         for p in self.players:
             assert len(p.board)<=5 and all(self.cards[x].owner==p.idx for x in p.hand+p.deck+p.grave+p.board)
         assert set(self.units)==set(self.players[0].board+self.players[1].board)
         assert all(self.cards[x].zone=='excluded' and self.cards[x].owner is None for x in self.excluded)
-        assert len(self.bank)+len(self.excluded)+sum(len(p.hand)+len(p.deck)+len(p.grave)+len(p.board) for p in self.players)==70
 
     @trace_effect('_execute')
     def _execute(self,uid,context,choice,attacked=None):
