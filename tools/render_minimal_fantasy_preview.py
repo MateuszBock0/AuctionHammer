@@ -219,5 +219,49 @@ pygame.image.save(app.screen,DEST/'VISUAL_0918_KONIEC_0_PZ.png')
 if app.game.players[0].hp!=-5:
     raise AssertionError('Render must not change the authoritative hero HP')
 
+# 0.9.19 — real pygame snapshots for both auction stages, plus wood texture.
+from game.core.engine import Match
+auction_match=Match(191919,auctions_enabled=True)
+auction_match.finish_mulligan(0,[])
+auction_match.finish_mulligan(1,[])
+for _ in range(6):
+    if auction_match.phase=='auction':
+        break
+    auction_match.end_turn()
+assert auction_match.phase=='auction'
+app.game=auction_match
+app.menu_open=False
+app.replay_index=None
+app.history_open=False
+app.details_card=None
+app._audit_notice=''
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0919_AUKCJA_LICYTACJA.png')
+auction_match.auction_pass(auction_match.auction.turn)
+auction_match.auction_pass(auction_match.auction.turn)
+assert auction_match.auction.phase=='picking'
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0919_AUKCJA_WYBOR_KART.png')
+first=auction_match.auction.turn
+auction_match.auction_pick(first,auction_match.auction.offers[2].uid)
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0919_AUKCJA_WYBOR_PO_1.png')
+auction_match.auction_pick(auction_match.auction.turn,
+                           auction_match.auction.offers[0].uid)
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0919_TAWERNA_PLANSZA.png')
+# Real purchased placeholder card (including non-scaling cue) in all sizes.
+from game.ui.card_view import CardView
+sheet=pygame.Surface((680,465))
+sheet.fill((22,30,34))
+cv=CardView()
+uid=auction_match.auction_history[0]['picks'][first]
+card=auction_match.cards[uid]
+for rect in (pygame.Rect(22,34,125,195),
+             pygame.Rect(170,34,148,220),
+             pygame.Rect(355,34,255,380)):
+    cv.draw(sheet,card,rect)
+pygame.image.save(sheet,DEST/'VISUAL_0919_STRAZNIK_3_ROZMIARY.png')
+
 pygame.quit()
-print('Utworzono 27 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono 32 obrazy podglądu Pygame w folderze preview.')
