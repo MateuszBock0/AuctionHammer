@@ -1,9 +1,9 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.20",
+  "mvp": "0.9.21",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
-  "auctions": "prototype-three-placeholder-offers",
+  "auctions": "draft-v3-12-archetypes-36-tiers-abilities-inactive",
   "card_costs": false,
   "starter_cards": 70,
   "copies_per_archetype": 1,
