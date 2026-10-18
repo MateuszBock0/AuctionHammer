@@ -248,6 +248,8 @@ def _spawn(game,uid,atk,hp,taunt=False):
     game.defs[cid]=d
     unit=Unit(cid,owner,atk,hp,hp,0,p.turn_count)
     game.units[cid]=unit;game.ephemeral_ids.add(cid);p.board.append(cid)
+    if taunt:
+        game._add_effect(cid,'taunt',source=uid,positive=True)
     game._log(f'{game.label(uid)} przywołuje Żołnierza {atk}/{hp}.')
     return cid
 
