@@ -1,52 +1,50 @@
-# AUCTIONHAMMER — MASTER PROJECT FILE
+# AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja pakietu:** MVP 0.9.2 SOLO + jednoetapowy instalator GitHub  
-**Specyfikacja gry:** GAME MASTER v17.0 (16.10.2026)  
-**Forma rozgrywki na teraz:** człowiek kontra komputer, offline (Pygame-ce)  
-**Docelowo:** PvP online, ale NIE w tym etapie; aukcje są osobnym przyszłym etapem.
+**Wersja gry:** MVP 0.9.9  
+**Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
+**Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
+**Aukcje i karty aukcyjne:** poza bieżącym etapem.  
+**Język interfejsu:** polski.
 
-## Odczytaj jako pierwszy
+## Przeczytaj najpierw
 
-Ten dokument zbiera **instrukcję projektu i pełną dokumentację Game Master v17 bez przeredagowywania treści źródłowej**. Dalsza część, od rozdziału „ORYGINALNY GAME MASTER v17”, jest kopią kanonicznej specyfikacji. Gdy historyczny dokument mówi „nie zaimplementowano silnika”, opisuje stan na moment opublikowania specyfikacji, **nie aktualny stan plików MVP**.
+Ten dokument opisuje **aktualny stan gry**. Fragment od nagłówka „ARCHIWUM — Game Master v17” pozostawiono wyłącznie jako dokumentację historyczną. **Nie jest on obowiązującym katalogiem kart v19**; nie wolno kopiować z niego starszych parametrów S66, S67, S79, S114, S115 ani opisów zmienionych efektów.
 
-### Jak uruchomić nową instalację
+### Gdzie znajdują się obowiązujące informacje?
 
-Rozpakuj ZIP i kliknij `URUCHOM_AUCTIONHAMMER.bat`. Plik `tools/bootstrap.py` wykona inicjalizację Git, założy prywatne repozytorium `MateuszBock0/AuctionHammer` przy użyciu oficjalnego `gh` (może wymagać autoryzacji GitHub w przeglądarce), po czym wywoła `launch_auctionhammer.py`, który przygotuje `.venv`, instaluje biblioteki i uruchamia `game/main.py`. Nie podawaj haseł ani tokenów w plikach kodu. Bez GitHub gra uruchamia się lokalnie; `GRAJ_OFFLINE.bat` celowo pomija próbę publikacji.
+| Plik | Znaczenie |
+| --- | --- |
+| `data/cards_base_70.json` | **Nadrzędny katalog 70 kart v19**, z którego korzysta program |
+| `data/GAME_MASTER.json` | Aktualny ustrukturyzowany zapis zasad v19 i zgodna kopia danych 70 kart |
+| `docs/V19_INTEGRATION_AND_UI.md` | Obowiązujące zmiany v19 oraz sposób ich implementacji |
+| `game/core/` | Rzeczywista logika meczu |
+| `game/ui/` | Polski interfejs użytkownika |
+| `tests/` | Testy zgodności i zabezpieczenia przed regresją |
+| `docs/GAME_MASTER_v17.md` | **Archiwum v17** — do porównywania historycznych decyzji |
+| `data/event_order_v17.json` | Historyczny zapis kolejki zdarzeń. Jego atomowe fale zgonów nadal wymagają osobnej weryfikacji w silniku |
 
-### Aktualny zakres implementacji
+### Uruchomienie i aktualizacje
 
-- 70 kart podstawowych (po 1 egzemplarzu), bazowa pula / mulligan `EXCLUDED_FROM_MATCH`.
-- Silnik naprzemiennych tur, walka, skalowanie, nagrody, statusy, wykonywanie zdolności kart, przeciwnik AI.
-- Widoczność efektów przyznanych innym jednostkom: kolorowe oznaczenia, aktywne statusy, źródła.
-- Interfejs Pygame z dopasowaniem proporcji okna i pełnym opisem karty.
-- Testy w `tests/`, automatyzacja GitHub Actions w `.github/workflows/tests.yml`.
+Po rozpakowaniu gotowej wersji Windows kliknij `URUCHOM_AUCTIONHAMMER.bat`, aby sprawdzić aktualizacje i uruchomić grę. `GRAJ_BEZ_INTERNETU.bat` uruchamia ją bez sprawdzania sieci, a `AuctionHammer.exe` — bezpośrednio. Pakiet zawiera środowisko uruchomieniowe; **nie wymaga instalowania Pythona, bibliotek Pygame, Gita ani edytora kodu**.
 
-### Otwarte ryzyka implementacyjne
+### Mechanika bieżącej wersji
 
-Wersja prototypowa — testy scenariuszy standardowych i symulowanych meczów nie są równoznaczne z pełnym dowodem zgodności. W szczególności wymagane dalsze sprawdzanie atomowych grup jednoczesnych zgonów, złożonych reakcji, aur i szczegółów 70 zdolności. Nie deklarujemy kompletnej produkcyjnej zgodności z kolejką z sekcji 7 v17 ani pełnego balansu. Gra online, aukcje oraz karty aukcyjne pozostają poza zakresem.
+- 70 unikalnych kart startowych, każda po jednym egzemplarzu, bez kosztu wystawiania.
+- Jednostki przy wystawieniu, przy ataku, przy śmierci, na koniec tury i o zdolnościach pasywnych.
+- S66 wybiera, komu przyznać Szybki atak, a S67 wybiera odbiorcę Podwójnego ataku.
+- S79 ma 2 ATAK i 6 PŻ, S114 ma 1 ATAK i 5 PŻ, S115 ma 1 ATAK i 6 PŻ.
+- Efekty śmierci i wzmocnienia S20, S82, S90, S91, S105 i S109 uwzględniają zatwierdzone zmiany.
+- Co zakończoną własną turę na ręce karta otrzymuje przyrost statystyk; co trzy takie tury zwiększa się poziom jej zdolności.
+- Wszystkie etykiety interfejsu, informacje o efektach, komunikaty o wyborach oraz paski rozwoju zdolności mają być wyświetlane po polsku.
+- Rozgrywka obecnie przebiega przeciwko komputerowi. Gra sieciowa oraz aukcje są planowane w osobnych etapach.
 
-### Mapa źródeł prawdy i odpowiedzialności
+### Ograniczenia i ryzyka
 
-| Plik | Rola |
-|---|---|
-| `AUCTIONHAMMER_MASTER.md` | główny dokument projektu wraz z pełną specyfikacją v17 |
-| `data/GAME_MASTER.json` | cała dokumentacja v17 w JSON |
-| `data/game_rules_v17.json` | zatwierdzone zasady |
-| `data/cards_base_70.json` | dokładnie 70 unikalnych definicji, statystyki, bonusy na ręce |
-| `data/starter_bank_v17.json` | fizyczna pula 70×1 |
-| `data/event_order_v17.json` | wymagany priorytet rozpatrywania zdarzeń |
-| `game/core/*` | silnik w Pythonie |
-| `game/ui/*` | klient Pygame |
-| `game/core/ai.py` | przeciwnik komputerowy |
-| `tests/*` | testy i regresje |
-
-### Wykluczenia
-
-Brak aukcji, ofert i kart aukcyjnych; brak rzadkości dla podstawowych kart; brak kosztów wystawienia kart. Monet nie wydaje się w tym MVP. Nie dodawać aukcyjnych mechanik (kopiowanie, przejęcia, wskrzeszanie, specjalny dobór za zdolności, płatne zdolności).
+Automatyczne testy obejmują podstawowe interakcje i zmiany zatwierdzone w v19, ale **nie dowodzą pełnej zgodności z kolejką jednoczesnych zdarzeń**. W szczególności wspólne migawki celów dla grup zgonów, atomowe rozstrzyganie efektów „Przy śmierci” i wywołane nimi kaskady wymagają dalszych testów. Wersja nie ma także udowodnionego balansu na podstawie dużej liczby meczów.
 
 ---
 
-# ORYGINALNY GAME MASTER v17 — PEŁNA SPECYFIKACJA
+# ARCHIWUM — Game Master v17 (wersja historyczna, nieobowiązująca dla katalogu v19)
 
 # GRA KARCIANA ONLINE — GAME MASTER
 **Kompletny roboczy dokument projektowy (Game Design Document + katalog danych), wersja 17.0**  

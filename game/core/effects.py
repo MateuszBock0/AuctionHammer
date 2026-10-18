@@ -1,7 +1,7 @@
 """Maszynowa specyfikacja wyborów kart startowych; tekst kart jest tylko opisem.
 
 Każdy z 70 archetypów ma przypisany rodzinny typ operacji, docelowe
-wybory i szczególne wyjątki zgodne z GAME_MASTER v17. Nie ma aukcji.
+wybory i szczególne wyjątki zgodne z GAME_MASTER v19. Nie ma aukcji.
 """
 from __future__ import annotations
 from .models import Choice
@@ -24,8 +24,14 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
     enemy = list(other.board)
     if context == 'death':
         ally = [c for c in ally if c != uid]
+    # Mode identifiers are internal engine commands; only Polish labels reach UI.
+    public_modes={
+        'hand_quick':'Nadaj Szybki atak karcie na ręce',
+        'board_double':'Nadaj Podwójny atak jednostce',
+    }
     def c(mode, targets):
-        return [Choice(mode, target, f"{mode}  →  {game.label(target)}") for target in targets]
+        label=public_modes.get(mode,mode)
+        return [Choice(mode, target, f"{label}  →  {game.label(target)}") for target in targets]
 
     # v19: elven traits are mutually exclusive on-play choices.
     if cid == 'S66':

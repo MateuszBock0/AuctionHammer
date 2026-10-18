@@ -16,10 +16,10 @@ TRIGGER_SHORT = {
     'Pasywna': 'PASYWNA',
 }
 FAMILY_SYMBOLS = {
-    'Obrażenia':'DMG','Leczenie':'HEAL','ATK ±':'ATK','MAX HP ±':'HP',
-    'Pancerz':'ARM','Tarcza':'SHIELD','Trucizna':'POISON','Ogłuszenie':'STUN',
-    'Regeneracja':'REGEN','Prowokacja':'TAUNT','Oczyszczanie':'CLEANSE',
-    'Odporność':'IMMUNE','Szybki atak':'QUICK','Podwójny atak':'2×',
+    'Obrażenia':'OBR','Leczenie':'LECZ','ATK ±':'ATAK','MAX HP ±':'PŻ',
+    'Pancerz':'PANC','Tarcza':'TARCZA','Trucizna':'TRUC','Ogłuszenie':'OGŁ',
+    'Regeneracja':'REGEN','Prowokacja':'PROW','Oczyszczanie':'OCZ',
+    'Odporność':'ODP','Szybki atak':'SZYBKI','Podwójny atak':'2 ATAKI',
 }
 FAMILY_COLORS = {
     'Obrażenia':(239,119,112),'Leczenie':(103,213,168),'ATK ±':(118,214,133),
@@ -29,13 +29,13 @@ FAMILY_COLORS = {
     'Szybki atak':(79,223,223),'Podwójny atak':(255,155,99),
 }
 UPGRADES = {
-    'Obrażenia':'+1 DMG /3T','Leczenie':'+1 HEAL /3T',
-    'ATK ±':'±1 ATK /3T','MAX HP ±':'±1 HP /3T','Pancerz':'+1 ARM /3T',
-    'Tarcza':'+3 MAX HP /3T','Trucizna':'+1 TOTAL /3T',
-    'Ogłuszenie':'+1 DMG /3T','Regeneracja':'+1 TOTAL /3T',
-    'Prowokacja':'+3 MAX HP /3T','Oczyszczanie':'+1 IF CLEAN /3T',
-    'Odporność':'+1 ARM 1ST /3T','Szybki atak':'+2 ATK +1 HP /3T',
-    'Podwójny atak':'+2 ATK /3T',
+    'Obrażenia':'+1 OBR / 3T','Leczenie':'+1 LECZ / 3T',
+    'ATK ±':'±1 ATAK / 3T','MAX HP ±':'±1 PŻ / 3T','Pancerz':'+1 PANC / 3T',
+    'Tarcza':'+3 PŻ / 3T','Trucizna':'+1 ŁĄCZ / 3T',
+    'Ogłuszenie':'+1 OBR / 3T','Regeneracja':'+1 ŁĄCZ / 3T',
+    'Prowokacja':'+3 PŻ / 3T','Oczyszczanie':'+1 ZA OCZ / 3T',
+    'Odporność':'+1 PANC 1. / 3T','Szybki atak':'+2 ATAK +1 PŻ / 3T',
+    'Podwójny atak':'+2 ATAK / 3T',
 }
 
 
@@ -93,26 +93,26 @@ def card_cue(card, unit=None) -> CardCue:
         elif family not in {'Trucizna','Regeneracja'}:
             value=base+level
     if family=='Trucizna':
-        cue=f'{base} / TICK' if base is not None else 'POISON'
+        cue=f'{base} / TURA' if base is not None else 'TRUCIZNA'
     elif family=='Regeneracja' and d.id!='S109':
-        cue=f'{base} / TICK' if base is not None else 'REGEN'
+        cue=f'{base} / TURA' if base is not None else 'REGENERACJA'
     elif value is not None:
-        suffix={'Obrażenia':' DMG','Leczenie':' HEAL','Pancerz':' ARM',
-                'ATK ±':' ATK','MAX HP ±':' HP','Ogłuszenie':' DMG',
-                'Regeneracja':' HEAL'}.get(family,'')
+        suffix={'Obrażenia':' OBR','Leczenie':' LECZ','Pancerz':' PANC',
+                'ATK ±':' ATAK','MAX HP ±':' PŻ','Ogłuszenie':' OBR',
+                'Regeneracja':' LECZ'}.get(family,'')
         cue=f'{value}{suffix}'
     else:
         cue=FAMILY_SYMBOLS[family]
     upgrade=UPGRADES[family]
-    if family=='Regeneracja' and d.id=='S109':upgrade='+1 PER TURN /3T'
+    if family=='Regeneracja' and d.id=='S109':upgrade='+1 CO TURĘ / 3T'
     if unit is not None:
-        threshold='LEVEL LOCKED'
+        threshold='POZIOM UTRWALONY'
     else:
-        threshold=f'{3-card.hand_turns%3} T TO NEXT' if card.hand_turns%3 else '3 T TO NEXT'
+        threshold=f'ZA {3-card.hand_turns%3} TUR' if card.hand_turns%3 else 'ZA 3 TURY'
     return CardCue(
         trigger=TRIGGER_SHORT[d.trigger],family=FAMILY_SYMBOLS[family],
         color=FAMILY_COLORS[family],base=cue,upgrade=upgrade,
         effect_value=value,ability_level=level,
-        growth=f'+{d.growth_atk} ATK  +{d.growth_hp} HP / own hand turn',
+        growth=f'+{d.growth_atk} ATAK  +{d.growth_hp} PŻ / wł. turę na ręce',
         next_threshold=threshold,
     )

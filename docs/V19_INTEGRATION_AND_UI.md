@@ -1,37 +1,58 @@
-# AuctionHammer — Game Master v19 integration and card UI
+# AuctionHammer — wdrożenie zasad Game Master v19 i interfejs kart
 
-**Source reviewed:** user-supplied `GRA_KARCIANA_ONLINE_GAME_MASTER_v19(1).zip`, especially `CHANGELOG_v19.md`, `MECHANICS_AUDIT_v19.md`, `data/cards_base_70.json`, `src/trait_grants_v19.py`, and the v19 validation report. The ZIP explicitly labels its isolated Python modules as reference fragments rather than a complete playable engine. This integration applies its rules to AuctionHammer's existing 70-card `Match` engine.
+**Podstawa zmian:** dostarczone archiwum `GRA_KARCIANA_ONLINE_GAME_MASTER_v19(1).zip`, a w szczególności lista zmian v19, audyt mechanik, katalog 70 kart i referencyjne fragmenty implementacji nadanych zdolności. Moduły referencyjne z archiwum nie są samodzielnym, kompletnym silnikiem. Zasady wdrożono do istniejącej klasy `Match` gry AuctionHammer.
 
-## Approved new v19 card rules
+## Zmiany kart zatwierdzone w v19
 
-| ID | Rule integrated |
-|---|---|
-| S66 | On play, choose **self haste** or exactly one **other card currently in your hand**. Hand grant is attached to that specific physical card and consumed on its first summon. Selecting the hand card does **not** grant self haste |
-| S67 | On play, grant Double Attack to **self or one other ally on the board**. The grant does not bypass summoning sickness or create a third attack |
-| S79 | Base stat update to **2 ATK / 6 HP**; conditional double is enabled only after the first legal attack and only while the ability works |
-| S114 | Base stat update to **1 ATK / 5 HP**; intrinsic Quick Attack is **self-only** |
-| S115 | Base stat update to **1 ATK / 6 HP**; intrinsic Double Attack is **self-only** |
+| Karta | Obowiązujące działanie |
+| --- | --- |
+| S66 — Mag Migotliwego Kroku | Po wystawieniu wybiera Szybki atak **dla siebie** albo dla **jednej innej konkretnej karty jednostki na ręce**. Wybory się wykluczają. Bonus przypisany karcie na ręce zużywa się przy jej najbliższym wystawieniu |
+| S67 — Zaklinacz Podwójnego Uderzenia | Po wystawieniu wybiera siebie lub inną sojuszniczą jednostkę na planszy, aby przyznać jej Podwójny atak. Nie daje trzeciego ataku ani prawa do ataku w turze wystawienia bez Szybkiego ataku |
+| S79 — Dwugłowa Hiena | **2 ATAK / 6 PŻ**. Drugi atak jest możliwy dopiero po pierwszym legalnym ataku, jeśli zdolność nie jest zablokowana |
+| S114 — Instruktor Błyskawicznego Natarcia | **1 ATAK / 5 PŻ**. Wrodzony Szybki atak działa wyłącznie na tę jednostkę |
+| S115 — Mistrz Dwóch Ostrzy | **1 ATAK / 6 PŻ**. Wrodzony Podwójny atak działa wyłącznie na tę jednostkę |
 
-## v18 mechanics carried forward in v19
+## Utrzymane zmiany wcześniejsze, obowiązujące również w v19
 
-- **S20:** on death, grant one shield and two permanent armor to another allied unit, or to the owner hero if none survives.
-- **S82:** on death, grant six permanent armor to another allied unit, or to the owner hero if none survives.
-- **S90:** on death, select up to two *different* random cards from the owner's actual hand, using the match RNG; grant each Quick Attack on their next summon, nonstacking.
-- **S91:** on death, select another allied board unit for permanent Double Attack; when no such unit survives, grant it to one random physical card in hand for its first later legally attack-capable own turn (including its summon turn if it has Quick Attack).
-- **S105:** aura armor is a source-specific, one-time portion per contact; consumed points do not refill during aura recomputation.
-- **S109:** scaling quality increases self-regeneration by one HP **every own end turn**, not once per whole lifetime.
-- **S74/S87/S97/S111:** the approved conditional cleansing scaling descriptions replace generic/incorrect target branches.
+- **S20** — po śmierci daje tarczę i dwa punkty trwałego pancerza innej własnej jednostce albo własnemu bohaterowi, jeśli nie pozostała żadna sojusznicza jednostka.
+- **S82** — po śmierci daje sześć punktów trwałego pancerza innej własnej jednostce albo własnemu bohaterowi, jeśli nie pozostała żadna sojusznicza jednostka.
+- **S90** — po śmierci wybiera losowo do dwóch *różnych* kart na ręce, którym daje Szybki atak przy najbliższym wystawieniu. Bonusy nie kumulują się.
+- **S91** — po śmierci nadaje Podwójny atak innej jednostce na planszy; gdy nie ma takiej jednostki, wybiera losowo jedną kartę na ręce. W wariancie awaryjnym bonus obowiązuje w jej pierwszej własnej turze z możliwością legalnego ataku.
+- **S105** — aura nadaje jednorazową pulę pancerza przy objęciu ochroną. Pancerz zużyty przez obrażenia nie odtwarza się przy ponownym przeliczeniu aury.
+- **S109** — każdy poziom rozwoju wzmacnia samoleczenie na koniec **każdej własnej tury**.
+- **S74, S87, S97, S111** — warunkowe wzmocnienie oczyszczania działa wyłącznie po rzeczywistym usunięciu kwalifikującego się efektu.
 
-The other 65 base card entries remain unchanged by v19 *except* the explicit v18 carryovers listed above. Per-own-hand-turn stat growth and the quality level at completed turn thresholds 3/6/9/12 remain authoritative. There are still exactly 70 unique starting cards, no purchasable starting cards and no active auction gameplay.
+Wszystkie 70 kart pozostają unikatowe. Ich statystyki i opisy są przechowywane w `data/cards_base_70.json`. Nie dodano aukcji, kart aukcyjnych ani kosztów wystawiania jednostek.
 
-## New UI
+## Polski interfejs
 
-Each compact card has a colored activation-time label, a distinctive family emblem or existing image, a large bold current numerical effect where relevant, a green quality-scaling ribbon, and current ATK/HP. The expanded card details show the original full ability and upgrade wording, highlight only semantically scalable quantities in green bold and keep the entire text scrollable. The target-choice pane remains separate from the card description, uses a paged six-choice list, and allows clicking highlighted units, heroes **or hand cards** (for S66). Mulligan selections have a stronger gold border and a numbered replacement badge. The display auto-fits the laptop screen with correct cursor mapping when resized or fullscreen.
+Obowiązujące nazwy zdolności i efekty są wyświetlane **po polsku**, także na małych kartach. Zamiast angielskich skrótów stosuje się:
 
-The colored numbers represent the correct operation rather than blindly bolding every digit: for stun, the duration is not upgraded; for poison/regeneration the bonus is to the **total portion**, not every tick; for shield/taunt and Quick/Double Attack the bonus applies to stats without multiplying charges or attacks.
+| Oznaczenie | Znaczenie |
+| --- | --- |
+| OBR | Obrażenia |
+| LECZ | Leczenie |
+| PANC | Pancerz |
+| PŻ | Punkty życia |
+| TRUC | Trucizna |
+| OGŁ | Ogłuszenie |
+| PROW | Prowokacja |
+| OCZ | Oczyszczanie |
+| ODP | Odporność |
+| SZYBKI | Szybki atak |
+| 2 ATAKI | Podwójny atak |
+| ŁĄCZ | Premia do sumarycznego efektu |
 
-## Testing
+Wszystkie karty pokazują swój **moment aktywacji**, rodzinę efektu, wyróżnioną wartość oraz pas rozwoju co trzy własne tury na ręce. Rozszerzony podgląd pogrubia tylko wartość podlegającą skalowaniu. Nie należy pogrubiać czasu ogłuszenia, liczby dozwolonych ataków ani dodatkowo wzmacniać każdej osobnej aktywacji trucizny lub regeneracji.
 
-Run `python -m unittest discover -s tests -v`. The focused regression file is `tests/test_v19_integration.py`. It tests the actual Match engine, hand-grant identity and consumption, v19 hero fallbacks, two-attack caps, S105 one-time armor, S109 per-turn regeneration, full 70-card infographics and Pygame rendering.
+Wybór celu i wariantu zajmuje odrębny panel. Legalne cele na planszy oraz — w przypadku S66 — na ręce są wyróżnione. Podczas wymiany kart oznaczone egzemplarze mają złote obramowanie i numer wyboru. Rozmiar okna dostosowuje się do ekranu i skalowania obrazu w Windows.
 
-Automated tests verify these specific cases and all earlier regressions; they are not a full statistical PvP balance validation or proof that every possible chain of 70 card effects has been exhaustively exercised. The v19 source archive itself notes that its new stat values were not calibrated with a full win-rate simulation.
+## Źródła zasad i wersjonowanie
+
+`AUCTIONHAMMER_MASTER.md` i `data/GAME_MASTER.json` wskazują aktualną specyfikację **Game Master v19**. `docs/GAME_MASTER_v17.md` i pliki kolejności zdarzeń ze wskazaniem v17 pozostają materiałami historycznymi. Wersja historyczna **nie może nadpisywać** zatwierdzonych zmian katalogu v19.
+
+## Testy i znane ograniczenia
+
+Testy uruchamia się poleceniem `python -m unittest discover -s tests -v`. Testy v19 znajdują się w `tests/test_v19_integration.py`; sprawdzają m.in. wybory S66/S67, powiązanie premii z konkretną kartą, skutki śmierci S20/S82/S90/S91, brak odnawiania pancerza S105, regenerację S109 i rysowanie wszystkich 70 kart.
+
+**Ważne ograniczenie:** silnik w dalszym ciągu wymaga odrębnego audytu grup jednoczesnych zgonów. Testy nie dowodzą pełnej zgodności atomowej kolejki zdarzeń ani zbalansowania wszystkich zestawień kart. Żaden dokument nie powinien przedstawiać tych zagadnień jako zakończonych.
