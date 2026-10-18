@@ -71,6 +71,27 @@ class SafeSaveTests(unittest.TestCase):
         loaded.players[0].hp=1
         self.assertEqual(game.players[0].hp,68)
 
+    def test_pending_choices_and_death_wave_queue_roundtrip(self):
+        import tempfile
+        from pathlib import Path
+        from game.core.persistence import save_match,load_match
+        from game.core.models import Pending,Choice
+        game=Match(9150)
+        choice=Choice('ally','hero:0','Lecz bohatera')
+        game.pending=Pending('S02',0,'play',[choice],None)
+        game.death_waves.append({
+            'id':5,'fallen':('S21',),
+            'source_ids':('S21',),'sources':None,
+            'cursor':0,'decisions':[('S21',choice)]
+        })
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/'save.json'
+            save_match(game,path)
+            restored=load_match(path)
+        self.assertEqual(restored.pending.choices[0],choice)
+        self.assertEqual(restored.death_waves[0]['fallen'],('S21',))
+        self.assertEqual(restored.death_waves[0]['decisions'][0][1],choice)
+
     def test_corrupted_and_incompatible_save_is_rejected(self):
         import tempfile
         import json
@@ -193,6 +214,14 @@ class MenuAndAITests(unittest.TestCase):
             self.assertEqual(ai.player,1)
             # Przebieg mulliganu nie powinien ujawniać AI ręki gracza.
             ai.step(game)
+
+    def test_ai_tournament_smoke_never_uses_auction_or_cost(self):
+        from tools.simulate_ai_levels import tournament
+        result=tournament(games=2,max_steps=70)
+        self.assertEqual(result['games'],2)
+        self.assertEqual(sum(result['scores'].values()),2)
+        self.assertFalse(result['auctions'])
+        self.assertEqual(result['specification'],'GAME_MASTER_v19')
 
     def test_main_menu_history_and_replay_are_modal(self):
         from game.ui.app import SoloApp
