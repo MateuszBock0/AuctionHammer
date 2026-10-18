@@ -329,7 +329,7 @@
       "name": "Mag Zorzy",
       "atk": 1,
       "hp": 4,
-      "effect": "Zadaj 3 obrażenia wybranej wrogiej jednostce.",
+      "effect": "Zadaj 5 obrażeń wybranej wrogiej jednostce.",
       "faction": "Elfy",
       "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
       "hand_growth": {
@@ -455,7 +455,7 @@
       "name": "Tkaczka Uśpienia",
       "atk": 1,
       "hp": 6,
-      "effect": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 1 obrażenie.",
+      "effect": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 3 obrażenia.",
       "faction": "Elfy",
       "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
       "hand_growth": {
@@ -601,7 +601,7 @@
       "name": "Wilk Szponiasty",
       "atk": 2,
       "hp": 5,
-      "effect": "Przed standardową walką zadaj 1 dodatkowe obrażenie celowi ataku.",
+      "effect": "Przed standardową walką zadaj 2 dodatkowe obrażenia celowi ataku.",
       "faction": "Dzikie bestie",
       "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
       "hand_growth": {
@@ -673,9 +673,9 @@
       "name": "Żarłacz Pancerzy",
       "atk": 4,
       "hp": 5,
-      "effect": "Przed standardową walką usuń do 2 punktów pancerza z celu ataku.",
+      "effect": "Przed standardową walką usuń do 2 punktów pancerza z celu ataku (jednostki lub bohatera). Jeśli cel nie ma pancerza, zadaj mu zamiast tego 2 dodatkowe obrażenia.",
       "faction": "Dzikie bestie",
-      "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
+      "scaling": "Co 3 własne tury na ręce: +1 do liczby zdejmowanych punktów pancerza ALBO do dodatkowych obrażeń bez pancerza.",
       "hand_growth": {
         "atk_per_hand_turn": 0,
         "hp_per_hand_turn": 2,
@@ -727,7 +727,7 @@
       "name": "Niedźwiedź Grzmotu",
       "atk": 1,
       "hp": 6,
-      "effect": "Gdy atakujesz jednostkę, ogłusz ją na 1 jej własną turę przed standardową walką.",
+      "effect": "Gdy atakujesz jednostkę, ogłusz ją na 1 jej własną turę i — jeśli ogłuszenie zadziała — zadaj jej 1 dodatkowe obrażenie przed standardową walką.",
       "faction": "Dzikie bestie",
       "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
       "hand_growth": {
@@ -781,9 +781,9 @@
       "name": "Lis Oczyszczający",
       "atk": 1,
       "hp": 6,
-      "effect": "Gdy atakujesz jednostkę, usuń z niej wszystkie tymczasowe pozytywne efekty przed standardową walką.",
+      "effect": "Gdy atakujesz jednostkę, usuń z niej wszystkie tymczasowe pozytywne efekty przed standardową walką. Jeśli cokolwiek usunąłeś, zadaj 3 dodatkowe obrażenia; w przeciwnym razie zadaj 2 dodatkowe obrażenia.",
       "faction": "Dzikie bestie",
-      "scaling": "Co 3 własne tury na ręce: jeśli zdolność rzeczywiście usunęła co najmniej jeden tymczasowy pozytywny efekt z atakowanej wrogiej jednostki, zadaj temu celowi dodatkowe 1 obrażenie za każdy ukończony próg. Bez sojuszniczej gałęzi leczenia.",
+      "scaling": "Co 3 własne tury na ręce: +1 do obrażeń gałęzi skutecznego oczyszczenia lub gałęzi bez efektu. Brak dodatkowych ataków.",
       "hand_growth": {
         "atk_per_hand_turn": 1,
         "hp_per_hand_turn": 1,
@@ -817,7 +817,7 @@
       "name": "Gepard Burzowy",
       "atk": 2,
       "hp": 4,
-      "effect": "Przed standardową walką nadaj wybranej innej sojuszniczej jednostce wystawionej w tej turze możliwość atakowania już teraz.",
+      "effect": "Przed standardową walką nadaj Szybki atak wybranej innej sojuszniczej jednostce wystawionej w tej turze. Jeśli takiej nie ma, nadaj Szybki atak wybranej karcie z własnej ręki na jej najbliższe wystawienie.",
       "faction": "Dzikie bestie",
       "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
       "hand_growth": {
@@ -853,7 +853,7 @@
       "name": "Widmo Otchłani",
       "atk": 1,
       "hp": 4,
-      "effect": "Zadaj 4 obrażenia wrogiemu bohaterowi.",
+      "effect": "Zadaj 6 obrażeń wrogiemu bohaterowi.",
       "faction": "Potwory",
       "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
       "hand_growth": {
@@ -979,7 +979,7 @@
       "name": "Banshee Krzyku",
       "atk": 1,
       "hp": 4,
-      "effect": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 2 obrażenia.",
+      "effect": "Ogłusz wybraną wrogą jednostkę na 1 jej własną turę i zadaj jej 4 obrażenia.",
       "faction": "Potwory",
       "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
       "hand_growth": {
@@ -997,9 +997,9 @@
       "name": "Życiodajne Widmo",
       "atk": 3,
       "hp": 6,
-      "effect": "Nałóż na wybraną pozostałą sojuszniczą jednostkę regenerację 3 HP przez 3 jej własne tury.",
+      "effect": "Przy śmierci nałóż na wybraną pozostałą własną jednostkę regenerację 3 HP przez 3 jej własne tury. Jeśli nie ma pozostałej własnej jednostki, ulecz własnego bohatera o 4 HP.",
       "faction": "Potwory",
-      "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
+      "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; przy braku celu +1 do jednorazowego leczenia bohatera za poziom.",
       "hand_growth": {
         "atk_per_hand_turn": 0,
         "hp_per_hand_turn": 2,
@@ -1105,7 +1105,7 @@
       "name": "Kusznik Runiczny",
       "atk": 1,
       "hp": 6,
-      "effect": "Zadaj 1 obrażenie wrogiej jednostce z najniższym aktualnym HP.",
+      "effect": "Zadaj 2 obrażenia wrogiej jednostce z najniższym aktualnym HP. Gdy przeciwnik nie ma jednostek, zadaj 2 obrażenia jego bohaterowi.",
       "faction": "Krasnoludy",
       "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
       "hand_growth": {
@@ -1231,7 +1231,7 @@
       "name": "Młotnik Wstrząsów",
       "atk": 1,
       "hp": 6,
-      "effect": "Na koniec tury ogłusz wrogą jednostkę z najniższym aktualnym ATK na 1 jej własną turę. Nie możesz ogłuszać tej samej jednostki w dwóch kolejnych własnych turach.",
+      "effect": "Na koniec tury ogłusz wrogą jednostkę z najniższym aktualnym ATK na 1 jej własną turę i — jeśli ogłuszenie zadziała — zadaj jej 1 obrażenie. Nie możesz ogłuszać tej samej jednostki w dwóch kolejnych własnych turach.",
       "faction": "Krasnoludy",
       "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
       "hand_growth": {
@@ -1285,9 +1285,9 @@
       "name": "Czyściciel Run",
       "atk": 1,
       "hp": 6,
-      "effect": "Usuń wszystkie tymczasowe negatywne efekty z wybranej sojuszniczej jednostki.",
+      "effect": "Usuń wszystkie tymczasowe negatywne efekty z wybranej sojuszniczej jednostki. Jeśli cokolwiek usunięto, ulecz tę jednostkę o 2 HP; w przeciwnym razie ulecz ją o 1 HP.",
       "faction": "Krasnoludy",
-      "scaling": "Co 3 własne tury na ręce: jeśli zdolność rzeczywiście usunęła co najmniej jeden tymczasowy negatywny efekt z własnej jednostki, ulecz ten cel o dodatkowe 1 HP za każdy ukończony próg. Bez wrogiej gałęzi oczyszczania.",
+      "scaling": "Co 3 własne tury na ręce: +1 do leczenia w obu gałęziach; liczba usuniętych efektów się nie skaluje.",
       "hand_growth": {
         "atk_per_hand_turn": 1,
         "hp_per_hand_turn": 1,
@@ -1303,7 +1303,7 @@
       "name": "Górski Odtruwacz",
       "atk": 3,
       "hp": 7,
-      "effect": "Nadaj wybranej sojuszniczej jednostce odporność na truciznę do końca jej najbliższej własnej tury.",
+      "effect": "Nadaj wybranej sojuszniczej jednostce odporność na truciznę oraz 1 tymczasowego pancerza do końca jej najbliższej własnej tury. Przyznany pancerz nie odnawia się przez samo przeliczenie statusów.",
       "faction": "Krasnoludy",
       "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
       "hand_growth": {
@@ -1357,7 +1357,7 @@
       "name": "Weteran Odwetu",
       "atk": 4,
       "hp": 5,
-      "effect": "Każda wroga jednostka, która atakuje tę jednostkę, otrzymuje 1 obrażenie przed standardową walką.",
+      "effect": "Każda wroga jednostka, która atakuje tę jednostkę, otrzymuje 2 obrażenia przed standardową walką.",
       "faction": "Ludzie",
       "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
       "hand_growth": {
@@ -1483,7 +1483,7 @@
       "name": "Królewski Trębacz",
       "atk": 1,
       "hp": 6,
-      "effect": "Gdy wroga jednostka po raz pierwszy znajdzie się naprzeciw Trębacza, jest ogłuszona na 1 własną turę. Ta sama jednostka nie może być ogłuszona ponownie przez Trębacza podczas jego bieżącego wystawienia.",
+      "effect": "Gdy wroga jednostka po raz pierwszy znajdzie się naprzeciw Trębacza, jest ogłuszona na 1 własną turę i — jeśli ogłuszenie zadziała — otrzymuje 1 obrażenie. Ta sama jednostka nie może być ogłuszona ponownie przez Trębacza podczas jego bieżącego wystawienia.",
       "faction": "Ludzie",
       "scaling": "Co 3 własne tury na ręce: zdolność przy nałożeniu ogłuszenia zadaje dodatkowo +1 obrażenie; czas ogłuszenia nadal 1 własna tura.",
       "hand_growth": {
@@ -1680,5 +1680,12 @@
   "canonical_card_file": "data/cards_base_70.json",
   "canonical_event_order_file": "data/event_order_v19.json",
   "canonical_bank_file": "data/starter_bank_v17.json",
-  "future_auction_catalog_status": "NOT_DESIGNED_OR_APPROVED"
+  "future_auction_catalog_status": "NOT_DESIGNED_OR_APPROVED",
+  "balance_update_v20": {
+    "status": "candidate_regression_testing",
+    "count_modified": 16,
+    "no_change_to_base_atk_hp": true,
+    "auction_catalog": "separate_v4_draft",
+    "source": "Game Master v19 + balance v20"
+  }
 }

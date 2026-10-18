@@ -180,10 +180,10 @@ class V19InfographicTests(unittest.TestCase):
         g=setup_game(932)
         s=g.defs['S59']
         spans=highlighted_numeric_ranges(s)
-        self.assertEqual([s.effect[a:b] for a,b in spans],['1'])
+        self.assertEqual([s.effect[a:b] for a,b in spans],['3'])
         self.assertGreater(spans[0][0],s.effect.index('1 jej własną'))
         s2=g.defs['S01']
-        self.assertEqual([s2.effect[a:b] for a,b in highlighted_numeric_ranges(s2)],['3'])
+        self.assertEqual([s2.effect[a:b] for a,b in highlighted_numeric_ranges(s2)],['5'])
 
     def test_stat_only_upgrades_do_not_fake_additional_attacks(self):
         g=setup_game(933)

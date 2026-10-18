@@ -10,14 +10,14 @@ from game.core.models import Choice
 from test_engine import setup_game,force_unit
 
 BASE = {
-    "Obrażenia":dict(S01=3,S09=1,S21=4,S27=1,S103=1),
+    "Obrażenia":dict(S01=5,S09=2,S21=6,S27=2,S103=2),
     "Leczenie":dict(S02=4,S10=2,S17=6,S25=2,S104=4),
     "ATK ±":dict(S04=1,S68=1,S23=2,S28=1,S34=1),
     "MAX HP ±":dict(S08=4,S69=1,S81=5,S93=1,S35=1),
     "Pancerz":dict(S03=4,S12=2,S82=6,S26=2,S105=2),
-    "Ogłuszenie":dict(S59=1,S15=0,S84=2,S95=0,S108=0),
-    "Oczyszczanie":dict(S07=1,S74=0,S87=0,S97=0,S111=0),
-    "Odporność":dict(S64=0,S76=0,S88=0,S99=0,S39=0),
+    "Ogłuszenie":dict(S59=3,S15=1,S84=4,S95=1,S108=1),
+    "Oczyszczanie":dict(S07=1,S74=3,S87=0,S97=2,S111=0),
+    "Odporność":dict(S64=0,S76=0,S88=0,S99=1,S39=0),
     "Trucizna":dict(S58=(2,2),S11=(1,2),S83=(2,3),S32=(1,2),S107=(1,2)),
     "Regeneracja":dict(S60=(3,2),S71=(1,2),S85=(3,3),S31=(1,2),S109=2),
 }
@@ -232,7 +232,7 @@ class FullScalingAudit(unittest.TestCase):
         g._add_effect(eid,"atk",2,source="S68",positive=True,expire_action=g.action_turn)
         g._execute("S74","attack",Choice("auto",eid,""),attacked=eid)
         self.assertFalse(any(e.kind=="atk" for e in enemy.effects))
-        self.assertEqual(enemy.hp,99)
+        self.assertEqual(enemy.hp,96)
 
     def test_stat_only_family_abilities_do_not_gain_extra_uses(self):
         """The other 20 cards gain stats, not extra shields, attacks or triggers."""

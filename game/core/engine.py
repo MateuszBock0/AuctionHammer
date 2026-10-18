@@ -267,7 +267,7 @@ class Match:
         # v17 priority stage 4: passive defender response AFTER ON_ATTACK,
         # before simultaneous standard combat. Attack has already been spent.
         if target in self.units and self.cards[target].definition.id=='S103' and not self._disabled(self.units[target]):
-            self._damage(uid,1+self.units[target].ability_level)
+            self._damage(uid,2+self.units[target].ability_level)
         if uid not in self.units or (target not in self.units and not target.startswith('hero:')):
             return
         a=self.units[uid]
@@ -851,8 +851,8 @@ class Match:
             if i<len(enemy) and enemy[i] not in u.seen_opponents:
                 opp=enemy[i];u.seen_opponents.add(opp)
                 applied=self._add_effect(opp,'stun',expires=self._expiry(self.units[opp].owner),source=uid,positive=False)
-                if applied and u.ability_level and opp in self.units:
-                    self._damage(opp,u.ability_level)
+                if applied and opp in self.units:
+                    self._damage(opp,1+u.ability_level)
         # Lethal outcomes of these reactions are resolved in the caller.
 
 
@@ -951,7 +951,7 @@ class Match:
                 arm(t,level)
         next_end=lambda t:self._expiry(self.units[t].owner) if t in self.units else None
         # Elfy
-        if cid=='S01':self._damage(target,3+level)
+        if cid=='S01':self._damage(target,5+level)
         elif cid=='S02':self._heal(target,4+level)
         elif cid=='S04':mod(target,'atk',(1+level) if mode=='Wzmocnij' else -(1+level))
         elif cid=='S08':mod(target,'max_hp',(4+level) if mode=='Wzmocnij' else -(4+level))
@@ -965,7 +965,7 @@ class Match:
         elif cid=='S59':
             applied = (self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
                        if target in self.units else False)
-            self._damage(target,1+(level if applied else 0))
+            self._damage(target,3+(level if applied else 0))
         elif cid=='S60':regen(target,3,2,level)
         elif cid=='S61':mod(target,'taunt',0,True)
         elif cid=='S07':
@@ -982,44 +982,57 @@ class Match:
             if target in self.players[owner].board and target in self.units:
                 self._add_effect(target,'double',source=uid)
         # Dzikie bestie
-        elif cid=='S09':self._damage(attacked,1+level)
+        elif cid=='S09':self._damage(attacked,2+level)
         elif cid=='S10':self._heal(uid,2+level)
         elif cid=='S68':mod(uid if mode=='Wzmocnij siebie' else attacked,'atk',(1+level) if mode=='Wzmocnij siebie' else -(1+level),action=True)
         elif cid=='S69':
             if mode=='Wzmocnij siebie':mod(uid,'max_hp',1+level)
             else:mod(attacked,'max_hp',-(1+level),expires=next_end(attacked))
         elif cid=='S12':
-            if attacked in self.units:
-                t=self.units[attacked];remove=2+level
-                # The armor stripping ability follows the same layer order as
-                # ordinary damage: temporary (including source-tagged parts),
-                # then passive aura armor, then permanent armor.
-                n=min(t.armor_temp,remove);t.armor_temp-=n;remove-=n
-                if not t.armor_temp:t.armor_temp_source=''
-                for k in list(t.temporary_armor):
-                    n=min(t.temporary_armor[k],remove)
-                    t.temporary_armor[k]-=n;remove-=n
-                for k in list(t.aura_armor):
-                    n=min(t.aura_armor[k],remove)
-                    t.aura_armor[k]-=n;remove-=n
-                self._spend_permanent_armor(t,remove)
+            if isinstance(attacked,str) and attacked.startswith('hero:'):
+                hero=self.players[int(attacked.split(':')[1])]
+                if hero.hero_armor>0:
+                    hero.hero_armor=max(0,hero.hero_armor-(2+level))
+                else:self._damage(attacked,2+level)
+            elif attacked in self.units:
+                t=self.units[attacked]
+                if t.armor<=0:
+                    self._damage(attacked,2+level)
+                else:
+                    remove=2+level
+                    # The armor stripping ability follows the same layer order as
+                    # ordinary damage: temporary (including source-tagged parts),
+                    # then passive aura armor, then permanent armor.
+                    n=min(t.armor_temp,remove);t.armor_temp-=n;remove-=n
+                    if not t.armor_temp:t.armor_temp_source=''
+                    for k in list(t.temporary_armor):
+                        n=min(t.temporary_armor[k],remove)
+                        t.temporary_armor[k]-=n;remove-=n
+                    for k in list(t.aura_armor):
+                        n=min(t.aura_armor[k],remove)
+                        t.aura_armor[k]-=n;remove-=n
+                    self._spend_permanent_armor(t,remove)
         elif cid=='S70':
             if here:here.shield=1;here.shield_source=uid
         elif cid=='S11':self._add_poison(attacked,1,2,uid,level)
         elif cid=='S15':
             if attacked in self.units:
                 applied=self._add_effect(attacked,'stun',expires=next_end(attacked),source=uid,positive=False)
-                if applied and level:self._damage(attacked,level)
+                if applied:self._damage(attacked,1+level)
         elif cid=='S71':regen(uid,1,2,level)
         elif cid=='S72':mod(uid,'taunt',0,True,expires=self.players[owner].turn_count+1)
         elif cid=='S74':
-            if self._clean(attacked,negative=False) and level:self._damage(attacked,level)
+            if attacked in self.units:
+                removed=self._clean(attacked,negative=False)
+                self._damage(attacked,(3 if removed else 2)+level)
         elif cid=='S76':immune(uid,('stun',),expires=self.players[owner].turn_count+1)
         elif cid=='S78':
             if target in self.units:mod(target,'quick',0,True,expires=self.players[owner].turn_count)
+            elif target in self.players[owner].hand:
+                self.cards[target].quick_on_first_summon=True
         elif cid=='S79':pass  # two attacks, checked in _double
         # Potwory
-        elif cid=='S21':self._damage(f'hero:{1-owner}',4+level)
+        elif cid=='S21':self._damage(f'hero:{1-owner}',6+level)
         elif cid=='S17':self._heal(f'hero:{owner}',6+level)
         elif cid=='S23':mod(target,'atk',(2+level) if mode=='Wzmocnij' else -(2+level))
         elif cid=='S81':mod(target,'max_hp',(5+level) if mode=='Wzmocnij' else -(5+level))
@@ -1048,8 +1061,10 @@ class Match:
         elif cid=='S84':
             applied = (self._add_effect(target,'stun',expires=next_end(target),source=uid,positive=False)
                        if target in self.units else False)
-            self._damage(target,2+(level if applied else 0))
-        elif cid=='S85':regen(target,3,3,level)
+            self._damage(target,4+(level if applied else 0))
+        elif cid=='S85':
+            if target==f'hero:{owner}':self._heal(target,4+level)
+            else:regen(target,3,3,level)
         elif cid=='S86':mod(target,'taunt',0,True)
         elif cid=='S87':
             useful=self._clean(target,True);arm(target,2)
@@ -1081,7 +1096,8 @@ class Match:
             enemy=self.players[1-owner].board
             if enemy:
                 t=min(enemy,key=lambda x:(self.units[x].hp,enemy.index(x)))
-                self._damage(t,1+level)
+                self._damage(t,2+level)
+            else:self._damage(f'hero:{1-owner}',2+level)
         elif cid=='S25':self._heal(target,2+level)
         elif cid=='S28':mod(target,'atk',(1+level) if mode=='Wzmocnij' else -(1+level),expires=next_end(target))
         elif cid=='S93':mod(target,'max_hp',(1+level) if mode=='Wzmocnij' else -(1+level),expires=next_end(target))
@@ -1098,13 +1114,16 @@ class Match:
                 t=min(pool,key=lambda x:(self.units[x].atk,enemy.index(x)))
                 applied=self._add_effect(t,'stun',expires=next_end(t),source=uid,positive=False)
                 if applied:
-                    if level:self._damage(t,level)
+                    self._damage(t,1+level)
                     if here:here.last_stun_target=t;here.last_stun_turn=self.players[owner].turn_count
         elif cid=='S31':regen(target,1,2,level)
         elif cid=='S96':mod(target,'taunt',0,True,expires=next_end(target))
         elif cid=='S97':
-            if self._clean(target,True) and level:self._heal(target,level)
-        elif cid=='S99':immune(target,('poison',),expires=next_end(target))
+            removed=self._clean(target,True)
+            self._heal(target,(2 if removed else 1)+level)
+        elif cid=='S99':
+            immune(target,('poison',),expires=next_end(target))
+            arm(target,1,True,expires=next_end(target))
         elif cid=='S101':
             if target in self.players[owner].hand:
                 self.cards[target].quick_next_turn=self.players[owner].turn_count+1

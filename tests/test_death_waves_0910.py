@@ -70,7 +70,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         self.assertIsNone(g.pending)
         self.assertIn('S01',g.units)
         self.assertEqual(g.units['S01'].hp,2)
-        self.assertEqual(g.units['S01'].armor,4)
+        self.assertEqual(g.units['S01'].armor,2)
         self.assertTrue(any(e.kind=='stun' for e in g.units['S01'].effects))
         g.assert_integrity()
 
@@ -82,7 +82,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g._kill_batch(['S21','S17'])
         g._drain()
         # Obrażenia i leczenie z jednej fali rozpatrywane łącznie.
-        self.assertEqual(g.players[1].hp,5)
+        self.assertEqual(g.players[1].hp,3)
         self.assertEqual(g.phase,'turn')
         self.assertIsNone(g.winner)
         self.assertEqual(sum('Zamknięto falę śmierci' in x for x in g.events),1)
@@ -95,7 +95,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g.players[1].hp=76
         g._kill_batch(['S21','S17'])
         g._drain()
-        self.assertEqual(g.players[1].hp,78)
+        self.assertEqual(g.players[1].hp,76)
         # 76 -> 72 -> 78 to jedna fala, a nie dwa osobne zdarzenia.
         self.assertNotIn(75,g.players[1].thresholds)
         self.assertFalse(any('75 PŻ' in x for x in g.events))
@@ -108,7 +108,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         old_coins=g.players[1].coins
         g._kill_batch(['S21'])
         g._drain()
-        self.assertEqual(g.players[1].hp,73)
+        self.assertEqual(g.players[1].hp,71)
         self.assertEqual(g.players[1].coins,old_coins+3)  # +1 za zgon S21, +2 za próg 75
         self.assertIn(75,g.players[1].thresholds)
         g.assert_integrity()
@@ -263,7 +263,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g._drain()
         # Leczenie S17 ratuje bohatera w tej samej fali.
         self.assertEqual(g.phase,'turn')
-        self.assertEqual(g.players[1].hp,3)
+        self.assertEqual(g.players[1].hp,1)
         self.assertIsNone(g.winner)
 
     def test_wiele_pelnych_meczy_bez_blokady_kolejki_i_duplikatow(self):
