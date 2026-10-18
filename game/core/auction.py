@@ -176,6 +176,9 @@ def pick(game,player,uid):
         game._log(f'Aukcja {state.number}: niewybrana karta {unchosen[0]} '
                   'trafia do osobnego woreczka ODRZUCONYCH AUKCYJNYCH. '
                   'Nie będzie ponownie dostępna.')
+        if not game.auction_bag:
+            game._log('Woreczek 12 kart aukcyjnych został wyczerpany. '
+                      'W tym meczu nie będzie kolejnych aukcji.')
     else:
         game._log(f'Aukcja {state.number}: niewybrany archetyp {unchosen[0]} wraca do puli.')
     game.auction_history.append({
