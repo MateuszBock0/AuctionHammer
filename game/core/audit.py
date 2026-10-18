@@ -402,7 +402,14 @@ def verify_replay(payload,match_factory):
     """
     if not payload.get("complete_from_start"):
         raise ValueError("Niepełny audyt: brak początku rozgrywki")
-    game=match_factory(payload["seed"])
+    auction_enabled=bool(payload.get("initial_state",{}).get("auctions_enabled",False))
+    if auction_enabled:
+        try:
+            game=match_factory(payload["seed"],auctions_enabled=True)
+        except TypeError as exc:
+            raise ValueError("Odtwarzanie aukcji wymaga fabryki z auctions_enabled") from exc
+    else:
+        game=match_factory(payload["seed"])
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
         raise ValueError("Początkowy stan nie odpowiada wskazanemu seed")
     for record in payload["actions"]:
