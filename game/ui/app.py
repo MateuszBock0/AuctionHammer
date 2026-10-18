@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 import re
 import pygame
+from game.ui.combat_visuals import CombatVisuals
+from game.ui.match_history import MatchRecorder
 from game import config as cfg
 from game.core.engine import Match
 from game.core.ai import ComputerOpponent
@@ -26,7 +28,7 @@ class SoloApp:
     HAND_W=125
     HAND_H=195
 
-    def __init__(self):
+    def __init__(self,start_in_menu=False):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
         pygame.init()
         # Fit the opening window to the current display, respecting Windows DPI
@@ -45,6 +47,11 @@ class SoloApp:
         self.ai=ComputerOpponent()
         self.bg=self._create_background()
         self.restart()
+        self.menu_open=bool(start_in_menu)
+        self.menu_page='main'
+        self.history_open=False
+        self.history_scroll=0
+        self.replay_index=None
 
     def restart(self):
         self.game=Match()
@@ -64,6 +71,13 @@ class SoloApp:
         self.animations_enabled=True
         self._recent_feedback=[]
         self._last_logged_event=len(self.game.events)
+        self.combat_visuals=CombatVisuals()
+        self.combat_visuals.sync(self.game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
+        self.recorder=MatchRecorder()
+        self.recorder.capture(self.game)
+        self.replay_index=None
+        self.history_open=False
+        self.history_scroll=0
 
     @staticmethod
     def _desktop_resolution():
@@ -632,7 +646,7 @@ class SoloApp:
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text('GRA SOLO  /  70 KART  /  BEZ AUKCJI',15,758,34,cfg.MUTED)
-        self._text('MVP 0.9.11 · v19  |  A: animacje',13,1260,35,cfg.GOLD)
+        self._text('MVP 0.9.14 · v19  |  A: EFEKTY  H: HISTORIA  M: MENU',13,1260,35,cfg.GOLD)
 
     def _draw_log(self):
         # Delikatny, możliwy do wyłączenia [A] błysk pod ostatnimi
@@ -865,4 +879,4 @@ class SoloApp:
 
 
 def run():
-    SoloApp().run()
+    SoloApp(start_in_menu=True).run()
