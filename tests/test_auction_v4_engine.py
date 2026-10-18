@@ -145,6 +145,15 @@ class AuctionV4PlayAbilities(unittest.TestCase):
                 for uid in targets:place_basic(g,uid,1)
                 source=award(g,'A006',tier)
                 g.play(source)
+                # The rare card offers a legitimate STOP choice or a second
+                # enemy: select the second enemy for this two-target regression.
+                if tier==1:
+                    self.assertIsNotNone(g.pending)
+                    g.choose(0)
+                    self.assertIsNotNone(g.pending)
+                    second=next(i for i,c in enumerate(g.pending.choices)
+                                if c.mode=='silence')
+                    g.choose(second)
                 settle(g)
                 self.assertEqual(sum(g._has(g.units[uid],'silence') for uid in targets),count)
 
@@ -172,6 +181,8 @@ class AuctionV4PlayAbilities(unittest.TestCase):
         old0=set(g.players[0].hand)
         old1=set(g.players[1].hand)
         g.play(src)
+        self.assertIsNotNone(g.pending)
+        g.choose(0)  # Explicitly resolve legendary swap mode
         self.assertTrue(old1.issubset(set(g.players[0].hand)))
         self.assertEqual(g.pending.owner,1)
         settle(g)
