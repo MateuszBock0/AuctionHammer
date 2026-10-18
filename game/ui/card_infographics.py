@@ -34,7 +34,7 @@ UPGRADES = {
     'Tarcza':'+3 PŻ / 3T','Trucizna':'+1 ŁĄCZ / 3T',
     'Ogłuszenie':'+1 OBR / 3T','Regeneracja':'+1 ŁĄCZ / 3T',
     'Prowokacja':'+3 PŻ / 3T','Oczyszczanie':'+1 ZA OCZ / 3T',
-    'Odporność':'+1 PANC 1. / 3T','Szybki atak':'+2 ATAK +1 PŻ / 3T',
+    'Odporność':'1× +1 PANC / 3T','Szybki atak':'+2 ATAK +1 PŻ / 3T',
     'Podwójny atak':'+2 ATAK / 3T',
 }
 

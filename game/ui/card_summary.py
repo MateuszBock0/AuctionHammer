@@ -15,7 +15,7 @@ from game.ui.card_infographics import first_scalable_value
 # Każdy wpis: krótka linia karty i pełniejsze wyjaśnienie celu/warunku.
 SPECS = {
     "S01": {
-        "short": "{v} obr. → wybrany wróg",
+        "short": "Cel: wybrany wróg",
         "full": "Zadaje {v} obrażeń wybranej wrogiej jednostce."
     },
     "S02": {
@@ -59,7 +59,7 @@ SPECS = {
         "full": "Wybór: usuwa negatywne efekty z własnej jednostki (leczy o {v} PŻ) ALBO pozytywne z wroga."
     },
     "S64": {
-        "short": "Odporność na truciznę → swój",
+        "short": "Sojusznik: odp. na truciznę",
         "full": "Wybrany sojusznik staje się odporny na truciznę do opuszczenia planszy."
     },
     "S66": {
@@ -71,7 +71,7 @@ SPECS = {
         "full": "Wybór: Podwójny atak dla siebie lub innego sojusznika na planszy; maks. 2 ataki, bez Szybkiego nie od razu."
     },
     "S09": {
-        "short": "+{v} obr. → cel ataku",
+        "short": "Cel ataku, przed walką",
         "full": "Przed standardową walką zadaje {v} dodatkowych obrażeń celowi ataku."
     },
     "S10": {
@@ -127,7 +127,7 @@ SPECS = {
         "full": "Po pierwszym legalnym ataku w turze zyskuje drugi, jeśli zdolność działa i nie jest ogłuszona."
     },
     "S21": {
-        "short": "{v} obr. → wrogi bohater",
+        "short": "Cel: wrogi bohater",
         "full": "Po śmierci zadaje wrogiemu bohaterowi {v} obrażeń."
     },
     "S17": {
@@ -171,7 +171,7 @@ SPECS = {
         "full": "Po śmierci czyści negatywne efekty pozostałego sojusznika i daje 2 trwałego pancerza."
     },
     "S88": {
-        "short": "Odporność: trucizna i ogłuszenie",
+        "short": "Sojusznik: odp. truc. + ogł.",
         "full": "Po śmierci pozostały sojusznik zyskuje odporność na truciznę i ogłuszenie do opuszczenia."
     },
     "S90": {
@@ -227,7 +227,7 @@ SPECS = {
         "full": "Na koniec tury usuwa wszystkie tymczasowe negatywne efekty wybranego sojusznika."
     },
     "S99": {
-        "short": "Odporność na truciznę → sojusz.",
+        "short": "Sojusznik: odp. na truciznę",
         "full": "Na koniec tury daje sojusznikowi odporność na truciznę do końca jego najbliższej tury."
     },
     "S101": {
@@ -239,7 +239,7 @@ SPECS = {
         "full": "Na koniec tury daje sojusznikowi Podwójny atak wyłącznie na jego najbliższą turę."
     },
     "S103": {
-        "short": "Kontra {v} obr. atakującemu",
+        "short": "Wróg atakujący tę jednostkę",
         "full": "Pasywnie zadaje {v} obrażeń każdemu wrogowi atakującemu tę jednostkę przed walką."
     },
     "S104": {
