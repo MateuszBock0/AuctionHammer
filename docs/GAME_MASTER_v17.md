@@ -1,3 +1,7 @@
+> **ARCHIWUM — TO NIE JEST AKTUALNA SPECYFIKACJA KART.** Ten dokument zachowano dla historii zmian Game Master v17. Bieżące definicje 70 kart i aktualne zasady ich działania wynikają z zatwierdzonego **Game Master v19**, pliku `data/cards_base_70.json` oraz opisu `docs/V19_INTEGRATION_AND_UI.md`. W szczególności historyczne parametry S66, S67, S79, S114 i S115 nie są już obowiązujące. Nie zmieniaj starszych zapisów tego archiwum na v19 bez faktycznego uaktualnienia ich treści.
+
+---
+
 # GRA KARCIANA ONLINE — GAME MASTER
 **Kompletny roboczy dokument projektowy (Game Design Document + katalog danych), wersja 17.0**  
 **Data:** 16 października 2026 r.  
