@@ -307,8 +307,23 @@ def ability_summary(card, unit=None) -> AbilitySummary:
     """Zwróć wartości aktualne, nie bazowe statyczne liczby na grafice."""
     d = card.definition
     if d.id.startswith('A0'):
-        return AbilitySummary('ZDOLNOŚĆ NIEAKTYWNA',
-                              d.effect+' Brak skalowania na ręce.')
+        # v3 historical auction cards are inert, but ALL 36 v4 variants
+        # execute. The card definition is authoritative and evolves in place.
+        if d.effect.startswith('NIEAKTYWNA'):
+            return AbilitySummary('ZDOLNOŚĆ NIEAKTYWNA',
+                                  d.effect+' Brak skalowania na ręce.')
+        from game.core.auction_catalog import V4_CARDS
+        variants=V4_CARDS.get(d.id,{}).get('variants',{})
+        label={'basic':'PODSTAWOWA','rare':'RZADKA',
+               'legendary':'LEGENDARNA'}
+        rarity=next((label[tier] for tier,text in variants.items()
+                     if text==d.effect),None)
+        if rarity is not None:
+            return AbilitySummary(f'AKTYWNA · {rarity}',
+                                  d.effect+' Statystyki po zakupie pozostają stałe; '
+                                  'rzadkość rośnie co 3 ukończone rundy od zakupu.')
+        # Noncanonical or legacy text must not be falsely certified as v4.
+        return AbilitySummary('OPIS AUKCYJNY — SPRAWDŹ WERSJĘ',d.effect)
     if d.id.startswith('AUC'):
         return AbilitySummary('Prowokacja + Tarcza',
                               'Karta testowej aukcji: Prowokacja i 1 Tarcza po wystawieniu. '
