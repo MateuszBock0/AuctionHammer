@@ -229,8 +229,7 @@ class Match:
         if uid in self.auction_awards:
             u.shield=1
             u.shield_source=uid
-            self._add_effect(uid,'taunt',source=uid,positive=True)
-            self._log(f'{self.label(uid)}: Prowokacja i 1 Tarcza (testowa karta aukcyjna).')
+            self._log(f'{self.label(uid)}: wrodzona Prowokacja i 1 Tarcza (karta aukcyjna).')
         if card.definition.id == 'S39' and u.ability_level:
             u.armor_perm+=u.ability_level
             u.armor_perm_source=uid
@@ -475,7 +474,10 @@ class Match:
         intrinsic=(self.cards[u.uid].definition.id in ('S115','S79') and not self._disabled(u)
                    and (self.cards[u.uid].definition.id!='S79' or u.attacks>0))
         return self._has(u,'double') or fallback or intrinsic
-    def _taunt(self,u):return self._has(u,'taunt') or (self.cards[u.uid].definition.id=='S33' and not self._disabled(u))
+    def _taunt(self,u):
+        return (self._has(u,'taunt') or
+                ((self.cards[u.uid].definition.id=='S33' or u.uid in self.auction_awards)
+                 and not self._disabled(u)))
 
     def _expiry(self,owner,kind='next'):
         p=self.players[owner]
