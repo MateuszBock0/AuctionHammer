@@ -74,17 +74,21 @@ class WspolneFaleZgonow(unittest.TestCase):
 
     def test_kaskadowy_zgon_tworzony_w_nastepnej_fali(self):
         g=setup_game(703)
-        force_unit(g,'S84',0)
+        force_unit(g,'S81',0)  # Po śmierci zmniejsza MAX PŻ wroga o 5
         force_unit(g,'S17',1)
-        source=force_unit(g,'S82',1)
-        source.hp=2
-        g._kill_batch(['S84','S17'])
+        source=force_unit(g,'S21',1)
+        source.base_max_hp=4  # Spadek maksymalnego PŻ do zera zabija S21.
+        source.hp=4
+        initial_coins=g.players[0].coins
+        g._kill_batch(['S81','S17'])
         g._drain()
-        self.assertEqual(g.pending.uid,'S84')
-        g.choose(next(i for i,c in enumerate(g.pending.choices) if c.target=='S82'))
-        self.assertNotIn('S82',g.units)
-        self.assertEqual(g.players[1].grave.count('S82'),1)
-        self.assertEqual(g.players[0].coins,4 if g.first==1 else 1+g.players[0].coins-1)
+        self.assertEqual(g.pending.uid,'S81')
+        index=next(i for i,c in enumerate(g.pending.choices)
+                   if c.target=='S21' and c.mode=='Osłab')
+        g.choose(index)
+        self.assertNotIn('S21',g.units)
+        self.assertEqual(g.players[1].grave.count('S21'),1)
+        self.assertEqual(g.players[0].coins,initial_coins+2)
         closings=[x for x in g.events if x.startswith('Zamknięto falę śmierci')]
         self.assertEqual(len(closings),2)
         self.assertIn('fali śmierci 1',closings[0])
@@ -113,7 +117,7 @@ class WspolneFaleZgonow(unittest.TestCase):
         g.attack('S21','S17')
         self.assertNotIn('S21',g.units)
         self.assertNotIn('S17',g.units)
-        self.assertEqual(g.players[1].hp,96)
+        self.assertEqual(g.players[1].hp,100)  # -4 obrażenia i +6 leczenia, do maksimum 100
         self.assertEqual(g.players[0].hp,100)
         self.assertEqual(len([x for x in g.events if x.startswith('Zamknięto falę śmierci')]),1)
         g.assert_integrity()
