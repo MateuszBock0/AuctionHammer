@@ -75,9 +75,13 @@ class Match:
             initialize_audit(self)
 
     def _log(self, line):
-        self.event_journal.append({'seq':len(self.event_journal)+1,
-                                   'round':self.round,'active':self.active,
-                                   'phase':self.phase,'text':line})
+        event={'seq':len(self.event_journal)+1,
+               'round':self.round,'active':self.active,
+               'phase':self.phase,'text':line}
+        if getattr(self,'audit_enabled',False) and hasattr(self,'audit_actions'):
+            event['action_seq']=getattr(self,'_audit_open_action',None)
+            event['internal_seq']=getattr(self,'_audit_open_internal',None)
+        self.event_journal.append(event)
         self.events.append(line)
         self.events=self.events[-160:]
 
