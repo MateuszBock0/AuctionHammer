@@ -1,9 +1,9 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.19  
+**Wersja gry:** MVP 0.9.20  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
-**Aukcje i karty aukcyjne:** pierwszy prototyp w MVP 0.9.19 (3 tymczasowe jednostki). Docelowy katalog i płatne zdolności nadal poza zakresem.  
+**Aukcje i karty aukcyjne:** w MVP 0.9.20 działa roboczy katalog v3: 12 archetypów i trzy rzadkości (36 wariantów), ewolucja co 3 rundy. Katalog wymaga zatwierdzenia czterech interpretacji (A002, A004, A010, A012).  
 **Język interfejsu:** polski.
 
 ## Przeczytaj najpierw
