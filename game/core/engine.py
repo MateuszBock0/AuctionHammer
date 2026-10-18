@@ -47,6 +47,8 @@ class Match:
         self._draining = False
         self.winner: int | None = None
         self.events: list[str] = []
+        # Dziennik obserwacyjny dla historii i powtórek; bez wpływu na silnik.
+        self.event_journal: list[dict] = []
         self.serial = 0
         self._death_disabled = {}
         self._death_levels = {}
@@ -68,6 +70,9 @@ class Match:
         self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
 
     def _log(self, line):
+        self.event_journal.append({'seq':len(self.event_journal)+1,
+                                   'round':self.round,'active':self.active,
+                                   'phase':self.phase,'text':line})
         self.events.append(line)
         self.events=self.events[-160:]
 
