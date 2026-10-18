@@ -182,17 +182,17 @@ class AtomicDeathWaveTests(unittest.TestCase):
 
     def test_standard_combat_places_both_dead_units_in_one_group(self):
         g=setup_game(712)
-        attacker=force_unit(g,'S09',0)
+        attacker=force_unit(g,'S66',0)
         defender=force_unit(g,'S21',1)
         attacker.played_turn=0
         attacker.hp=1
         defender.hp=1
         attacker.base_attack=3
         defender.base_attack=3
-        g.attack('S09','S21')
-        self.assertNotIn('S09',g.units)
+        g.attack('S66','S21')
+        self.assertNotIn('S66',g.units)
         self.assertNotIn('S21',g.units)
-        self.assertIn(('wykryto',1,('S09','S21')),g.death_wave_log)
+        self.assertIn(('wykryto',1,('S66','S21')),g.death_wave_log)
         self.assertEqual(g.players[0].hp,96)
         g.assert_integrity()
 
