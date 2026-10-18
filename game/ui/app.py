@@ -1006,11 +1006,23 @@ class SoloApp:
     def _draw_gameover(self):
         if self.game.phase!='finished':return
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        overlay.fill((0,0,0,160));self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(332,279,810,290),(28,44,58),cfg.GOLD,16)
-        self._text('ZWYCIĘSTWO!' if self.game.winner==0 else 'PORAŻKA',46,738,340,cfg.GREEN if self.game.winner==0 else cfg.RED,center=True)
-        self._text(f'Wygrywa: {self.game.players[self.game.winner].name}',22,738,409,center=True)
-        self._text('Naciśnij R, aby rozpocząć nowy mecz.',16,738,464,cfg.MUTED,center=True)
+        overlay.fill((0,0,0,170))
+        self.screen.blit(overlay,(0,0))
+        self._panel(pygame.Rect(332,243,810,465),(28,44,58),cfg.GOLD,16)
+        won=self.game.winner==0
+        self._text('ZWYCIĘSTWO!' if won else 'PORAŻKA',46,738,300,
+                   cfg.GREEN if won else cfg.RED,center=True)
+        self._text(f'Wygrywa: {self.game.players[self.game.winner].name}',
+                   22,738,370,center=True)
+        self._text(f'ROZEGRANE RUNDY: {self.game.round}',18,738,419,cfg.GOLD,center=True)
+        for owner,p in enumerate(self.game.players):
+            y=470+owner*47
+            label=f'{p.name}: {p.hp} PŻ  ·  {len(p.grave)} utraconych jednostek  ·  {p.coins} monet'
+            self._text(label,16,738,y,cfg.TEXT,center=True)
+        self._text(f'Historia: {len(self.game.event_journal)} zdarzeń  ·  '
+                   f'powtórka: {len(self.recorder.frames)} stanów',15,738,575,cfg.MUTED,center=True)
+        self._text('H — historia  ·  P — powtórka  ·  R — nowy mecz',
+                   15,738,629,cfg.MUTED,center=True)
         self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
 
     def draw(self):
