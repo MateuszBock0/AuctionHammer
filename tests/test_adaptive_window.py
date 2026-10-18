@@ -1,6 +1,6 @@
 """Adaptive Windows display tests for Full HD laptops and DPI scaling.
 
-The game keeps a fixed 1480x920 logical canvas. Presentation must fit
+The game keeps a fixed 1480x980 logical canvas. Presentation must fit
 the available desktop without cutting the bottom of the screen.
 """
 import os
@@ -12,7 +12,8 @@ from game.ui.layout import (
     canvas_to_window, window_to_canvas,
 )
 
-LOGICAL=(1480,920)
+from game import config as cfg
+LOGICAL=(cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT)
 
 
 class AdaptiveGeometryTests(unittest.TestCase):
@@ -23,10 +24,11 @@ class AdaptiveGeometryTests(unittest.TestCase):
         self.assertLess(width,1536)
         self.assertLess(height,864)
         self.assertLessEqual(height,864-72)
-        self.assertAlmostEqual(width/height,1480/920,delta=0.005)
+        self.assertAlmostEqual(width/height,1480/980,delta=0.005)
 
     def test_full_hd_with_100_percent_scaling(self):
-        self.assertEqual(preferred_window_size((1920,1080),LOGICAL),LOGICAL)
+        self.assertLessEqual(preferred_window_size((1920,1080),LOGICAL)[1],960)
+        self.assertAlmostEqual(preferred_window_size((1920,1080),LOGICAL)[0]/preferred_window_size((1920,1080),LOGICAL)[1],1480/980,delta=.005)
 
     def test_common_laptop_display_sizes(self):
         for desktop in ((1536,864),(1920,1080),(1366,768),
@@ -37,7 +39,7 @@ class AdaptiveGeometryTests(unittest.TestCase):
                 self.assertGreater(wh,0)
                 self.assertLess(ww,desktop[0])
                 self.assertLess(wh,desktop[1])
-                self.assertAlmostEqual(ww/wh,1480/920,delta=0.009)
+                self.assertAlmostEqual(ww/wh,1480/980,delta=0.009)
                 rect=fitted_viewport((ww,wh),LOGICAL)
                 self.assertLessEqual(rect[0]+rect[2],ww)
                 self.assertLessEqual(rect[1]+rect[3],wh)
@@ -45,7 +47,7 @@ class AdaptiveGeometryTests(unittest.TestCase):
     def test_window_hitboxes_match_visual_positions(self):
         # Covers top cards, board, sidebar, choice buttons and bottom controls.
         targets=((110,115),(342,285),(500,540),(1118,150),
-                 (1250,735),(1201,842),(1420,885))
+                 (1250,735),(1201,842),(1420,930))
         for desktop in ((1536,864),(1920,1080),(1366,768),(1024,768)):
             with self.subTest(desktop=desktop):
                 size=preferred_window_size(desktop,LOGICAL)
@@ -97,7 +99,7 @@ class AdaptiveWindowIntegrationTests(unittest.TestCase):
         with patch.object(self.app,"_desktop_resolution",return_value=(1536,864)):
             self.assertTrue(self.app.handle(event))
         viewport=tuple(self.app._viewport())
-        for point in ((200,190),(1182,808),(1200,878)):
+        for point in ((200,190),(1182,808),(1200,934)):
             pixel=canvas_to_window(point,viewport,LOGICAL)
             mapped=self.app._physical_to_virtual(pixel)
             self.assertAlmostEqual(mapped[0],point[0],delta=2)
