@@ -1,12 +1,14 @@
-"""AuctionHammer MVP 0.9.16: Minimal Fantasy cards and responsive v19 interface."""
+"""AuctionHammer MVP 0.9.17: Minimal Fantasy cards and responsive v19 interface."""
 from __future__ import annotations
 import os
 import re
+import subprocess
 import pygame
 from game.ui.combat_visuals import CombatVisuals
 from game.ui.visual_theme import VisualTheme
 from game.ui.match_history import MatchRecorder
 from game.core.persistence import save_match, load_match, save_path
+from game.core.audit import (audit_path, write_last_match, initialize_audit)
 from game import config as cfg
 from game.core.engine import Match
 from game.core.ai import ComputerOpponent
@@ -58,7 +60,11 @@ class SoloApp:
         self.replay_index=None
 
     def restart(self):
-        self.game=Match()
+        if hasattr(self,'game') and self.game.phase=='finished':
+            self._export_finished_audit_once()
+        self.game=Match(audit_enabled=True)
+        self._audit_saved_match=None
+        self._audit_notice=''
         self.ai.step(self.game)  # AI mulligan is committed, player's hand still hidden from it.
         self.selected=None
         self.hover=None
@@ -82,6 +88,38 @@ class SoloApp:
         self.replay_index=None
         self.history_open=False
         self.history_scroll=0
+
+    def _export_finished_audit_once(self,force=False):
+        """The most recently FINISHED match is the only exported report."""
+        game=getattr(self,'game',None)
+        if game is None or game.phase!='finished':
+            return None
+        if not force and getattr(self,'_audit_saved_match',None) is game:
+            return audit_path()
+        try:
+            path=write_last_match(game)
+            self._audit_saved_match=game
+            self._audit_notice='AUDYT ZAPISANY: '+path.name
+            return path
+        except (OSError,ValueError,TypeError) as exc:
+            self._audit_notice='BŁĄD ZAPISU AUDYTU: '+str(exc)
+            return None
+
+    def _open_audit_folder(self):
+        """Show the persistent folder so the player can upload its one JSON."""
+        directory=audit_path().parent
+        try:
+            directory.mkdir(parents=True,exist_ok=True)
+            if os.name=='nt':
+                os.startfile(str(directory))
+            else:
+                subprocess.Popen(['xdg-open',str(directory)],
+                                 stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.DEVNULL)
+            return True
+        except (OSError,AttributeError) as exc:
+            self._audit_notice='Nie można otworzyć folderu: '+str(exc)
+            return False
 
     @staticmethod
     def _desktop_resolution():
@@ -300,7 +338,12 @@ class SoloApp:
         if self.details_card is not None:
             self.details_card=None;return
         if g.phase=='finished':
-            if pygame.Rect(608,644,260,52).collidepoint(pos):self.restart()
+            if pygame.Rect(608,637,260,52).collidepoint(pos):
+                self.restart()
+            elif pygame.Rect(392,702,325,46).collidepoint(pos):
+                self._export_finished_audit_once(force=True)
+            elif pygame.Rect(738,702,325,46).collidepoint(pos):
+                self._open_audit_folder()
             return
         if g.pending:
             if g.pending.owner != 0:
@@ -380,6 +423,9 @@ class SoloApp:
         if event.type==pygame.QUIT:return False
         # Panele modalne odcinają interakcje od żywego silnika.
         if self.menu_open:
+            if event.type==pygame.KEYDOWN and event.key==pygame.K_o:
+                self._open_audit_folder()
+                return True
             if event.type==pygame.KEYDOWN:
                 if event.key in (pygame.K_m,pygame.K_ESCAPE):
                     self.menu_open=False
@@ -447,6 +493,10 @@ class SoloApp:
                 self.history_scroll=0
             elif event.key==pygame.K_p and self.recorder.frames:
                 self.replay_index=self.recorder.last_index
+            elif event.key==pygame.K_o:
+                self._open_audit_folder()
+            elif event.key==pygame.K_e and self.game.phase=='finished':
+                self._export_finished_audit_once(force=True)
             elif event.key==pygame.K_a:
                 self.animations_enabled=not self.animations_enabled
                 self._recent_feedback=[]
@@ -530,6 +580,7 @@ class SoloApp:
 
     def update(self):
         g=self.game
+        self._export_finished_audit_once()
         self._capture_visual_feedback()
         if self.menu_open or self.history_open or self.replay_index is not None:
             return
@@ -925,7 +976,13 @@ class SoloApp:
                 elif i==2:
                     try:
                         game=load_match()
+                        if not hasattr(game,'audit_actions'):
+                            # Old saved game has no historic trace: mark partial.
+                            initialize_audit(game,complete=False)
+                        game.audit_enabled=True
                         self.game=game
+                        self._audit_saved_match=None
+                        self._audit_notice=''
                         self.selected=None
                         self.sidebar_card=None
                         self.details_card=None
@@ -984,7 +1041,7 @@ class SoloApp:
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
-        self._text('70 kart · brak aukcji · H: HISTORIA · P: POWTÓRKA',13,
+        self._text('70 kart · bez aukcji · [O] FOLDER OSTATNIEGO AUDYTU',13,
                    746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
@@ -1022,7 +1079,7 @@ class SoloApp:
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         overlay.fill((0,0,0,170))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(332,243,810,465),(28,44,58),cfg.GOLD,16)
+        self._panel(pygame.Rect(332,226,810,586),(28,44,58),cfg.GOLD,16)
         won=self.game.winner==0
         self._text('ZWYCIĘSTWO!' if won else 'PORAŻKA',46,738,300,
                    cfg.GREEN if won else cfg.RED,center=True)
@@ -1036,8 +1093,15 @@ class SoloApp:
         self._text(f'Historia: {len(self.game.event_journal)} zdarzeń  ·  '
                    f'powtórka: {len(self.recorder.frames)} stanów',15,738,575,cfg.MUTED,center=True)
         self._text('H — historia  ·  P — powtórka  ·  R — nowy mecz',
-                   15,738,616,cfg.MUTED,center=True)
-        self._button(pygame.Rect(608,644,260,52),'NOWY MECZ',accent=True)
+                   15,738,608,cfg.MUTED,center=True)
+        self._button(pygame.Rect(608,637,260,52),'NOWY MECZ',accent=True)
+        self._button(pygame.Rect(392,702,325,46),'EKSPORT AUDYTU  [E]',small=True,accent=True)
+        self._button(pygame.Rect(738,702,325,46),'OTWÓRZ FOLDER  [O]',small=True)
+        notice=getattr(self,'_audit_notice','')
+        if notice:
+            font=self.fonts[13]
+            self._text(self.cards_view.clip(notice,font,745),
+                       13,738,770,cfg.GOLD,center=True)
 
     def draw(self):
         # W powtórce renderujemy kopię, bez kierowania do niej jakichkolwiek

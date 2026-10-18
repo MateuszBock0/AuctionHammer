@@ -45,7 +45,21 @@ class MatchRecorder:
         if signature==self._fingerprint:
             return False
         self._fingerprint=signature
-        frozen=copy.deepcopy(game)
+        # Omit full audit ledger from each of the 480 presentation snapshots.
+        # Otherwise N snapshots would repeatedly duplicate earlier commands.
+        memo={}
+        if getattr(game,'audit_enabled',False) and hasattr(game,'audit_actions'):
+            memo[id(game.audit_actions)]=[]
+            if hasattr(game,'audit_internal'):
+                memo[id(game.audit_internal)]=[]
+            memo[id(game.audit_initial)]=None
+        frozen=copy.deepcopy(game,memo)
+        frozen.audit_enabled=False
+        if hasattr(frozen,'audit_actions'):
+            frozen.audit_actions=[]
+            if hasattr(frozen,'audit_internal'):
+                frozen.audit_internal=[]
+            frozen.audit_initial=None
         # Dziennik trzymany jest w bieżącym Match; nie duplikujemy historii
         # przy każdej klatce, aby oszczędzić RAM.
         frozen.event_journal=[]
