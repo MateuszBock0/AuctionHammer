@@ -350,9 +350,18 @@ def execute(game,uid,context,choice,attacked=None):
         return
     if context=='auction_discard':
         if target in foe.hand:
-            foe.hand.remove(target);foe.grave.append(target)
-            game.cards[target].zone='grave'
-            game._log(f'{game.label(uid)}: {game.label(target)} trafia na cmentarz.')
+            foe.hand.remove(target)
+            if game.auction_catalog=='v4' and target in game.auction_awards:
+                # Legendary A009 must never recycle an auction card into a
+                # basic graveyard, even after stealing/swapping hands.
+                game.auction_used.append(target)
+                game.cards[target].zone='auction_used'
+                game._log(f'{game.label(uid)}: {game.label(target)} '
+                          'trafia do osobnego woreczka zużytych kart aukcyjnych.')
+            else:
+                foe.grave.append(target)
+                game.cards[target].zone='grave'
+                game._log(f'{game.label(uid)}: {game.label(target)} trafia na cmentarz.')
         remaining=game.auction_pending_targets.get(uid,[])
         # This is a *count* of up to two discards, not a list of card IDs.
         # Previously comparison with the chosen card never consumed it and
