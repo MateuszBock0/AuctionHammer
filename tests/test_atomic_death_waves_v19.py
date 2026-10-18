@@ -46,6 +46,7 @@ class AtomicDeathWaveTests(unittest.TestCase):
         g._kill_batch(['S84'])
         g._drain()
         choose_target(g,'S83')
+        self.assertIsNotNone(g.pending,(g.events[-12:],g.death_wave_log,[(x,y.hp) for x,y in g.units.items()]))
         self.assertEqual(g.pending.uid,'S83')
         self.assertEqual(g.pending.context,'death_wave')
         self.assertIn('S01',g.units)
@@ -75,7 +76,7 @@ class AtomicDeathWaveTests(unittest.TestCase):
         g._add_effect('S83','stun',source='S59',expires=3,positive=False)
         g._kill_batch(['S83'])
         g._drain()
-        self.assertEqual(g.death_waves,[])
+        self.assertEqual(len(g.death_waves),0)
         self.assertFalse(any(e.kind=='poison' for e in g.units['S01'].effects))
         g.assert_integrity()
 
