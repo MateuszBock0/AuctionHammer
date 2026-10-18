@@ -72,6 +72,64 @@ class MinimalFantasyLayout(unittest.TestCase):
                       statuses=statuses,ready=True,attacks_remaining=1,attacks_total=2)
         self.assertGreaterEqual(len(statuses),3)
 
+    def test_all_70_card_descriptions_fit_their_text_region(self):
+        """Rzeczywiste fonty: tekst nie nachodzi na pasek ani sąsiednie strefy."""
+        from game.ui.card_view import CardView, card_zones
+        from game.ui.card_summary import ability_summary
+        game=setup_game(1313)
+        view=CardView()
+        for card in game.cards.values():
+            for w,h in ((125,195),(148,220),(255,380)):
+                with self.subTest(card=card.definition.id,size=(w,h)):
+                    rect=pygame.Rect(20,25,w,h)
+                    plan=view.summary_layout(card,rect)
+                    zones=card_zones(rect)
+                    self.assertTrue(plan['lines'],card.uid)
+                    self.assertEqual(len(plan['lines']),len(plan['boxes']))
+                    self.assertTrue(zones['info'].contains(plan['family']))
+                    self.assertTrue(zones['info'].contains(plan['footer']))
+                    if plan['main'] is not None:
+                        self.assertFalse(plan['main'].colliderect(plan['family']))
+                    for i,(line,text_rect) in enumerate(zip(plan['lines'],plan['boxes'])):
+                        self.assertLessEqual(plan['font'].size(line)[0],text_rect.width)
+                        self.assertTrue(zones['info'].contains(text_rect))
+                        self.assertLessEqual(text_rect.bottom,plan['footer'].top)
+                        self.assertFalse(text_rect.colliderect(plan['family']))
+                        if plan['main'] is not None:
+                            self.assertFalse(text_rect.colliderect(plan['main']))
+                        for earlier in plan['boxes'][:i]:
+                            self.assertFalse(text_rect.colliderect(earlier))
+
+    def test_s64_immunity_and_s09_damage_have_readable_complete_small_text(self):
+        from game.ui.card_view import CardView
+        game=setup_game(1314)
+        view=CardView()
+        for w,h in ((125,195),(148,220)):
+            for cid,expected in (
+                ('S64',('sojusznik','truciznę')),
+                ('S09',('cel','ataku','walką')),
+            ):
+                with self.subTest(card=cid,size=(w,h)):
+                    card=game.cards[cid]
+                    plan=view.summary_layout(card,pygame.Rect(0,0,w,h))
+                    text=' '.join(plan['lines']).lower()
+                    for phrase in expected:
+                        self.assertIn(phrase,text)
+                    self.assertNotIn('…',text)
+                    self.assertEqual(plan['show_value'],cid=='S09')
+                    self.assertGreaterEqual(len(plan['lines']),1)
+                    self.assertTrue(ability_summary(card).short)
+    
+    def test_overlong_description_has_visible_ellipsis(self):
+        from game.ui.card_view import CardView
+        view=CardView()
+        font=view.font(13)
+        text='Bardzo długa zdolność wymagająca wielu różnych wyborów ' * 3
+        lines=view.wrap_ability(text,font,102,3)
+        self.assertEqual(len(lines),3)
+        self.assertTrue(lines[-1].endswith('…'))
+        self.assertTrue(all(font.size(line)[0]<=102 for line in lines))
+
     def test_hand_growth_and_quality_are_tied_to_real_card_instance(self):
         game=setup_game(1007)
         card=game.cards['S01']
