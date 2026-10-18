@@ -533,18 +533,24 @@ class SoloApp:
     def update(self):
         g=self.game
         self._capture_visual_feedback()
-        if g.phase=='finished' or self.details_card is not None:return
-        if self._old_pending is not g.pending:
-            self.choice_page=0
-            self._old_pending=g.pending
-        t=pygame.time.get_ticks()
-        if t-self.last_ai_ms>self.AI_ACTION_DELAY_MS:
-            if (g.phase=='turn' and (g.active==1 or g.pending and g.pending.owner==1)) or (g.pending and g.pending.owner==1):
-                try:self.ai.step(g)
-                except IllegalMove as e:self.last_error=str(e)
-                self.last_ai_ms=t
-        if self.selected in g.cards and self.selected not in g.players[0].hand and self.selected not in g.units:
-            self.selected=None
+        if self.menu_open or self.history_open or self.replay_index is not None:
+            return
+        if g.phase!='finished' and self.details_card is None:
+            if self._old_pending is not g.pending:
+                self.choice_page=0
+                self._old_pending=g.pending
+            t=pygame.time.get_ticks()
+            if t-self.last_ai_ms>self.AI_ACTION_DELAY_MS:
+                if (g.phase=='turn' and
+                    (g.active==1 or (g.pending and g.pending.owner==1))):
+                    try:self.ai.step(g)
+                    except IllegalMove as e:self.last_error=str(e)
+                    self.last_ai_ms=t
+            if self.selected in g.cards and self.selected not in g.players[0].hand and self.selected not in g.units:
+                self.selected=None
+        now=pygame.time.get_ticks()
+        self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,now)
+        self.recorder.capture(g)
 
     def _draw_hero(self,idx):
         p=self.game.players[idx]
