@@ -292,7 +292,7 @@ SPECS = {
     },
     "S115": {
         "short": "Dwa ataki tylko dla siebie",
-        "full": "Wrodzony Podwójny atak: maks. dwa razy we własnej turze; bez Szybkiego nie w turze wystawienia."
+        "full": "Wrodzony Podwójny atak tylko dla siebie: maks. dwa razy we własnej turze; bez Szybkiego nie w turze wystawienia."
     }
 }
 
