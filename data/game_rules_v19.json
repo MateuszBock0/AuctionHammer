@@ -246,7 +246,7 @@
     "disconnect_recovery": "implementation_detail_no_match_timer"
   },
   "base_game_design_status": "LOCKED_FOR_IMPLEMENTATION",
-  "base_engine_implementation_status": "MVP_SOLO_0.9.9_Z_TESTAMI_NIEPELNA_WALIDACJA_JEDNOCZESNYCH_ZGONOW",
+  "base_engine_implementation_status": "MVP_SOLO_0.9.10_ATOMOWE_FALE_ZGONOW_TESTOWANE",
   "mvp_scope": {
     "starter_cards": 70,
     "starter_card_copies_per_archetype": 1,
@@ -255,11 +255,13 @@
     "later_auction_design": "DEFERRED_SEPARATE_STAGE",
     "persistent_coins_and_standard_income": true
   },
-  "rules_source_priority": "Zatwierdzona specyfikacja Game Master v19 oraz data/cards_base_70.json (karty). docs/GAME_MASTER_v17.md to archiwum; data/event_order_v17.json pozostaje materiałem historycznym do weryfikacji wspólnych fal zgonów.",
+  "rules_source_priority": "Game Master v19: sekcja 7 oraz data/event_order_v19.json określają nadrzędną kolejność zdarzeń; data/cards_base_70.json określa zawartość i efekty kart. Dokumenty v17 stanowią archiwum.",
   "no_timer_decision_confirmed": true,
   "canonical_bank_file": "data/starter_bank_v17.json",
   "verified_catalog_version": "Game Master v19",
   "known_unverified_scenarios": [
-    "Jednoczesne zgony i kaskady efektów śmierci wymagają potwierdzenia zgodności z zasadą wspólnej fali."
-  ]
+    "W ramach MVP 0.9.10 dodano atomowe migawki wspólnych fal zgonów, rozstrzygnięcia i testy kaskad. Cały silnik, w tym wszystkie możliwe wielokartowe kombinacje i priorytety reakcji, nadal wymaga niezależnej walidacji."
+  ],
+  "mvp_engine_version": "0.9.10",
+  "canonical_event_order_file": "data/event_order_v19.json"
 }
