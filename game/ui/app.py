@@ -895,6 +895,81 @@ class SoloApp:
         self._text('Kółko myszy: przewiń opis • Zielone pogrubienie: wartość rosnąca',13,524,857,cfg.MUTED)
         self._button(pygame.Rect(1095,853,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
+    def _menu_click(self,pos):
+        buttons=[pygame.Rect(535,325+i*88,420,64) for i in range(4)]
+        for i,rect in enumerate(buttons):
+            if not rect.collidepoint(pos):continue
+            if self.menu_page=='main':
+                if i==0:
+                    self.restart()
+                    self.menu_open=False
+                elif i==1:
+                    self.menu_open=False
+                elif i==2:
+                    self.menu_page='settings'
+                else:
+                    self.menu_open=False
+            else:
+                if i==0:
+                    self.animations_enabled=not self.animations_enabled
+                elif i==1:
+                    self._toggle_fullscreen()
+                elif i==2:
+                    choices=('łatwy','normalny','trudny')
+                    index=choices.index(self.ai.difficulty)
+                    self.ai.difficulty=choices[(index+1)%len(choices)]
+                else:
+                    self.menu_page='main'
+            return
+
+    def _draw_menu(self):
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((4,9,16,234))
+        self.screen.blit(shade,(0,0))
+        self._panel(pygame.Rect(420,170,650,660),(23,40,53),cfg.GOLD,19)
+        self._text('AUCTIONHAMMER',46,746,231,cfg.GOLD,center=True)
+        self._text('MINIMAL FANTASY · GAME MASTER v19',16,746,280,cfg.MUTED,center=True)
+        if self.menu_page=='main':
+            items=('NOWY MECZ','KONTYNUUJ','USTAWIENIA','WRÓĆ DO GRY')
+        else:
+            items=(f'ANIMACJE: {"WŁ." if self.animations_enabled else "WYŁ."}',
+                   'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
+                   'POWRÓT DO MENU')
+        for i,label in enumerate(items):
+            self._button(pygame.Rect(535,325+i*88,420,64),label,accent=i==0)
+        self._text('70 unikalnych kart · bez aukcji',14,746,736,cfg.MUTED,center=True)
+        self._text('H: HISTORIA   P: POWTÓRKA   A: EFEKTY',13,746,777,cfg.MUTED,center=True)
+
+    def _draw_history_overlay(self):
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((3,7,12,218))
+        self.screen.blit(shade,(0,0))
+        panel=pygame.Rect(135,86,1205,818)
+        self._panel(panel,(25,40,52),cfg.GOLD,13)
+        journal=self.game.event_journal
+        self._text(f'HISTORIA MECZU ({len(journal)} ZDARZEŃ)',28,173,126,cfg.GOLD)
+        self._text('H / ESC — zamknij     P — zobacz zapisane stany planszy',15,174,168,cfg.MUTED)
+        self._text('KÓŁKO MYSZY / STRZAŁKI — przewijaj',13,174,197,cfg.MUTED)
+        end=max(0,len(journal)-self.history_scroll)
+        page=journal[max(0,end-24):end]
+        for i,item in enumerate(page):
+            yy=226+i*26
+            turn=f'R{item["round"]:02} · {"GRACZ" if item["active"]==0 else "AI"}'
+            self._text(f'{item["seq"]:04}',13,179,yy,cfg.GOLD)
+            self._text(turn,13,232,yy,cfg.MUTED)
+            line=self.cards_view.clip(item['text'],self.fonts[14],873)
+            self._text(line,14,390,yy,cfg.TEXT)
+        self._text('Pełny dziennik pozostaje dostępny przez cały mecz.',13,174,866,cfg.MUTED)
+
+    def _draw_replay_controls(self):
+        shade=pygame.Surface((cfg.WINDOW_WIDTH,87),pygame.SRCALPHA)
+        shade.fill((13,22,35,232))
+        self.screen.blit(shade,(0,cfg.WINDOW_HEIGHT-87))
+        frame=self.recorder.get(self.replay_index)
+        self._text(f'POWTÓRKA · STAN {self.replay_index+1}/{len(self.recorder.frames)}'
+                   f' · RUNDA {frame.round}',20,120,902,cfg.GOLD)
+        self._text('← / →  POPRZEDNI / NASTĘPNY STAN      P / ESC  POWRÓT DO GRY',14,120,941,cfg.TEXT)
+
     def _draw_gameover(self):
         if self.game.phase!='finished':return
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
@@ -906,15 +981,30 @@ class SoloApp:
         self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
 
     def draw(self):
-        self.screen.blit(self.bg,(0,0))
-        self._draw_header()
-        self._draw_board()
-        self._draw_attack_targets()
-        self._draw_sidebar()
-        self._draw_log()
-        self._draw_choices()
-        self._draw_gameover()
-        self._draw_details()
+        # W powtórce renderujemy kopię, bez kierowania do niej jakichkolwiek
+        # komend. Po każdej klatce przywracamy żywy Match.
+        live=self.game
+        if self.replay_index is not None:
+            self.game=self.recorder.get(self.replay_index).game
+        try:
+            self.screen.blit(self.bg,(0,0))
+            self._draw_header()
+            self._draw_board()
+            self._draw_attack_targets()
+            self._draw_sidebar()
+            self._draw_log()
+            self._draw_choices()
+            self._draw_gameover()
+            if self.replay_index is None and self.animations_enabled:
+                self.combat_visuals.draw(self.screen,pygame.time.get_ticks(),
+                                         self.fonts_bold[16])
+            if self.replay_index is None:
+                self._draw_details()
+        finally:
+            self.game=live
+        if self.replay_index is not None:self._draw_replay_controls()
+        if self.history_open:self._draw_history_overlay()
+        if self.menu_open:self._draw_menu()
         self._present()
 
     def run(self):
