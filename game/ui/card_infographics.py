@@ -27,6 +27,7 @@ FAMILY_COLORS = {
     'Trucizna':(176,220,88),'Ogłuszenie':(193,144,244),'Regeneracja':(84,218,160),
     'Prowokacja':(243,174,70),'Oczyszczanie':(193,223,244),'Odporność':(114,164,255),
     'Szybki atak':(79,223,223),'Podwójny atak':(255,155,99),
+    'Bez zdolności':(155,164,180),
 }
 # Auction-only mechanic labels. The shared base-card family taxonomy is
 # insufficient for coins, copying, exile and hand swaps; those historical
@@ -98,6 +99,18 @@ def card_cue(card, unit=None) -> CardCue:
     d=card.definition
     family=d.family
     level=unit.ability_level if unit is not None else card.ability_level
+    # SUM IDs are ephemeral soldiers created by A010, not S-card catalogue
+    # entries. Expose truthful static text and no fictitious scaling/shield.
+    if d.id.startswith('SUM'):
+        taunt=family=='Prowokacja'
+        return CardCue(
+            trigger='PASYWNA', family='PROWOKACJA' if taunt else 'BEZ ZDOL.',
+            color=FAMILY_COLORS[family],
+            base='PROWOKACJA' if taunt else 'BEZ ZDOLNOŚCI',
+            upgrade='JEDNOSTKA EFEMERYCZNA',
+            effect_value=None, ability_level=0,
+            growth='Stałe ATK i MAX PŻ', next_threshold='NIE WRACA DO TALII',
+        )
     if d.id.startswith('A0'):
         old_v3=d.effect.startswith('NIEAKTYWNA')
         from game.core.auction_catalog import V4_CARDS

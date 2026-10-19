@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.28: auction v4 acceptance matrix and combat outcome explanations."""
+"""AuctionHammer MVP 0.9.29: queen summon crash fix and correct ephemeral card display."""
 from __future__ import annotations
 import os
 import re

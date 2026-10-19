@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.28",
+  "mvp": "0.9.29",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v4-12-archetypes-36-live-abilities",
@@ -49,5 +49,8 @@
     "healing",
     "statuses",
     "aura_deltas"
-  ]
+  ],
+  "queen_summon_render": "SUM-ephemeral-render-all-rarities",
+  "next_balance": "v21-CANDIDATE-not-active",
+  "next_auction_catalog": "v22-17-DRAFT-not-active"
 }

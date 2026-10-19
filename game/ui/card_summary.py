@@ -324,6 +324,18 @@ def ability_summary(card, unit=None) -> AbilitySummary:
                                   'rzadkość rośnie co 3 ukończone rundy od zakupu.')
         # Noncanonical or legacy text must not be falsely certified as v4.
         return AbilitySummary('OPIS AUKCYJNY — SPRAWDŹ WERSJĘ',d.effect)
+    # Summoned Queen soldiers are real board units but not among the 70
+    # collectible basic cards. Looking them up in SPECS caused KeyError
+    # 'SUM0000007' and crashed the packaged application during board render.
+    if d.id.startswith('SUM'):
+        has_taunt=d.family=='Prowokacja'
+        short='PROWOKACJA' if has_taunt else 'BEZ ZDOLNOŚCI'
+        return AbilitySummary(
+            short,
+            ('Jednostka przywołana z Prowokacją.' if has_taunt
+             else 'Jednostka przywołana bez zdolności.')+
+            ' Jest efemeryczna i nie wraca do talii ani cmentarza.'
+        )
     if d.id.startswith('AUC'):
         return AbilitySummary('Prowokacja + Tarcza',
                               'Karta testowej aukcji: Prowokacja i 1 Tarcza po wystawieniu. '

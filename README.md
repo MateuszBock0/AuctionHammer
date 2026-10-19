@@ -1,6 +1,14 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.28** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+**AuctionHammer 0.9.29** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Wersja 0.9.29 — naprawa awarii przy przywoływaniu przez A010
+
+- Naprawiono rzeczywistą awarię Windows **KeyError: SUM0000007** po wybraniu „Przywołaj jednostki” na Królowej Tysiąca Twarzy.
+- Efemeryczne jednostki `SUM...` mają teraz osobny sposób generowania podsumowań i oznaczeń UI, bez szukania ich w tabeli 70 kart podstawowych.
+- Żołnierz 1/1 jest opisany jako **bez zdolności**, a żołnierz 2/2 w wariancie rzadkim jako **z Prowokacją**; podstawowy żołnierz nie udaje, że ma Tarczę.
+- Testy obejmują wywołanie rzeczywistego `SoloApp.draw()`, rysowanie planszy podczas wyboru i po przywołaniu, panel szczegółów, wszystkie trzy poziomy rzadkości, zapis/odczyt i opuszczenie planszy.
+- Otrzymany pakiet **balansu v21 oraz 17 aukcji v22** to na razie projekt `CANDIDATE/DRAFT`; nie został automatycznie aktywowany w grze. [Weryfikacja pakietu](docs/auction/BALANCE_V21_AUCTION_V22_REVIEW.md).
 
 ## Nowości 0.9.28 — poprawność aukcji i komunikaty walki
 
