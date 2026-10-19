@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.27: auction v4 effect parity and accurate match statistics."""
+"""AuctionHammer MVP 0.9.28: auction v4 acceptance matrix and combat outcome explanations."""
 from __future__ import annotations
 import os
 import re
