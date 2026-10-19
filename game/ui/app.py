@@ -1214,6 +1214,15 @@ class SoloApp:
         self._button(pygame.Rect(1095,853,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
     def _menu_click(self,pos):
+        credits_button=pygame.Rect(875,282,160,34)
+        if self.menu_page=='main' and credits_button.collidepoint(pos):
+            self.menu_page='credits'
+            self.menu_message=''
+            return
+        if self.menu_page=='credits':
+            if pygame.Rect(535,690,420,61).collidepoint(pos):
+                self.menu_page='main'
+            return
         history_button=pygame.Rect(625,282,240,34)
         if self.menu_page=='main' and history_button.collidepoint(pos):
             try:
@@ -1301,6 +1310,18 @@ class SoloApp:
         self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
         self._text('TAWERNA · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
+        if self.menu_page=='credits':
+            self._text('TWÓRCY I MUZYKA',28,746,329,cfg.GOLD,center=True)
+            self._text('AuctionHammer — projekt i kod: Mateusz Boćko',16,746,389,cfg.TEXT,center=True)
+            self._text('ŚCIEŻKA DŹWIĘKOWA',20,746,452,cfg.GOLD,center=True)
+            self._text('Fantasy Tavern Music — 13 utworów',18,746,491,cfg.TEXT,center=True)
+            self._text('Kompozytor: Alek Kaczan',16,746,533,cfg.TEXT,center=True)
+            self._text('Wydawca: PGN Music',16,746,568,cfg.TEXT,center=True)
+            self._text('Muzyka wykorzystana za zgodą właściciela praw.',14,746,609,cfg.MUTED,center=True)
+            self._text('pgnmusic.com',16,746,648,cfg.GOLD,center=True)
+            self._button(pygame.Rect(535,690,420,61),'POWRÓT DO MENU')
+            self._text('Kod: MIT  ·  Muzyka: odrębna licencja PGN Music',13,746,790,cfg.MUTED,center=True)
+            return
         if self.menu_page=='archive':
             records=self._archive_records[:4]
             items=tuple(
@@ -1317,6 +1338,7 @@ class SoloApp:
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')
             self._button(pygame.Rect(625,282,240,34),'HISTORIA MECZÓW',small=True)
+            self._button(pygame.Rect(875,282,160,34),'CREDITS',small=True)
         else:
             items=(f'ANIMACJE: {"WŁ." if self.animations_enabled else "WYŁ."}',
                    'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
