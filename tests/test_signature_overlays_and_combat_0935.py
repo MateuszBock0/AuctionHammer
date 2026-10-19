@@ -160,5 +160,29 @@ class CombatAnimationTests(unittest.TestCase):
         self.assertTrue(any('v0.9.32' in line for line in captured))
 
 
+class RemainingUiClarityTests(unittest.TestCase):
+    def test_real_death_no_legal_target_is_reported_once(self):
+        g=setup_game(935240)
+        force_unit(g,'S86',0)
+        g.units['S86'].hp=0
+        g._kill_batch(['S86'])
+        g._drain()
+        mentions=[line for line in g.events if 'brak legalnego celu' in line]
+        self.assertEqual(len(mentions),1)
+        self.assertIn('przy śmierci',mentions[0])
+        g.assert_integrity()
+
+    def test_audit_preserves_raw_negative_hero_hp_with_nonnegative_view(self):
+        from game.core.audit import make_report
+        g=setup_game(935241)
+        g.phase='finished'
+        g.winner=0
+        g.players[1].hp=-13
+        summary=make_report(g)['payload']['summary']
+        self.assertEqual(summary['hero_hp']['1'],-13)
+        self.assertEqual(summary['hero_hp_display']['1'],0)
+        self.assertEqual(summary['hero_hp_display']['0'],max(0,g.players[0].hp))
+
+
 if __name__=='__main__':
     unittest.main()
