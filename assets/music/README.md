@@ -8,27 +8,21 @@ wydawcy, pochodzenie albumu i zasady licencyjne są opisane w
 [credits](../../docs/THIRD_PARTY_MUSIC.md), a credits można również
 otworzyć z głównego menu gry.
 
-## Publikacja dużego pliku na GitHubie
+## Stan aktualny i weryfikacja
 
-38,2 MB przekracza limit formularza GitHub w przeglądarce (25 MiB),
-ale mieści się w limicie standardowego Git (100 MiB).
+Plik `assets/music/music_auctionhammer.mp3` jest już śledzony przez Git
+i automatycznie umieszczany w paczce Windows w `AuctionHammer/assets/music/`.
+Nie należy wykonywać instrukcji ponownego dodawania tego samego pliku.
 
-1. Zaktualizuj swój lokalny projekt: `git pull --ff-only`.
-2. Skopiuj `music_auctionhammer.mp3` dokładnie do `assets/music/`.
-3. Otwórz terminal w katalogu `AuctionHammer` i wykonaj:
+Odtwarzacz `game/ui/music.py` używa pojedynczego pełnego albumu w pętli,
+z głośnością początkową 30%. Utwór **nie powinien zaczynać się od nowa**
+przy wejściu do menu lub rozpoczęciu następnego meczu. Brak urządzenia audio
+nie może przerywać działania gry; szczegóły w `docs/THIRD_PARTY_MUSIC.md`.
 
-```powershell
-git add assets/music/music_auctionhammer.mp3
-git commit -m "Add permitted PGN Music soundtrack"
-git push origin main
-```
-
-Po udanym `git push` automatyczna kompilacja Windows skopiuje plik
-do `AuctionHammer/assets/music/music_auctionhammer.mp3` w gotowej
-paczce ZIP. Gracze nie muszą niczego pobierać osobno.
-
-Nie zmieniaj nazwy pliku. Odtwarzacz zapętla **całą ścieżkę**, również
-przy zmianie menu i pomiędzy meczami.
+Można uruchomić test bez realnych głośników:
+`SDL_AUDIODRIVER=dummy python -m unittest tests.test_music_live_asset_v23`.
+Test sprawdza, czy włączony do repozytorium MP3 otwiera się przez mixer SDL,
+odtwarza i może zostać zatrzymany.
 
 ## Zgodność wsteczna
 
