@@ -92,7 +92,10 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         g.players[0].played_this_turn=True
         app.selected=attacker
         self.assertIn('ZAATAKUJ',app._phase_guidance())
-        g.units[attacker].attacks=1
+        # With the v0.9.39 starter guard, more than one own unit can be
+        # present. The end-turn hint appears only after ALL are exhausted.
+        for unit_id in g.players[0].board:
+            g.units[unit_id].attacks=2
         app.selected=None
         self.assertIn('ZAKOŃCZ TURĘ',app._phase_guidance())
 
@@ -103,10 +106,11 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         g=app.game
         g.phase='turn'
         g.active=0
-        for uid in list(g.bank)[:5]:
+        for uid in list(g.bank)[:max(0,5-len(g.players[0].board))]:
             place_basic(g,uid,0)
-            # A unit can have two attacks (S79 / Double Attack). Ensure
-            # *all* five are genuinely exhausted, independent of abilities.
+        # The second-player starting guard may already occupy one of 5 slots.
+        # Every existing unit must have spent both possible attacks.
+        for uid in g.players[0].board:
             g.units[uid].attacks=2
         g.players[0].played_this_turn=False
         self.assertEqual(len(g.players[0].board),5)
@@ -146,8 +150,8 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
             return r
         with patch.object(app,'_text',side_effect=spy):
             app._draw_phase_guidance()
-        self.assertEqual(len(labels),1)
-        self.assertTrue(pygame.Rect(96,375,952,31).contains(labels[0][1]))
+        self.assertEqual(len(labels),2)
+        self.assertTrue(all(pygame.Rect(96,373,952,54).contains(rect) for _,rect in labels))
         app.draw()
 
 

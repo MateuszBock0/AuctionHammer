@@ -193,6 +193,7 @@ def load_match(path: Path | None = None) -> Match:
     # Pre-0.9.37 saved v23 games have valid signed schema-1 history,
     # so their audit snapshots must NOT silently acquire new fields.
     data.setdefault('audit_state_schema',1)
+    data.setdefault('starting_compensation','coins')
     data.setdefault('pending_vacant_income',None)
     data.setdefault('slot_income',[0,0])
     data.setdefault('slot_income_turns',[0,0])

@@ -1,7 +1,7 @@
 # AuctionHammer — status projektu
 
 **Ostatnia aktualizacja dokumentacji:** 19 października 2026  
-**Wersja aplikacji:** 0.9.38  
+**Wersja aplikacji:** 0.9.39  
 **Stan:** działające demo offline na Windows, tryb solo przeciw AI. Rozwój trwa.
 
 ## Zaimplementowane
@@ -34,3 +34,7 @@ W wydaniu 0.9.37 przeprowadzono 492 testy oraz dwie serie po 100 meczów (w tym 
 - [Pełne przypisanie muzyki](THIRD_PARTY_MUSIC.md) — Alek Kaczan, PGN Music, album, 13 utworów i osobne informacje prawne.
 
 Muzyka i materiały podmiotów trzecich nie stają się objęte MIT przez sam fakt użycia w AuctionHammer. Publiczna dokumentacja podaje credits i źródła, a nie treść odrębnych indywidualnych ustaleń.
+
+## Etap 0.9.39 — nowe mecze
+
+Rekompensata dla gracza wykonującego drugi ruch: na jego planszy pojawia się neutralny **Strażnik 5/5** zamiast 3 monet. Zajmuje pole, nie ma zdolności, nie atakuje w swojej pierwszej turze, po usunięciu znika bez powrotu do talii. Historyczne mecze zachowują +3 monety i oryginalne podpisy audytu. Interfejs zyskuje ochronę przed przypadkowym restartem/wyjściem, globalny resize, dwuwierszowe podpowiedzi i zachowanie stanu animacji podczas restartu. Szczegóły: [UIUX_0939_ACCEPTANCE.md](UIUX_0939_ACCEPTANCE.md).

@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.38",
+  "mvp": "0.9.39",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -86,6 +86,15 @@
   ],
   "audit_state_schema": "v23-schema2-ruleset-and-pending-vacant-income",
   "v23_ui_clarity": "prefix-conditional-auction-clauses-and-base-card-fallback-details",
+  "starting_compensation_new_matches": "unit_5_5_no_coins",
+  "starting_compensation_legacy_saves": "coins_plus3",
+  "starting_compensation_audit_schema": 3,
+  "ux_stage_0939": {
+    "global_video_resize": true,
+    "non_destructive_restart_and_quit": true,
+    "guided_turns_two_lines": true,
+    "animations_preserved_on_restart": true
+  },
   "stabilization_0938": {
     "scope": "engine-only",
     "catalogue_base": 70,

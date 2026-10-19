@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - feature/0938-engine-stabilization-70x51-matrix
-    paths:
-      - docs/ENGINE_STABILIZATION_0938.md
+      - feature/0939-ux-guidance-second-player-guard
+
   workflow_dispatch:
 
 permissions:
@@ -56,6 +56,7 @@ jobs:
             --level-0 ${{ matrix.level_0 }} \
             --level-1 ${{ matrix.level_1 }} \
             --verify-every 1 \
+            --starting-compensation unit_5_5 \
             --output-dir reports/engine0938_${{ matrix.case_name }}
       - name: Verify coverage totals and all action hashes
         env:

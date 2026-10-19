@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.37: signed v23 audits and visible conditional ability details."""
+"""AuctionHammer MVP 0.9.39: guided state, safe confirm and guarded start."""
 from __future__ import annotations
 import os
 import re
@@ -58,7 +58,10 @@ class SoloApp:
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
         self.ai=ComputerOpponent()
         self.bg=self._create_background()
+        self.animations_enabled=True
         self.restart()
+        self.confirm_action=None
+        self.confirm_error=''
         self.menu_open=bool(start_in_menu)
         self.menu_page='main'
         self.menu_message=''
@@ -72,7 +75,8 @@ class SoloApp:
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
-        self.game=Match(audit_enabled=True,auctions_enabled=True,auction_catalog='v22')
+        self.game=Match(audit_enabled=True,auctions_enabled=True,
+                        auction_catalog='v22',starting_compensation='unit_5_5')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -94,7 +98,6 @@ class SoloApp:
         self.details_scroll=0
         self.sidebar_card=None
         self._old_pending=None
-        self.animations_enabled=True
         self._recent_feedback=[]
         self.visual_notice=''
         self.visual_notice_tick=-10000
@@ -383,7 +386,7 @@ class SoloApp:
             return
         if g.phase=='finished':
             if pygame.Rect(608,637,260,52).collidepoint(pos):
-                self.restart()
+                self._request_restart()
             elif pygame.Rect(392,702,325,46).collidepoint(pos):
                 self._export_finished_audit_once(force=True)
             elif pygame.Rect(738,702,325,46).collidepoint(pos):
@@ -429,7 +432,7 @@ class SoloApp:
                 self.selected=None
             return
         if pygame.Rect(1093,869,145,33).collidepoint(pos):
-            self.restart();return
+            self._request_restart();return
         if pygame.Rect(1016,861,40,37).collidepoint(pos):
             self.scroll=min(self.scroll+1,max(0,len(g.players[0].hand)-6));return
         if pygame.Rect(42,861,40,37).collidepoint(pos):
@@ -730,9 +733,62 @@ class SoloApp:
                             else 'ANIMACJE WYŁĄCZONE')
         self.visual_notice_tick=pygame.time.get_ticks()
 
+    def _needs_confirmation(self):
+        return self.game.phase not in ('mulligan','finished')
+
+    def _request_restart(self):
+        if self._needs_confirmation():
+            self.confirm_action='restart'
+            self.confirm_error=''
+        else:
+            self.restart()
+            self.menu_open=False
+        return True
+
+    def _request_exit(self):
+        if self._needs_confirmation():
+            self.confirm_action='quit'
+            self.confirm_error=''
+            return True
+        return False
+
+    def _resolve_confirmation(self,save=False):
+        action=self.confirm_action
+        if not action:return True
+        if save:
+            try:
+                save_match(self.game)
+            except (OSError,ValueError,TypeError) as exc:
+                self.confirm_error='Nie zapisano meczu: '+str(exc)
+                return True
+        self.confirm_action=None
+        self.confirm_error=''
+        if action=='restart':
+            self.restart()
+            self.menu_open=False
+            return True
+        return False  # confirmed application quit
+
+    def _draw_confirmation(self):
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((4,8,14,229))
+        self.screen.blit(shade,(0,0))
+        panel=pygame.Rect(379,292,724,390)
+        self._panel(panel,(33,45,55),cfg.GOLD,16)
+        action='nowej gry' if self.confirm_action=='restart' else 'wyjścia'
+        self._text('NIEZAPISANA ROZGRYWKA',28,742,333,cfg.GOLD,center=True)
+        self._text('Przed rozpoczęciem '+action+' zdecyduj, co zrobić z obecną partią.',
+                   15,742,386,cfg.TEXT,center=True)
+        self._button(pygame.Rect(470,462,540,52),'[S] ZAPISZ I KONTYNUUJ',accent=True)
+        self._button(pygame.Rect(470,530,540,52),'[D] BEZ ZAPISU')
+        self._button(pygame.Rect(470,598,540,52),'[ESC] ANULUJ')
+        if self.confirm_error:
+            self._text(self.cards_view.clip(self.confirm_error,self.fonts[13],640),
+                       13,420,661,cfg.RED)
+
     def handle(self,event):
         if self.music.handle_event(event):return True
-        if event.type==pygame.QUIT:return False
+        if event.type==pygame.QUIT:return self._request_exit()
         # Global shortcuts must work from the *first menu screen*,
         # during mulligan, history/replay and any open modal.
         if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
@@ -741,6 +797,37 @@ class SoloApp:
         if event.type==pygame.KEYDOWN and event.key==pygame.K_a:
             self._toggle_animations()
             return True
+        # Window-system events must precede modal overlays (including menu).
+        if event.type==pygame.VIDEORESIZE:
+            if not self.window.get_flags() & pygame.FULLSCREEN:
+                dw,dh=self._desktop_resolution()
+                max_width,max_height=max(1,dw-24),max(1,dh-64)
+                width=max(min(560,max_width),min(int(event.w),max_width))
+                height=max(min(360,max_height),min(int(event.h),max_height))
+                self.windowed_size=(width,height)
+                self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
+            return True
+        if self.confirm_action is not None:
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_ESCAPE:
+                    self.confirm_action=None
+                    self.confirm_error=''
+                elif event.key==pygame.K_s:
+                    return self._resolve_confirmation(save=True)
+                elif event.key==pygame.K_d:
+                    return self._resolve_confirmation(save=False)
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(470,462,540,52).collidepoint(pos):
+                    return self._resolve_confirmation(save=True)
+                if pygame.Rect(470,530,540,52).collidepoint(pos):
+                    return self._resolve_confirmation(save=False)
+                if pygame.Rect(470,598,540,52).collidepoint(pos):
+                    self.confirm_action=None
+                    self.confirm_error=''
+            return True
+        if event.type==pygame.KEYDOWN and event.key==pygame.K_q:
+            return self._request_exit()
         # Panele modalne odcinają interakcje od żywego silnika.
         if self.menu_open:
             if event.type==pygame.KEYDOWN and event.key==pygame.K_o:
@@ -779,15 +866,6 @@ class SoloApp:
             elif event.type==pygame.MOUSEWHEEL:
                 self.history_scroll=max(0,min(max(0,len(self.game.event_journal)-24),
                                               self.history_scroll+event.y*3))
-            return True
-        if event.type==pygame.VIDEORESIZE:
-            if not self.window.get_flags() & pygame.FULLSCREEN:
-                dw,dh=self._desktop_resolution()
-                max_width,max_height=max(1,dw-24),max(1,dh-64)
-                width=max(min(560,max_width),min(int(event.w),max_width))
-                height=max(min(360,max_height),min(int(event.h),max_height))
-                self.windowed_size=(width,height)
-                self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
             return True
         if self.details_card is not None:
             if event.type==pygame.KEYDOWN and event.key in (pygame.K_ESCAPE,pygame.K_i):
@@ -837,7 +915,8 @@ class SoloApp:
             if event.key==pygame.K_ESCAPE:
                 self.selected=None;self.tooltip_open=False
                 if self.game.phase=='finished':self.restart()
-            elif event.key==pygame.K_r and not self.game.pending:self.restart()
+            elif event.key==pygame.K_r and not self.game.pending:
+                self._request_restart()
             elif event.key==pygame.K_m:
                 self.menu_page='main'
                 self.menu_open=True
@@ -870,7 +949,7 @@ class SoloApp:
             elif event.key==pygame.K_i:
                 self._open_details(self.game.pending.uid if self.game.pending
                                    else self.selected or self.sidebar_card)
-            elif event.key==pygame.K_q:return False
+
         elif event.type==pygame.MOUSEWHEEL:
             if self.game.pending and self.game.pending.owner==0:
                 self.choice_page=max(0,min(self._choice_last_page(),self.choice_page-event.y))
@@ -937,7 +1016,8 @@ class SoloApp:
         g=self.game
         self._export_finished_audit_once()
         self._capture_visual_feedback()
-        if self.menu_open or self.history_open or self.replay_index is not None:
+        if (self.menu_open or self.history_open
+                or self.replay_index is not None or self.confirm_action is not None):
             return
         if g.phase!='finished' and self.details_card is None:
             if self._old_pending is not g.pending:
@@ -1102,6 +1182,10 @@ class SoloApp:
             self._button(pygame.Rect(1103,686,316,40),'PEŁNY OPIS KARTY  [I]',accent=True,small=True)
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
+            first='TY' if self.game.first==0 else 'KOMPUTER'
+            # Below the details button (bottom=726), above mulligan count.
+            self._text(f'ZACZYNA: {first}  ·  DRUGI: STRAŻNIK 5/5',
+                       11,1104,728,cfg.MUTED)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
             self._text('Kliknij do 3 kart z ręki albo pomiń [ENTER]',12,
                        1104,773,cfg.TEXT)
@@ -1177,13 +1261,18 @@ class SoloApp:
         return 'TWOJA TURA  ·  ZAKOŃCZ TURĘ [SPACJA]  ·  BRAK INNYCH AKCJI'
 
     def _draw_phase_guidance(self):
-        # Stable horizontal corridor between enemy and own boards; the
-        # combat log no longer covers cards or this critical tutorial hint.
-        rect=pygame.Rect(96,375,952,31)
+        # 54 px of dedicated space, strictly between the two board rows.
+        # Two typographic levels are easier to scan than a single truncated log.
+        rect=pygame.Rect(96,373,952,54)
         pygame.draw.rect(self.screen,(25,42,53),rect,border_radius=7)
         pygame.draw.rect(self.screen,(111,157,172),rect,1,border_radius=7)
-        info=self.cards_view.clip(self._phase_guidance(),self.fonts[14],rect.width-25)
-        self._text(info,14,rect.x+12,rect.y+7,cfg.GOLD)
+        parts=self._phase_guidance().split('  ·  ')
+        title=parts[0]
+        detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
+        self._text(self.cards_view.clip(title,self.fonts[14],rect.width-28),
+                   14,rect.x+12,rect.y+4,cfg.GOLD)
+        self._text(self.cards_view.clip(detail,self.fonts[13],rect.width-28),
+                   13,rect.x+12,rect.y+29,cfg.TEXT)
 
     def _draw_header(self):
         logo,mode,help_area=self.header_regions()
@@ -1448,8 +1537,7 @@ class SoloApp:
                 return
             if self.menu_page=='main':
                 if i==0:
-                    self.restart()
-                    self.menu_open=False
+                    self._request_restart()
                 elif i==1:
                     self.menu_open=False
                 elif i==2:
@@ -1488,7 +1576,7 @@ class SoloApp:
                     self.menu_open=False
             else:
                 if i==0:
-                    self.animations_enabled=not self.animations_enabled
+                    self._toggle_animations()
                 elif i==1:
                     self._toggle_fullscreen()
                 elif i==2:
@@ -1586,12 +1674,18 @@ class SoloApp:
         page=journal[max(0,end-24):end]
         for i,item in enumerate(page):
             yy=226+i*26
-            turn=f'R{item["round"]:02} · {"GRACZ" if item["active"]==0 else "AI"}'
+            if i%2==0:
+                pygame.draw.rect(self.screen,(35,53,64),
+                                 pygame.Rect(167,yy-2,1141,25),border_radius=3)
+            turn=f'R{item["round"]:02} · {"TY" if item["active"]==0 else "AI"}'
+            message=item['text']
+            color=(self._feedback_color(message) or cfg.TEXT)
             self._text(f'{item["seq"]:04}',13,179,yy,cfg.GOLD)
             self._text(turn,13,232,yy,cfg.MUTED)
-            line=self.cards_view.clip(item['text'],self.fonts[14],873)
-            self._text(line,14,390,yy,cfg.TEXT)
-        self._text('Pełny dziennik pozostaje dostępny przez cały mecz.',13,174,866,cfg.MUTED)
+            self._text(self.cards_view.clip(message,self.fonts[14],873),
+                       14,390,yy,color)
+        self._text(f'Wyświetlono {len(page)} z {len(journal)} zdarzeń.  '
+                   'H/ESC — powrót na planszę.',13,174,866,cfg.MUTED)
 
     def _draw_replay_controls(self):
         shade=pygame.Surface((cfg.WINDOW_WIDTH,87),pygame.SRCALPHA)
@@ -1666,6 +1760,7 @@ class SoloApp:
         if self.replay_index is not None:self._draw_replay_controls()
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
+        if self.confirm_action:self._draw_confirmation()
         self._present()
 
     def run(self):

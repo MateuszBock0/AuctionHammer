@@ -6,7 +6,7 @@ from collections import deque
 from pathlib import Path
 import sys
 import random
-from .models import Card, Unit, Player, Effect, Pending, Choice, IllegalMove, load_catalog
+from .models import Card, CardDefinition, Unit, Player, Effect, Pending, Choice, IllegalMove, load_catalog
 from .effects import options
 from .audit import initialize_audit, audit_action, trace_effect
 from . import auction as auction_rules
@@ -19,9 +19,15 @@ class Match:
     def __init__(self, seed: int | None = None, audit_enabled: bool = False,
                  auctions_enabled: bool = False,
                  auction_catalog: str = "v3",
-                 vacant_income_enabled: bool | None = None):
+                 vacant_income_enabled: bool | None = None,
+                 starting_compensation: str = "coins"):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
+        if starting_compensation not in ("coins", "unit_5_5"):
+            raise ValueError("Unsupported starting compensation")
+        if starting_compensation == "unit_5_5" and not (auctions_enabled and auction_catalog=="v22"):
+            raise ValueError("Starter guard requires the live v22 catalog")
+        self.starting_compensation=starting_compensation
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
@@ -30,7 +36,8 @@ class Match:
         self.ruleset_version='v23' if auctions_enabled and auction_catalog=='v22' else 'v19'
         # The v23 audit schema records waiting end-turn income as well as
         # the effective ruleset. Old archived signatures keep schema 1.
-        self.audit_state_schema=2 if self.ruleset_version=='v23' else 1
+        self.audit_state_schema=(3 if starting_compensation=="unit_5_5" else
+                                 2 if self.ruleset_version=='v23' else 1)
         self.pending_vacant_income=None
         # New v22 matches use the approved vacant-slot economy. Old saves
         # retain their original flag (or default to False on migration).
@@ -74,7 +81,8 @@ class Match:
         self.players = [Player(0,'GRACZ'),Player(1,'KOMPUTER')]
         self.first = self.rng.randrange(2)
         self.active = self.first
-        self.players[1-self.first].coins = 3
+        if self.starting_compensation=="coins":
+            self.players[1-self.first].coins=3
         self.round = 1
         self.phase = 'mulligan'
         self.pending: Pending | None = None
@@ -117,8 +125,24 @@ class Match:
                 else:
                     p.deck.append(uid); self.cards[uid].zone='deck'
             self.rng.shuffle(p.deck)
+        if self.starting_compensation=="unit_5_5":
+            # Separate token, never one of the 70 basic cards; summoned
+            # before the first action and exhausted during its first own turn.
+            second=1-self.first
+            uid="SUM_START_GUARD"
+            definition=CardDefinition(
+                uid,"Strażnik Drugiego Gracza","Ludzie","Bez zdolności",
+                "Pasywna",5,5,"Stała jednostka 5/5 bez zdolności specjalnych.",
+                "Brak wzrostu; po śmierci nie wraca do talii.",0,0)
+            self.cards[uid]=Card(uid,definition,owner=second,zone="board")
+            self.units[uid]=Unit(uid,second,5,5,5,0,1)
+            self.players[second].board.append(uid)
+            self.ephemeral_ids.add(uid)
         self._log('Rozdano po 5 kart na rękę i do talii. Po jednym egzemplarzu na typ.')
-        self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
+        if self.starting_compensation=="unit_5_5":
+            self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma Strażnika 5/5 na planszy, bez premii monet.')
+        else:
+            self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
         if self.auctions_enabled:
             self._log("Aukcje co trzy rundy: "+self.auction_catalog)
         if self.audit_enabled:

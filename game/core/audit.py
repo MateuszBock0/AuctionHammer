@@ -185,12 +185,16 @@ def state_snapshot(game):
     # hashes because their replay explicitly selects schema 1.
     if (getattr(game,'audit_state_schema',1)>=2
             and getattr(game,'ruleset_version',None)=='v23'):
+        schema=getattr(game,'audit_state_schema',2)
         state['ruleset_state']={
-            'audit_schema':2,
+            'audit_schema':schema,
             'version':'v23',
             'pending_vacant_income':getattr(game,'pending_vacant_income',None),
             'vacant_income_enabled':getattr(game,'vacant_income_enabled',False),
         }
+        if schema>=3:
+            state['ruleset_state']['starting_compensation']=getattr(
+                game,'starting_compensation','coins')
     return state
 
 
@@ -544,10 +548,17 @@ def verify_replay(payload,match_factory):
     initial=payload.get("initial_state",{})
     auction_enabled=bool(initial.get("auctions_enabled",False))
     catalog=initial.get("auction_catalog","placeholders")
+    signed_rule=initial.get('ruleset_state')
+    compensation=('unit_5_5' if isinstance(signed_rule,dict)
+                  and signed_rule.get('audit_schema')==3
+                  and signed_rule.get('starting_compensation')=='unit_5_5'
+                  else 'coins')
     if auction_enabled:
         try:
-            game=match_factory(payload["seed"],auctions_enabled=True,
-                               auction_catalog=catalog)
+            kwargs={'auctions_enabled':True,'auction_catalog':catalog}
+            if compensation=='unit_5_5':
+                kwargs['starting_compensation']=compensation
+            game=match_factory(payload["seed"],**kwargs)
         except TypeError as exc:
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
@@ -590,12 +601,14 @@ def verify_replay(payload,match_factory):
         if signed_schema is None:
             game.audit_state_schema=1
         elif (isinstance(signed_schema,dict)
-              and signed_schema.get('audit_schema')==2
+              and signed_schema.get('audit_schema') in (2,3)
               and signed_schema.get('version')=='v23'
               and signed_schema.get('pending_vacant_income') is None
               and signed_schema.get('vacant_income_enabled') is
-                  getattr(game,'vacant_income_enabled',False)):
-            game.audit_state_schema=2
+                  getattr(game,'vacant_income_enabled',False)
+              and (signed_schema.get('audit_schema')==2 or
+                   signed_schema.get('starting_compensation')=='unit_5_5')):
+            game.audit_state_schema=signed_schema['audit_schema']
         else:
             raise ValueError("Niezgodne metadane wersji zasad w migawce audytu")
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
