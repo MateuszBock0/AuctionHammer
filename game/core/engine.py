@@ -11,7 +11,7 @@ from .effects import options
 from .audit import initialize_audit, audit_action, trace_effect
 from . import auction as auction_rules
 from . import auction_abilities as auction_ability_rules
-from .auction_catalog import CATALOG
+from .auction_catalog import CATALOG,catalog_for
 
 ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
@@ -19,7 +19,7 @@ class Match:
     def __init__(self, seed: int | None = None, audit_enabled: bool = False,
                  auctions_enabled: bool = False,
                  auction_catalog: str = "v3"):
-        if auction_catalog not in ("v3","v4","placeholders"):
+        if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
@@ -30,9 +30,9 @@ class Match:
         self.auction_awards={}
         # Separate finite archetype supply: 3 offered, 2 bought, third
         # returned to the auction bag ONLY, never to the 70-card bank.
-        self.auction_bag=list(CATALOG) if auction_catalog=='v4' else []
+        self.auction_bag=list(catalog_for(auction_catalog)) if auction_catalog in ('v4','v22') else []
         self.auction_discarded=[]  # historical unsold offer UIDs (audit only)
-        self.auction_supply_version=2 if auction_catalog=='v4' else 0
+        self.auction_supply_version=3 if auction_catalog=='v22' else 2 if auction_catalog=='v4' else 0
         # Lifetime actual death events (per owner), not current grave sizes.
         # Board replacements, captures and exile do not increment losses.
         self.death_counts=[0,0]
@@ -46,6 +46,9 @@ class Match:
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
+        # v22 single-use bonus vouchers survive the source leaving the board.
+        self.auction_vouchers=[[],[]]
+        self.auction_blocked_play=set()
         self.auction_wave_ops=[]
         self.seed = seed if seed is not None else random.SystemRandom().randrange(2**31)
         self.rng = random.Random(self.seed)
@@ -255,9 +258,9 @@ class Match:
             u.shield=1
             u.shield_source=uid
             self._log(f'{self.label(uid)}: wrodzona Prowokacja i 1 Tarcza (karta aukcyjna).')
-        if self.auction_catalog=='v4':
+        if self.auction_catalog in ('v4','v22'):
             auction_ability_rules.mark_general_new_ally(self,uid)
-            if card.definition.id in CATALOG and (card.definition.trigger=='Przy wystawieniu'
+            if card.definition.id in catalog_for(self.auction_catalog) and (card.definition.trigger=='Przy wystawieniu'
                                                     or card.definition.id=='A002'):
                 self._queue(uid,'play')
         if card.definition.id == 'S39' and u.ability_level:
@@ -298,12 +301,12 @@ class Match:
             return
         a=self.units[uid]
         if target.startswith('hero:'):
-            boosted=(self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,uid))
+            boosted=(self.auction_catalog in ('v4','v22') and auction_ability_rules.boosted_attack(self,uid))
             self._damage(target,a.atk*(2 if boosted else 1))
         else:
             b=self.units[target]
-            da,db=(a.atk*(2 if self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,uid) else 1),
-                   b.atk*(2 if self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,target) else 1))
+            da,db=(a.atk*(2 if self.auction_catalog in ('v4','v22') and auction_ability_rules.boosted_attack(self,uid) else 1),
+                   b.atk*(2 if self.auction_catalog in ('v4','v22') and auction_ability_rules.boosted_attack(self,target) else 1))
             # simultaneous damage; store victims until both are applied
             to_attacker=self._damage(uid,db,defer_death=True)
             to_defender=self._damage(target,da,defer_death=True)
@@ -375,7 +378,7 @@ class Match:
                     uid,ctx,tgt=self.trigger_queue.popleft()
                     if ctx not in ('death',) and uid not in self.units:continue
                     if ctx in ('death',) and self._death_disabled.get(uid,False):continue
-                    auction_context=(self.auction_catalog=='v4' and
+                    auction_context=(self.auction_catalog in ('v4','v22') and
                                      (self.auction_awards.get(uid,{}).get('archetype') or
                                       ctx.startswith('auction_') or uid in self.auction_death_grants))
                     choices=(auction_ability_rules.options(self,uid,ctx,tgt)
@@ -394,7 +397,7 @@ class Match:
                         # snapshot only after the preceding group has closed.
                         wave['sources']=tuple(
                             (uid,tuple(auction_ability_rules.options(self,uid,'death')
-                                       if self.auction_catalog=='v4' and
+                                       if self.auction_catalog in ('v4','v22') and
                                           (self.auction_awards.get(uid,{}).get('archetype') or
                                            uid in self.auction_death_grants)
                                        else options(self,uid,'death')))
@@ -415,7 +418,7 @@ class Match:
                         uid=self.end_queue.popleft()
                         if uid in self.units and not self._disabled(self.units[uid]):
                             if (self.cards[uid].definition.faction=='Krasnoludy'
-                                or (self.auction_catalog=='v4' and
+                                or (self.auction_catalog in ('v4','v22') and
                                     self.cards[uid].definition.id=='A010')):
                                 self._queue(uid,'end')
                         continue
@@ -429,7 +432,7 @@ class Match:
                     if self.phase=='finished':break
                     if (self.auctions_enabled and (self.round-1)%3==0
                             and self.round>1
-                            and (self.auction_catalog!='v4' or len(self.auction_bag)>=3)
+                            and (self.auction_catalog not in ('v4','v22') or len(self.auction_bag)>=3)
                             and not any(
                                 item["completed_round"]==self.round-1
                                 for item in self.auction_history)):
@@ -453,7 +456,7 @@ class Match:
     def _finalize_end_turn(self):
         p=self._player()
         # Delayed exile must run before ordinary expiry deletes its marker.
-        if self.auction_catalog=='v4':
+        if self.auction_catalog in ('v4','v22'):
             auction_ability_rules.expire_exile_marks(self,p.idx)
         for uid in list(p.board):
             if uid not in self.units:continue
@@ -526,7 +529,7 @@ class Match:
         intrinsic=(self.cards[u.uid].definition.id in ('S115','S79') and not self._disabled(u)
                    and (self.cards[u.uid].definition.id!='S79' or u.attacks>0))
         return (self._has(u,'double') or fallback or intrinsic or
-                (self.auction_catalog=='v4' and auction_ability_rules.boosted_attack(self,u.uid)))
+                (self.auction_catalog in ('v4','v22') and auction_ability_rules.boosted_attack(self,u.uid)))
     def _taunt(self,u):
         return (self._has(u,'taunt') or
                 ((self.cards[u.uid].definition.id=='S33' or
@@ -568,7 +571,7 @@ class Match:
             if value>0:u.hp+=value
             else:u.hp=min(u.hp,u.max_hp)
         suffix=f' od {self.label(source)}' if source in self.cards and source!=uid else ''
-        if self.auction_catalog=='v4':
+        if self.auction_catalog in ('v4','v22'):
             names={'silence':'Wyciszenie','stun':'Ogłuszenie',
                    'poison':'Trucizna','regen':'Regeneracja',
                    'taunt':'Prowokacja','quick':'Szybki atak',
@@ -642,13 +645,13 @@ class Match:
                         amount += 2+self.units[ally].ability_level
             old=u.hp
             u.hp=min(u.max_hp,u.hp+max(0,amount))
-            if self.auction_catalog=='v4' and u.hp>old:
+            if self.auction_catalog in ('v4','v22') and u.hp>old:
                 self._log(f'{self.label(target)} odzyskuje {u.hp-old} PŻ '
                           f'({old} → {u.hp}/{u.max_hp}).')
         elif target and target.startswith('hero:'):
             p=self.players[int(target.split(':')[1])]
             old=p.hp;p.hp=min(100,p.hp+max(0,amount))
-            if self.auction_catalog=='v4' and p.hp>old:
+            if self.auction_catalog in ('v4','v22') and p.hp>old:
                 self._log(f'{p.name} odzyskuje {p.hp-old} PŻ '
                           f'({old} → {p.hp}/100).')
 
@@ -675,7 +678,7 @@ class Match:
     def _damage(self,target,amount,ignore_defense=False,defer_death=False):
         amount=max(0,amount)
         if amount<=0:
-            if self.auction_catalog=='v4':
+            if self.auction_catalog in ('v4','v22'):
                 self._log(f'{self.label(target)}: 0 obrażeń; PŻ bez zmian.')
             return 0
         incoming=amount
@@ -705,7 +708,7 @@ class Match:
                     absorb=min(amount,u.aura_armor[key]);u.aura_armor[key]-=absorb;amount-=absorb
                 absorb=self._spend_permanent_armor(u,amount);amount-=absorb
             dealt=max(0,amount);u.hp-=dealt
-            if self.auction_catalog=='v4':
+            if self.auction_catalog in ('v4','v22'):
                 absorbed=incoming-dealt
                 if absorbed:
                     self._log(f'{self.label(target)}: pancerz pochłania '
@@ -719,19 +722,19 @@ class Match:
             if not ignore_defense:
                 if p.hero_shield:
                     p.hero_shield=0
-                    if self.auction_catalog=='v4':
+                    if self.auction_catalog in ('v4','v22'):
                         self._log(f'{p.name}: Tarcza bohatera blokuje '
                                   f'{incoming} obrażeń i zostaje zużyta.')
                     return 0
                 a=min(amount,p.hero_armor);p.hero_armor-=a;amount-=a
-                if a and self.auction_catalog=='v4':
+                if a and self.auction_catalog in ('v4','v22'):
                     self._log(f'{p.name}: pancerz bohatera pochłania '
                               f'{a} z {incoming} obrażeń.')
             old=p.hp;p.hp-=amount
-            if self.auction_catalog=='v4':
+            if self.auction_catalog in ('v4','v22'):
                 self._log(f'{p.name} otrzymuje {amount} obrażeń w PŻ '
                           f'({old} → {p.hp}/100).')
-            if (self.auction_catalog=='v4' and p.hp<=0 and
+            if (self.auction_catalog in ('v4','v22') and p.hp<=0 and
                     not self._resolving_death_wave and not defer_death):
                 auction_ability_rules.rescue_heroes(self)
             if not self._suspend_hero_thresholds:
@@ -765,7 +768,7 @@ class Match:
             self._death_levels[uid]=unit.ability_level
             snapshot.append((uid,unit.owner,blocked,
                              (self.cards[uid].definition.faction=='Potwory' or
-                              (self.auction_catalog=='v4' and
+                              (self.auction_catalog in ('v4','v22') and
                                (self.cards[uid].definition.id in ('A001','A003','A011')
                                 or uid in self.auction_death_grants)))))
         for uid,owner,_,_ in snapshot:
@@ -800,7 +803,7 @@ class Match:
         self._wave_healing=[]
         self._wave_status_ops=[]
         self._wave_defense_ops=[]
-        if self.auction_catalog=='v4':self.auction_wave_ops=[]
+        if self.auction_catalog in ('v4','v22'):self.auction_wave_ops=[]
         try:
             for uid,choice in wave['decisions']:
                 self._execute(uid,'death',choice)
@@ -887,15 +890,15 @@ class Match:
                     player.coins+=2
                     self._log(f'{player.name}: +2 monety za przekroczenie {threshold} PŻ.')
         self._update_auras()
-        if self.auction_catalog=='v4':auction_ability_rules.rescue_heroes(self)
+        if self.auction_catalog in ('v4','v22'):auction_ability_rules.rescue_heroes(self)
         self._kill_batch([uid for uid,u in list(self.units.items()) if u.hp<=0])
-        if self.auction_catalog=='v4':auction_ability_rules.resolve_wave_ops(self)
+        if self.auction_catalog in ('v4','v22'):auction_ability_rules.resolve_wave_ops(self)
         self._log(f'Zamknięto falę śmierci {wave["id"]}.')
         self._check_winner()
 
     @trace_effect('_remove_unit')
     def _remove_unit(self,uid,death):
-        if self.auction_catalog=='v4':
+        if self.auction_catalog in ('v4','v22'):
             auction_ability_rules.forget_general_links(self,uid,include_source=True)
         u=self.units.pop(uid)
         if death:
@@ -903,9 +906,9 @@ class Match:
         self.players[u.owner].board.remove(uid)
         card=self.cards[uid];card.hand_turns=0;card.quick_next_turn=None
         card.quick_on_first_summon=False;card.double_on_first_eligible=False
-        if self.auction_catalog=='v4' and uid in self.ephemeral_ids:
+        if self.auction_catalog in ('v4','v22') and uid in self.ephemeral_ids:
             card.zone='vanished';self.vanished.append(uid)
-        elif self.auction_catalog=='v4' and uid in self.auction_awards:
+        elif self.auction_catalog in ('v4','v22') and uid in self.auction_awards:
             # Purchased auction cards cannot enter the base grave/deck loop.
             card.zone='auction_used';self.auction_used.append(uid)
         else:
@@ -919,7 +922,7 @@ class Match:
             if self._disabled(u):continue
             cid=self.cards[uid].definition.id
             friend=self.players[u.owner].board;enemy=self.players[1-u.owner].board
-            if self.auction_catalog=='v4' and cid=='A002' and auction_ability_rules.rarity(self,uid)==0:
+            if self.auction_catalog in ('v4','v22') and cid=='A002' and auction_ability_rules.rarity(self,uid)==0:
                 for target in desired_atk:desired_atk[target]+=1
             if cid=='S34':
                 position=friend.index(uid)
@@ -941,7 +944,7 @@ class Match:
             previous_aura_hp=u.aura_hp
             previous_aura_atk=u.aura_atk
             u.aura_atk=desired_atk[uid];u.aura_hp=desired_hp[uid]
-            if (self.auction_catalog=='v4' and
+            if (self.auction_catalog in ('v4','v22') and
                     (u.aura_atk!=previous_aura_atk or
                      u.aura_hp!=previous_aura_hp)):
                 delta_atk=u.aura_atk-previous_aura_atk
@@ -984,7 +987,7 @@ class Match:
     def _check_winner(self):
         if self.phase!='turn':return
         a,b=self.players
-        if self.auction_catalog=='v4' and (a.hp<=0 or b.hp<=0):
+        if self.auction_catalog in ('v4','v22') and (a.hp<=0 or b.hp<=0):
             auction_ability_rules.rescue_heroes(self)
         if a.hp>0 and b.hp>0:return
         if a.hp<=0 and b.hp>0:self.winner=1
@@ -1016,13 +1019,13 @@ class Match:
         all_ids=list(self.bank)
         for p in self.players:all_ids+=p.hand+p.deck+p.grave+p.board
         all_ids+=self.excluded
-        if self.auction_catalog=='v4':
+        if self.auction_catalog in ('v4','v22'):
             all_ids+=self.exiled+self.vanished+self.auction_used
         basic=[uid for uid in all_ids if uid not in self.auction_awards and
-               not (self.auction_catalog=='v4' and uid in self.ephemeral_ids)]
+               not (self.auction_catalog in ('v4','v22') and uid in self.ephemeral_ids)]
         assert len(basic)==70 and len(set(basic))==70,('Bank 70x1 violated',len(basic),len(set(basic)))
         assert len(all_ids)==len(set(all_ids)), 'Auction card duplicated'
-        if self.auction_catalog=='v4':
+        if self.auction_catalog in ('v4','v22'):
             assert len(self.auction_bag)==len(set(self.auction_bag))
             assert len(self.auction_discarded)==len(set(self.auction_discarded))
             assert len(self.auction_used)==len(set(self.auction_used))
@@ -1034,11 +1037,11 @@ class Match:
             assert len(bought)==sum(1 for meta in self.auction_awards.values()
                                     if meta.get('archetype') and not meta.get('ephemeral')), (
                 'Auction archetype purchased twice')
-            assert len(bought)+len(active)+len(self.auction_bag)==len(CATALOG), (
+            assert len(bought)+len(active)+len(self.auction_bag)==len(catalog_for(self.auction_catalog)), (
                 'Auction supply corrupted')
             assert not (bought & active or bought & set(self.auction_bag) or
                         active & set(self.auction_bag)), 'Auction pools overlap'
-            assert set(CATALOG)==bought|active|set(self.auction_bag), (
+            assert set(catalog_for(self.auction_catalog))==bought|active|set(self.auction_bag), (
                 'Auction archetype missing from all pools')
             if self.auction is not None:
                 assert len(self.auction.offers)==3, 'Every v4 auction has 3 distinct offers'
@@ -1061,8 +1064,8 @@ class Match:
         Dla efektów wymagających wyboru pending zatrzymuje kolejkę, co pozwala
         obsłużyć zarówno gracza jak i agenta tym samym kodem.
         """
-        if (self.auction_catalog=='v4' and
-            (self.cards[uid].definition.id in CATALOG or context.startswith('auction_') or
+        if (self.auction_catalog in ('v4','v22') and
+            (self.cards[uid].definition.id in catalog_for(self.auction_catalog) or context.startswith('auction_') or
              (context=='death' and uid in self.auction_death_grants))):
             auction_ability_rules.execute(self,uid,context,choice,attacked)
             return
