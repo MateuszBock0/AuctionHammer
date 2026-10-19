@@ -17,7 +17,8 @@ build/
 # Local artifacts
 .DS_Store
 
-# Third-party recordings are not part of the MIT-licensed source
+# Keep unlicensed/temporary audio out; ship only the approved full album.
 /assets/music/*.ogg
 /assets/music/*.mp3
 /assets/music/*.wav
+!/assets/music/music_auctionhammer.mp3
