@@ -92,7 +92,10 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         g.players[0].played_this_turn=True
         app.selected=attacker
         self.assertIn('ZAATAKUJ',app._phase_guidance())
-        g.units[attacker].attacks=1
+        # With the v0.9.39 starter guard, more than one own unit can be
+        # present. The end-turn hint appears only after ALL are exhausted.
+        for unit_id in g.players[0].board:
+            g.units[unit_id].attacks=2
         app.selected=None
         self.assertIn('ZAKOŃCZ TURĘ',app._phase_guidance())
 
