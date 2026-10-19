@@ -1,7 +1,7 @@
 # AuctionHammer — status projektu
 
 **Ostatnia aktualizacja dokumentacji:** 19 października 2026  
-**Wersja aplikacji:** 0.9.39  
+**Wersja aplikacji:** 0.9.40  
 **Stan:** działające demo offline na Windows, tryb solo przeciw AI. Rozwój trwa.
 
 ## Zaimplementowane
@@ -38,3 +38,7 @@ Muzyka i materiały podmiotów trzecich nie stają się objęte MIT przez sam fa
 ## Etap 0.9.39 — nowe mecze
 
 Rekompensata dla gracza wykonującego drugi ruch: na jego planszy pojawia się neutralny **Strażnik 5/5** zamiast 3 monet. Zajmuje pole, nie ma zdolności, nie atakuje w swojej pierwszej turze, po usunięciu znika bez powrotu do talii. Historyczne mecze zachowują +3 monety i oryginalne podpisy audytu. Interfejs zyskuje ochronę przed przypadkowym restartem/wyjściem, globalny resize, dwuwierszowe podpowiedzi i zachowanie stanu animacji podczas restartu. Szczegóły: [UIUX_0939_ACCEPTANCE.md](UIUX_0939_ACCEPTANCE.md).
+
+## 0.9.40 — startowy Chorąży 3/5
+
+W nowych meczach tylko drugi gracz otrzymuje Chorążego 3 ATK / 5 PŻ, opis „Chorąży zawsze zdąży.”. Bez Prowokacji, Tarczy, Szybkiego ataku i bonusu monet. Historyczne +3 monety (`coins`) oraz Strażnik 5/5 (`unit_5_5`) pozostają wczytywane i odtwarzane dokładnie według swoich wersji. Aneks: [CHORAZY_0940.md](CHORAZY_0940.md). Wynik porównania A/B pozostaje do oceny, nie deklarujemy jeszcze wyrównania rozgrywki.
