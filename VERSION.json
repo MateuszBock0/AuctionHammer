@@ -29,15 +29,15 @@
   "balance": "v21",
   "ui_audit": "0922-preflight-validations",
   "auction_ability_activation": "active",
-  "auction_supply": "v4-return-unbought-to-auction-bag-only",
+  "auction_supply": "v22-17-return-unbought-auction-only",
   "auction_archetypes": 17,
   "auction_ability_variants": 51,
   "auction_max_completed_auctions": 8,
-  "auction_description_contract": "36-v4-variants-canonical-live-ui",
+  "auction_description_contract": "51-v22-variants-canonical-live-ui",
   "match_death_counter": "lifetime-real-deaths-not-grave-size",
   "shield_combat_feedback": "explicit-absorbed-damage-log",
   "auction_minimum_distinct_offers": 3,
-  "auction_acceptance": "36-concrete-scenarios-plus-collision-regressions",
+  "auction_acceptance": "51-executable-ability-variants-plus-collision-tests",
   "auction_fixes": [
     "A010-single-HP-growth",
     "A002-expired-beneficiary-on-exit-or-capture"
