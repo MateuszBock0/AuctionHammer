@@ -18,13 +18,21 @@ ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 class Match:
     def __init__(self, seed: int | None = None, audit_enabled: bool = False,
                  auctions_enabled: bool = False,
-                 auction_catalog: str = "v3"):
+                 auction_catalog: str = "v3",
+                 vacant_income_enabled: bool | None = None):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
         self.auction_catalog=auction_catalog
+        # New v22 matches use the approved vacant-slot economy. Old saves
+        # retain their original flag (or default to False on migration).
+        self.vacant_income_enabled=(
+            bool(auctions_enabled and auction_catalog=='v22')
+            if vacant_income_enabled is None else bool(vacant_income_enabled))
+        self.slot_income=[0,0]
+        self.slot_income_turns=[0,0]
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
@@ -582,6 +590,17 @@ class Match:
                 auction_rules.advance_rarity(self,self.round-1)
         self._next_turn_due=True
         self._update_auras()
+        if self.vacant_income_enabled and self.phase=='turn' and p.hp>0:
+            # Paid to the owner of the ending turn, AFTER end-of-turn effects
+            # and current board removals. This is independent from the usual
+            # +1 coin awarded to both players after each completed round.
+            empty=5-len(p.board)
+            self._check(0<=empty<=5,'Nieprawidłowa liczba wolnych pól')
+            p.coins+=empty
+            self.slot_income[p.idx]+=empty
+            self.slot_income_turns[p.idx]+=1
+            self._log(f'{p.name}: +{empty} monet(y) za {empty} '
+                      'wolnych pól na koniec własnej tury.')
 
     def _has(self,u,kind):return any(e.kind==kind for e in u.effects)
     def _disabled(self,u):return self._has(u,'stun') or self._has(u,'silence')
