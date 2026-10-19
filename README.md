@@ -1,6 +1,24 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.31** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v21), **pełne aukcje v22 z 17 archetypami i 51 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+**AuctionHammer 0.9.32** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v21), **pełne aukcje v22 z 17 archetypami i 51 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Wersja 0.9.32 — stabilizacja aukcji v22
+
+- **A009, legendarna:** karta aukcyjna odrzucona po wymianie rąk trafia
+  wyłącznie do `auction_used`, nigdy do cmentarza/talii 70 kart. Poprawka
+  działa także po zapisie i wczytaniu meczu podczas wyboru.
+- **Ewolucja rzadkości:** kupione karty v22 awansują po kolejnych 3
+  ukończonych rundach od zakupu, na ręce i planszy. Rzadkość zmienia
+  aktywny wariant tekstu/zdolności, ale **nie** podnosi bazowego ATK/PŻ.
+- **A015 i zapis/wczytanie:** dodatkowe testy pojedynczego skontrowania
+  Przy wystawieniu, wyciszenia, globalnej blokady, wyborów A016 i
+  kuponów A018 oraz granic aukcji.
+- Katalog v22 ma spójne liczniki **17 archetypów / 51 wariantów** i
+  odrębny zapis historycznej proweniencji DRAFT. Nie deklarujemy
+  statystycznie zweryfikowanego balansu.
+- **Balans v21, dotychczasowy AI, lokalna gra solo i wygląd** bez zmian.
+
+[Pełny raport 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md).
 
 ## Wersja 0.9.31 — aukcje 17 kart / 51 wariantów
 
