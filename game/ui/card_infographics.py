@@ -42,9 +42,9 @@ AUCTION_MECHANIC_LABELS = {
 UPGRADES = {
     'Obrażenia':'+1 OBR / 3T','Leczenie':'+1 LECZ / 3T',
     'ATK ±':'±1 ATAK / 3T','MAX HP ±':'±1 PŻ / 3T','Pancerz':'+1 PANC / 3T',
-    'Tarcza':'+3 PŻ / 3T','Trucizna':'+1 ŁĄCZ / 3T',
+    'Tarcza':'+1 ATK +2 PŻ / 3T','Trucizna':'+1 ŁĄCZ / 3T',
     'Ogłuszenie':'+1 OBR / 3T','Regeneracja':'+1 ŁĄCZ / 3T',
-    'Prowokacja':'+3 PŻ / 3T','Oczyszczanie':'+1 ZA OCZ / 3T',
+    'Prowokacja':'+1 ATK +2 PŻ / 3T','Oczyszczanie':'+1 ZA OCZ / 3T',
     'Odporność':'1× +1 PANC / 3T','Szybki atak':'+2 ATAK +1 PŻ / 3T',
     'Podwójny atak':'+2 ATAK / 3T',
 }
