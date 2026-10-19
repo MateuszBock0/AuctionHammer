@@ -6,6 +6,10 @@ import json
 import math
 from datetime import datetime,timezone
 from pathlib import Path
+import sys
+
+# Direct invocation (python tools/balance_ab.py) must resolve repository root.
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools.simulate_v22 import simulate_one
 
 MODES=("coins","unit_5_5","unit_3_5")
