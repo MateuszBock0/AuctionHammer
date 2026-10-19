@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.32: v21 balance and stabilized v22 auctions."""
+"""AuctionHammer MVP 0.9.33: v22 Queen/Cartographer and match archive."""
 from __future__ import annotations
 import os
 import re
@@ -8,7 +8,8 @@ from game.ui.combat_visuals import CombatVisuals
 from game.ui.visual_theme import VisualTheme
 from game.ui.match_history import MatchRecorder
 from game.core.persistence import save_match, load_match, save_path
-from game.core.audit import (audit_path, write_last_match, initialize_audit,
+from game.core.audit import (audit_path, archive_path, list_archived_matches,
+                             write_last_match, initialize_audit,
                              configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
@@ -57,6 +58,7 @@ class SoloApp:
         self.menu_open=bool(start_in_menu)
         self.menu_page='main'
         self.menu_message=''
+        self._archive_records=[]
         self.history_open=False
         self.history_scroll=0
         self.replay_index=None
@@ -95,7 +97,7 @@ class SoloApp:
         self.history_scroll=0
 
     def _export_finished_audit_once(self,force=False):
-        """The most recently FINISHED match is the only exported report."""
+        """Persist latest audit plus the deduplicated history of every finished match."""
         game=getattr(self,'game',None)
         if game is None or game.phase!='finished':
             return None
@@ -110,9 +112,9 @@ class SoloApp:
             self._audit_notice='BŁĄD ZAPISU AUDYTU: '+str(exc)
             return None
 
-    def _open_audit_folder(self):
-        """Show the persistent folder so the player can upload its one JSON."""
-        directory=audit_path().parent
+    def _open_audit_folder(self,archive=False):
+        """Open the persistent folder containing audits (or its full archive)."""
+        directory=archive_path() if archive else audit_path().parent
         try:
             directory.mkdir(parents=True,exist_ok=True)
             if os.name=='nt':
@@ -1206,10 +1208,25 @@ class SoloApp:
         self._button(pygame.Rect(1095,853,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
     def _menu_click(self,pos):
+        history_button=pygame.Rect(625,282,240,34)
+        if self.menu_page=='main' and history_button.collidepoint(pos):
+            try:
+                self._archive_records=list_archived_matches()
+                self.menu_message=''
+                self.menu_page='archive'
+            except (OSError,ValueError,TypeError) as exc:
+                self.menu_message='Nie można odczytać historii: '+str(exc)
+            return
         buttons=[pygame.Rect(535,322+i*81,420,61) for i in range(5)]
         for i,rect in enumerate(buttons):
             if not rect.collidepoint(pos):continue
             self.menu_message=''
+            if self.menu_page=='archive':
+                if i==4:
+                    self.menu_page='main'
+                elif i < len(self._archive_records[:4]):
+                    self._open_audit_folder(archive=True)
+                return
             if self.menu_page=='main':
                 if i==0:
                     self.restart()
@@ -1278,9 +1295,21 @@ class SoloApp:
         self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
         self._text('TAWERNA · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
-        if self.menu_page=='main':
+        if self.menu_page=='archive':
+            records=self._archive_records[:4]
+            items=tuple(
+                self.cards_view.clip(
+                    f'{item.get("exported_at_utc","")[:16].replace("T"," ")}  ·  '
+                    f'{"WYGRANA" if item.get("winner")==0 else "PORAŻKA"}  ·  '
+                    f'{item.get("rounds","?")} rund  [FOLDER]',
+                    self.fonts[16],390)
+                for item in records)
+            items=items+tuple('—' for _ in range(4-len(items)))+('WRÓĆ DO MENU',)
+            self._text(f'ZAPISANE MECZE: {len(self._archive_records)}',16,746,287,cfg.GOLD,center=True)
+        elif self.menu_page=='main':
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')
+            self._button(pygame.Rect(625,282,240,34),'HISTORIA MECZÓW',small=True)
         else:
             items=(f'ANIMACJE: {"WŁ." if self.animations_enabled else "WYŁ."}',
                    'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
@@ -1290,8 +1319,11 @@ class SoloApp:
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
-        self._text('70 bazowych · 12 aukcyjnych (zdolności nieaktywne) · [O] AUDYT',13,
-                   746,790,cfg.MUTED,center=True)
+        self._text(
+            'Archiwum JSON.GZ · kliknij mecz, aby otworzyć folder'
+            if self.menu_page=='archive' else
+            '70 bazowych · 17 aukcyjnych (v22) · [O] AUDYT',
+            13,746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
