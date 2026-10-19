@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.32",
+  "mvp": "0.9.33",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -42,7 +42,9 @@
     "A010-single-HP-growth",
     "A002-expired-beneficiary-on-exit-or-capture",
     "A009-v22-auction-discard-isolation",
-    "v22-rarity-evolves-every-three-completed-rounds"
+    "v22-rarity-evolves-every-three-completed-rounds",
+    "A010-v22-symmetric-queen-growth-and-summons",
+    "A016-empty-deck-recovers-from-grave"
   ],
   "combat_explanations": [
     "actual_HP_damage",
@@ -56,5 +58,7 @@
   "next_balance": "v21-live",
   "next_auction_catalog": "v22-live",
   "auction_catalog_mode": "v22",
-  "auction_catalog_metadata": "17/51 live-with-archived-source-proposal"
+  "auction_catalog_metadata": "17/51 live-with-archived-source-proposal",
+  "match_archive": "compressed-json-gzip-with-deduplicated-index-and-migration",
+  "match_archive_menu": "history-of-completed-matches"
 }
