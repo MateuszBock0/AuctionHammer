@@ -218,6 +218,7 @@ Nagrania pozostają materiałem podmiotów trzecich i **nie podlegają licencji 
 
 **Ostatnie aktualizacje w skrócie:** zasady v23, suwak licytacji, paginacja archiwum, czytelniejsze opisy warunkowych zdolności i dokładniejsze audyty z odtwarzaniem meczów. Szczegółowych poprawek nie powielamy tutaj — pełne informacje są w dokumentacji:
 
+- [Status projektu i ograniczenia bieżącej wersji](docs/STATUS_PROJEKTU.md)
 - [Zasady i zmiany v23](docs/GAME_MASTER_v23_ADDENDUM.md)
 - [Raport drugiego audytu v23](docs/QA_V23_SECOND_PASS_20261019.md)
 - [Poprawki animacji i oznaczeń kart](docs/QA_UI_COMBAT_0935.md)
