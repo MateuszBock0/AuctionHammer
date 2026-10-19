@@ -467,8 +467,12 @@ class Match:
                         if not (ctx=='play' and
                                 self.cards[uid].definition.id=='A002'
                                 and uid in self.auction_awards):
+                            trigger_name={'play':'przy wystawieniu',
+                                          'end':'na koniec tury',
+                                          'attack':'przy ataku'}.get(ctx,ctx)
                             self._log(f'{self.label(uid)}: zdolność '
-                                      f'{ctx} nie zadziałała — brak legalnego celu.')
+                                      f'{trigger_name} nie zadziałała — '
+                                      'brak legalnego celu.')
                         continue
                     if len(choices)==1 and choices[0].mode=='auto':
                         self._execute(uid,ctx,choices[0],tgt)
