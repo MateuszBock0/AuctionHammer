@@ -269,8 +269,8 @@ def main():
     parser.add_argument("--output-dir",default="reports/v22_100")
     parser.add_argument("--level-0",choices=LEVELS,default="normalny")
     parser.add_argument("--level-1",choices=LEVELS,default="normalny")
-    parser.add_argument("--starting-compensation",choices=("coins","unit_5_5"),
-                        default="coins",help="Legacy +3 coins or new 5/5 guard")
+    parser.add_argument("--starting-compensation",choices=("coins","unit_5_5","unit_3_5"),
+                        default="coins",help="Versioned +3 coins, 5/5 guard or 3/5 Chorazy")
     parser.add_argument("--verify-every",type=int,default=10,
                         help="Odtwórz komendy i hashe co N meczów; 0 wyłącza")
     args=parser.parse_args()

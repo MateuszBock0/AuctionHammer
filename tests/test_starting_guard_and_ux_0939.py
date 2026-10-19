@@ -118,12 +118,12 @@ class UserInterfaceAcceptance(unittest.TestCase):
         self.app.game.finish_mulligan(0,[])
 
     def test_new_game_is_guard_mode_and_a_persists_through_restart(self):
-        self.assertEqual(self.app.game.starting_compensation,"unit_5_5")
+        self.assertEqual(self.app.game.starting_compensation,"unit_3_5")
         self.app.handle(self.key(pygame.K_a))
         self.assertFalse(self.app.animations_enabled)
         self.app.restart()
         self.assertFalse(self.app.animations_enabled)
-        self.assertEqual(self.app.game.starting_compensation,"unit_5_5")
+        self.assertEqual(self.app.game.starting_compensation,"unit_3_5")
 
     def test_restart_cannot_discard_active_match_without_confirmation(self):
         self.start_turn()
