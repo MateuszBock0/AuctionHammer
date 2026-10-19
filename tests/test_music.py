@@ -51,6 +51,26 @@ class SoundtrackTests(unittest.TestCase):
             self.assertEqual(audio.load.call_args.args[0], str(self.folder / "01 - track.mp3"))
             audio.play.assert_called_with(loops=0)
 
+    def test_requested_mp3_name_is_selected_and_entire_file_loops(self):
+        path = self.folder / "music_auctionhammer.mp3"
+        path.touch()
+        with (patch.object(pygame.mixer, "get_init", return_value=True),
+              patch.object(pygame.mixer, "music") as audio):
+            player = FantasyTavernMusic(self.folder)
+            self.assertEqual(player.tracks, (path,))
+            audio.load.assert_called_once_with(str(path))
+            audio.play.assert_called_once_with(loops=-1)
+
+    def test_portable_windows_reads_mp3_next_to_exe_not_internal(self):
+        from game.ui.music import local_music_folder
+        package = self.folder / "portable" / "AuctionHammer"
+        audio_dir = package / "assets" / "music"
+        audio_dir.mkdir(parents=True)
+        (audio_dir / "music_auctionhammer.mp3").touch()
+        with (patch("game.ui.music.sys.frozen", True, create=True),
+              patch("game.ui.music.sys.executable", str(package / "AuctionHammer.exe"))):
+            self.assertEqual(local_music_folder(), audio_dir)
+
     def test_invalid_file_does_not_crash_game(self):
         (self.folder / "fantasy_tavern_full.mp3").touch()
         with (patch.object(pygame.mixer, "get_init", return_value=True),
