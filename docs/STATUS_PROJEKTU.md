@@ -1,7 +1,7 @@
 # AuctionHammer — status projektu
 
 **Ostatnia aktualizacja dokumentacji:** 19 października 2026  
-**Wersja aplikacji:** 0.9.40  
+**Wersja aplikacji:** 0.9.41  
 **Stan:** działające demo offline na Windows, tryb solo przeciw AI. Rozwój trwa.
 
 ## Zaimplementowane
@@ -42,3 +42,11 @@ Rekompensata dla gracza wykonującego drugi ruch: na jego planszy pojawia się n
 ## 0.9.40 — startowy Chorąży 3/5
 
 W nowych meczach tylko drugi gracz otrzymuje Chorążego 3 ATK / 5 PŻ, opis „Chorąży zawsze zdąży.”. Bez Prowokacji, Tarczy, Szybkiego ataku i bonusu monet. Historyczne +3 monety (`coins`) oraz Strażnik 5/5 (`unit_5_5`) pozostają wczytywane i odtwarzane dokładnie według swoich wersji. Aneks: [CHORAZY_0940.md](CHORAZY_0940.md). Wynik porównania A/B pozostaje do oceny, nie deklarujemy jeszcze wyrównania rozgrywki.
+
+## 0.9.41 — świadomy wybór drugiego gracza
+
+Każdy nowy mecz ma `starting_compensation='choice_2_5_or_coins'`.
+Drugi gracz wybiera Chorążego 2 ATK / 5 PŻ **albo** +3 monety.
+Wybór jest komendą audytu (`choose_starting_compensation`) i musi zakończyć się przed jego własnym mulliganem. Historyczne `coins`, `unit_5_5`, `unit_3_5` pozostają niezmienione. Schema podpisanego audytu dla wyboru: 4. W grze z komputerem AI używa deterministycznej decyzji na podstawie wyłącznie własnej ręki.
+
+W `game/ui/assets.py` ilustracje dopasowywane są bez deformacji; podgląd I ma tryb powiększenia grafiki [G] i podsumowanie ATK/MAX PŻ. Nie zmieniono ani nie wygenerowano żadnych grafik PNG. Dokładny zakres i kryteria QA: [CHOICE_AND_UI_0941.md](CHOICE_AND_UI_0941.md).
