@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.36: v23 approved mechanics, auction slider and archive pagination."""
+"""AuctionHammer MVP 0.9.37: signed v23 audits and visible conditional ability details."""
 from __future__ import annotations
 import os
 import re
@@ -21,6 +21,7 @@ from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
+from game.ui.v23_help import v23_base_card_note
 from game.ui.attack_view import attack_display
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
@@ -1249,6 +1250,9 @@ class SoloApp:
         card=self.game.cards[uid];d=card.definition;u=self.game.units.get(uid)
         cue=card_cue(card,u)
         summary=ability_summary(card,u)
+        v23_note=v23_base_card_note(d.id,getattr(self.game,'ruleset_version','v22'))
+        detail_summary=(f'{summary.full}  [DODATKOWA ZASADA v23] {v23_note}'
+                        if v23_note else summary.full)
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((1,5,10,226));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,75,1190,831)
@@ -1282,7 +1286,7 @@ class SoloApp:
         y=content_top-self.details_scroll
         if content_top<=y<content_bottom-27:self._text('ZDOLNOŚĆ — WARTOŚĆ SKALUJĄCA POGRUBIONA',18,520,y,cfg.GOLD)
         y+=37
-        for line in self._wrap(summary.full,16,750):
+        for line in self._wrap(detail_summary,16,750):
             if content_top<=y<content_bottom-24:self._text(line,16,520,y,cfg.GREEN)
             y+=24
         y+=12

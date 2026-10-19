@@ -28,6 +28,9 @@ class Match:
         self.auction_catalog=auction_catalog
         # Explicit ruleset: archived v22 games keep their original semantics.
         self.ruleset_version='v23' if auctions_enabled and auction_catalog=='v22' else 'v19'
+        # The v23 audit schema records waiting end-turn income as well as
+        # the effective ruleset. Old archived signatures keep schema 1.
+        self.audit_state_schema=2 if self.ruleset_version=='v23' else 1
         self.pending_vacant_income=None
         # New v22 matches use the approved vacant-slot economy. Old saves
         # retain their original flag (or default to False on migration).

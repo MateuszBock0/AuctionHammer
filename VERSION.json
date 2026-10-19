@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.36",
+  "mvp": "0.9.37",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -83,5 +83,7 @@
     "S32_S95_no-target_fallback",
     "archive_pagination_four",
     "historic_ruleset_compatibility"
-  ]
+  ],
+  "audit_state_schema": "v23-schema2-ruleset-and-pending-vacant-income",
+  "v23_ui_clarity": "prefix-conditional-auction-clauses-and-base-card-fallback-details"
 }

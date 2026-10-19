@@ -179,6 +179,18 @@ def state_snapshot(game):
             'vouchers':_plain(game.auction_vouchers),
             'blocked_play_wardens':_plain(game.auction_blocked_play),
         }
+    # Starting with audit-schema 2, the rules that affect future actions
+    # and the deferred end-turn payment are part of the signed state, not
+    # merely report metadata. Older v22/v23 archives retain their ORIGINAL
+    # hashes because their replay explicitly selects schema 1.
+    if (getattr(game,'audit_state_schema',1)>=2
+            and getattr(game,'ruleset_version',None)=='v23'):
+        state['ruleset_state']={
+            'audit_schema':2,
+            'version':'v23',
+            'pending_vacant_income':getattr(game,'pending_vacant_income',None),
+            'vacant_income_enabled':getattr(game,'vacant_income_enabled',False),
+        }
     return state
 
 
@@ -363,7 +375,7 @@ def make_report(game):
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.36" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
+        "version":"0.9.37" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
@@ -572,6 +584,20 @@ def verify_replay(payload,match_factory):
             raise ValueError('Niezgodny wariant zasad w audycie')
         game.ruleset_version=report_rules
         game.pending_vacant_income=None
+        # Replay snapshots from 0.9.36 are schema 1, despite already
+        # using ruleset v23. New files advertise schema 2 explicitly.
+        signed_schema=initial.get('ruleset_state')
+        if signed_schema is None:
+            game.audit_state_schema=1
+        elif (isinstance(signed_schema,dict)
+              and signed_schema.get('audit_schema')==2
+              and signed_schema.get('version')=='v23'
+              and signed_schema.get('pending_vacant_income') is None
+              and signed_schema.get('vacant_income_enabled') is
+                  getattr(game,'vacant_income_enabled',False)):
+            game.audit_state_schema=2
+        else:
+            raise ValueError("Niezgodne metadane wersji zasad w migawce audytu")
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
         raise ValueError("Początkowy stan nie odpowiada wskazanemu seed")
     for record in payload["actions"]:

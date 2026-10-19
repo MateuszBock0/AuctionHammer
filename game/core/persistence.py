@@ -190,6 +190,9 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('vacant_income_enabled',False)
     # The v23 event-order fix is only for newly created games.
     data.setdefault('ruleset_version','v22' if data.get('auction_catalog')=='v22' else 'v19')
+    # Pre-0.9.37 saved v23 games have valid signed schema-1 history,
+    # so their audit snapshots must NOT silently acquire new fields.
+    data.setdefault('audit_state_schema',1)
     data.setdefault('pending_vacant_income',None)
     data.setdefault('slot_income',[0,0])
     data.setdefault('slot_income_turns',[0,0])

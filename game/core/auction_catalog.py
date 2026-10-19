@@ -160,12 +160,16 @@ def v23_variant(mode,archetype,rarity,ruleset='v22'):
     original=live_variant(mode,archetype,rarity)
     if mode!='v22' or ruleset!='v23':
         return original
+    # Place the important exception FIRST: auction modal previews show
+    # only four lines. Appending this after the old long text silently
+    # hid the v23 meaning of A014/A015/A018 from buyers.
     if archetype=='A014':
-        return original+' [v23] Konwersja od nominalnego leczenia, również przy pełnym PŻ; ten sam cel, zwykłe osłony.'
+        return '[v23: nominalne leczenie także przy pełnym PŻ, zwykłe osłony] '+original
     if archetype=='A015':
-        return original+' [v23] Blokuje wyłącznie zdolności przeciwnika; własne i sojusznicze pozostają aktywne.'
+        return '[v23: blokuje tylko wyzwalacze przeciwnika] '+original
     if archetype=='A018' and rarity=='legendarna':
-        return original+' [v23] Jeśli kolejna legalna aukcja nie jest możliwa, zamiast gwarancji: trwałe +5 ATK i +5 MAX PŻ oraz +5 bieżącego PŻ.'
+        return ('[v23: gdy brak następnej aukcji, zamiast gwarancji '
+                'trwałe +5 ATK / +5 MAX PŻ / +5 bieżącego PŻ] '+original)
     return original
 
 
