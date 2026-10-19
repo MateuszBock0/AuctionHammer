@@ -123,8 +123,6 @@ def card_cue(card, unit=None) -> CardCue:
         current=next((label for variants in (variants_v22,variants_v4)
                       for key,label in level_labels
                       if variants.get(key)==d.effect),None)
-        catalog_version=('V22' if any(v==d.effect for v in variants_v22.values())
-                         else 'V4')
         # An auction purchase level is NOT a standard hand ability level.
         purchase_level=re.search(r'POZIOM\s+(\d+)',d.scaling)
         level=int(purchase_level.group(1)) if purchase_level else level
@@ -135,7 +133,7 @@ def card_cue(card, unit=None) -> CardCue:
                        base=('NIEAKTYWNA' if old_v3 else
                              'AKTYWNA' if current else 'OPIS DO WERYFIKACJI'),
                        upgrade=('ZDOLNOŚĆ W PRZYGOTOWANIU' if old_v3 else
-                                f'AUKCJA {catalog_version} · {current}' if current else
+                                f'AUKCJA · {current}' if current else
                                 'NIEZNANY WARIANT AUKCYJNY'),
                        effect_value=None,ability_level=level,
                        growth='BEZ SKALOWANIA NA RĘCE',
