@@ -21,7 +21,7 @@ import traceback
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from game.core.ai import ComputerOpponent
-from game.core.audit import (archive_path, list_archived_matches, read_report,
+from game.core.audit import (archive_path, digest, list_archived_matches, read_report,
                              verify_replay, write_last_match, state_snapshot)
 from game.core.engine import Match
 
@@ -84,7 +84,7 @@ def collect_row(game,steps):
     offered=Counter(offer["archetype"] for auction in game.auction_history
                     for offer in auction["offers"] if offer.get("archetype"))
     rarity=Counter(meta.get("initial_rarity") for meta in game.auction_awards.values()
-                   if meta.get("archetype"))
+                   if meta.get("archetype") and not meta.get("ephemeral"))
     return {
         "seed":game.seed,
         "status":"finished",
@@ -162,7 +162,18 @@ def tournament(games=100,start_seed=DEFAULT_SEED,max_steps=3000,
                                     auctions_enabled=auctions_enabled,
                                     auction_catalog=auction_catalog))
                 row["replay_verified"]=True
-            row["audit_file"]=str(archive_path(last_file).relative_to(target))+"/"
+            match_id=digest({
+                "seed":checked.get("seed"),
+                "initial_state":checked.get("initial_state"),
+                "actions":checked.get("actions"),
+                "final_state":checked.get("final_state"),
+            })
+            record=next(
+                (entry for entry in list_archived_matches(archive_path(last_file))
+                 if entry["id"]==match_id),None)
+            if record is None:
+                raise ValueError("Brak audytu meczu w indeksie archiwum")
+            row["audit_file"]=str(Path("historia_meczow")/record["file"])
             rows.append(row)
         except Exception as exc:
             if not hasattr(exc,"match") and game is not None:
