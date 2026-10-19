@@ -484,8 +484,9 @@ def execute(game,uid,context,choice,attacked=None):
             else:
                 bonus_atk=bonus_hp=(1,4)[tier]
             game._add_effect(uid,'atk',bonus_atk,source=uid,positive=True)
+            # Match._add_effect('max_hp') already adds the same bonus to
+            # current HP. Applying it twice over-healed a wounded Queen.
             game._add_effect(uid,'max_hp',bonus_hp,source=uid,positive=True)
-            game.units[uid].hp=min(game.units[uid].max_hp,game.units[uid].hp+bonus_hp)
             if tier==1:game._add_effect(uid,'taunt',source=uid)
     elif aid=='A011' and context=='death':
         if tier<2:
