@@ -85,12 +85,16 @@ class Card:
 
     @property
     def attack(self) -> int:
-        extra = 2 * self.ability_level if self.definition.family in ("Szybki atak", "Podwójny atak") else 0
+        extra = (2 if self.definition.family in ("Szybki atak", "Podwójny atak")
+                 else 1 if self.definition.family in ("Tarcza","Prowokacja")
+                 else 0) * self.ability_level
         return self.definition.atk + self.definition.growth_atk * self.hand_turns + extra
 
     @property
     def max_hp(self) -> int:
-        extra = (1 if self.definition.family == "Szybki atak" else 3 if self.definition.family in ("Prowokacja", "Tarcza") else 0) * self.ability_level
+        extra = (1 if self.definition.family == "Szybki atak"
+                 else 2 if self.definition.family in ("Prowokacja","Tarcza")
+                 else 0) * self.ability_level
         return self.definition.hp + self.definition.growth_hp * self.hand_turns + extra
 
 
