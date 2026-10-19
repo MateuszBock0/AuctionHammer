@@ -683,6 +683,8 @@ class Match:
                         amount += 2+self.units[ally].ability_level
             if self.auction_catalog=='v22':
                 amount=auction_ability_rules.convert_healing(self,target,u.owner,amount)
+                if target not in self.units:
+                    return  # Damage conversion killed the unit; do not heal a grave object.
             old=u.hp
             u.hp=min(u.max_hp,u.hp+max(0,amount))
             if self.auction_catalog in ('v4','v22') and u.hp>old:
