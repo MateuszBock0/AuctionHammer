@@ -57,8 +57,11 @@ class MatchAuditTests(unittest.TestCase):
             b.phase="finished"
             b.winner=1
             write_last_match(b,dest)
-            contents=list(dest.parent.iterdir())
-            self.assertEqual(contents,[dest])
+            # 0.9.33 retains the last-match convenience file AND all matches.
+            from game.core.audit import archive_path, list_archived_matches
+            self.assertEqual(set(dest.parent.iterdir()),
+                             {dest,archive_path(dest)})
+            self.assertEqual(len(list_archived_matches(archive_path(dest))),2)
             self.assertEqual(read_report(dest)["seed"],1704)
             raw=json.loads(dest.read_text(encoding="utf-8"))
             raw["payload"]["seed"]=1703

@@ -115,10 +115,13 @@ def card_cue(card, unit=None) -> CardCue:
         )
     if d.id.startswith('A0'):
         old_v3=d.effect.startswith('NIEAKTYWNA')
-        from game.core.auction_catalog import V22_CARDS
-        variants=V22_CARDS.get(d.id,{}).get('variants',{})
-        current=next((label for key,label in
-                      (('basic','PODSTAWOWA'),('rare','RZADKA'),('legendary','LEGENDARNA'))
+        from game.core.auction_catalog import V22_CARDS,V4_CARDS
+        variants_v22=V22_CARDS.get(d.id,{}).get('variants',{})
+        variants_v4=V4_CARDS.get(d.id,{}).get('variants',{})
+        level_labels=(('basic','PODSTAWOWA'),('rare','RZADKA'),
+                      ('legendary','LEGENDARNA'))
+        current=next((label for variants in (variants_v22,variants_v4)
+                      for key,label in level_labels
                       if variants.get(key)==d.effect),None)
         # An auction purchase level is NOT a standard hand ability level.
         purchase_level=re.search(r'POZIOM\s+(\d+)',d.scaling)
@@ -130,7 +133,7 @@ def card_cue(card, unit=None) -> CardCue:
                        base=('NIEAKTYWNA' if old_v3 else
                              'AKTYWNA' if current else 'OPIS DO WERYFIKACJI'),
                        upgrade=('ZDOLNOŚĆ W PRZYGOTOWANIU' if old_v3 else
-                                f'AUKCJA V4 · {current}' if current else
+                                f'AUKCJA · {current}' if current else
                                 'NIEZNANY WARIANT AUKCYJNY'),
                        effect_value=None,ability_level=level,
                        growth='BEZ SKALOWANIA NA RĘCE',

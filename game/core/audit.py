@@ -15,6 +15,7 @@ from hashlib import sha256
 from pathlib import Path
 import json
 import os
+import gzip
 
 FORMAT="AuctionHammer.MatchAudit"
 SCHEMA=1
@@ -362,7 +363,7 @@ def make_report(game):
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.32" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
+        "version":"0.9.33" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
@@ -396,19 +397,102 @@ def make_report(game):
     return {"payload":payload,"sha256":digest(payload)}
 
 
+ARCHIVE_FORMAT="AuctionHammer.MatchArchiveIndex"
+ARCHIVE_DIRECTORY="historia_meczow"
+
+
+def archive_path(last_match_path=None):
+    """Persistent data folder shared by the portable game and future builds."""
+    last=Path(last_match_path) if last_match_path is not None else audit_path()
+    return last.parent/ARCHIVE_DIRECTORY
+
+
+def _atomic_write(destination,contents):
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    temporary=destination.with_name(destination.name+".tmp")
+    try:
+        temporary.write_bytes(contents)
+        os.replace(temporary,destination)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def _archive_document(document,last_match_path):
+    """Store an entire verified audit once, including a compact searchable index."""
+    payload=document.get("payload")
+    if (not isinstance(payload,dict) or payload.get("format")!=FORMAT
+            or payload.get("schema")!=SCHEMA or
+            document.get("sha256")!=digest(payload)):
+        raise ValueError("Niezgodny lub uszkodzony audyt do archiwizacji")
+    match_id=digest({
+        "seed":payload.get("seed"),
+        "initial_state":payload.get("initial_state"),
+        "actions":payload.get("actions"),
+        "final_state":payload.get("final_state"),
+    })
+    folder=archive_path(last_match_path)
+    filename=f"mecz_{match_id[:24]}.json.gz"
+    target=folder/filename
+    # Stable content-based filename avoids duplicates after app restart or
+    # repeated exports on a different calendar day.
+    if not target.exists():
+        packed=json.dumps(document,ensure_ascii=False,
+                          separators=(",",":"),allow_nan=False).encode("utf-8")
+        _atomic_write(target,gzip.compress(packed,compresslevel=9,mtime=0))
+    index_path=folder/"indeks.json"
+    if index_path.exists():
+        index=json.loads(index_path.read_text(encoding="utf-8"))
+        if (index.get("format")!=ARCHIVE_FORMAT
+                or index.get("schema")!=1 or not isinstance(index.get("matches"),list)):
+            raise ValueError("Nieprawidłowy indeks historii; archiwum zachowane")
+    else:
+        index={"format":ARCHIVE_FORMAT,"schema":1,"matches":[]}
+    if not any(item.get("id")==match_id for item in index["matches"]):
+        summary=payload.get("summary",{})
+        index["matches"].append({
+            "id":match_id,
+            "file":filename,
+            "exported_at_utc":payload.get("exported_at_utc"),
+            "version":payload.get("version"),
+            "winner":summary.get("winner"),
+            "rounds":summary.get("rounds"),
+            "events":summary.get("events"),
+            "action_commands":summary.get("action_commands"),
+            "complete_from_start":payload.get("complete_from_start",False),
+        })
+        index["matches"].sort(key=lambda item:item.get("exported_at_utc") or "",
+                              reverse=True)
+        _atomic_write(index_path,(json.dumps(index,ensure_ascii=False,
+                                             indent=2)+"\n").encode("utf-8"))
+    return target
+
+
+def list_archived_matches(folder=None):
+    """Read the lightweight history index; do not load complete battle ledgers."""
+    directory=Path(folder) if folder is not None else archive_path()
+    path=directory/"indeks.json"
+    if not path.exists():
+        return []
+    data=json.loads(path.read_text(encoding="utf-8"))
+    if (data.get("format")!=ARCHIVE_FORMAT or data.get("schema")!=1
+            or not isinstance(data.get("matches"),list)):
+        raise ValueError("Nieprawidłowy indeks historii")
+    return sorted(data["matches"],key=lambda item:item.get("exported_at_utc") or "",
+                  reverse=True)
+
+
 def write_last_match(game,path=None):
-    """Atomically replace the single exported *completed* match."""
+    """Persist the latest readable JSON and preserve ALL completed matches."""
     report=make_report(game)
     dest=Path(path) if path is not None else audit_path()
-    dest.parent.mkdir(parents=True,exist_ok=True)
-    temp=dest.with_name(dest.name+".tmp")
-    try:
-        temp.write_text(json.dumps(report,ensure_ascii=False,indent=2,
-                                   allow_nan=False)+"\n",encoding="utf-8")
-        os.replace(temp,dest)
-    finally:
-        if temp.exists():
-            temp.unlink()
+    # Upgrade path: preserve the pre-0.9.33 last match before overwriting it.
+    if dest.is_file():
+        old_document=json.loads(dest.read_text(encoding="utf-8"))
+        _archive_document(old_document,dest)
+    _archive_document(report,dest)
+    _atomic_write(dest,(json.dumps(report,ensure_ascii=False,indent=2,
+                                   allow_nan=False)+"\n").encode("utf-8"))
     return dest
 
 
@@ -416,7 +500,14 @@ def read_report(path):
     path=Path(path)
     if path.stat().st_size>30_000_000:
         raise ValueError("Plik audytu przekracza limit 30 MB")
-    document=json.loads(path.read_text(encoding="utf-8"))
+    if path.suffix==".gz":
+        with gzip.open(path,"rb") as stream:
+            data=stream.read(30_000_001)
+        if len(data)>30_000_000:
+            raise ValueError("Rozpakowany audyt przekracza limit 30 MB")
+        document=json.loads(data.decode("utf-8"))
+    else:
+        document=json.loads(path.read_text(encoding="utf-8"))
     payload=document.get("payload")
     if not isinstance(payload,dict) or payload.get("format")!=FORMAT or payload.get("schema")!=SCHEMA:
         raise ValueError("Niezgodny format audytu")

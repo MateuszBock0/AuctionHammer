@@ -184,16 +184,26 @@ class Match:
         for uid in p.board:self.units[uid].attacks=0
         # All own-turn START draw before poison as specified.
         while len(p.hand)<5:
-            if not p.deck:
-                if not p.grave:break
-                p.deck=p.grave[:];p.grave.clear();self.rng.shuffle(p.deck)
-                for uid in p.deck:self.cards[uid].zone='deck'
-                self._log(f'{p.name}: przetasowano cmentarz do talii.')
+            if not p.deck and not self._refill_deck_from_grave(p.idx):
+                break
             uid=p.deck.pop()
             p.hand.append(uid);self.cards[uid].zone='hand'
         self._log(f'RUNDA {self.round} | Tura {p.name} (ręka {len(p.hand)}).')
         self._tick_poison(p.idx)
         self._drain()
+
+    def _refill_deck_from_grave(self, owner):
+        """Refill only an empty private deck; preserve normal draw/RNG rules."""
+        player=self.players[owner]
+        if player.deck or not player.grave:
+            return bool(player.deck)
+        player.deck=player.grave[:]
+        player.grave.clear()
+        self.rng.shuffle(player.deck)
+        for uid in player.deck:
+            self.cards[uid].zone='deck'
+        self._log(f'{player.name}: przetasowano cmentarz do talii.')
+        return True
 
     @trace_effect('_tick_poison')
     def _tick_poison(self,owner):
@@ -419,6 +429,12 @@ class Match:
                     auction_context=(self.auction_catalog in ('v4','v22') and
                                      (self.auction_awards.get(uid,{}).get('archetype') or
                                       ctx.startswith('auction_') or uid in self.auction_death_grants))
+                    # Kartograf uses the same grave-to-deck recycling as turn draws.
+                    # Do this AFTER a possible Wieszczka cancellation so a
+                    # blocked on-play effect consumes neither cards nor RNG.
+                    if (auction_context and ctx=='play' and
+                            self.auction_awards.get(uid,{}).get('archetype')=='A016'):
+                        self._refill_deck_from_grave(self.cards[uid].owner)
                     choices=(auction_ability_rules.options(self,uid,ctx,tgt)
                              if auction_context else options(self,uid,ctx,tgt))
                     if not choices:continue

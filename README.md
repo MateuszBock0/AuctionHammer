@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.32 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.33 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -198,13 +198,14 @@ W repozytorium używane są następujące formaty:
 %LOCALAPPDATA%\AuctionHammer\savegame_v19.json
 ```
 
-Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.32 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo można wyeksportować audyt ostatniej partii jako plik JSON.
+Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.33 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo po każdym zakończonym meczu zapisywany jest czytelny audyt ostatniej partii w formacie JSON **oraz** pełne archiwum wszystkich meczów w plikach JSON.GZ. Otworzysz je w grze przez **Menu → Historia meczów** albo w katalogu `%LOCALAPPDATA%\\AuctionHammer\\historia_meczow\\`. Plik `indeks.json` zawiera skrócone podsumowania, a kolejne zakończone mecze nie nadpisują poprzednich.
 
 ## Status, dokumentacja i licencja
 
-**0.9.32 to aktywnie rozwijane demo**, z lokalnym przeciwnikiem i zaimplementowanymi aukcjami v22 (17 archetypów, 51 wariantów). Aktualna wersja zawiera również balans v21 kart podstawowych. Na tym etapie **nie ma multiplayera online**.
+**0.9.33 to aktywnie rozwijane demo**, z lokalnym przeciwnikiem i zaimplementowanymi aukcjami v22 (17 archetypów, 51 wariantów). Aktualna wersja zawiera również balans v21 kart podstawowych. Na tym etapie **nie ma multiplayera online**.
 
 - [Pobierz najnowsze wydanie Windows](https://github.com/MateuszBock0/AuctionHammer/releases/latest)
+- **0.9.33:** Kartograf odzyskuje karty z cmentarza przy pustej talii; Królowa przywołuje Żołnierzy 1/1, 2/2 lub 3/3, a wszystkie mecze są trwale archiwizowane.
 - [Zasady i interpretacje aukcji v22](docs/auction/RELEASE_V22_0931.md) · [Stabilizacja 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md)
 - [Game Master / reguły projektu](AUCTIONHAMMER_MASTER.md)
 - [Archiwum wcześniejszego README i historii wydań](docs/README_HISTORIA_DO_0932.md)

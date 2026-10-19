@@ -97,11 +97,12 @@ def options(game,uid,context,attacked=None):
         return pick_choices(game,'exchange_own',own.hand,'Wymień własną') if enemy.hand else []
     if aid=='A010' and context=='end':
         result=[]
-        # A legendary Queen has no legal summon/stat-copy target without a
-        # different allied unit; do not offer a button which does nothing.
-        if len(own.board)<5 and (tier<2 or myboard):
+        # v22 Queen summons fixed-strength soldiers; the legacy v4
+        # legendary version still needs another unit for copying.
+        needs_ally=(game.auction_catalog!='v22' and tier==2)
+        if len(own.board)<5 and (not needs_ally or myboard):
             result.append(Choice('summon',None,'Przywołaj jednostki'))
-        if tier<2 or myboard:
+        if not needs_ally or myboard:
             result.append(Choice('grow',None,'Wzmocnij Królową'))
         return result
     if aid=='A011' and context=='death':
@@ -572,10 +573,16 @@ def execute(game,uid,context,choice,attacked=None):
                                  options(game,uid,'auction_exchange_enemy'))
     elif aid=='A010' and context=='end':
         if mode=='summon':
-            if tier==0:_spawn(game,uid,1,1)
+            if tier==0:
+                _spawn(game,uid,1,1)
             elif tier==1:
-                for _ in range(2):_spawn(game,uid,2,2,taunt=True)
+                for _ in range(2):
+                    _spawn(game,uid,2,2,taunt=True)
+            elif game.auction_catalog=='v22':
+                for _ in range(2):
+                    _spawn(game,uid,3,3)
             else:
+                # Archived v4 battles retain their original copy rule.
                 allies=[x for x in own.board if x!=uid and x in game.units]
                 if allies:
                     strongest=max(allies,key=lambda x:(game.units[x].atk+
@@ -584,7 +591,9 @@ def execute(game,uid,context,choice,attacked=None):
                     for _ in range(2):
                         _spawn(game,uid,source.atk,source.max_hp)
         elif mode=='grow' and uid in game.units:
-            if tier==2:
+            if game.auction_catalog=='v22':
+                bonus_atk=bonus_hp=(1,2,3)[tier]
+            elif tier==2:
                 allies=[x for x in own.board if x!=uid and x in game.units]
                 if not allies:return
                 strongest=max(allies,key=lambda x:(game.units[x].atk+
@@ -632,6 +641,9 @@ def execute(game,uid,context,choice,attacked=None):
             game.cards[target].zone='hand'
             game._log(f'Kartograf: {game.label(target)} dobrano do ręki.')
         if tier==1:
+            # First choice can empty the deck; recycle again for the
+            # optional second selection without consuming a hand play.
+            game._refill_deck_from_grave(owner)
             choices=options(game,uid,'auction_cart_play')
             if choices:_prepare_pending(game,uid,'auction_cart_play',choices)
         elif tier==2 and mode=='cart_play':
