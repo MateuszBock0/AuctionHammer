@@ -363,7 +363,7 @@ def make_report(game):
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.35" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
+        "version":"0.9.36" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
@@ -388,6 +388,7 @@ def make_report(game):
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
             "vacant_slot_income_enabled":bool(getattr(game,'vacant_income_enabled',False)),
+            "ruleset_version":getattr(game,'ruleset_version','v22'),
             "vacant_slot_income_total":list(getattr(game,'slot_income',[0,0])),
             # Keep exact (possibly negative) engine HP for scientific replay,
             # and a separate nonnegative number for presentation in viewers.
@@ -561,6 +562,16 @@ def verify_replay(payload,match_factory):
                 raise ValueError("Silnik odtwarzania nie obsługuje dochodu za wolne pola")
         else:
             game.vacant_income_enabled=enabled
+    if auction_enabled and catalog=='v22':
+        report_rules=payload.get('summary',{}).get('ruleset_version')
+        if report_rules is None:
+            # Old signed archives predate the explicit ruleset field.
+            report_rules='v22' if payload.get('version') in (
+                '0.9.31','0.9.32','0.9.33','0.9.34','0.9.35') else getattr(game,'ruleset_version','v23')
+        if report_rules not in ('v22','v23'):
+            raise ValueError('Niezgodny wariant zasad w audycie')
+        game.ruleset_version=report_rules
+        game.pending_vacant_income=None
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
         raise ValueError("Początkowy stan nie odpowiada wskazanemu seed")
     for record in payload["actions"]:

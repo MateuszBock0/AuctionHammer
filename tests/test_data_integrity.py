@@ -57,7 +57,19 @@ class DataIntegrity(unittest.TestCase):
   self.assertEqual(self.rules['version'],'19.0')
   self.assertEqual(self.old_rules['version'],'17.0')
   self.assertEqual(self.master['rules'],self.rules)
-  self.assertEqual(self.master['starter_cards'],self.cards)
+  # Historical GAME_MASTER v19 remains immutable. v23 explicitly replaces
+  # only ten incorrect scaling descriptions in the live card catalogue.
+  original={card['id']:card for card in self.master['starter_cards']}
+  live={card['id']:card for card in self.cards}
+  self.assertEqual(set(original),set(live))
+  corrected={'S05','S61','S70','S72','S20','S86','S94','S96','S106','S33'}
+  for cid in original:
+   historical=dict(original[cid]);current=dict(live[cid])
+   if cid in corrected:
+    self.assertEqual(historical['scaling'].split(':')[0],
+                     current['scaling'].split(':')[0])
+    current['scaling']=historical['scaling']
+   self.assertEqual(historical,current,cid)
   self.assertEqual(self.status['canonical_files']['cards'],'data/cards_base_70.json')
   self.assertEqual(self.status['base_design_status'],'LOCKED_FOR_MVP')
   self.assertEqual(self.master['status'],'BASE_GAME_DESIGN_LOCKED_FOR_IMPLEMENTATION_AUCTIONS_PENDING')

@@ -6,7 +6,7 @@ all cards are acquired with ATK + MAX HP = completed round + 8.
 from __future__ import annotations
 from dataclasses import dataclass,field,asdict
 from .models import Card,CardDefinition,IllegalMove
-from .auction_catalog import CATALOG,RARITIES,TRIGGER,stats,stats_v4,stats_v22,v4_variant,live_variant,catalog_for,rarity_from_roll,evolve
+from .auction_catalog import CATALOG,RARITIES,TRIGGER,stats,stats_v4,stats_v22,v4_variant,live_variant,catalog_for,rarity_from_roll,evolve,v23_variant
 
 PLACEHOLDER_HP=(3,6,12)  # only for compatibility with old saved games
 RARITY=RARITIES
@@ -168,7 +168,8 @@ def pick(game,player,uid):
         trigger=TRIGGER[archetype.trigger]
         family=archetype.family
         if game.auction_catalog in ('v4','v22'):
-            text=live_variant(game.auction_catalog,offer.archetype,offer.rarity)
+            text=v23_variant(game.auction_catalog,offer.archetype,offer.rarity,
+                             getattr(game,'ruleset_version','v22'))
         else:
             text="NIEAKTYWNA (planowana): "+archetype.abilities[RARITIES.index(offer.rarity)]
         definition_id=archetype.id
@@ -253,7 +254,9 @@ def advance_rarity(game,completed_round):
         old_def=card.definition
         from dataclasses import replace
         card.definition=replace(old_def,
-                                effect=(live_variant(game.auction_catalog,archetype,new) if game.auction_catalog in ('v4','v22')
+                                effect=(v23_variant(game.auction_catalog,archetype,new,
+                                                     getattr(game,'ruleset_version','v22'))
+                                        if game.auction_catalog in ('v4','v22')
                                         else "NIEAKTYWNA (planowana): "+
                                         catalog_for(game.auction_catalog)[archetype].abilities[RARITIES.index(new)]),
                                 scaling=f'POZIOM {meta["level"]} · {new.upper()} · NIE SKALUJE SIĘ')

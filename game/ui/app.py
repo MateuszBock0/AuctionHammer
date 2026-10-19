@@ -1,8 +1,9 @@
-"""AuctionHammer MVP 0.9.35: clear trait tints and real-state combat feedback."""
+"""AuctionHammer MVP 0.9.36: v23 approved mechanics, auction slider and archive pagination."""
 from __future__ import annotations
 import os
 import re
 import subprocess
+from pathlib import Path
 import pygame
 from game.ui.combat_visuals import CombatVisuals
 from game.ui.music import FantasyTavernMusic
@@ -14,7 +15,7 @@ from game.core.audit import (audit_path, archive_path, list_archived_matches,
                              configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
-from game.core.auction_catalog import CATALOG,RARITIES,live_variant,catalog_for
+from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
@@ -61,6 +62,8 @@ class SoloApp:
         self.menu_page='main'
         self.menu_message=''
         self._archive_records=[]
+        self.archive_page=0
+        self._archive_selected_record=None
         self.history_open=False
         self.history_scroll=0
         self.replay_index=None
@@ -72,7 +75,10 @@ class SoloApp:
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
-        self.auction_bid_text=''
+        self.auction_bid_text=''  # legacy UI compatibility only
+        self.auction_slider_value=None
+        self.auction_slider_key=None
+        self.auction_slider_dragging=False
         self.auction_status=''
         self.ai.step(self.game)  # AI mulligan is committed, player's hand still hidden from it.
         self.selected=None
@@ -128,6 +134,29 @@ class SoloApp:
             return True
         except (OSError,AttributeError) as exc:
             self._audit_notice='Nie można otworzyć folderu: '+str(exc)
+            return False
+
+    def _open_archived_record(self,record):
+        """Open the exact selected match in Explorer, not just its first page."""
+        filename=str(record.get('file',''))
+        if not filename or Path(filename).name!=filename or not filename.endswith('.json.gz'):
+            self.menu_message='Nieprawidłowa nazwa pliku historii.'
+            return False
+        target=archive_path()/filename
+        if not target.is_file():
+            self.menu_message='Plik historii nie istnieje: '+filename
+            return False
+        try:
+            if os.name=='nt':
+                subprocess.Popen(['explorer.exe','/select,',str(target)],
+                                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            else:
+                subprocess.Popen(['xdg-open',str(target.parent)],
+                                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            self.menu_message='WYBRANY MECZ: '+filename
+            return True
+        except (OSError,AttributeError) as exc:
+            self.menu_message='Nie można otworzyć meczu: '+str(exc)
             return False
 
     @staticmethod
@@ -435,10 +464,58 @@ class SoloApp:
     @staticmethod
     def auction_control_rect(action):
         return {
-            'pass':pygame.Rect(444,734,178,49),
-            'min':pygame.Rect(642,734,178,49),
-            'bid':pygame.Rect(840,734,178,49)
+            'pass':pygame.Rect(528,753,210,49),
+            'bid':pygame.Rect(759,753,210,49),
         }[action]
+
+    @staticmethod
+    def auction_slider_rect():
+        return pygame.Rect(483,715,516,16)
+
+    def auction_slider_bounds(self):
+        a=self.game.auction
+        minimum=(max(1,a.highest_effective+1-a.bid_bonus[0])
+                 if self.game.auction_catalog=='v22'
+                 else max(1,a.current_bid+1))
+        return minimum,self.game.players[0].coins
+
+    def _sync_auction_slider(self):
+        a=self.game.auction
+        if a is None or a.phase!='bidding' or a.turn!=0:
+            self.auction_slider_key=None
+            return
+        minimum,coins=self.auction_slider_bounds()
+        # A new bid by either side must invalidate the old selection.
+        key=(id(a),a.turn,a.phase,a.highest_effective,a.current_bid,
+             a.bid_bonus[0])
+        if key!=self.auction_slider_key:
+            self.auction_slider_key=key
+            self.auction_slider_value=minimum
+            self.auction_slider_dragging=False
+        if minimum<=coins:
+            if self.auction_slider_value is None:
+                self.auction_slider_value=minimum
+            self.auction_slider_value=max(minimum,min(
+                coins,int(self.auction_slider_value)))
+        else:
+            self.auction_slider_value=None
+
+    def _set_auction_slider_from_pointer(self,pos):
+        self._sync_auction_slider()
+        minimum,coins=self.auction_slider_bounds()
+        if self.game.auction.turn!=0 or minimum>coins:return
+        rect=self.auction_slider_rect()
+        ratio=max(0.0,min(1.0,(pos[0]-rect.left)/max(1,rect.width)))
+        self.auction_slider_value=minimum+round((coins-minimum)*ratio)
+
+    def _shift_auction_slider(self,delta=0,edge=None):
+        self._sync_auction_slider()
+        minimum,coins=self.auction_slider_bounds()
+        if minimum>coins:return
+        if edge=='minimum':self.auction_slider_value=minimum
+        elif edge=='balance':self.auction_slider_value=coins
+        else:self.auction_slider_value=max(minimum,min(
+            coins,self.auction_slider_value+delta))
 
     def _auction_bid_issue(self,amount):
         """Check affordability in UI; Match remains authoritative."""
@@ -461,11 +538,12 @@ class SoloApp:
         try:
             if operation=='pass':
                 game.auction_pass(0)
-            elif operation in ('bid','min'):
-                minimum=(max(1,game.auction.highest_effective+1-game.auction.bid_bonus[0])
-                         if game.auction_catalog=='v22' else max(1,game.auction.current_bid+1))
-                amount=(int(self.auction_bid_text)
-                        if operation=='bid' and self.auction_bid_text else minimum)
+            elif operation=='bid':
+                self._sync_auction_slider()
+                amount=self.auction_slider_value
+                if amount is None:
+                    self.auction_status='Brak monet na wymaganą ofertę. Wybierz PASUJ.'
+                    return
                 issue=self._auction_bid_issue(amount)
                 if issue:
                     self.auction_status=issue
@@ -475,6 +553,7 @@ class SoloApp:
                 game.auction_pick(0,uid)
             self.auction_status=''
             self.auction_bid_text=''
+            self.auction_slider_key=None
         except (IllegalMove,ValueError) as exc:
             self.auction_status=str(exc)
 
@@ -487,7 +566,10 @@ class SoloApp:
                     self._auction_do('pick',offer.uid)
                     return
         elif a.phase=='bidding':
-            for action in ('pass','min','bid'):
+            if self.auction_slider_rect().inflate(0,20).collidepoint(pos):
+                self._set_auction_slider_from_pointer(pos)
+                return
+            for action in ('pass','bid'):
                 if self.auction_control_rect(action).collidepoint(pos):
                     self._auction_do(action)
                     return
@@ -522,7 +604,8 @@ class SoloApp:
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
                        rect.centerx,rect.y+155,cfg.GOLD,center=True)
-            description=(live_variant(self.game.auction_catalog,off.archetype,off.rarity)
+            description=(v23_variant(self.game.auction_catalog,off.archetype,
+                                      off.rarity,getattr(self.game,'ruleset_version','v22'))
                          if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
@@ -539,28 +622,40 @@ class SoloApp:
                            rect.y+322,cfg.GOLD,center=True)
         who=self.game.players[a.turn].name
         if a.phase=='bidding':
-            self._text(f'LICYTUJE: {who}  ·  NAJWYŻSZA: {a.current_bid}  ·  '
-                       f'TWOJE MONETY: {self.game.players[0].coins}' +
-                       (f' · BONUS +{a.bid_bonus[0]} · SIŁA {a.highest_effective}' if self.game.auction_catalog=="v22" else ''),16,
-                       741,650,cfg.TEXT,center=True)
-            leader='BRAK' if a.highest_bidder is None else self.game.players[a.highest_bidder].name
-            self._text(f'PROWADZI: {leader}  ·  WYMAGANE MIN. {max(1,a.highest_effective+1-a.bid_bonus[0]) if self.game.auction_catalog=="v22" else a.current_bid+1}  '
-                       f'·  KWOTA: {self.auction_bid_text or str(max(1,a.highest_effective+1-a.bid_bonus[0]) if self.game.auction_catalog=="v22" else a.current_bid+1)}',14,
-                       741,690,cfg.MUTED,center=True)
+            minimum,coins=self.auction_slider_bounds()
+            leader=('BRAK' if a.highest_bidder is None
+                    else self.game.players[a.highest_bidder].name)
+            bonus=a.bid_bonus[0] if self.game.auction_catalog=='v22' else 0
+            self._text(f'OFERUJE PRZECIWNIK: {leader}  ·  '
+                       f'NAJWYŻSZA OFERTA SKUTECZNA: {a.highest_effective}  ·  '
+                       f'NASZ BONUS A018: +{bonus}',14,741,644,cfg.TEXT,center=True)
+            self._sync_auction_slider()
+            chosen=self.auction_slider_value
+            self._text(
+                f'MINIMUM DO ZAPŁATY: {minimum}  ·  '
+                f'WYBRANA OFERTA: {chosen if chosen is not None else "BRAK"}  ·  '
+                f'SKUTECZNA WARTOŚĆ: {(chosen+bonus) if chosen is not None else "—"}  ·  '
+                f'MONETY PO WYGRANEJ: {(coins-chosen) if chosen is not None else "—"}',
+                13,741,678,cfg.MUTED,center=True)
             if a.turn==0:
-                minimum=(max(1,a.highest_effective+1-a.bid_bonus[0])
-                 if self.game.auction_catalog=='v22' else max(1,a.current_bid+1))
-                coins=self.game.players[0].coins
-                affordable=coins>=minimum
-                typed=int(self.auction_bid_text) if self.auction_bid_text else minimum
-                custom_valid=affordable and minimum<=typed<=coins
+                affordable=minimum<=coins
+                track=self.auction_slider_rect()
+                pygame.draw.rect(self.screen,(60,69,79),track,border_radius=7)
+                if affordable:
+                    ratio=0 if coins==minimum else (chosen-minimum)/(coins-minimum)
+                    handle_x=track.left+round(track.width*ratio)
+                    pygame.draw.rect(self.screen,cfg.GOLD,
+                                     pygame.Rect(track.left,track.y,handle_x-track.left+1,track.height),
+                                     border_radius=7)
+                    pygame.draw.circle(self.screen,(249,218,134),
+                                       (handle_x,track.centery),12)
+                self._text(f'{minimum}',13,track.left-37,track.y-4,cfg.TEXT)
+                self._text(f'{coins}',13,track.right+14,track.y-4,cfg.TEXT)
                 if not affordable:
-                    self._text('NIE MASZ MONET NA PODBICIE — WYBIERZ PASUJ',13,
-                               741,708,cfg.RED,center=True)
-                for action,label in (('pass','PASUJ'),('min','PODBIJ +1'),
-                                     ('bid','LICYTUJ [ENTER]')):
-                    enabled=(action=='pass' or
-                             (affordable if action=='min' else custom_valid))
+                    self._text('BRAK MONET NA PRZEBICIE — PASUJ',13,
+                               741,746,cfg.RED,center=True)
+                for action,label in (('pass','PASUJ'),('bid','LICYTUJ [ENTER]')):
+                    enabled=action=='pass' or affordable
                     self._button(self.auction_control_rect(action),label,
                                  active=enabled,accent=action=='bid' and enabled,
                                  small=True)
@@ -694,17 +789,32 @@ class SoloApp:
             if event.type==pygame.KEYDOWN and self.game.auction.turn==0:
                 state=self.game.auction
                 if state.phase=='bidding':
-                    if pygame.K_0<=event.key<=pygame.K_9:
-                        self.auction_bid_text=(self.auction_bid_text+str(event.key-pygame.K_0))[-7:]
-                    elif event.key==pygame.K_BACKSPACE:
-                        self.auction_bid_text=self.auction_bid_text[:-1]
+                    if event.key in (pygame.K_LEFT,pygame.K_DOWN):
+                        self._shift_auction_slider(-1)
+                    elif event.key in (pygame.K_RIGHT,pygame.K_UP):
+                        self._shift_auction_slider(+1)
+                    elif event.key==pygame.K_HOME:
+                        self._shift_auction_slider(edge='minimum')
+                    elif event.key==pygame.K_END:
+                        self._shift_auction_slider(edge='balance')
                     elif event.key==pygame.K_RETURN:
                         self._auction_do('bid')
                     elif event.key==pygame.K_ESCAPE:
                         self._auction_do('pass')
                 elif state.phase=='picking' and pygame.K_1<=event.key<=pygame.K_3:
                     self._auction_do('pick',state.offers[event.key-pygame.K_1].uid)
+            elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
+                pos=self._physical_to_virtual(event.pos)
+                if (self.game.auction.turn==0
+                        and self.game.auction.phase=='bidding'
+                        and self.auction_slider_rect().inflate(0,20).collidepoint(pos)):
+                    self.auction_slider_dragging=True
+                    self._set_auction_slider_from_pointer(pos)
+            elif event.type==pygame.MOUSEMOTION and self.auction_slider_dragging:
+                self._set_auction_slider_from_pointer(
+                    self._physical_to_virtual(event.pos))
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                self.auction_slider_dragging=False
                 self._auction_click(self._physical_to_virtual(event.pos))
             return True
         if event.type==pygame.KEYDOWN:
@@ -1227,11 +1337,22 @@ class SoloApp:
         if self.menu_page=='main' and history_button.collidepoint(pos):
             try:
                 self._archive_records=list_archived_matches()
+                self.archive_page=0
+                self._archive_selected_record=None
                 self.menu_message=''
                 self.menu_page='archive'
             except (OSError,ValueError,TypeError) as exc:
                 self.menu_message='Nie można odczytać historii: '+str(exc)
             return
+        if self.menu_page=='archive':
+            total=max(1,(len(self._archive_records)+3)//4)
+            self.archive_page=max(0,min(getattr(self,'archive_page',0),total-1))
+            if pygame.Rect(535,715,170,36).collidepoint(pos):
+                self.archive_page=max(0,self.archive_page-1)
+                return
+            if pygame.Rect(785,715,170,36).collidepoint(pos):
+                self.archive_page=min(total-1,self.archive_page+1)
+                return
         buttons=[pygame.Rect(535,322+i*81,420,61) for i in range(5)]
         for i,rect in enumerate(buttons):
             if not rect.collidepoint(pos):continue
@@ -1239,8 +1360,11 @@ class SoloApp:
             if self.menu_page=='archive':
                 if i==4:
                     self.menu_page='main'
-                elif i < len(self._archive_records[:4]):
-                    self._open_audit_folder(archive=True)
+                else:
+                    index=self.archive_page*4+i
+                    if index<len(self._archive_records):
+                        self._archive_selected_record=self._archive_records[index]
+                        self._open_archived_record(self._archive_selected_record)
                 return
             if self.menu_page=='main':
                 if i==0:
@@ -1309,7 +1433,7 @@ class SoloApp:
         self._panel(pygame.Rect(420,170,650,660),(56,35,23),cfg.GOLD,19)
         self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
-        self._text('TAWERNA · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
+        self._text('TAWERNA · GAME MASTER v23',16,746,269,cfg.MUTED,center=True)
         if self.menu_page=='credits':
             self._text('TWÓRCY I MUZYKA',28,746,329,cfg.GOLD,center=True)
             self._text('AuctionHammer — projekt i kod: Mateusz Boćko',16,746,389,cfg.TEXT,center=True)
@@ -1323,7 +1447,9 @@ class SoloApp:
             self._text('Kod: MIT  ·  Muzyka: odrębna licencja PGN Music',13,746,790,cfg.MUTED,center=True)
             return
         if self.menu_page=='archive':
-            records=self._archive_records[:4]
+            total=max(1,(len(self._archive_records)+3)//4)
+            self.archive_page=max(0,min(getattr(self,'archive_page',0),total-1))
+            records=self._archive_records[self.archive_page*4:(self.archive_page+1)*4]
             items=tuple(
                 self.cards_view.clip(
                     f'{item.get("exported_at_utc","")[:16].replace("T"," ")}  ·  '
@@ -1334,6 +1460,15 @@ class SoloApp:
                 for item in records)
             items=items+tuple('—' for _ in range(4-len(items)))+('WRÓĆ DO MENU',)
             self._text(f'ZAPISANE MECZE: {len(self._archive_records)}',16,746,287,cfg.GOLD,center=True)
+            self._button(pygame.Rect(535,715,170,36),'POPRZEDNIA',
+                         active=self.archive_page>0,small=True)
+            self._text(f'STRONA {self.archive_page+1}/{total}',13,746,733,
+                       cfg.GOLD,center=True)
+            self._button(pygame.Rect(785,715,170,36),'NASTĘPNA',
+                         active=self.archive_page+1<total,small=True)
+            if not self._archive_records:
+                self._text('BRAK ZAPISANYCH MECZÓW',15,746,699,
+                           cfg.MUTED,center=True)
         elif self.menu_page=='main':
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')

@@ -155,6 +155,20 @@ def active_auction_cards(mode):
 def live_variant(mode,archetype,rarity):
     return active_auction_cards(mode)[archetype]['variants'][_V4_RARITIES[rarity]]
 
+def v23_variant(mode,archetype,rarity,ruleset='v22'):
+    """Explicit v23 clarifications without rewriting the immutable v22 data."""
+    original=live_variant(mode,archetype,rarity)
+    if mode!='v22' or ruleset!='v23':
+        return original
+    if archetype=='A014':
+        return original+' [v23] Konwersja od nominalnego leczenia, również przy pełnym PŻ; ten sam cel, zwykłe osłony.'
+    if archetype=='A015':
+        return original+' [v23] Blokuje wyłącznie zdolności przeciwnika; własne i sojusznicze pozostają aktywne.'
+    if archetype=='A018' and rarity=='legendarna':
+        return original+' [v23] Jeśli kolejna legalna aukcja nie jest możliwa, zamiast gwarancji: trwałe +5 ATK i +5 MAX PŻ oraz +5 bieżącego PŻ.'
+    return original
+
+
 def stats_v22(archetype,completed_round):
     if archetype not in V22_CARDS or completed_round<3 or completed_round%3:
         raise ValueError('Invalid v22 archetype or auction round')

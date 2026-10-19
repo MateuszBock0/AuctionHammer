@@ -1,4 +1,4 @@
-"""Audio-loop tests: no media is downloaded or bundled."""
+"""Deterministic audio-loop mocks; real MP3 decode is covered by test_music_live_asset_v23."""
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest

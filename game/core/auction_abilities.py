@@ -128,6 +128,10 @@ def options(game,uid,context,attacked=None):
             return []
         return options(game,uid,'auction_cart_play')
     if aid=='A018' and context=='play':
+        if (tier==2 and getattr(game,'ruleset_version','v22')=='v23'
+                and not any_future_auction(game)):
+            return [Choice('auto',None,
+                   'Ostatnia aukcja: trwale +5 ATK, +5 MAX PŻ i +5 PŻ')]
         return [Choice('auto',None,'Nadaj premię na następną aukcję')]
     return []
 
@@ -138,6 +142,13 @@ def _active_passives(game,aid):
         if (game.cards[uid].definition.id==aid and
                 kind(game,uid)==aid and not game._disabled(u)):
             yield uid,u,rarity(game,uid)
+
+
+def any_future_auction(game):
+    """Structural eligibility only; never predict who will survive."""
+    return (game.auctions_enabled
+            and len(game.auction_history)<8
+            and len(game.auction_bag)>=3)
 
 
 def convert_healing(game,target,target_owner,amount):
@@ -159,9 +170,16 @@ def convert_healing(game,target,target_owner,amount):
     return heal
 
 
-def global_trigger_block(game,context):
-    """A015 rare blocks death for both players; legendary play/death/end."""
-    for _uid,_unit,tier in _active_passives(game,'A015'):
+def global_trigger_block(game,context,source_owner=None):
+    """A015 v23 prevents ONLY opposing triggers; old v22 rules are retained.
+
+    Inspect every death source against the original wave snapshot before
+    removal; a Wieszczka never cancels its own allied play/end/death.
+    """
+    new_rules=getattr(game,'ruleset_version','v22')=='v23'
+    for _uid,unit,tier in _active_passives(game,'A015'):
+        if new_rules and unit.owner==source_owner:
+            continue
         if tier==2 and context in ('play','death','end'):return True
         if tier==1 and context=='death':return True
     return False
@@ -211,7 +229,7 @@ def block_trigger(game,uid,context,attacked=None,choice=None):
     """
     if context not in ('play','death','end'):
         return False
-    if global_trigger_block(game,context):
+    if global_trigger_block(game,context,game.cards[uid].owner):
         return True
     if context!='play':
         return False
@@ -714,6 +732,15 @@ def execute(game,uid,context,choice,attacked=None):
             game.auction_vouchers[owner].append({'bonus':bonus})
             game._log(f'Licytator: +2 monety i +{bonus} skutecznej oferty '
                       'na następną aukcję.')
+        elif (getattr(game,'ruleset_version','v22')=='v23'
+              and not any_future_auction(game)):
+            # This is selected once, at this physical instance's PLAY,
+            # never retroactively if the last future auction disappears.
+            game._add_effect(uid,'atk',5,source=uid,positive=True)
+            game._add_effect(uid,'max_hp',5,source=uid,positive=True)
+            game._log('Licytator legendarny: brak następnej legalnej aukcji, '
+                      'trwałe +5 ATK / +5 MAX PŻ / +5 bieżącego PŻ. '
+                      'Bez gwarancji licytacji.')
         else:
             game.auction_vouchers[owner].append({'guaranteed':True})
             game._log('Licytator: gwarancja pierwszego wyboru na następną aukcję.')

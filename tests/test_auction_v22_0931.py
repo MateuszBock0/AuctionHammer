@@ -245,6 +245,9 @@ class AuctionV22EdgeCollisions(unittest.TestCase):
 
     def test_A015_legendary_globally_prevents_end_trigger(self):
         g=ready(93203)
+        # This is the historic v22 both-sides lockout, NOT the new v23
+        # opposing-owner-only rule.
+        g.ruleset_version='v22'
         ward=award(g,'A015',2,zone='board')
         bow=place_basic(g,'S27',0)
         before=g.players[1].hp

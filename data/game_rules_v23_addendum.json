@@ -1,0 +1,106 @@
+{
+  "format": "AuctionHammer.GameRulesAddendum",
+  "schema": 1,
+  "ruleset_version": "v23",
+  "extends": [
+    "GAME_MASTER_v19",
+    "auction_catalog_v22"
+  ],
+  "source_commit": "45fd8125020c530a97689bb055776a9ee67d275b",
+  "scope": "solo-vs-AI",
+  "base_cards": 70,
+  "auction_archetypes": 17,
+  "auction_variants": 51,
+  "changes": {
+    "auction_ui": {
+      "bid_control": "integer_slider",
+      "minimum": "max(1,highest_effective+1-own_bonus_A018)",
+      "maximum": "own_coins",
+      "reset": "each-own-bidding-turn",
+      "actions": [
+        "bid",
+        "pass"
+      ]
+    },
+    "scaling_errata": [
+      "S05",
+      "S61",
+      "S70",
+      "S72",
+      "S20",
+      "S86",
+      "S94",
+      "S96",
+      "S106",
+      "S33"
+    ],
+    "vacant_board_income": {
+      "coins": "5 - own_board_count",
+      "moment": "after-all-end-turn-death-waves-before-next-auction",
+      "legacy_mode": "v22-preserve"
+    },
+    "A018_legendary_no_future_auction": {
+      "atk": 5,
+      "max_hp": 5,
+      "current_hp": 5,
+      "voucher": false
+    },
+    "A015": {
+      "scope": "enemy-trigger-owner-only",
+      "rare": [
+        "death"
+      ],
+      "legendary": [
+        "play",
+        "death",
+        "end"
+      ],
+      "basic": "chosen-hostile-play-once"
+    },
+    "A014": {
+      "conversion": "nominal-even-at-full-health",
+      "rare_damage": "ceil(amount/2)",
+      "legendary_damage": "amount",
+      "defenses": "standard"
+    },
+    "death_fallback": {
+      "S86": {
+        "hero_armor": 3
+      },
+      "S87": {
+        "hero_heal": 4
+      },
+      "S88": {
+        "hero_shield": 1
+      }
+    },
+    "S32": {
+      "when": "enemy_units_present-but-all-already-poisoned-by-this-source",
+      "damage": 2,
+      "target": "lowest-current-hp-leftmost"
+    },
+    "S95": {
+      "when": "enemy-units-present-but-no-new-stun-target",
+      "damage": 2,
+      "update_last_stun": false
+    },
+    "archive": {
+      "page_size": 4,
+      "version_visible": true
+    },
+    "unchanged": [
+      "hero_100_hp",
+      "one-basic-card-play-per-turn",
+      "zero-basic-play-cost",
+      "queen_A010_v22",
+      "economy_second_player_+3",
+      "income_full_round_+1",
+      "ai_bid_ceiling"
+    ]
+  },
+  "legacy": {
+    "v22_defaults_on_old_save": true,
+    "do_not_modify_original_v19": true,
+    "do_not_modify_original_v22_catalog": true
+  }
+}

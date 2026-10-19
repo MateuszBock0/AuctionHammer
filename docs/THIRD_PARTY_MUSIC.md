@@ -46,7 +46,7 @@ CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
 - **Oryginalne nagrania muzyczne:** prawa pozostają przy PGN Music
   oraz twórcy; nie są objęte licencją MIT.
 - **Dystrybucja:** plik `assets/music/music_auctionhammer.mp3` jest
-  dołączany do publicznego kodu i gotowego wydania Windows **po jego
-  dodaniu i zatwierdzeniu w repozytorium**.
+  już śledzony w repozytorium i dołączany do gotowego wydania Windows.
+  Prawa do nagrania pozostają odrębne od licencji MIT gry.
 
 Credits są także widoczne w grze: **Menu → CREDITS**.

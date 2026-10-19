@@ -49,6 +49,13 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
         else:
             text='Bohater otrzymuje ochronę'
         return [Choice('auto',f'hero:{owner}',text)]
+    if (context=='death' and not ally and
+            cid in ('S86','S87','S88') and
+            getattr(game,'ruleset_version','v22')=='v23'):
+        texts={'S86':'+3 pancerza własnemu bohaterowi',
+               'S87':'Ulecz własnego bohatera o 4 PŻ',
+               'S88':'Jedna Tarcza dla własnego bohatera'}
+        return [Choice('auto',f'hero:{owner}',texts[cid])]
     if cid == 'S91' and not ally:
         return [Choice('auto',None,'Losowa karta w ręce otrzymuje bonus')]
     if cid in SELF_OR_AUTOMATIC:
@@ -56,7 +63,13 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
     if cid in ('S01','S58','S59','S83','S84','S32'):
         valid = enemy
         if cid == 'S32':
-            valid = [x for x in enemy if not any(e.kind == 'poison' and e.source == uid for e in game.units[x].effects)]
+            valid=[x for x in enemy if not any(
+                e.kind=='poison' and e.source==uid
+                for e in game.units[x].effects)]
+            if (not valid and enemy and
+                    getattr(game,'ruleset_version','v22')=='v23'):
+                return [Choice('auto',None,
+                        'Wszyscy zatruci: 2 obrażenia najsłabszemu wrogowi')]
         return c('Cel wrogi', valid)
     if cid in ('S02',):
         return c('Leczenie', ally+[f'hero:{owner}'])

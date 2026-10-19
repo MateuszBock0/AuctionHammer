@@ -1,4 +1,4 @@
-"""Optional full-length PGN Fantasy Tavern Album loop. No audio files are bundled."""
+"""Optional full-length Fantasy Tavern album loop; tracked MP3 ships with Windows."""
 from __future__ import annotations
 
 from pathlib import Path

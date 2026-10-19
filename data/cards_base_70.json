@@ -98,7 +98,7 @@
     "hp": 6,
     "effect": "Przyznaj tarczę wybranej sojuszniczej jednostce i 1 trwałego pancerza temu samemu celowi.",
     "faction": "Elfy",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (nie zwiększa liczby Tarcz).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -170,7 +170,7 @@
     "hp": 7,
     "effect": "Nadaj wybranej sojuszniczej jednostce prowokację do jej opuszczenia planszy.",
     "faction": "Elfy",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (czas Prowokacji bez zmian).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -370,7 +370,7 @@
     "hp": 6,
     "effect": "Przed standardową walką daj sobie 1 tarczę, jeśli jeszcze jej nie posiadasz.",
     "faction": "Dzikie bestie",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (nie zwiększa liczby Tarcz).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -442,7 +442,7 @@
     "hp": 8,
     "effect": "Przed standardową walką nadaj tej jednostce prowokację do końca jej najbliższej własnej tury.",
     "faction": "Dzikie bestie",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (czas Prowokacji bez zmian).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -622,7 +622,7 @@
     "hp": 7,
     "effect": "Gdy ta jednostka umiera, przyznaj 1 tarczę i 2 trwałego pancerza wybranej pozostałej sojuszniczej jednostce. Jeśli nie ma żadnej pozostałej sojuszniczej jednostki, przyznaj tę tarczę i 2 trwałego pancerza własnemu bohaterowi. Obowiązuje limit jednej tarczy na cel.",
     "faction": "Potwory",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (nie zwiększa liczby Tarcz).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -694,7 +694,7 @@
     "hp": 9,
     "effect": "Pozostała wybrana sojusznicza jednostka otrzymuje prowokację do swojego opuszczenia planszy.",
     "faction": "Potwory",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (czas Prowokacji bez zmian).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -874,7 +874,7 @@
     "hp": 8,
     "effect": "Daj wybranej sojuszniczej jednostce 1 tarczę, jeśli jeszcze jej nie posiada.",
     "faction": "Krasnoludy",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (nie zwiększa liczby Tarcz).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -946,7 +946,7 @@
     "hp": 8,
     "effect": "Nadaj wybranej sojuszniczej jednostce prowokację do końca jej najbliższej własnej tury.",
     "faction": "Krasnoludy",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (czas Prowokacji bez zmian).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -1126,7 +1126,7 @@
     "hp": 7,
     "effect": "Dopóki ta zdolność działa, ta jednostka ma tarczę. Tarcza z aury nie odnawia się po zużyciu podczas tego wystawienia.",
     "faction": "Ludzie",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (nie zwiększa liczby Tarcz).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
@@ -1198,7 +1198,7 @@
     "hp": 8,
     "effect": "Ta jednostka posiada prowokację; wrogie jednostki muszą atakować cele z prowokacją.",
     "faction": "Ludzie",
-    "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
+    "scaling": "Co 3 własne tury na ręce: dodatkowo +1 ATK i +2 MAX HP (czas Prowokacji bez zmian).",
     "hand_growth": {
       "atk_per_hand_turn": 1,
       "hp_per_hand_turn": 1,
