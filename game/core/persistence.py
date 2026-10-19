@@ -188,6 +188,9 @@ def load_match(path: Path | None = None) -> Match:
     # Loading a pre-0.9.34 save must never silently change the rules
     # halfway through a match. Fresh v22 games enable the bonus by default.
     data.setdefault('vacant_income_enabled',False)
+    # The v23 event-order fix is only for newly created games.
+    data.setdefault('ruleset_version','v22' if data.get('auction_catalog')=='v22' else 'v19')
+    data.setdefault('pending_vacant_income',None)
     data.setdefault('slot_income',[0,0])
     data.setdefault('slot_income_turns',[0,0])
     data.setdefault('auction_vouchers',[[],[]])
