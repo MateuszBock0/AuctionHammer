@@ -20,6 +20,7 @@ FAMILY_SYMBOLS = {
     'Pancerz':'PANC','Tarcza':'TARCZA','Trucizna':'TRUC','Ogłuszenie':'OGŁ',
     'Regeneracja':'REGEN','Prowokacja':'PROW','Oczyszczanie':'OCZ',
     'Odporność':'ODP','Szybki atak':'SZYBKI','Podwójny atak':'2 ATAKI',
+    'Bez zdolności':'BEZ ZDOL.',
 }
 FAMILY_COLORS = {
     'Obrażenia':(239,119,112),'Leczenie':(103,213,168),'ATK ±':(118,214,133),
@@ -27,6 +28,7 @@ FAMILY_COLORS = {
     'Trucizna':(176,220,88),'Ogłuszenie':(193,144,244),'Regeneracja':(84,218,160),
     'Prowokacja':(243,174,70),'Oczyszczanie':(193,223,244),'Odporność':(114,164,255),
     'Szybki atak':(79,223,223),'Podwójny atak':(255,155,99),
+    'Bez zdolności':(155,164,180),
 }
 # Auction-only mechanic labels. The shared base-card family taxonomy is
 # insufficient for coins, copying, exile and hand swaps; those historical
@@ -46,6 +48,7 @@ UPGRADES = {
     'Prowokacja':'+3 PŻ / 3T','Oczyszczanie':'+1 ZA OCZ / 3T',
     'Odporność':'1× +1 PANC / 3T','Szybki atak':'+2 ATAK +1 PŻ / 3T',
     'Podwójny atak':'+2 ATAK / 3T',
+    'Bez zdolności':'BEZ SKALOWANIA',
 }
 
 
@@ -98,6 +101,18 @@ def card_cue(card, unit=None) -> CardCue:
     d=card.definition
     family=d.family
     level=unit.ability_level if unit is not None else card.ability_level
+    # SUM IDs are ephemeral soldiers created by A010, not S-card catalogue
+    # entries. Expose truthful static text and no fictitious scaling/shield.
+    if d.id.startswith('SUM'):
+        taunt=family=='Prowokacja'
+        return CardCue(
+            trigger='PASYWNA', family='PROWOKACJA' if taunt else 'BEZ ZDOL.',
+            color=FAMILY_COLORS[family],
+            base='PROWOKACJA' if taunt else 'BEZ ZDOLNOŚCI',
+            upgrade='JEDNOSTKA EFEMERYCZNA',
+            effect_value=None, ability_level=0,
+            growth='Stałe ATK i MAX PŻ', next_threshold='NIE WRACA DO TALII',
+        )
     if d.id.startswith('A0'):
         old_v3=d.effect.startswith('NIEAKTYWNA')
         from game.core.auction_catalog import V4_CARDS
