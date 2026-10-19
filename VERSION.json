@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.27",
+  "mvp": "0.9.28",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v4-12-archetypes-36-live-abilities",
@@ -36,5 +36,18 @@
   "auction_description_contract": "36-v4-variants-canonical-live-ui",
   "match_death_counter": "lifetime-real-deaths-not-grave-size",
   "shield_combat_feedback": "explicit-absorbed-damage-log",
-  "auction_minimum_distinct_offers": 3
+  "auction_minimum_distinct_offers": 3,
+  "auction_acceptance": "36-concrete-scenarios-plus-collision-regressions",
+  "auction_fixes": [
+    "A010-single-HP-growth",
+    "A002-expired-beneficiary-on-exit-or-capture"
+  ],
+  "combat_explanations": [
+    "actual_HP_damage",
+    "shield_absorption",
+    "armor_absorption",
+    "healing",
+    "statuses",
+    "aura_deltas"
+  ]
 }

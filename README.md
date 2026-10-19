@@ -1,6 +1,16 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.27** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+**AuctionHammer 0.9.28** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v20), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Nowości 0.9.28 — poprawność aukcji i komunikaty walki
+
+- **Macierz 36 scenariuszy akceptacyjnych** (A001–A012 × podstawowa/rzadka/legendarna) sprawdza *konkretny wynik* zdolności, nie tylko istnienie jej wyboru. Dodatkowe przypadki łączą śmierć, wyciszenie, przejęcia, aurę, wskrzeszanie na pełnej planszy i kopiowanie.
+- Poprawiono dwa błędy mechaniczne: **A010** nie leczy dwukrotnie przy pojedynczym zwiększeniu MAX PŻ; premie **A002** nie przetrwają śmierci, ponownego wystawienia ani przejęcia dawnego sojusznika przez przeciwnika.
+- Historia wydarzeń podaje **rzeczywistą utratę PŻ**, obrażenia pochłonięte przez **Tarczę i pancerz**, faktyczne odzyskiwanie zdrowia, statusy i zmiany aur. Pasek wydarzeń pokazuje ostatnie trzy komunikaty; pełna historia dostępna jest przez **H**.
+- Blokada obrażeń jest sygnalizowana na niebiesko, zranienia na czerwono, a leczenie na zielono. Bez zmiany podstawowego układu ekranu.
+- Katalog 70 kart, obecne AI, zasady bazowe i osobny woreczek aukcyjny pozostają bez zmian. Historyczne zapisy v3 zachowują dawny format zdarzeń.
+
+Szczegóły i kryteria akceptacyjne: [raport 0.9.28](docs/auction/ACCEPTANCE_MATRIX_0928.md).
 
 ## Poprawki po prawdziwym meczu — 0.9.27
 

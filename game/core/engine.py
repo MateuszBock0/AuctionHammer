@@ -568,7 +568,20 @@ class Match:
             if value>0:u.hp+=value
             else:u.hp=min(u.hp,u.max_hp)
         suffix=f' od {self.label(source)}' if source in self.cards and source!=uid else ''
-        self._log(f'{self.label(uid)} otrzymuje {kind} {value if value else ""}{suffix}'.strip())
+        if self.auction_catalog=='v4':
+            names={'silence':'Wyciszenie','stun':'Ogłuszenie',
+                   'poison':'Trucizna','regen':'Regeneracja',
+                   'taunt':'Prowokacja','quick':'Szybki atak',
+                   'double':'Podwójny atak','atk':'zmiana ATK',
+                   'max_hp':'zmiana MAX PŻ','auction_exile_mark':'Znamię Wygnania'}
+            effect_name=names.get(kind,kind)
+            value_text=f' ({value:+d})' if value else ''
+            duration=(f', do końca tury #{expires} właściciela'
+                      if expires is not None else '')
+            self._log(f'{self.label(uid)}: {effect_name}{value_text}'
+                      f'{duration}{suffix}.')
+        else:
+            self._log(f'{self.label(uid)} otrzymuje {kind} {value if value else ""}{suffix}'.strip())
         return True
 
     def _is_immune(self,uid,kind):
@@ -627,9 +640,17 @@ class Match:
                 for ally in self.players[u.owner].board:
                     if ally in self.units and self.cards[ally].definition.id=='S104' and not self._disabled(self.units[ally]):
                         amount += 2+self.units[ally].ability_level
+            old=u.hp
             u.hp=min(u.max_hp,u.hp+max(0,amount))
+            if self.auction_catalog=='v4' and u.hp>old:
+                self._log(f'{self.label(target)} odzyskuje {u.hp-old} PŻ '
+                          f'({old} → {u.hp}/{u.max_hp}).')
         elif target and target.startswith('hero:'):
-            p=self.players[int(target.split(':')[1])];p.hp=min(100,p.hp+max(0,amount))
+            p=self.players[int(target.split(':')[1])]
+            old=p.hp;p.hp=min(100,p.hp+max(0,amount))
+            if self.auction_catalog=='v4' and p.hp>old:
+                self._log(f'{p.name} odzyskuje {p.hp-old} PŻ '
+                          f'({old} → {p.hp}/100).')
 
     @staticmethod
     def _spend_permanent_armor(u, amount):
@@ -653,7 +674,11 @@ class Match:
     @trace_effect('_damage')
     def _damage(self,target,amount,ignore_defense=False,defer_death=False):
         amount=max(0,amount)
-        if amount<=0:return 0
+        if amount<=0:
+            if self.auction_catalog=='v4':
+                self._log(f'{self.label(target)}: 0 obrażeń; PŻ bez zmian.')
+            return 0
+        incoming=amount
         if self._resolving_death_wave:
             # Obrażenia zdolności śmierci nakładamy razem, po przygotowaniu
             # konsekwencji WSZYSTKICH źródeł z tej samej fali.
@@ -661,6 +686,7 @@ class Match:
             return 0
         if target in self.units:
             u=self.units[target]
+            old_hp=u.hp
             if not ignore_defense:
                 if u.shield:
                     source=u.shield_source
@@ -679,14 +705,32 @@ class Match:
                     absorb=min(amount,u.aura_armor[key]);u.aura_armor[key]-=absorb;amount-=absorb
                 absorb=self._spend_permanent_armor(u,amount);amount-=absorb
             dealt=max(0,amount);u.hp-=dealt
+            if self.auction_catalog=='v4':
+                absorbed=incoming-dealt
+                if absorbed:
+                    self._log(f'{self.label(target)}: pancerz pochłania '
+                              f'{absorbed} z {incoming} obrażeń.')
+                self._log(f'{self.label(target)} otrzymuje {dealt} obrażeń w PŻ '
+                          f'({old_hp} → {u.hp}/{u.max_hp}).')
             if u.hp<=0 and not defer_death:self._kill_batch([target])
             return dealt
         if target and target.startswith('hero:'):
             p=self.players[int(target.split(':')[1])]
             if not ignore_defense:
-                if p.hero_shield:p.hero_shield=0;return 0
+                if p.hero_shield:
+                    p.hero_shield=0
+                    if self.auction_catalog=='v4':
+                        self._log(f'{p.name}: Tarcza bohatera blokuje '
+                                  f'{incoming} obrażeń i zostaje zużyta.')
+                    return 0
                 a=min(amount,p.hero_armor);p.hero_armor-=a;amount-=a
+                if a and self.auction_catalog=='v4':
+                    self._log(f'{p.name}: pancerz bohatera pochłania '
+                              f'{a} z {incoming} obrażeń.')
             old=p.hp;p.hp-=amount
+            if self.auction_catalog=='v4':
+                self._log(f'{p.name} otrzymuje {amount} obrażeń w PŻ '
+                          f'({old} → {p.hp}/100).')
             if (self.auction_catalog=='v4' and p.hp<=0 and
                     not self._resolving_death_wave and not defer_death):
                 auction_ability_rules.rescue_heroes(self)
@@ -851,6 +895,8 @@ class Match:
 
     @trace_effect('_remove_unit')
     def _remove_unit(self,uid,death):
+        if self.auction_catalog=='v4':
+            auction_ability_rules.forget_general_links(self,uid,include_source=True)
         u=self.units.pop(uid)
         if death:
             self.death_counts[u.owner]+=1
@@ -893,7 +939,15 @@ class Match:
         for uid,u in list(self.units.items()):
             old=u.max_hp
             previous_aura_hp=u.aura_hp
+            previous_aura_atk=u.aura_atk
             u.aura_atk=desired_atk[uid];u.aura_hp=desired_hp[uid]
+            if (self.auction_catalog=='v4' and
+                    (u.aura_atk!=previous_aura_atk or
+                     u.aura_hp!=previous_aura_hp)):
+                delta_atk=u.aura_atk-previous_aura_atk
+                delta_hp=u.aura_hp-previous_aura_hp
+                self._log(f'{self.label(uid)}: zmiana aury '
+                          f'ATK {delta_atk:+d}, MAX PŻ {delta_hp:+d}.')
             delta=u.max_hp-old
             if delta>0 and desired_hp[uid]>0:
                 # Strengthening a positive aura grants the same amount of current HP.

@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.27: auction v4 effect parity and accurate match statistics."""
+"""AuctionHammer MVP 0.9.28: auction v4 acceptance matrix and combat outcome explanations."""
 from __future__ import annotations
 import os
 import re
@@ -47,7 +47,7 @@ class SoloApp:
         self.screen=pygame.Surface(logical_size).convert()
         pygame.display.set_caption(cfg.WINDOW_TITLE)
         self.clock=pygame.time.Clock()
-        self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (12,13,14,15,16,18,20,22,28,34,46)}
+        self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (11,12,13,14,15,16,18,20,22,28,34,46)}
         self.theme=VisualTheme()
         self.cards_view=CardView()
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
@@ -768,13 +768,18 @@ class SoloApp:
     def _feedback_color(message):
         """Only colour recorded engine messages; do not predict their results."""
         text=message.lower()
+        # Armor/shield reports also mention "obrażeń": classify defense
+        # BEFORE damage so a blocked hit does not flash red like a wound.
+        if any(w in text for w in ('tarcza blokuje','tarcza bohatera blokuje',
+                                    'pancerz pochłania','pancerz bohatera pochłania')):
+            return (123,183,236)
         if any(w in text for w in ('obrażen','zadaje','rani','traci pż')):
             return (224,116,120)
-        if any(w in text for w in ('leczy','ulecz','regeneracj')):
+        if any(w in text for w in ('leczy','ulecz','regeneracj','odzyskuje')):
             return (115,222,166)
-        if any(w in text for w in ('tarcz','pancerz')):
+        if any(w in text for w in ('tarcz','pancerz','zmiana aury')):
             return (123,183,236)
-        if any(w in text for w in ('trucizn','ogłusz','status')):
+        if any(w in text for w in ('trucizn','ogłusz','status','wyciszenie')):
             return (190,145,242)
         if any(w in text for w in ('zgon','umiera','ginie')):
             return (236,188,132)
@@ -1006,12 +1011,15 @@ class SoloApp:
             shade=pygame.Surface((940,34),pygame.SRCALPHA)
             shade.fill((*color,alpha))
             self.screen.blit(shade,(109,375))
-        entries=self.game.events[-2:]
-        y=378
-        for s in entries:
-            trimmed=self.cards_view.clip(s,self.fonts[12],920)
-            self._text(trimmed,12,118,y,cfg.MUTED)
-            y+=16
+        # Three short, truthful engine outcomes fit the existing strip:
+        # e.g. armor absorbed -> actual HP damage -> resulting status.
+        # The [H] history panel retains every unabridged event.
+        entries=self.game.events[-3:]
+        y=370
+        for entry in entries:
+            trimmed=self.cards_view.clip(entry,self.fonts[11],920)
+            self._text(trimmed,11,118,y,cfg.MUTED)
+            y+=15
         if self.last_error:
             self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),13,280,954,cfg.RED)
 
