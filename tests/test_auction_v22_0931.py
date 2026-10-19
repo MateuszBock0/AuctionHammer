@@ -68,6 +68,23 @@ class AuctionV22DataAndSupply(unittest.TestCase):
         self.assertEqual(len(g.auction_bag),1)
         self.assertIsNone(auction.begin(g))
 
+    def test_all_51_card_summaries_show_exact_live_variants(self):
+        from game.ui.card_summary import ability_summary
+        from game.ui.card_infographics import card_cue
+        for i,aid in enumerate(CATALOG_V22):
+            for tier,r in enumerate(RARITIES):
+                with self.subTest(archetype=aid,rarity=r):
+                    g=ready(93600+i*3+tier)
+                    uid=award(g,aid,tier)
+                    expected=live_variant('v22',aid,r)
+                    summary=ability_summary(g.cards[uid])
+                    cue=card_cue(g.cards[uid])
+                    self.assertIn(expected,summary.full)
+                    self.assertIn('AKTYWNA',summary.short)
+                    self.assertEqual(cue.base,'AKTYWNA')
+                    self.assertNotIn('PRZYGOTOWANIU',cue.upgrade)
+                    g.assert_integrity()
+
     def test_legacy_v4_save_stays_twelve_archetypes(self):
         g=Match(93102,auction_catalog='v4',auctions_enabled=True)
         self.assertEqual(len(g.auction_bag),12)
