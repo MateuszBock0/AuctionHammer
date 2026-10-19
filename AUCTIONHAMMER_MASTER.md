@@ -1,9 +1,9 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.21  
+**Wersja gry:** MVP 0.9.33  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
-**Aukcje i karty aukcyjne:** pierwszy prototyp w MVP 0.9.19 (3 tymczasowe jednostki). Docelowy katalog i płatne zdolności nadal poza zakresem.  
+**Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
 **Język interfejsu:** polski.
 
 ## Przeczytaj najpierw
@@ -15,7 +15,8 @@ Ten dokument opisuje **aktualny stan gry**. Fragment od nagłówka „ARCHIWUM �
 | Plik | Znaczenie |
 | --- | --- |
 | `data/cards_base_70.json` | **Nadrzędny katalog 70 kart v19**, z którego korzysta program |
-| `data/GAME_MASTER.json` | Aktualny ustrukturyzowany zapis zasad v19 i zgodna kopia danych 70 kart |
+| `data/GAME_MASTER.json` | Ustrukturyzowany zapis zasad v19 i zgodna kopia danych 70 kart |
+| `data/auction/KATALOG_AUKCYJNY_17_v22.json` | **Aktualne efekty 17 kart aukcyjnych**, w tym nowa Królowa (0.9.33) |
 | `docs/V19_INTEGRATION_AND_UI.md` | Obowiązujące zmiany v19 oraz sposób ich implementacji |
 | `game/core/` | Rzeczywista logika meczu |
 | `game/ui/` | Polski interfejs użytkownika |
@@ -38,7 +39,8 @@ Po rozpakowaniu gotowej wersji Windows kliknij `URUCHOM_AUCTIONHAMMER.bat`, aby 
 - Efekty śmierci i wzmocnienia S20, S82, S90, S91, S105 i S109 uwzględniają zatwierdzone zmiany.
 - Co zakończoną własną turę na ręce karta otrzymuje przyrost statystyk; co trzy takie tury zwiększa się poziom jej zdolności.
 - Wszystkie etykiety interfejsu, informacje o efektach, komunikaty o wyborach oraz paski rozwoju zdolności mają być wyświetlane po polsku.
-- Rozgrywka obecnie przebiega przeciwko komputerowi. Gra sieciowa oraz aukcje są planowane w osobnych etapach.
+- Rozgrywka obecnie przebiega przeciwko komputerowi z **aktywnymi aukcjami v22**. Gra sieciowa jest planowana w kolejnym etapie.
+- W 0.9.33 Kartograf uzupełnia pustą talię z własnego cmentarza, Królowa v22 używa symetrycznych bonusów i Żołnierzy (1/1, 2/2, 3/3), a zakończone mecze są zapisywane również w `%LOCALAPPDATA%\\AuctionHammer\\historia_meczow\\` (JSON.GZ oraz indeks).
 
 ### Ograniczenia i ryzyka
 
