@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.35: clear trait tints and real-state combat feedback."""
+"""AuctionHammer MVP 0.9.36: v23 approved mechanics, auction slider and archive pagination."""
 from __future__ import annotations
 import os
 import re
@@ -1407,7 +1407,7 @@ class SoloApp:
         self._panel(pygame.Rect(420,170,650,660),(56,35,23),cfg.GOLD,19)
         self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
-        self._text('TAWERNA · GAME MASTER v19',16,746,269,cfg.MUTED,center=True)
+        self._text('TAWERNA · GAME MASTER v23',16,746,269,cfg.MUTED,center=True)
         if self.menu_page=='credits':
             self._text('TWÓRCY I MUZYKA',28,746,329,cfg.GOLD,center=True)
             self._text('AuctionHammer — projekt i kod: Mateusz Boćko',16,746,389,cfg.TEXT,center=True)
