@@ -200,6 +200,26 @@ W repozytorium używane są następujące formaty:
 
 Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.33 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo po każdym zakończonym meczu zapisywany jest czytelny audyt ostatniej partii w formacie JSON **oraz** pełne archiwum wszystkich meczów w plikach JSON.GZ. Otworzysz je w grze przez **Menu → Historia meczów** albo w katalogu `%LOCALAPPDATA%\\AuctionHammer\\historia_meczow\\`. Plik `indeks.json` zawiera skrócone podsumowania, a kolejne zakończone mecze nie nadpisują poprzednich.
 
+## Muzyka — pełny album Fantasy Tavern (PGN Music)
+
+AuctionHammer pozostaje **zawsze darmowym MVP open source**, w pełni
+dostępnym na GitHubie na licencji **MIT** (dla kodu źródłowego).
+
+Gra odtwarza **wszystkie 13 utworów** w oryginalnej kolejności,
+po czym zaczyna album ponownie — około **47 min 44 s na cykl**.
+Muzyka trwa dalej podczas menu, rozgrywki i kolejnych meczów.
+Działa zarówno z jednym plikiem `assets/music/fantasy_tavern_full.ogg`
+(lub .mp3, .wav), jak i zestawem 13 ponumerowanych utworów.
+
+**Audio jest opcjonalne i nie jest zawarte w repozytorium ani paczce Windows**:
+przed publiczną redystrybucją utworów trzeba wyjaśnić warunki licencji
+bezpośrednio z PGN Music. Własne, legalnie pozyskane pliki umieść w
+`assets/music/`; brak plików nie wpływa na działanie gry. Gra nie pobiera
+muzyki automatycznie z YouTube.
+
+[Jak umieścić album](assets/music/README.md) ·
+[Pochodzenie, autorzy i licencja muzyki](docs/THIRD_PARTY_MUSIC.md)
+
 ## Status, dokumentacja i licencja
 
 **0.9.34 to aktywnie rozwijane demo**, z lokalnym przeciwnikiem i zaimplementowanymi aukcjami v22 (17 archetypów, 51 wariantów). Aktualna wersja zawiera również balans v21 kart podstawowych. Na tym etapie **nie ma multiplayera online**.
