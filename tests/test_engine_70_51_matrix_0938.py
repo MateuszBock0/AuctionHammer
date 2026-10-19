@@ -55,7 +55,12 @@ class EveryBaseCardTriggeredThroughTheMatch(unittest.TestCase):
                     place_basic(g,cid,0,'board')
                     g.units[cid].played_turn=-10
                     g.active=0
-                    g.attack(cid,victim)
+                    # The prepared second enemy can have Prowokacja: the
+                    # actual legal target must come from the engine, not a
+                    # hard-coded first enemy slot.
+                    targets=g.legal_attacks(cid)
+                    self.assertTrue(targets)
+                    g.attack(cid,targets[0])
                 elif d.faction=='Potwory':
                     place_basic(g,cid,0,'board')
                     g.units[cid].hp=0
