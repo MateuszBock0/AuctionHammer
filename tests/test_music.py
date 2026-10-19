@@ -69,7 +69,7 @@ class SoundtrackTests(unittest.TestCase):
         (audio_dir / "music_auctionhammer.mp3").touch()
         with (patch("game.ui.music.sys.frozen", True, create=True),
               patch("game.ui.music.sys.executable", str(package / "AuctionHammer.exe"))):
-            self.assertEqual(local_music_folder(), audio_dir)
+            self.assertEqual(local_music_folder(), audio_dir.resolve())
 
     def test_credits_button_opens_music_attribution_without_gameplay_changes(self):
         from game.ui.app import SoloApp
