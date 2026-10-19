@@ -22,8 +22,10 @@ class PublicDocumentationTests(unittest.TestCase):
     def test_readme_gives_complete_soundtrack_credit_without_public_license_claim(self):
         text=(ROOT/'README.md').read_text(encoding='utf-8')
         for term in ('Alek Kaczan','PGN Music','Paradox Gaming Network',
-                     'fantasy-tavern-album','2021','S34','A002','0.9.37'):
+                     'fantasy-tavern-album','2021','S34','A002'):
             self.assertIn(term,text)
+        version=json.loads((ROOT/'VERSION.json').read_text(encoding='utf-8'))['mvp']
+        self.assertIn('Aktualna wersja: '+version,text)
         self.assertNotIn('Plik MP3 może być dystrybuowany razem z grą',text)
         self.assertNotIn('potwierdził uzyskanie zgody',text)
 

@@ -1,7 +1,7 @@
 # AuctionHammer — status projektu
 
 **Ostatnia aktualizacja dokumentacji:** 19 października 2026  
-**Wersja aplikacji:** 0.9.37  
+**Wersja aplikacji:** 0.9.38  
 **Stan:** działające demo offline na Windows, tryb solo przeciw AI. Rozwój trwa.
 
 ## Zaimplementowane
@@ -15,9 +15,13 @@
 
 **Ważne rozróżnienie:** `S34` (Chorąży Królewskiej Kompanii) jest kartą **podstawową** z efektem +1 ATK sąsiadowi albo −1 ATK wrogowi naprzeciwko. `A002` (Generał Oddziału Natarcia) jest kartą **aukcyjną**; jej podstawowa rzadkość daje +1 ATK jednostkom na obu planszach. Zakupione karty aukcyjne nie są tasowane do podstawowej puli.
 
+## Stabilizacja 0.9.38
+
+Dodana macierz 121 przypadków aktywacji (70 bazowych + 51 aukcyjnych), silniejsze niezmienniki dla lokalizacji kart i własności, testy atomowego odrzucania niedozwolonych akcji oraz wczytywania zapisu podczas wyborów. To kontrola integracyjna, nie pełny dowód wszystkich kombinacji zdolności. [Raport](ENGINE_STABILIZATION_0938.md).
+
 ## Testy i ograniczenia
 
-W poprzednim wydaniu przeprowadzono 489 testów oraz dwie serie po 100 meczów (w tym kontrolę 100/100 pełnych replayów). Nie gwarantuje to bezbłędności każdej kombinacji efektów. Brak fizycznej walidacji odtwarzania audio i UI na wszystkich konfiguracjach Windows.
+W wydaniu 0.9.37 przeprowadzono 492 testy oraz dwie serie po 100 meczów (w tym kontrolę 100/100 pełnych replayów). Nie gwarantuje to bezbłędności każdej kombinacji efektów. Brak fizycznej walidacji odtwarzania audio i UI na wszystkich konfiguracjach Windows.
 
 **Jeszcze niezaimplementowane:** tryb multiplayer online. Dodatkowe strategie licytacji AI wymagają odrębnej decyzji i testu A/B; nie są częścią obecnego stanu produkcyjnego.
 

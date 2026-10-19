@@ -1,10 +1,14 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.37  
+**Wersja gry:** MVP 0.9.38  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
 **Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
 **Język interfejsu:** polski.
+
+## Stabilizacja silnika 0.9.38
+
+Nie zmienia reguł i balansu kart. Testy przechodzą przez normalne ścieżki aktywacji wszystkich 70 kart podstawowych oraz 51 wariantów kart aukcyjnych, z automatyczną walidacją stref i właścicieli. Szczegóły w `docs/ENGINE_STABILIZATION_0938.md`; następny etap 0.9.39 obejmuje UI/UX.
 
 ## Przeczytaj najpierw
 
