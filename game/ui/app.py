@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.33: v22 Queen/Cartographer and match archive."""
+"""AuctionHammer MVP 0.9.34: ability fixes and value-aware auction AI."""
 from __future__ import annotations
 import os
 import re
