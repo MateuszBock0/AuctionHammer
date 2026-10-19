@@ -206,7 +206,7 @@ Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — 
 
 - [Pobierz najnowsze wydanie Windows](https://github.com/MateuszBock0/AuctionHammer/releases/latest)
 - **0.9.33:** Kartograf odzyskuje karty z cmentarza przy pustej talii; Królowa przywołuje Żołnierzy 1/1, 2/2 lub 3/3, a wszystkie mecze są trwale archiwizowane.
-- [Zasady i interpretacje aukcji v22](docs/auction/RELEASE_V22_0931.md) · [Stabilizacja 0.9.33](docs/auction/RELEASE_V22_STABILIZATION_0932.md)
+- [Zasady i interpretacje aukcji v22](docs/auction/RELEASE_V22_0931.md) · [Stabilizacja 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md)
 - [Game Master / reguły projektu](AUCTIONHAMMER_MASTER.md)
 - [Archiwum wcześniejszego README i historii wydań](docs/README_HISTORIA_DO_0932.md)
 - [Zgłoś problem lub propozycję](https://github.com/MateuszBock0/AuctionHammer/issues)
