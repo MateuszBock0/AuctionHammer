@@ -25,6 +25,10 @@ def pick_choices(game,mode,ids,label):
     return [Choice(mode,x,f'{label} — {game.label(x)}') for x in ids]
 
 
+def foe_has_playable_deck(own,enemy):
+    return bool(own.deck or enemy.deck)
+
+
 def options(game,uid,context,attacked=None):
     aid=kind(game,uid)
     if not aid and uid not in game.auction_death_grants:return []
@@ -118,8 +122,14 @@ def options(game,uid,context,attacked=None):
         return []
     if aid=='A016' and context=='play':
         if tier<2:
-            return pick_choices(game,'cart_draw',list(reversed(own.deck[-3:])),
-                                'Dobierz jedną z własnej talii')
+            choices=pick_choices(game,'cart_draw',list(reversed(own.deck[-3:])),
+                                 'Dobierz jedną z własnej talii')
+            if choices:return choices
+            # The rare second effect is independent of the basic draw.
+            # Even with no own cards, it may play the opponent's top card.
+            if tier==1 and len(own.board)<5 and foe_has_playable_deck(own,enemy):
+                return [Choice('auto',None,'Pomiń dobór, zagraj z talii')]
+            return []
         return options(game,uid,'auction_cart_play')
     if aid=='A018' and context=='play':
         return [Choice('auto',None,'Nadaj premię na następną aukcję')]
@@ -642,8 +652,9 @@ def execute(game,uid,context,choice,attacked=None):
             game._log(f'Kartograf: {game.label(target)} dobrano do ręki.')
         if tier==1:
             # First choice can empty the deck; recycle again for the
-            # optional second selection without consuming a hand play.
-            game._refill_deck_from_grave(owner)
+            # optional second selection only when a board slot remains.
+            if len(own.board)<5:
+                game._refill_deck_from_grave(owner)
             choices=options(game,uid,'auction_cart_play')
             if choices:_prepare_pending(game,uid,'auction_cart_play',choices)
         elif tier==2 and mode=='cart_play':
