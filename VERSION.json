@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.33",
+  "mvp": "0.9.34",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -44,7 +44,11 @@
     "A009-v22-auction-discard-isolation",
     "v22-rarity-evolves-every-three-completed-rounds",
     "A010-v22-symmetric-queen-growth-and-summons",
-    "A016-empty-deck-recovers-from-grave"
+    "A016-empty-deck-recovers-from-grave",
+    "S11-hero-poison-quality-bonus",
+    "A015-defer-mixed-target-block-until-choice",
+    "S85-healing-choice-label",
+    "v22-AI-attack-ability-rarity-offer-valuation"
   ],
   "combat_explanations": [
     "actual_HP_damage",
