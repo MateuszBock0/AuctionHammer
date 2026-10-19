@@ -5,6 +5,7 @@ import re
 import subprocess
 import pygame
 from game.ui.combat_visuals import CombatVisuals
+from game.ui.music import FantasyTavernMusic
 from game.ui.visual_theme import VisualTheme
 from game.ui.match_history import MatchRecorder
 from game.core.persistence import save_match, load_match, save_path
@@ -38,6 +39,7 @@ class SoloApp:
     def __init__(self,start_in_menu=False):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
         pygame.init()
+        self.music = FantasyTavernMusic()
         # Fit the opening window to the current display, respecting Windows DPI
         # scaling and keeping room for the title bar and taskbar.
         # The internal canvas and all clickable hitboxes retain their v17 size.
@@ -623,6 +625,7 @@ class SoloApp:
             return False
 
     def handle(self,event):
+        if self.music.handle_event(event):return True
         if event.type==pygame.QUIT:return False
         # Panele modalne odcinają interakcje od żywego silnika.
         if self.menu_open:
