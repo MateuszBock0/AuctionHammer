@@ -90,5 +90,40 @@ class V23HealingAndWard(unittest.TestCase):
         g.assert_integrity()
 
 
+    def test_both_legendary_A015_block_opposite_death_triggers_in_one_snapshot(self):
+        from game.core.models import Card,Unit
+        g=ready(237215)
+        first=award(g,'A015',2,owner=0,zone='board')
+        # A copied A015 is the legal way to have the same archetype
+        # on both tables without illegally buying two original copies.
+        g.serial+=1
+        second=f'COPY{g.serial:07d}'
+        ref=g.cards[first]
+        g.cards[second]=Card(second,ref.definition,owner=1,zone='board')
+        g.defs[second]=ref.definition
+        g.ephemeral_ids.add(second)
+        g.auction_awards[second]=dict(g.auction_awards[first],ephemeral=True)
+        g.players[1].board.append(second)
+        original=g.units[first]
+        g.units[second]=Unit(second,1,original.atk,original.max_hp,
+                             original.hp,original.ability_level,0)
+        left=place_basic(g,'S86',0)
+        right=place_basic(g,'S87',1)
+        left_hp=g.players[0].hp
+        right_hp=g.players[1].hp
+        for cid in (first,second,left,right):
+            g.units[cid].hp=0
+        # The Wieszczki are dying in the SAME cohort, so their auras
+        # must still block opposing sources for that cohort.
+        g._kill_batch([first,second,left,right])
+        self.assertFalse(g.death_waves)
+        g._drain()
+        self.assertEqual(g.players[0].hero_armor,0)
+        self.assertEqual(g.players[0].hp,left_hp)
+        self.assertEqual(g.players[1].hp,right_hp)
+        self.assertEqual(g.death_counts,[2,2])
+        g.assert_integrity()
+
+
 if __name__=='__main__':
     unittest.main()
