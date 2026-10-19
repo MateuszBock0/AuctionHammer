@@ -106,10 +106,11 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         g=app.game
         g.phase='turn'
         g.active=0
-        for uid in list(g.bank)[:5]:
+        for uid in list(g.bank)[:max(0,5-len(g.players[0].board))]:
             place_basic(g,uid,0)
-            # A unit can have two attacks (S79 / Double Attack). Ensure
-            # *all* five are genuinely exhausted, independent of abilities.
+        # The second-player starting guard may already occupy one of 5 slots.
+        # Every existing unit must have spent both possible attacks.
+        for uid in g.players[0].board:
             g.units[uid].attacks=2
         g.players[0].played_this_turn=False
         self.assertEqual(len(g.players[0].board),5)
