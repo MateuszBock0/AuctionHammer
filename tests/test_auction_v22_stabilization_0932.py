@@ -76,6 +76,27 @@ class AuctionV22RarityRegression(unittest.TestCase):
         close_auction(loaded)
         loaded.assert_integrity()
 
+    def test_A002_rarity_evolution_opens_choice_and_can_resume_saved_game(self):
+        game=ready(932011)
+        ally=place_basic(game,'S01',0)
+        general=award(game,'A002',0,zone='board')
+        game.round=6
+        game.active=1-game.first
+        game.end_turn()
+        self.assertEqual(game.auction_awards[general]['rarity'],'rzadka')
+        self.assertIsNotNone(game.pending)
+        self.assertEqual(game.pending.uid,general)
+        self.assertEqual(game.pending.context,'auction_evolve')
+        self.assertTrue(any(c.mode=='general_target' and c.target==ally
+                            for c in game.pending.choices))
+        resumed=round_trip(game)
+        choose(resumed,'general_target',ally)
+        self.assertEqual(resumed.auction_general_targets[general],ally)
+        self.assertTrue(auction_abilities.boosted_attack(resumed,ally))
+        self.assertEqual(resumed.phase,'auction')
+        close_auction(resumed)
+        resumed.assert_integrity()
+
     def test_v4_legacy_still_evolves_without_17_card_catalog(self):
         from test_auction_v4_engine import ready as v4_ready,award as v4_award
         game=v4_ready(932002)
