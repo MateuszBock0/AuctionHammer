@@ -411,6 +411,11 @@ class Match:
                     uid,ctx,tgt=self.trigger_queue.popleft()
                     if ctx not in ('death',) and uid not in self.units:continue
                     if ctx in ('death',) and self._death_disabled.get(uid,False):continue
+                    if (self.auction_catalog=='v22' and
+                            auction_ability_rules.block_trigger(self,uid,ctx,tgt)):
+                        self._log(f'Wieszczka anuluje wyzwalacz '
+                                  f'{self.label(uid)}: {ctx}.')
+                        continue
                     auction_context=(self.auction_catalog in ('v4','v22') and
                                      (self.auction_awards.get(uid,{}).get('archetype') or
                                       ctx.startswith('auction_') or uid in self.auction_death_grants))
@@ -798,9 +803,11 @@ class Match:
         # Zbieramy stan wszystkich umierających PRZED usunięciem pierwszej
         # jednostki. Nagrody naliczamy dokładnie raz za fizyczną instancję.
         snapshot=[]
+        global_death_block=(self.auction_catalog=='v22' and
+                            auction_ability_rules.global_trigger_block(self,'death'))
         for uid in ordered:
             unit=self.units[uid]
-            blocked=self._disabled(unit)
+            blocked=self._disabled(unit) or global_death_block
             self._death_disabled[uid]=blocked
             self._death_levels[uid]=unit.ability_level
             snapshot.append((uid,unit.owner,blocked,
@@ -935,6 +942,8 @@ class Match:
 
     @trace_effect('_remove_unit')
     def _remove_unit(self,uid,death):
+        if self.auction_catalog=='v22':
+            self.auction_blocked_play.discard(uid)
         if self.auction_catalog in ('v4','v22'):
             auction_ability_rules.forget_general_links(self,uid,include_source=True)
         u=self.units.pop(uid)
