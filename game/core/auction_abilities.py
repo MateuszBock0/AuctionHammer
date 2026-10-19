@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import replace
 from math import ceil
 from .models import Card,CardDefinition,Choice,Pending,Unit
-from .auction_catalog import CATALOG,RARITIES
+from .auction_catalog import CATALOG,RARITIES,catalog_for
 
 
 def kind(game,uid):
@@ -18,7 +18,7 @@ def kind(game,uid):
 
 def rarity(game,uid):
     data=game.auction_awards.get(uid,{})
-    return RARITIES.index(data['rarity']) if data.get('archetype') in CATALOG else 0
+    return RARITIES.index(data['rarity']) if data.get('archetype') in catalog_for(game.auction_catalog) else 0
 
 
 def pick_choices(game,mode,ids,label):
@@ -33,6 +33,13 @@ def options(game,uid,context,attacked=None):
     myboard=[x for x in own.board if x!=uid]
     opponents=list(enemy.board)
     tier=rarity(game,uid)
+    if context=='auction_cart_play':
+        if tier==1:
+            candidates=list(reversed(own.deck[-3:]))+list(reversed(enemy.deck[-1:]))
+        else:
+            candidates=list(reversed(own.deck[-3:]))+list(reversed(enemy.deck[-3:]))
+        return (pick_choices(game,'cart_play',candidates,'Zagraj z talii')
+                if len(own.board)<5 else [])
     if context=='auction_silence_next':
         already=game.auction_pending_targets.get(uid,[])
         return [Choice('stop',None,'Zakończ wyciszanie')]+pick_choices(
@@ -104,8 +111,86 @@ def options(game,uid,context,attacked=None):
             return [Choice('copy_to_self',None,'Kopiuj PŻ rywala do siebie'),
                     Choice('copy_to_enemy',None,'Kopiuj swoje PŻ do rywala')]
         return [Choice('auto',None,'Manipuluj PŻ bohaterów')]
+    if aid=='A013' and context=='play':
+        return pick_choices(game,'bastion',opponents,'Przebij MAX PŻ')
+    if aid in ('A014','A015'):
+        return []
+    if aid=='A016' and context=='play':
+        if tier<2:
+            return pick_choices(game,'cart_draw',list(reversed(own.deck[-3:])),
+                                'Dobierz jedną z własnej talii')
+        return options(game,uid,'auction_cart_play')
+    if aid=='A018' and context=='play':
+        return [Choice('auto',None,'Nadaj premię na następną aukcję')]
     return []
 
+
+
+def _active_passives(game,aid):
+    for uid,u in list(game.units.items()):
+        if (game.cards[uid].definition.id==aid and
+                kind(game,uid)==aid and not game._disabled(u)):
+            yield uid,u,rarity(game,uid)
+
+
+def convert_healing(game,target,target_owner,amount):
+    """A014: highest enemy tier wins, not additive; damage uses normal guards."""
+    amount=max(0,int(amount))
+    tiers=[tier for _uid,u,tier in _active_passives(game,'A014')
+           if u.owner!=target_owner]
+    if not tiers or amount<=0:return amount
+    tier=max(tiers)
+    if tier==0:
+        game._log(f'Kapłan Odwróconej Łaski: {game.label(target)} '
+                  f'nie może odzyskać {amount} PŻ.')
+        return 0
+    damage=(amount+1)//2 if tier==1 else amount
+    heal=amount-damage
+    game._log(f'Kapłan Odwróconej Łaski: z leczenia {amount} PŻ '
+              f'{damage} zmieniono w obrażenia, pozostaje leczenie {heal} PŻ.')
+    game._damage(target,damage)
+    return heal
+
+
+def global_trigger_block(game,context):
+    """A015 rare blocks death for both players; legendary play/death/end."""
+    for _uid,_unit,tier in _active_passives(game,'A015'):
+        if tier==2 and context in ('play','death','end'):return True
+        if tier==1 and context=='death':return True
+    return False
+
+
+def block_trigger(game,uid,context,attacked=None):
+    if context not in ('play','death','end'):return False
+    if global_trigger_block(game,context):return True
+    if context!='play':return False
+    source=game.cards[uid].owner
+    wardens=[(w,w_owner,t) for w,w_unit,t in _active_passives(game,'A015')
+             for w_owner in [w_unit.owner]
+             if w_owner!=source and t<2 and w not in game.auction_blocked_play]
+    if not wardens:return False
+    aid=kind(game,uid)
+    if aid in ('A005','A012','A018'):
+        aimed=(aid in ('A005','A012'))
+    else:
+        from .effects import options as basic_options
+        choices=(options(game,uid,'play',attacked) if aid else
+                 basic_options(game,uid,'play',attacked))
+        aimed=any((c.target and
+                    (c.target==f'hero:{1-source}' or
+                     (c.target in game.units and
+                      game.units[c.target].owner!=source)))
+                  for c in choices)
+        if not aimed:
+            words=game.cards[uid].definition.effect.lower()
+            aimed=(any(x in words for x in ('wrog','przeciwnik','rywala')) and
+                   not any(x in words for x in ('własnego bohatera','własne jednostki')))
+    if not aimed:return False
+    chosen=min(wardens,key=lambda a:(a[1],game.players[a[1]].board.index(a[0])))[0]
+    game.auction_blocked_play.add(chosen)
+    game._log(f'Wieszczka {game.label(chosen)}: anulowano pierwszą '
+              f'wrogą zdolność przy wystawieniu {game.label(uid)}.')
+    return True
 
 def _prepare_pending(game,uid,context,choices,owner=None):
     if choices:
@@ -343,6 +428,15 @@ def execute(game,uid,context,choice,attacked=None):
     foe=game.players[1-owner]
     mode=choice.mode;target=choice.target
 
+    if context=='auction_cart_play':
+        if mode=='cart_play' and target in own.deck+foe.deck and len(own.board)<5:
+            if target in foe.deck:
+                foe.deck.remove(target)
+                own.deck.append(target)
+                game.cards[target].owner=owner
+                game._log('Kartograf przejmuje kartę z talii przeciwnika.')
+            game._play_deck_effect(owner,target)
+        return
     if context=='auction_silence_next':
         if mode=='silence' and target in game.units:
             game._add_effect(target,'silence',expires=game._expiry(1-owner),
@@ -516,6 +610,42 @@ def execute(game,uid,context,choice,attacked=None):
                         game._damage(card,max(1,game.units[card].hp),
                                      ignore_defense=True,defer_death=True)
             game._damage(f'hero:{1-owner}',10)
+    elif aid=='A013' and context=='play':
+        if target in game.units and game.units[target].owner==1-owner:
+            victim=game.units[target]
+            pct=(25,40,60)[tier]
+            value=(victim.max_hp*pct+99)//100
+            if tier==2 and victim.shield:
+                victim.shield=0
+                victim.shield_source=''
+                game._log('Łamacz Bastionów: legendarna zdolność zdejmuje Tarczę.')
+            elif victim.shield:
+                victim.shield=0
+                victim.shield_source=''
+                game._log(f'Łamacz Bastionów: Tarcza pochłania {value} obrażeń.')
+                return
+            game._damage(target,value,ignore_defense=True)
+    elif aid=='A016' and context=='play':
+        if mode=='cart_draw' and target in own.deck:
+            own.deck.remove(target)
+            own.hand.append(target)
+            game.cards[target].zone='hand'
+            game._log(f'Kartograf: {game.label(target)} dobrano do ręki.')
+        if tier==1:
+            choices=options(game,uid,'auction_cart_play')
+            if choices:_prepare_pending(game,uid,'auction_cart_play',choices)
+        elif tier==2 and mode=='cart_play':
+            execute(game,uid,'auction_cart_play',choice)
+    elif aid=='A018' and context=='play':
+        if tier<2:
+            own.coins+=2
+            bonus=(2,5)[tier]
+            game.auction_vouchers[owner].append({'bonus':bonus})
+            game._log(f'Licytator: +2 monety i +{bonus} skutecznej oferty '
+                      'na następną aukcję.')
+        else:
+            game.auction_vouchers[owner].append({'guaranteed':True})
+            game._log('Licytator: gwarancja pierwszego wyboru na następną aukcję.')
     elif aid=='A012' and context=='play':
         if tier==0:
             mean=(own.hp+foe.hp)//2
