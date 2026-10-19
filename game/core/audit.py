@@ -536,6 +536,28 @@ def verify_replay(payload,match_factory):
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
         game=match_factory(payload["seed"])
+    # v0.9.34 introduced optional vacant-slot income for NEW v22 matches.
+    # A pre-0.9.34 archived match (or a resumed old save) used the old
+    # economy. Infer it from signed audit metadata, not today's defaults.
+    # This does not emulate old ability logic; it prevents a spurious
+    # mismatch caused ONLY by the newer starting economy.
+    if auction_enabled and catalog=='v22':
+        summary=payload.get('summary',{})
+        if 'vacant_slot_income_enabled' in summary:
+            enabled=summary['vacant_slot_income_enabled']
+        elif payload.get('version') in ('0.9.31','0.9.32','0.9.33'):
+            enabled=False  # Archive predates the new 0.9.34 economy.
+        else:
+            # A deliberately minimal in-memory replay payload need not
+            # include report metadata. Preserve the factory's actual rules.
+            enabled=getattr(game,'vacant_income_enabled',False)
+        if type(enabled) is not bool:
+            raise ValueError("Niezgodna flaga dochodu za wolne pola w audycie")
+        if not hasattr(game,'vacant_income_enabled'):
+            if enabled:
+                raise ValueError("Silnik odtwarzania nie obsługuje dochodu za wolne pola")
+        else:
+            game.vacant_income_enabled=enabled
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
         raise ValueError("Początkowy stan nie odpowiada wskazanemu seed")
     for record in payload["actions"]:
@@ -559,4 +581,8 @@ def verify_replay(payload,match_factory):
         raise ValueError("Niezgodna wewnętrzna kolejność efektów")
     if digest(state_snapshot(game))!=digest(payload["final_state"]):
         raise ValueError("Niezgodny stan końcowy")
+    if ('vacant_slot_income_total' in payload.get('summary',{})
+            and list(getattr(game,'slot_income',[0,0])) !=
+                payload['summary']['vacant_slot_income_total']):
+        raise ValueError("Niezgodny licznik dochodu za wolne pola w audycie")
     return True
