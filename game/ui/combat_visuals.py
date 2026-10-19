@@ -8,8 +8,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import sin, cos, pi
+import copy
 import re
 import pygame
+
+from game.core.status_view import active_statuses
 
 KINDS = {
     'damage':((255,121,125),'-'),
@@ -39,6 +42,20 @@ class Pulse:
     lifetime: int = 840
 
 
+@dataclass(frozen=True)
+class CombatCard:
+    """Read-only, short-lived picture of a committed combatant."""
+    uid: str
+    rect: pygame.Rect
+    old_hp: int
+    new_hp: int
+    born: int
+    dead: bool = False
+    unit: object = None
+    statuses: tuple = ()
+    lifetime: int = 440
+
+
 class CombatVisuals:
     """Ostatnie wizualizacje; FIFO z ograniczoną pamięcią, bez zmian gry."""
 
@@ -48,6 +65,8 @@ class CombatVisuals:
         self.read_events = 0
         self.last_active = None
         self.pulses: list[Pulse] = []
+        self.combat_cards: dict[str,CombatCard] = {}
+        self.fallen_cards: list[CombatCard] = []
 
     @staticmethod
     def _anchor(rect: pygame.Rect) -> tuple[int,int]:
@@ -72,6 +91,9 @@ class CombatVisuals:
                 state[uid] = {
                     'hp':unit.hp,'shield':unit.shield,'armor':unit.armor,
                     'status':effects,'at':position,'attacks':unit.attacks,
+                    'rect':unit_rect(owner,slot).copy(),
+                    'unit':copy.deepcopy(unit),
+                    'statuses':tuple(active_statuses(game,uid)),
                 }
         return state
 
@@ -98,6 +120,16 @@ class CombatVisuals:
         if game.active != self.last_active:
             self.last_active=game.active
             self._push('turn',current[f'hero:{game.active}']['at'],now,'')
+        # Keep a short read-only picture of BOTH combatants, so the player
+        # can follow their HP changing and see the fallen card turn grey.
+        fighting=set()
+        confirmed_deaths=set()
+        for uid,old in prior.items():
+            if uid.startswith('hero:') or uid in current:
+                continue
+            if any(evt['text'].startswith(f'Zgon {game.label(uid)}.')
+                   for evt in fresh):
+                confirmed_deaths.add(uid)
         # Przy walce oba końce są znane nawet wtedy, gdy atakujący już zginął.
         for evt in fresh:
             message=evt['text']
@@ -117,10 +149,28 @@ class CombatVisuals:
                 if src and dst:
                     start=(prior.get(src) or current.get(src) or {}).get('at')
                     end=(current.get(dst) or prior.get(dst) or {}).get('at')
-                    if start and end:self._push('attack',end,now,origin=start)
+                    if start and end:
+                        self._push('attack',end,now,origin=start)
+                        fighting.update((src,dst))
+        for uid in fighting | confirmed_deaths:
+            old=prior.get(uid)
+            if not old or uid.startswith('hero:'):
+                continue
+            latest=current.get(uid)
+            dead=uid in confirmed_deaths
+            new_hp=max(0,latest['hp']) if latest else 0
+            transition=CombatCard(
+                uid,old['rect'],max(0,old['hp']),new_hp,int(now),
+                dead=dead,unit=old['unit'],statuses=old['statuses'])
+            if dead:
+                self.fallen_cards.append(transition)
+                self.fallen_cards=self.fallen_cards[-12:]
+                self.combat_cards.pop(uid,None)
+            elif latest is not None:
+                self.combat_cards[uid]=transition
         for uid,old in prior.items():
             if uid not in current:
-                if not uid.startswith('hero:'):
+                if uid in confirmed_deaths:
                     self._push('death',old['at'],now,'ZGON')
                 continue
             new=current[uid]
@@ -136,6 +186,60 @@ class CombatVisuals:
                         'quick':'quick','double':'double'}.get(kind,'special')
                 self._push(mapped,new['at'],now)
         self.pulses=[p for p in self.pulses if now-p.born < p.lifetime]
+        self.combat_cards={uid:card for uid,card in self.combat_cards.items()
+                           if now-card.born < card.lifetime}
+        self.fallen_cards=[card for card in self.fallen_cards
+                           if now-card.born < card.lifetime]
+
+    @staticmethod
+    def interpolated_hp(card: CombatCard,now: int):
+        """HP decreases first; only afterwards does the losing card grey out."""
+        age=max(0,now-card.born)
+        t=min(1.0,max(0.0,(age-55)/185.0))
+        return max(0,round(card.old_hp+(card.new_hp-card.old_hp)*t))
+
+    def hp_display(self,uid,now):
+        card=self.combat_cards.get(uid)
+        if card is None or not card.old_hp>card.new_hp:
+            return None
+        if now-card.born >= card.lifetime:
+            return None
+        return self.interpolated_hp(card,now)
+
+    def _combat_outline(self,screen,rect,age):
+        """Short highlight around both participants, without covering stats."""
+        if age<0 or age>=430:return
+        opacity=max(0,int(210*(1-age/430)))
+        halo=pygame.Surface((rect.w+14,rect.h+14),pygame.SRCALPHA)
+        pygame.draw.rect(halo,(255,217,125,opacity),
+                         halo.get_rect().inflate(-7,-7),3,border_radius=13)
+        screen.blit(halo,(rect.x-7,rect.y-7))
+
+    def draw_cards(self,screen,game,card_view,now):
+        """Overlay combat feedback only: no changes to Match or board state."""
+        for uid,card in self.combat_cards.items():
+            if uid in game.units:
+                self._combat_outline(screen,card.rect,now-card.born)
+        for card in self.fallen_cards:
+            age=now-card.born
+            if not 0<=age<card.lifetime or card.uid not in game.cards:
+                continue
+            # Render the actual former unit to a local surface (never an
+            # invented new card). Numbers fall to zero before desaturation.
+            render=pygame.Surface(card.rect.size,pygame.SRCALPHA)
+            local=pygame.Rect(0,0,*card.rect.size)
+            card_view.draw(render,game.cards[card.uid],local,card.unit,
+                           statuses=card.statuses,
+                           hp_override=self.interpolated_hp(card,now))
+            self._combat_outline(screen,card.rect,age)
+            grey_factor=min(1.0,max(0.0,(age-220)/145))
+            if grey_factor>0:
+                grey=pygame.transform.grayscale(render)
+                grey.set_alpha(int(255*grey_factor))
+                render.blit(grey,(0,0))
+            if age>355:
+                render.set_alpha(max(0,int(255*(card.lifetime-age)/85)))
+            screen.blit(render,card.rect.topleft)
 
     def draw(self,screen: pygame.Surface,now: int,font: pygame.font.Font):
         """Eased projectiles, impact particles, floating text and status rings.
