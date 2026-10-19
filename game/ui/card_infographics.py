@@ -37,6 +37,8 @@ AUCTION_MECHANIC_LABELS = {
     'A004':'KOPIE', 'A005':'MONETY', 'A006':'WYCISZ.',
     'A007':'RATUNEK', 'A008':'WYGNANIE', 'A009':'WYMIANA',
     'A010':'PRZYWOŁ.', 'A011':'ZGONY', 'A012':'PŻ BOH.',
+    'A013':'PRZEBICIE', 'A014':'ANTYLECZ.', 'A015':'KONTRA',
+    'A016':'TALIA', 'A018':'LICYTACJA',
 }
 
 UPGRADES = {
@@ -113,8 +115,8 @@ def card_cue(card, unit=None) -> CardCue:
         )
     if d.id.startswith('A0'):
         old_v3=d.effect.startswith('NIEAKTYWNA')
-        from game.core.auction_catalog import V4_CARDS
-        variants=V4_CARDS.get(d.id,{}).get('variants',{})
+        from game.core.auction_catalog import V22_CARDS
+        variants=V22_CARDS.get(d.id,{}).get('variants',{})
         current=next((label for key,label in
                       (('basic','PODSTAWOWA'),('rare','RZADKA'),('legendary','LEGENDARNA'))
                       if variants.get(key)==d.effect),None)
