@@ -185,6 +185,11 @@ def load_match(path: Path | None = None) -> Match:
         data.setdefault('auction_discarded',[])
         data.setdefault('auction_used',[])
         data.setdefault('auction_supply_version',0)
+    # Loading a pre-0.9.34 save must never silently change the rules
+    # halfway through a match. Fresh v22 games enable the bonus by default.
+    data.setdefault('vacant_income_enabled',False)
+    data.setdefault('slot_income',[0,0])
+    data.setdefault('slot_income_turns',[0,0])
     data.setdefault('auction_vouchers',[[],[]])
     data.setdefault('auction_blocked_play',set())
     for name,default in (

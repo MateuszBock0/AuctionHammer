@@ -167,32 +167,84 @@ def global_trigger_block(game,context):
     return False
 
 
-def block_trigger(game,uid,context,attacked=None):
-    if context not in ('play','death','end'):return False
-    if global_trigger_block(game,context):return True
-    if context!='play':return False
+def _choice_hits_enemy(game,uid,chosen):
+    """Classify the ACTUAL chosen branch, not every potential legal branch."""
+    owner=game.cards[uid].owner
+    aid=kind(game,uid)
+    mode=chosen.mode
+    # Reading/copying an enemy's unit does not itself target them with harm.
+    # Buffs, self-heals and friendly cleanses are never hostile.
+    if mode in ('Wzmocnij','Cel sojuszniczy','Oczyść własną',
+                'Wzmocnij siebie','copy_to_self','general_target',
+                'ally','self_quick','hand_quick','board_double'):
+        return False
+    if mode in ('enemy','exchange_own'):
+        return True  # Enemy auras and forced hand exchanges are hostile.
+    if aid=='A004':
+        return False
+    if mode in ('copy_to_enemy','swap_all'):
+        return True
+    target=chosen.target
+    if target==f'hero:{1-owner}':
+        return True
+    if target in game.units and game.units[target].owner!=owner:
+        return True
+    if aid=='A005':
+        return True  # Steals enemy coins even with no targeted choice.
+    if aid=='A012':
+        # Automatic basic / legendary hero changes are also hostile.
+        return mode!='copy_to_self'
+    # A card's one automatic ability may affect enemies without a Choice.target.
+    if mode=='auto' and target is None:
+        words=game.cards[uid].definition.effect.lower()
+        return (any(x in words for x in ('wrog','przeciwnik','rywala'))
+                and not any(x in words for x in ('własnego bohatera','własne jednostki')))
+    return False
+
+
+def block_trigger(game,uid,context,attacked=None,choice=None):
+    """A015: block forced offensive plays immediately; mixed plays after choice.
+
+    The rare/legendary GLOBAL trigger cancellation retains its v22 semantics.
+    A mixed list like S04 (+ATK ally OR -ATK enemy) must not lose its
+    friendly effect or spend the basic A015 ward before the actual decision.
+    """
+    if context not in ('play','death','end'):
+        return False
+    if global_trigger_block(game,context):
+        return True
+    if context!='play':
+        return False
     source=game.cards[uid].owner
     wardens=[(w,w_owner,t) for w,w_unit,t in _active_passives(game,'A015')
              for w_owner in [w_unit.owner]
              if w_owner!=source and t<2 and w not in game.auction_blocked_play]
-    if not wardens:return False
-    aid=kind(game,uid)
-    if aid in ('A005','A012','A018'):
-        aimed=(aid in ('A005','A012'))
+    if not wardens:
+        return False
+    if choice is not None:
+        aimed=_choice_hits_enemy(game,uid,choice)
     else:
-        from .effects import options as basic_options
-        choices=(options(game,uid,'play',attacked) if aid else
-                 basic_options(game,uid,'play',attacked))
-        aimed=any((c.target and
-                    (c.target==f'hero:{1-source}' or
-                     (c.target in game.units and
-                      game.units[c.target].owner!=source)))
-                  for c in choices)
-        if not aimed:
-            words=game.cards[uid].definition.effect.lower()
-            aimed=(any(x in words for x in ('wrog','przeciwnik','rywala')) and
-                   not any(x in words for x in ('własnego bohatera','własne jednostki')))
-    if not aimed:return False
+        aid=kind(game,uid)
+        if aid in ('A005','A012'):
+            # These can have mixed modes too; inspect offered modes first.
+            from .effects import options as basic_options
+            choices=(options(game,uid,'play',attacked) if aid else
+                     basic_options(game,uid,'play',attacked))
+            threats=[_choice_hits_enemy(game,uid,c) for c in choices]
+            aimed=bool(threats) and all(threats)
+        else:
+            from .effects import options as basic_options
+            choices=(options(game,uid,'play',attacked) if aid else
+                     basic_options(game,uid,'play',attacked))
+            threats=[_choice_hits_enemy(game,uid,c) for c in choices]
+            if threats:
+                aimed=all(threats)  # defer mixed lists until Match.choose()
+            else:
+                words=game.cards[uid].definition.effect.lower()
+                aimed=(any(x in words for x in ('wrog','przeciwnik','rywala'))
+                       and not any(x in words for x in ('własnego bohatera','własne jednostki')))
+    if not aimed:
+        return False
     chosen=min(wardens,key=lambda a:(a[1],game.players[a[1]].board.index(a[0])))[0]
     game.auction_blocked_play.add(chosen)
     game._log(f'Wieszczka {game.label(chosen)}: anulowano pierwszą '

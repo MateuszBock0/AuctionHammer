@@ -9,6 +9,38 @@ class ComputerOpponent:
         self.player=player
         self.difficulty=difficulty
 
+    def auction_offer_value(self,game,offer):
+        """Deterministic evaluation of v22 ATK, durability and abilities.
+
+        All input is visible on the table; no hidden hand or deck peek.
+        """
+        tier={'podstawowa':0,'rzadka':1,'legendarna':2}[offer.rarity]
+        value=1.35*offer.atk + .48*offer.hp + (0,2.5,5.5)[tier]
+        ability={
+            'A001':4.0,'A002':3.0,'A003':2.7,'A004':3.5,
+            'A005':1.5,'A006':4.0,'A007':4.5,'A008':4.0,
+            'A009':2.2,'A010':5.0,'A011':7.5,'A012':5.5,
+            'A013':4.5,'A014':3.0,'A015':4.8,'A016':4.5,
+            'A018':2.5,
+        }.get(offer.archetype,0.0)
+        foe=game.players[1-self.player]
+        own=game.players[self.player]
+        if offer.archetype=='A011':
+            ability+=min(3,len(foe.board))*1.2
+        elif offer.archetype in ('A006','A008','A013'):
+            ability+=min(2,len(foe.board))*1.0
+        elif offer.archetype=='A003':
+            ability+=min(3,len(own.grave))*.7
+        elif offer.archetype in ('A004','A010'):
+            ability+=min(3,len(own.board))*.5
+        elif offer.archetype=='A007':
+            ability+=max(0,100-own.hp)/25
+        elif offer.archetype=='A012':
+            ability+=max(0,foe.hp-own.hp)/15
+        elif offer.archetype=='A018' and len(game.auction_bag)<3:
+            ability-=6  # no further auction with three distinct offers
+        return value+ability*(1+.22*tier)
+
     def choose(self,game):
         p=game.pending
         if p is None:return
@@ -55,7 +87,13 @@ class ComputerOpponent:
                     game.auction_pass(self.player)
             else:
                 remaining=[x for x in state.offers if x.uid not in state.picks.values()]
-                best=max(remaining,key=lambda x:(x.hp,{'podstawowa':0,'rzadka':1,'legendarna':2}[x.rarity]))
+                if game.auction_catalog=='v22' and self.difficulty!='łatwy':
+                    best=max(remaining,key=lambda x:(
+                        self.auction_offer_value(game,x),x.atk,x.hp,x.uid))
+                else:
+                    # Legacy v4 and easy AI retain their established heuristics.
+                    best=max(remaining,key=lambda x:(
+                        x.hp,{'podstawowa':0,'rzadka':1,'legendarna':2}[x.rarity]))
                 game.auction_pick(self.player,best.uid)
             return
         if game.phase=='mulligan':

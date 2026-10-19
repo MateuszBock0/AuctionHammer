@@ -1,0 +1,41 @@
+name: AuctionHammer - experyment monet za puste pola
+
+on:
+  pull_request:
+    paths:
+      - 'tools/research_vacant_board_income.py'
+      - 'tests/test_vacant_board_income_research.py'
+      - '.github/workflows/vacant-board-income.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compare 800 games with and without slot income
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          python tools/research_vacant_board_income.py \
+            --seeds 200 \
+            --start-seed 220000 \
+            --levels normalny trudny \
+            --output-dir reports/empty_slots
+      - name: Export experiments including diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-V22-Vacant-Slots-Study
+          path: reports/empty_slots/
+          if-no-files-found: warn
+          retention-days: 90
