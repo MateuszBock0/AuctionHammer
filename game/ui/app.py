@@ -1008,6 +1008,9 @@ class SoloApp:
                   if not p0.played_this_turn else
                   'WYSTAWIONO JUŻ KARTĘ W TEJ TURZE')
             self._text(hint,13,100,721,cfg.GREEN if not p0.played_this_turn else cfg.MUTED)
+        elif self.game.phase=='mulligan':
+            self._text('WYMIANA STARTOWA  ·  wybierz maks. 3 karty na ręce, ENTER zatwierdza',
+                       14,100,721,cfg.GOLD)
         else:
             self._text('TWOJA RĘKA  ·  wybierz kartę i pole lub przeciągnij',
                        14,100,721,cfg.MUTED)
@@ -1081,7 +1084,7 @@ class SoloApp:
                         self._text(self.cards_view.clip(st.name,self.fonts[13],310),13,1105,577+j*25,st.color)
                 self._text(self.cards_view.clip(d.scaling,self.fonts[12],313),12,1105,658,cfg.MUTED)
         else:
-            lines=['Kliknij kartę, aby zobaczyć jej opis.','Najpierw zagrywasz JEDNĄ jednostkę','na turę, potem możesz atakować','dowolną liczbą gotowych jednostek.','','FRAKCJE:',
+            lines=['Kliknij kartę, aby zobaczyć jej opis.','Możesz zagrać JEDNĄ kartę na turę','i atakować gotowymi jednostkami','w dowolnej kolejności.','','FRAKCJE:',
                    'ELFY: efekt przy wystawieniu','BESTIE: efekt przy ataku','POTWORY: efekt przy śmierci',
                    'KRASNOLUDY: efekt na koniec tury','LUDZIE: efekty pasywne']
             y=171
