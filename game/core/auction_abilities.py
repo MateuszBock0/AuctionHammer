@@ -176,8 +176,10 @@ def _choice_hits_enemy(game,uid,chosen):
     # Buffs, self-heals and friendly cleanses are never hostile.
     if mode in ('Wzmocnij','Cel sojuszniczy','Oczyść własną',
                 'Wzmocnij siebie','copy_to_self','general_target',
-                'exchange_own','self_quick','hand_quick','board_double'):
+                'ally','self_quick','hand_quick','board_double'):
         return False
+    if mode in ('enemy','exchange_own'):
+        return True  # Enemy auras and forced hand exchanges are hostile.
     if aid=='A004':
         return False
     if mode in ('copy_to_enemy','swap_all'):
