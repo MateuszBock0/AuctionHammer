@@ -173,7 +173,11 @@ class CardView:
             'lines':lines,'boxes':boxes,'show_value':show_value,
         }
 
-    def art(self,cid,faction,size,family=''):
+    def art(self,cid,faction,size,family='',card_name=''):
+        if cid=='SUM_START_GUARD' and card_name=='Chorąży':
+            # Reuse the project's existing artwork, not a new/generated asset.
+            # The historical 5/5 Guard keeps its procedural illustration.
+            return self.images.get_card_image(ART['S34'],size)
         if cid in ART:
             return self.images.get_card_image(ART[cid],size)
         key=(cid,size,family)
@@ -243,7 +247,7 @@ class CardView:
         self.theme.card_lustre(screen,rect,color)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
-        screen.blit(self.art(d.id,d.faction,art.size,d.family),art)
+        screen.blit(self.art(d.id,d.faction,art.size,d.family,d.name),art)
         if dim:
             shade=pygame.Surface(art.size,pygame.SRCALPHA)
             shade.fill((6,10,17,130))
@@ -339,7 +343,17 @@ class CardView:
         self._center(screen,self.clip(cue.upgrade,ft,footer.width-8),
                      footer,ft,(183,255,196))
         # Statuses cover artwork only, never stats or ability panel.
-        if statuses:
+        if statuses and not board and not large:
+            # The 22px hand artwork is reserved for faction emblem + level
+            # progress. Separate status marks sit in the card's outer border
+            # (x=rect.x+1), never on the emblem or the progress pill.
+            for index,status in enumerate(statuses[:3]):
+                pygame.draw.rect(screen,status.color,
+                                 pygame.Rect(rect.x+1,art.y+index*7,3,6))
+            if len(statuses)>3:
+                pygame.draw.circle(screen,cfg.GOLD,(rect.x+2,art.bottom-1),2)
+            # Full status names, durations and sources remain available in I.
+        elif statuses:
             prio=lambda st:PRIORITY.index(st.category) if st.category in PRIORITY else 99
             ordered=sorted(statuses,key=prio)
             compact=ordered[:2]
