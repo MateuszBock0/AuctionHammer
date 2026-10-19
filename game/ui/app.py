@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.29: queen summon crash fix and correct ephemeral card display."""
+"""AuctionHammer MVP 0.9.32: v21 balance and stabilized v22 auctions."""
 from __future__ import annotations
 import os
 import re
