@@ -1,31 +1,52 @@
-# Zewnętrzna ścieżka dźwiękowa — PGN Music
+# Muzyka, autorzy i zasady wykorzystania
 
-Kod gry AuctionHammer jest darmowy i dostępny na licencji MIT.
-MIT nie obejmuje nagrań muzycznych osób trzecich.
+## Credits / attribution
 
-Planowane nagranie: **Fantasy Tavern Album — PGN Music**, 13 utworów,
-łącznie około 47 min 44 s. Kompozytor wskazany na stronie wydawcy:
-**Alek Kaczan**.
+**AuctionHammer** — projekt i kod: Mateusz Boćko.  
+**Music:** *Fantasy Tavern Music / Fantasy Tavern Album* (13 utworów).  
+**Composer:** Alek Kaczan.  
+**Publisher / rights holder:** PGN Music (Paradox Gaming Network).  
+**Official site:** https://pgnmusic.com/  
+**Album:** https://pgnmusic.bandcamp.com/album/fantasy-tavern-album  
+**Album details:** https://pgnmusic.com/album.php?title=Fantasy+Tavern+Music
 
-Album: https://pgnmusic.bandcamp.com/album/fantasy-tavern-album
-Wydawca: https://pgnmusic.com/about.php
-Opis albumu: https://pgnmusic.com/album.php?title=Fantasy+Tavern+Music
+> Music courtesy of PGN Music (https://pgnmusic.com/).
+> Fantasy Tavern Music — composed by Alek Kaczan.
+> Used with permission of the rights holder.
 
-Strona konkretnego albumu odsyła do CC BY 4.0, natomiast ogólne
-zasady PGN Music opisują CC BY-SA i zezwalają na muzykę w grach wideo.
-W tej samej polityce PGN Music ogranicza publikację samych nagrań na
-innych platformach. Przed dołączeniem audio do publicznego repozytorium
-lub paczki Windows wymagane jest potwierdzenie warunków przez wydawcę:
-support@paradoxgaming.net.
+Odtwarzana w grze kopia to pojedynczy plik MP3 zawierający pełny album,
+zamiast 13 oddzielnych plików. Jeśli przy tworzeniu pliku wykonano
+montaż, cięcia lub inne modyfikacje nagrań, trzeba odpowiednio wskazać
+te zmiany w warunkach przyznanej licencji.
 
-**W obecnym repozytorium nie ma nagrań.** Użytkownik może umieścić
-własne, legalnie uzyskane kopie w folderze `assets/music/`, by
-uruchomić soundtrack lokalnie. Program nie pobiera audio z YouTube.
+## Status licencji
 
-Planowany podpis w credits po wyjaśnieniu warunków redystrybucji:
-Music: *Fantasy Tavern Album* — PGN Music / Alek Kaczan.
-https://pgnmusic.com/
-https://pgnmusic.bandcamp.com/album/fantasy-tavern-album
+Właściciel AuctionHammer **potwierdził uzyskanie zgody** na
+rozpowszechnianie muzyki wraz z grą (19 października 2026).
+To informacja przekazana przez opiekuna projektu, a nie opublikowany
+tekst od wydawcy. Kopię warunków indywidualnej zgody warto zachować
+w prywatnej dokumentacji projektu; jeżeli obejmują wymagany podpis,
+konkretną wersję licencji lub dodatkowe ograniczenia, trzeba je
+uwzględnić przed upowszechnieniem nagrania.
 
-Jeżeli 13 utworów zostanie połączonych w jeden plik, należy wskazać
-taką zmianę zgodnie z potwierdzonymi warunkami licencji.
+Na stronie PGN Music opisano ogólną licencję **CC BY-SA**, natomiast
+album w serwisie Bandcamp udostępnia link licencyjny do **CC BY 4.0**.
+Tych dokumentów nie należy automatycznie utożsamiać. Jeżeli
+indywidualna zgoda ustala inne warunki, dla wydania gry wiążące
+są warunki tej zgody.
+
+Polityka PGN Music: https://pgnmusic.com/about.php  
+Album: https://pgnmusic.bandcamp.com/album/fantasy-tavern-album  
+CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/  
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+
+## Rozdzielenie licencji
+
+- **Kod gry i dokumentacja własna:** MIT (`LICENSE`).
+- **Oryginalne nagrania muzyczne:** prawa pozostają przy PGN Music
+  oraz twórcy; nie są objęte licencją MIT.
+- **Dystrybucja:** plik `assets/music/music_auctionhammer.mp3` jest
+  dołączany do publicznego kodu i gotowego wydania Windows **po jego
+  dodaniu i zatwierdzeniu w repozytorium**.
+
+Credits są także widoczne w grze: **Menu → CREDITS**.
