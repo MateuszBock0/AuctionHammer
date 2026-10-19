@@ -1,6 +1,6 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.33  
+**Wersja gry:** MVP 0.9.34  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
 **Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
@@ -23,6 +23,7 @@ Ten dokument opisuje **aktualny stan gry**. Fragment od nagłówka „ARCHIWUM �
 | `tests/` | Testy zgodności i zabezpieczenia przed regresją |
 | `docs/GAME_MASTER_v17.md` | **Archiwum v17** — do porównywania historycznych decyzji |
 | `data/event_order_v19.json` | **Obowiązująca kolejność zdarzeń** i wspólne fale zgonów zgodnie z Game Master v19 |
+| `docs/QA_FIXES_0934.md` | **Aneks 0.9.34:** nowe monety za wolne miejsca, poprawione S11/A015/S85 i AI aukcji |
 | `docs/FALE_ZGONOW_v19_MVP_0910.md` | Techniczny opis naprawy atomowych fal zgonów i wyników testów |
 | `data/event_order_v17.json` | Historyczny zapis kolejki, pozostawiony w archiwum |
 
@@ -40,6 +41,8 @@ Po rozpakowaniu gotowej wersji Windows kliknij `URUCHOM_AUCTIONHAMMER.bat`, aby 
 - Co zakończoną własną turę na ręce karta otrzymuje przyrost statystyk; co trzy takie tury zwiększa się poziom jej zdolności.
 - Wszystkie etykiety interfejsu, informacje o efektach, komunikaty o wyborach oraz paski rozwoju zdolności mają być wyświetlane po polsku.
 - Rozgrywka obecnie przebiega przeciwko komputerowi z **aktywnymi aukcjami v22**. Gra sieciowa jest planowana w kolejnym etapie.
+- **Nowe mecze v22 w 0.9.34:** na koniec własnej tury (gracz i komputer) dodatkowy dochód to **5 − liczba własnych jednostek** monet. Od 5 przy pustej planszy do 0 przy pełnych 5 miejscach. Dodatek nie zastępuje +1 monety dla obu po pełnej rundzie, +3 monet gracza drugiego na starcie ani innych nagród. Starsze zapisy zachowują ekonomię dotychczasową.
+- **0.9.34:** prawidłowa trucizna na bohaterze (S11), obrona Wieszczki po faktycznym wyborze (A015), tekst leczenia (S85); AI wybiera karty aukcyjne po ATK, PŻ, rzadkości i zastosowaniu zdolności.
 - W 0.9.33 Kartograf uzupełnia pustą talię z własnego cmentarza, Królowa v22 używa symetrycznych bonusów i Żołnierzy (1/1, 2/2, 3/3), a zakończone mecze są zapisywane również w `%LOCALAPPDATA%\\AuctionHammer\\historia_meczow\\` (JSON.GZ oraz indeks).
 
 ### Ograniczenia i ryzyka
