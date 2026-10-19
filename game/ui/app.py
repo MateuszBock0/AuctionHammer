@@ -76,7 +76,7 @@ class SoloApp:
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
         self.game=Match(audit_enabled=True,auctions_enabled=True,
-                        auction_catalog='v22',starting_compensation='unit_3_5')
+                        auction_catalog='v22',starting_compensation='choice_2_5_or_coins')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -736,6 +736,41 @@ class SoloApp:
     def _needs_confirmation(self):
         return self.game.phase not in ('mulligan','finished')
 
+    def _bonus_selection_due(self):
+        g=self.game
+        return (g.phase=='mulligan' and g.first==1
+                and getattr(g,'starting_compensation',None)=='choice_2_5_or_coins'
+                and getattr(g,'starting_compensation_choice',None) is None)
+
+    def _choose_bonus(self,choice):
+        try:
+            self.game.choose_starting_compensation(0,choice)
+            self.last_error=''
+            self.visual_notice=('WYBRANO CHORĄŻEGO 2/5' if choice=='unit_2_5'
+                                else 'WYBRANO +3 MONETY')
+            self.visual_notice_tick=pygame.time.get_ticks()
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+
+    def _draw_bonus_selection(self):
+        if not self._bonus_selection_due():return
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((5,8,12,225))
+        self.screen.blit(shade,(0,0))
+        panel=pygame.Rect(340,282,800,390)
+        self._panel(panel,(32,46,53),cfg.GOLD,15)
+        self._text('TWÓJ WYBÓR NA START',28,740,322,cfg.GOLD,center=True)
+        self._text('Zaczynasz jako drugi. Wybierz dokładnie jedną rekompensatę.',
+                   16,740,381,cfg.TEXT,center=True)
+        self._button(pygame.Rect(438,443,604,67),'[1] CHORĄŻY 2 ATAK / 5 PŻ',
+                     accent=True)
+        self._button(pygame.Rect(438,537,604,67),'[2] +3 MONETY')
+        self._text('Chorąży: bez zdolności, nie atakuje w pierwszej własnej turze.',
+                   14,740,626,cfg.MUTED,center=True)
+        if self.last_error:
+            self._text(self.cards_view.clip(self.last_error,self.fonts[13],690),
+                       13,740,654,cfg.RED,center=True)
+
     def _request_restart(self):
         if self._needs_confirmation():
             self.confirm_action='restart'
@@ -874,6 +909,17 @@ class SoloApp:
                 self.details_scroll=max(0,min(getattr(self,'details_maxscroll',0),self.details_scroll-event.y*35))
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
                 self.details_card=None
+            return True
+        if self._bonus_selection_due():
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_1:self._choose_bonus('unit_2_5')
+                elif event.key==pygame.K_2:self._choose_bonus('coins')
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(438,443,604,67).collidepoint(pos):
+                    self._choose_bonus('unit_2_5')
+                elif pygame.Rect(438,537,604,67).collidepoint(pos):
+                    self._choose_bonus('coins')
             return True
         if self.game.phase=='auction':
             if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
@@ -1188,6 +1234,13 @@ class SoloApp:
             mode=getattr(self.game,'starting_compensation','coins')
             if mode=='coins':
                 bonus='+3 MONETY'
+            elif mode=='choice_2_5_or_coins':
+                selected=getattr(self.game,'starting_compensation_choice',None)
+                guard=self.game.units.get('SUM_START_GUARD')
+                bonus=('+3 MONETY' if selected=='coins' else
+                       f'CHORĄŻY {guard.atk}/{guard.max_hp}' if guard else
+                       'WYBIERZ REKOMPENSATĘ' if self.game.first==1 else
+                       'WYBIERA KOMPUTER')
             else:
                 guard=self.game.units.get('SUM_START_GUARD')
                 if guard and mode=='unit_3_5':
@@ -1203,7 +1256,8 @@ class SoloApp:
                        1104,773,cfg.TEXT)
             self._button(pygame.Rect(1182,808,243,59),'ZATWIERDŹ WYMIANĘ',accent=True)
         elif self.game.phase=='finished':
-            self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
+            # The winning/losing overlay owns the only actionable new-game CTA.
+            pass
         else:
             self._text(f'RUNDA {self.game.round}',18,1104,743,cfg.GOLD)
             if self.game.active==0:
@@ -1773,6 +1827,8 @@ class SoloApp:
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
         if self.confirm_action:self._draw_confirmation()
+        if self._bonus_selection_due() and not self.menu_open:
+            self._draw_bonus_selection()
         self._present()
 
     def run(self):
