@@ -768,13 +768,18 @@ class SoloApp:
     def _feedback_color(message):
         """Only colour recorded engine messages; do not predict their results."""
         text=message.lower()
+        # Armor/shield reports also mention "obrażeń": classify defense
+        # BEFORE damage so a blocked hit does not flash red like a wound.
+        if any(w in text for w in ('tarcza blokuje','tarcza bohatera blokuje',
+                                    'pancerz pochłania','pancerz bohatera pochłania')):
+            return (123,183,236)
         if any(w in text for w in ('obrażen','zadaje','rani','traci pż')):
             return (224,116,120)
-        if any(w in text for w in ('leczy','ulecz','regeneracj')):
+        if any(w in text for w in ('leczy','ulecz','regeneracj','odzyskuje')):
             return (115,222,166)
-        if any(w in text for w in ('tarcz','pancerz')):
+        if any(w in text for w in ('tarcz','pancerz','zmiana aury')):
             return (123,183,236)
-        if any(w in text for w in ('trucizn','ogłusz','status')):
+        if any(w in text for w in ('trucizn','ogłusz','status','wyciszenie')):
             return (190,145,242)
         if any(w in text for w in ('zgon','umiera','ginie')):
             return (236,188,132)
