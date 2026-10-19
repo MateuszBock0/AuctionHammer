@@ -20,7 +20,6 @@ FAMILY_SYMBOLS = {
     'Pancerz':'PANC','Tarcza':'TARCZA','Trucizna':'TRUC','Ogłuszenie':'OGŁ',
     'Regeneracja':'REGEN','Prowokacja':'PROW','Oczyszczanie':'OCZ',
     'Odporność':'ODP','Szybki atak':'SZYBKI','Podwójny atak':'2 ATAKI',
-    'Bez zdolności':'BEZ ZDOL.',
 }
 FAMILY_COLORS = {
     'Obrażenia':(239,119,112),'Leczenie':(103,213,168),'ATK ±':(118,214,133),
@@ -48,7 +47,6 @@ UPGRADES = {
     'Prowokacja':'+3 PŻ / 3T','Oczyszczanie':'+1 ZA OCZ / 3T',
     'Odporność':'1× +1 PANC / 3T','Szybki atak':'+2 ATAK +1 PŻ / 3T',
     'Podwójny atak':'+2 ATAK / 3T',
-    'Bez zdolności':'BEZ SKALOWANIA',
 }
 
 
