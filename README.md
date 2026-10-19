@@ -208,8 +208,12 @@ dostępnym na GitHubie na licencji **MIT** (dla kodu źródłowego).
 Gra odtwarza **wszystkie 13 utworów** w oryginalnej kolejności,
 po czym zaczyna album ponownie — około **47 min 44 s na cykl**.
 Muzyka trwa dalej podczas menu, rozgrywki i kolejnych meczów.
-Działa zarówno z jednym plikiem `assets/music/fantasy_tavern_full.ogg`
-(lub .mp3, .wav), jak i zestawem 13 ponumerowanych utworów.
+Najprościej: umieść **`music_auctionhammer.mp3`** w
+`AuctionHammer/assets/music/`. W przenośnej wersji Windows jest to
+folder `assets/music` obok pliku `AuctionHammer.exe` (nie w
+`_internal`). Gra odtworzy jeden plik MP3 w nieskończonej pętli.
+Starsze nazwy pełnego albumu oraz zestaw 13 ponumerowanych utworów
+nadal są obsługiwane.
 
 **Audio jest opcjonalne i nie jest zawarte w repozytorium ani paczce Windows**:
 przed publiczną redystrybucją utworów trzeba wyjaśnić warunki licencji
