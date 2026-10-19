@@ -387,6 +387,8 @@ def make_report(game):
             "internal_operations":len(game.audit_internal),
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
+            "vacant_slot_income_enabled":bool(getattr(game,'vacant_income_enabled',False)),
+            "vacant_slot_income_total":list(getattr(game,'slot_income',[0,0])),
             "hero_hp":{str(p.idx):p.hp for p in game.players},
             "unit_deaths":{str(p.idx):game.death_counts[p.idx]
                            for p in game.players}
