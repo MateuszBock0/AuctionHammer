@@ -137,6 +137,13 @@ for _key,(_name,_atk,_trigger,_family) in _V22_NEW.items():
     CATALOG_V22[_key]=AuctionArchetype(
         _key,_name,_atk,_trigger,_family,
         (_texts['basic'],_texts['rare'],_texts['legendary']))
+# Unlike legacy v4, v22's Queen has a separately approved balance.
+_v22_queen=V22_CARDS['A010']['variants']
+_old_queen=CATALOG_V22['A010']
+CATALOG_V22['A010']=AuctionArchetype(
+    _old_queen.id,_old_queen.name,_old_queen.atk,_old_queen.trigger,
+    _old_queen.family,(_v22_queen['basic'],_v22_queen['rare'],
+                       _v22_queen['legendary']))
 assert len(CATALOG_V22)==17
 
 def catalog_for(mode):
