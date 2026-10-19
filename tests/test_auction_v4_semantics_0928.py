@@ -355,7 +355,6 @@ class AuctionInterlocksAndLimits(unittest.TestCase):
         settle(g)
         self.assertTrue(aa.boosted_attack(g,'S01'))
         # Crossing ownership removes the ally-only aura; source is not captured.
-        aa._capture(g,source,'S01') if False else None
         capturer=award(g,'A001',1,owner=1,zone='board')
         death(g,capturer)
         choose(g,'capture','S01');settle(g)
@@ -367,14 +366,14 @@ class AuctionInterlocksAndLimits(unittest.TestCase):
         g=ready(93103)
         for cid in ('S01','S02','S03','S04','S05'):
             place_basic(g,cid,0)
-        place_basic(g,'S06',0,'grave')
+        place_basic(g,'S07',0,'grave')
         src=award(g,'A003',1,zone='board')
         # On source death board count shrinks to five, so fallback still required.
         death(g,src)
-        choose(g,'revive_one','S06')
+        choose(g,'revive_one','S07')
         settle(g)
-        self.assertIn('S06',g.players[0].hand)
-        self.assertNotIn('S06',g.units)
+        self.assertIn('S07',g.players[0].hand)
+        self.assertNotIn('S07',g.units)
         g.assert_integrity()
 
     def test_A004_legendary_copy_of_A002_aura_does_not_stack_external_buffs(self):
