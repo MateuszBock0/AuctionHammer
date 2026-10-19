@@ -25,10 +25,6 @@ def pick_choices(game,mode,ids,label):
     return [Choice(mode,x,f'{label} — {game.label(x)}') for x in ids]
 
 
-def foe_has_playable_deck(own,enemy):
-    return bool(own.deck or enemy.deck)
-
-
 def options(game,uid,context,attacked=None):
     aid=kind(game,uid)
     if not aid and uid not in game.auction_death_grants:return []
@@ -127,7 +123,7 @@ def options(game,uid,context,attacked=None):
             if choices:return choices
             # The rare second effect is independent of the basic draw.
             # Even with no own cards, it may play the opponent's top card.
-            if tier==1 and len(own.board)<5 and foe_has_playable_deck(own,enemy):
+            if tier==1 and len(own.board)<5 and enemy.deck:
                 return [Choice('auto',None,'Pomiń dobór, zagraj z talii')]
             return []
         return options(game,uid,'auction_cart_play')
