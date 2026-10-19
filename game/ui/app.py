@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.36: v23 approved mechanics, auction slider and archive pagination."""
+"""AuctionHammer MVP 0.9.37: signed v23 audits and visible conditional ability details."""
 from __future__ import annotations
 import os
 import re
