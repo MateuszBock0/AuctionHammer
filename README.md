@@ -127,11 +127,11 @@ Szczegółowe opisy każdej wersji znajdują się w [katalogu 17 kart aukcyjnych
 | Wybierz efekt | Kliknij opcję po prawej stronie; **1–6** wybiera opcje na aktualnej stronie |
 | Zakończ turę | **Spacja** |
 | Informacje o karcie | **I** |
-| Historia zdarzeń | **H** |
+| Historia zdarzeń | **H** — pełny dziennik, ostatnie zdarzenie w panelu bocznym |
 | Powtórka meczu | **P** |
-| Włącz/wyłącz efekty wizualne | **A** |
+| Animacje walki (wł./wył.) | **A** — nie wycisza muzyki ani nie zmienia zasad |
 | Menu i zapis | **M** |
-| Pełny ekran | **F11** |
+| Pełny ekran | **F11**, także na ekranie startowym |
 | Nowa partia | **R** |
 
 Podczas aukcji kwotę wybierasz **suwakiem** (od minimalnej legalnej oferty do salda monet). Działają też **←/→**, **Home/End**, **Enter** (licytuj) i **Esc** (pasuj).
@@ -216,10 +216,11 @@ Nagrania pozostają materiałem podmiotów trzecich i **nie podlegają licencji 
 
 **Aktualny status: 0.9.38 — grywalne demo offline, aktywnie rozwijane.** Dostępne są rozgrywka przeciw AI, 70 kart podstawowych, 17 archetypów i 51 wariantów aukcyjnych, animacje walki, zapis i archiwum meczów. Multiplayer online nie jest jeszcze dostępny.
 
-**Ostatnie aktualizacje w skrócie:** stabilizacja silnika 0.9.38 (macierz 70+51, silniejsze niezmienniki własności i stref kart, testy akcji niedozwolonych i zapisów w toku wyboru), zasady v23, suwak licytacji, paginacja archiwum, czytelniejsze opisy warunkowych zdolności i dokładniejsze audyty z odtwarzaniem meczów. Szczegółowych poprawek nie powielamy tutaj — pełne informacje są w dokumentacji:
+**Ostatnie aktualizacje w skrócie:** stabilizacja silnika i poprawki pierwszej rozgrywki 0.9.38 (macierz 70+51, silniejsze niezmienniki własności i stref kart, testy akcji niedozwolonych i zapisów w toku wyboru), zasady v23, suwak licytacji, paginacja archiwum, czytelniejsze opisy warunkowych zdolności i dokładniejsze audyty z odtwarzaniem meczów. Szczegółowych poprawek nie powielamy tutaj — pełne informacje są w dokumentacji:
 
 - [Status projektu i ograniczenia bieżącej wersji](docs/STATUS_PROJEKTU.md)
 - [Raport stabilizacji silnika 0.9.38](docs/ENGINE_STABILIZATION_0938.md)
+- [Pierwsze kroki, klawisze F11/A i czytelna historia](docs/QA_GUIDED_TURNS_0938.md)
 - [Macierz 121 kart i wariantów](docs/ENGINE_COVERAGE_MATRIX_0938.csv)
 - [Zasady i zmiany v23](docs/GAME_MASTER_v23_ADDENDUM.md)
 - [Raport drugiego audytu v23](docs/QA_V23_SECOND_PASS_20261019.md)
