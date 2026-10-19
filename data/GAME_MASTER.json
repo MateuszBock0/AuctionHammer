@@ -1680,7 +1680,7 @@
   "canonical_card_file": "data/cards_base_70.json",
   "canonical_event_order_file": "data/event_order_v19.json",
   "canonical_bank_file": "data/starter_bank_v17.json",
-  "future_auction_catalog_status": "NOT_DESIGNED_OR_APPROVED",
+  "future_auction_catalog_status": "v22_17_ACTIVE_WITH_V4_LEGACY",
   "balance_update_v20": {
     "status": "candidate_regression_testing",
     "count_modified": 16,
@@ -1711,5 +1711,17 @@
     },
     "base_stats_unchanged": true,
     "v20_ability_changes_preserved": true
+  },
+  "auction_catalog_v22": {
+    "status": "LIVE",
+    "mode": "v22",
+    "archetypes": 17,
+    "rarity_variants": 51,
+    "removed_id": "A017",
+    "unbought_return_to_auction_pool": true,
+    "min_offers_to_open": 3,
+    "max_completed_auctions": 8,
+    "legacy_v4_unchanged": true,
+    "source": "data/auction/KATALOG_AUKCYJNY_17_v22.json"
   }
 }
