@@ -101,6 +101,17 @@ def card_cue(card, unit=None) -> CardCue:
     d=card.definition
     family=d.family
     level=unit.ability_level if unit is not None else card.ability_level
+    # A versioned initial compensation token, not a Queen summon.
+    if d.id=='SUM_START_GUARD':
+        return CardCue(
+            trigger='PASYWNA', family='BEZ ZDOL.',
+            color=FAMILY_COLORS['Bez zdolności'],
+            base='BEZ ZDOLNOŚCI',
+            upgrade='JEDNOSTKA STARTOWA',
+            effect_value=None, ability_level=0,
+            growth='Stałe ATK i MAX PŻ',
+            next_threshold='NIE WRACA DO TALII',
+        )
     # SUM IDs are ephemeral soldiers created by A010, not S-card catalogue
     # entries. Expose truthful static text and no fictitious scaling/shield.
     if d.id.startswith('SUM'):

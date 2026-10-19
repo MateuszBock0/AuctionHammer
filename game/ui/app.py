@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.39: guided state, safe confirm and guarded start."""
+"""AuctionHammer MVP 0.9.40: Chorazy 3/5 with versioned starter modes."""
 from __future__ import annotations
 import os
 import re
@@ -76,7 +76,7 @@ class SoloApp:
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
         self.game=Match(audit_enabled=True,auctions_enabled=True,
-                        auction_catalog='v22',starting_compensation='unit_5_5')
+                        auction_catalog='v22',starting_compensation='unit_3_5')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -1183,8 +1183,20 @@ class SoloApp:
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
             first='TY' if self.game.first==0 else 'KOMPUTER'
-            # Below the details button (bottom=726), above mulligan count.
-            self._text(f'ZACZYNA: {first}  ·  DRUGI: STRAŻNIK 5/5',
+            # Read the actual loaded match, not the default for newly created
+            # games; older saves and archives keep their historical rules.
+            mode=getattr(self.game,'starting_compensation','coins')
+            if mode=='coins':
+                bonus='+3 MONETY'
+            else:
+                guard=self.game.units.get('SUM_START_GUARD')
+                if guard and mode=='unit_3_5':
+                    bonus=f'CHORĄŻY {guard.atk}/{guard.max_hp}'
+                elif guard:
+                    bonus=f'STRAŻNIK {guard.atk}/{guard.max_hp}'
+                else:
+                    bonus='BRAK JEDNOSTKI STARTOWEJ'
+            self._text(f'ZACZYNA: {first}  ·  DRUGI: {bonus}',
                        11,1104,728,cfg.MUTED)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
             self._text('Kliknij do 3 kart z ręki albo pomiń [ENTER]',12,
