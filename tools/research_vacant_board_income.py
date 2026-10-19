@@ -31,30 +31,18 @@ def vacant_slot_bonus(unit_count):
 
 
 class VacantBoardIncomeMatch(Match):
-    """Experimental subclass: standard engine + extra end-of-turn coin grant."""
+    """Compatibility wrapper: invoke the real 0.9.34 income rule, not a fork."""
 
     def __init__(self,*args,**kwargs):
-        self.slot_income=[0,0]
-        self.slot_income_turns=[0,0]
+        kwargs['vacant_income_enabled']=True
         super().__init__(*args,**kwargs)
-
-    def _finalize_end_turn(self):
-        actor=self.active
-        super()._finalize_end_turn()
-        # After end-turn effects, before the next player's turn/next auction.
-        if self.phase=="turn" and self.players[actor].hp>0:
-            coins=vacant_slot_bonus(len(self.players[actor].board))
-            self.players[actor].coins+=coins
-            self.slot_income[actor]+=coins
-            self.slot_income_turns[actor]+=1
-            self._log(f"{self.players[actor].name}: +{coins} monet za "
-                      f"{5-len(self.players[actor].board)} wolnych pól planszy "
-                      "na koniec własnej tury.")
 
 
 def duel(seed,level="normalny",extra_income=False,max_steps=3000):
     engine=VacantBoardIncomeMatch if extra_income else Match
-    g=engine(seed,audit_enabled=False,auctions_enabled=True,auction_catalog="v22")
+    g=engine(seed,audit_enabled=False,auctions_enabled=True,
+             auction_catalog="v22",
+             **({} if extra_income else {"vacant_income_enabled":False}))
     bots=(ComputerOpponent(0,level),ComputerOpponent(1,level))
     g.assert_integrity()
     for step in range(1,max_steps+1):
