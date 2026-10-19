@@ -98,6 +98,9 @@ class VisualPolishTests(unittest.TestCase):
     def test_sidebar_more_than_two_statuses_does_not_hit_details_button(self):
         from test_engine import force_unit
         app=self.app
+        if (app.game.phase=='mulligan' and app.game.first==1
+                and getattr(app.game,'starting_compensation_choice',None) is None):
+            app.game.choose_starting_compensation(0,'coins')
         if app.game.phase=='mulligan':
             app.game.finish_mulligan(0,[])
         if app.game.phase=='mulligan':

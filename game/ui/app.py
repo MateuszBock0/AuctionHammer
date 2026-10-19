@@ -914,6 +914,14 @@ class SoloApp:
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_1:self._choose_bonus('unit_2_5')
                 elif event.key==pygame.K_2:self._choose_bonus('coins')
+                elif event.key==pygame.K_h:
+                    self.history_open=True
+                    self.history_scroll=0
+                elif event.key==pygame.K_m:
+                    self.menu_open=True
+                    self.menu_page='main'
+                elif event.key==pygame.K_p and self.recorder.frames:
+                    self.replay_index=self.recorder.last_index
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
                 pos=self._physical_to_virtual(event.pos)
                 if pygame.Rect(438,443,604,67).collidepoint(pos):
@@ -1827,7 +1835,9 @@ class SoloApp:
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
         if self.confirm_action:self._draw_confirmation()
-        if self._bonus_selection_due() and not self.menu_open:
+        if (self._bonus_selection_due() and not self.menu_open
+                and not self.history_open and self.replay_index is None
+                and self.details_card is None):
             self._draw_bonus_selection()
         self._present()
 

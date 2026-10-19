@@ -181,6 +181,8 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
         from test_engine import force_unit
         app=self.app
         game=app.game
+        if game.phase=='mulligan' and game.first==1 and getattr(game,'starting_compensation_choice',None) is None:
+            game.choose_starting_compensation(0,'coins')
         if game.phase=='mulligan':
             game.finish_mulligan(0,[])
         if game.phase!='turn':

@@ -132,8 +132,14 @@ class ChorazyUITest(unittest.TestCase):
     def tearDown(self):
         pygame.quit()
     def test_new_game_and_details(self):
-        self.assertEqual(self.app.game.starting_compensation,"unit_3_5")
+        self.assertEqual(self.app.game.starting_compensation,"choice_2_5_or_coins")
         self.app.restart()
+        if self.app.game.first==1:
+            self.app.game.choose_starting_compensation(0,"unit_2_5")
+        else:
+            # AI may have selected coins based on its hand; restore an
+            # explicit historical 3/5 state for this card-render regression.
+            self.app.game=fresh(mode="unit_3_5")
         self.assertEqual(self.app.game.cards[TOKEN].definition.name,"Chorąży")
         self.app.details_card=TOKEN
         self.app._draw_details()
