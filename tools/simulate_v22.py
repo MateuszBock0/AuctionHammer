@@ -43,9 +43,11 @@ def choose_actor(game):
     return None
 
 
-def simulate_one(seed,levels=("normalny","normalny"),max_steps=3000):
+def simulate_one(seed,levels=("normalny","normalny"),max_steps=3000,
+                 starting_compensation="coins"):
     """Play an entire seeded v22 match; check integrity after EVERY action."""
-    game=Match(seed,audit_enabled=True,auctions_enabled=True,auction_catalog=CATALOG)
+    game=Match(seed,audit_enabled=True,auctions_enabled=True,auction_catalog=CATALOG,
+               starting_compensation=starting_compensation)
     agents=(ComputerOpponent(0,levels[0]),ComputerOpponent(1,levels[1]))
     game.assert_integrity()
     try:
@@ -131,7 +133,7 @@ def _failure_data(seed,exc):
 
 def tournament(games=100,start_seed=DEFAULT_SEED,max_steps=3000,
                output_dir="reports/v22_100",levels=("normalny","normalny"),
-               verify_every=10):
+               verify_every=10,starting_compensation="coins"):
     """Run all seeds even if some fail; always write machine-readable results."""
     if games<1 or max_steps<10 or verify_every<0:
         raise ValueError("games>0, max_steps>=10, verify_every>=0 are required")
@@ -146,7 +148,7 @@ def tournament(games=100,start_seed=DEFAULT_SEED,max_steps=3000,
         seed=start_seed+index
         game=None
         try:
-            game,steps=simulate_one(seed,levels,max_steps)
+            game,steps=simulate_one(seed,levels,max_steps,starting_compensation)
             row=collect_row(game,steps)
             write_last_match(game,last_file)
             # read_report verifies each stored audit's SHA-256.
@@ -157,10 +159,11 @@ def tournament(games=100,start_seed=DEFAULT_SEED,max_steps=3000,
                 raise ValueError("Silnik odrzucił komendę AI w zakończonym meczu")
             if verify_every and (index%verify_every==0 or index==games-1):
                 verify_replay(checked,lambda replay_seed,auctions_enabled=False,
-                              auction_catalog="v3":
+                              auction_catalog="v3",starting_compensation="coins":
                               Match(replay_seed,audit_enabled=True,
                                     auctions_enabled=auctions_enabled,
-                                    auction_catalog=auction_catalog))
+                                    auction_catalog=auction_catalog,
+                                    starting_compensation=starting_compensation))
                 row["replay_verified"]=True
             match_id=digest({
                 "seed":checked.get("seed"),
@@ -207,6 +210,7 @@ def tournament(games=100,start_seed=DEFAULT_SEED,max_steps=3000,
                          "last_seed":start_seed+games-1,
                          "max_steps":max_steps,"levels":list(levels),
                          "auction_catalog":CATALOG,"audits":True,
+                         "starting_compensation":starting_compensation,
                          "integrity_check":"after_every_public_command",
                          "replay_every":verify_every},
         "summary":{"requested":games,"finished":len(passed),"failed":len(failures),
@@ -265,12 +269,15 @@ def main():
     parser.add_argument("--output-dir",default="reports/v22_100")
     parser.add_argument("--level-0",choices=LEVELS,default="normalny")
     parser.add_argument("--level-1",choices=LEVELS,default="normalny")
+    parser.add_argument("--starting-compensation",choices=("coins","unit_5_5"),
+                        default="coins",help="Legacy +3 coins or new 5/5 guard")
     parser.add_argument("--verify-every",type=int,default=10,
                         help="Odtwórz komendy i hashe co N meczów; 0 wyłącza")
     args=parser.parse_args()
     try:
         report=tournament(args.games,args.start_seed,args.max_steps,args.output_dir,
-                          (args.level_0,args.level_1),args.verify_every)
+                          (args.level_0,args.level_1),args.verify_every,
+                          args.starting_compensation)
     except (OSError,ValueError,TypeError) as exc:
         parser.exit(2,f"BŁĄD KONFIGURACJI: {exc}\n")
     return 1 if report["summary"]["failed"] else 0
