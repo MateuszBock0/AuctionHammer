@@ -132,7 +132,7 @@ def load_match(path: Path | None = None) -> Match:
     awards=data.get('auction_awards',{})
     if not isinstance(awards,dict):
         raise ValueError('Zapis zawiera nieprawidłowe karty aukcyjne')
-    v4=data.get('auction_catalog')=='v4'
+    v4=data.get('auction_catalog') in ('v4','v22')
     ephemeral=set(data.get('ephemeral_ids',set())) if v4 else set()
     expected=ids|set(awards)|ephemeral
     if (not isinstance(data.get('cards'),dict)
@@ -154,8 +154,9 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('auction',None)
     data.setdefault('auction_history',[])
     data.setdefault('auction_awards',{})
-    if data.get('auction_catalog')=='v4':
-        from game.core.auction_catalog import CATALOG
+    if data.get('auction_catalog') in ('v4','v22'):
+        from game.core.auction_catalog import catalog_for
+        CATALOG=catalog_for(data.get('auction_catalog'))
         seen={o.get('archetype') for h in data['auction_history']
               for o in h.get('offers',[]) if o.get('archetype')}
         if data.get('auction') is not None:
@@ -178,12 +179,14 @@ def load_match(path: Path | None = None) -> Match:
                 if (aid not in bought and aid not in active and
                         aid not in data['auction_bag']):
                     data['auction_bag'].append(aid)
-        data['auction_supply_version']=2
+        data['auction_supply_version']=3 if data.get('auction_catalog')=='v22' else 2
     else:
         data.setdefault('auction_bag',[])
         data.setdefault('auction_discarded',[])
         data.setdefault('auction_used',[])
         data.setdefault('auction_supply_version',0)
+    data.setdefault('auction_vouchers',[[],[]])
+    data.setdefault('auction_blocked_play',set())
     for name,default in (
             ('exiled',[]),('vanished',[]),('ephemeral_ids',set()),
             ('auction_death_grants',set()),('auction_rescue_spent',set()),
