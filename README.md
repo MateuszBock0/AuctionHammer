@@ -66,6 +66,8 @@ Przykłady ważnych efektów:
 
 Podczas standardowego starcia dwóch jednostek obie mogą zadać sobie obrażenia **jednocześnie**. Zwykła jednostka nie atakuje od razu w turze wystawienia, chyba że odpowiedni efekt na to pozwala. Kiedy jednostka ginie, jej zdolność „Przy śmierci” może jeszcze wpłynąć na wynik potyczki.
 
+**Przykład często mylonych kart:** podstawowy **Chorąży Królewskiej Kompanii (S34)** daje +1 ATK najbliższemu sojusznikowi albo −1 ATK wrogowi naprzeciwko. Aukcyjny **Generał Oddziału Natarcia (A002)** w podstawowej rzadkości daje +1 ATK wszystkim jednostkom po obu stronach. To różne karty z różnych pul.
+
 ### Karty stają się silniejsze na ręce
 
 W AuctionHammer nie każdą kartę opłaca się zagrywać natychmiast. **Karty podstawowe otrzymują przyrost statystyk za ukończone własne tury spędzone na ręce**. W aktualnym balansie v21:
@@ -132,7 +134,7 @@ Szczegółowe opisy każdej wersji znajdują się w [katalogu 17 kart aukcyjnych
 | Pełny ekran | **F11** |
 | Nowa partia | **R** |
 
-Podczas aukcji możesz składać oferty w panelu, pasować i wybierać karty myszą. Dostępne są również cyfry oraz **Enter** do zatwierdzenia wpisanej kwoty.
+Podczas aukcji kwotę wybierasz **suwakiem** (od minimalnej legalnej oferty do salda monet). Działają też **←/→**, **Home/End**, **Enter** (licytuj) i **Esc** (pasuj).
 
 Grę można **zapisać i wczytać** z menu. Historia zdarzeń oraz eksport audytu ostatniej partii ułatwiają sprawdzenie, dlaczego jednostka przeżyła atak albo jak zadziałały połączone efekty. Funkcje powtórki i audytu mają charakter diagnostyczny — nie jest to tryb gry wieloosobowej.
 
@@ -198,47 +200,32 @@ W repozytorium używane są następujące formaty:
 %LOCALAPPDATA%\AuctionHammer\savegame_v19.json
 ```
 
-Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.33 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo po każdym zakończonym meczu zapisywany jest czytelny audyt ostatniej partii w formacie JSON **oraz** pełne archiwum wszystkich meczów w plikach JSON.GZ. Otworzysz je w grze przez **Menu → Historia meczów** albo w katalogu `%LOCALAPPDATA%\\AuctionHammer\\historia_meczow\\`. Plik `indeks.json` zawiera skrócone podsumowania, a kolejne zakończone mecze nie nadpisują poprzednich.
+Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.37 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo po każdym zakończonym meczu zapisywany jest czytelny audyt ostatniej partii w formacie JSON **oraz** pełne archiwum wszystkich meczów w plikach JSON.GZ. Otworzysz je w grze przez **Menu → Historia meczów** albo w katalogu `%LOCALAPPDATA%\\AuctionHammer\\historia_meczow\\`. Plik `indeks.json` zawiera skrócone podsumowania, a kolejne zakończone mecze nie nadpisują poprzednich.
 
-## Muzyka — pełny album Fantasy Tavern (PGN Music)
+## Muzyka i credits
 
-AuctionHammer pozostaje **zawsze darmowym MVP open source**, w pełni
-dostępnym na GitHubie na licencji **MIT** (dla kodu źródłowego).
+W grze odtwarzany jest album **Fantasy Tavern Music** (13 utworów, około 48 minut), w pętli podczas menu i rozgrywki. Bez odpowiedniego pliku audio gra działa bez muzyki.
 
-Gra odtwarza **wszystkie 13 utworów** w oryginalnej kolejności,
-po czym zaczyna album ponownie — około **47 min 44 s na cykl**.
-Muzyka trwa dalej podczas menu, rozgrywki i kolejnych meczów.
-Najprościej: umieść **`music_auctionhammer.mp3`** w
-`AuctionHammer/assets/music/`. W przenośnej wersji Windows jest to
-folder `assets/music` obok pliku `AuctionHammer.exe` (nie w
-`_internal`). Gra odtworzy jeden plik MP3 w nieskończonej pętli.
-Starsze nazwy pełnego albumu oraz zestaw 13 ponumerowanych utworów
-nadal są obsługiwane.
+**Pełne cytowanie:** Alek Kaczan (kompozytor), *Fantasy Tavern Music* / *Fantasy Tavern Album* (2021, 13 utworów), PGN Music (Paradox Gaming Network), wyd. 10.09.2021. [Oficjalny opis wydawcy](https://pgnmusic.com/album.php?title=Fantasy+Tavern+Music) · [Wydanie albumu i lista utworów](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album) · [Strona PGN Music](https://pgnmusic.com/).
 
-**Plik MP3 może być dystrybuowany razem z grą:** właściciel projektu
-potwierdził uzyskanie zgody na wykorzystanie i udostępnianie muzyki.
-Po dodaniu `assets/music/music_auctionhammer.mp3` przez standardowy
-`git push`, album znajdzie się w repozytorium i automatycznie
-w paczce ZIP na Windows. **38,2 MB mieści się w limicie Git (100 MiB)**,
-choć jest za duże na formularz GitHub w przeglądarce.
-Muzyka jest podpisana w **Menu → CREDITS**, README oraz dokumentacji
-prawnej. Nagrania mają osobne warunki licencyjne i nie podlegają MIT.
-Bez pliku gra nadal uruchamia się bez dźwięku.
+**Attribution (English):** *Fantasy Tavern Music* / *Fantasy Tavern Album* (2021), composed by **Alek Kaczan**, published by **PGN Music (Paradox Gaming Network)**. [Official album](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album) · [Publisher](https://pgnmusic.com/).
 
-[Jak umieścić album](assets/music/README.md) ·
-[Pochodzenie, autorzy i licencja muzyki](docs/THIRD_PARTY_MUSIC.md)
+Nagrania pozostają materiałem podmiotów trzecich i **nie podlegają licencji MIT kodu gry**. Więcej: [pełna lista 13 utworów, źródła i informacje o prawach](docs/THIRD_PARTY_MUSIC.md). Indywidualne ustalenia licencyjne nie są częścią publicznego README.
 
 ## Status, dokumentacja i licencja
 
-**0.9.34 to aktywnie rozwijane demo**, z lokalnym przeciwnikiem i zaimplementowanymi aukcjami v22 (17 archetypów, 51 wariantów). Aktualna wersja zawiera również balans v21 kart podstawowych. Na tym etapie **nie ma multiplayera online**.
+**Aktualny status: 0.9.37 — grywalne demo offline, aktywnie rozwijane.** Dostępne są rozgrywka przeciw AI, 70 kart podstawowych, 17 archetypów i 51 wariantów aukcyjnych, animacje walki, zapis i archiwum meczów. Multiplayer online nie jest jeszcze dostępny.
 
-- [Pobierz najnowsze wydanie Windows](https://github.com/MateuszBock0/AuctionHammer/releases/latest)
-- **0.9.37:** niezależny audyt v23: jawny, podpisany stan `ruleset_version` i oczekującej wypłaty za wolne pola (nowe audyty schema 2, bez modyfikowania hashy starych historii); widoczne na początku opisu zastrzeżenia aukcyjne A014/A015/A018 oraz informacje o efektach awaryjnych S86/S87/S88/S32/S95. Nowe testy reprodukcyjne A014 z Tarczą, fal śmierci A015 i pełne replaye obu schematów.\n- **0.9.36:** zasady v23: suwak aukcyjny, korekty 10 opisów, dochód po zakończeniu fal śmierci, poprawiona A015, A018 na ostatniej aukcji oraz efekty zastępcze S86–S88/S32/S95. Paginacja archiwum po 4; potwierdzenie odtwarzania MP3. Przeczytaj `docs/GAME_MASTER_v23_ADDENDUM.md`.\n- **0.9.35:** delikatne filtry kart na planszy: czerwony (Podwójny atak), srebrny (Prowokacja), żółty (Tarcza/Ochrona), bez filtrów na chwilowe statusy; podświetlenie walczących, spadek widocznych PŻ, wyszarzenie umierającej karty przed zniknięciem. W archiwum widać wersję gry każdego meczu; efekty bez legalnego celu otrzymują wyjaśnienie w dzienniku. Surowe HP w audytach bez zmian; osobno wartość do wyświetlania co najmniej 0.
-- **0.9.34:** poprawki S11 (trucizna bohatera), A015 (wybór wrogiego celu), S85 (etykieta leczenia), ocena ATK/PŻ/zdolności przez AI oraz **+1 moneta za każde wolne pole planszy na koniec własnej tury** (0–5, także dla komputera). Stare zapisy zachowują starą ekonomię.
-- **0.9.33:** Kartograf odzyskuje karty z cmentarza przy pustej talii; Królowa przywołuje Żołnierzy 1/1, 2/2 lub 3/3, a wszystkie mecze są trwale archiwizowane.
-- [Zasady i interpretacje aukcji v22](docs/auction/RELEASE_V22_0931.md) · [Stabilizacja 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md)
-- [Game Master / reguły projektu](AUCTIONHAMMER_MASTER.md)
-- [Archiwum wcześniejszego README i historii wydań](docs/README_HISTORIA_DO_0932.md)
-- [Zgłoś problem lub propozycję](https://github.com/MateuszBock0/AuctionHammer/issues)
+**Ostatnie aktualizacje w skrócie:** zasady v23, suwak licytacji, paginacja archiwum, czytelniejsze opisy warunkowych zdolności i dokładniejsze audyty z odtwarzaniem meczów. Szczegółowych poprawek nie powielamy tutaj — pełne informacje są w dokumentacji:
 
-Projekt udostępniany jest na licencji [MIT](LICENSE). Autor: **Mateusz Boćko**.
+- [Status projektu i ograniczenia bieżącej wersji](docs/STATUS_PROJEKTU.md)
+- [Zasady i zmiany v23](docs/GAME_MASTER_v23_ADDENDUM.md)
+- [Raport drugiego audytu v23](docs/QA_V23_SECOND_PASS_20261019.md)
+- [Poprawki animacji i oznaczeń kart](docs/QA_UI_COMBAT_0935.md)
+- [Katalog aukcji v22](docs/auction/RELEASE_V22_0931.md)
+- [Historia starszych wydań](docs/README_HISTORIA_DO_0932.md)
+- [Pełna dokumentacja zasad](AUCTIONHAMMER_MASTER.md)
+
+**Licencja:** autorski kod źródłowy i własna dokumentacja AuctionHammer — [MIT](LICENSE). Muzyka i inne materiały podmiotów trzecich mogą podlegać osobnym warunkom. Autor projektu: **Mateusz Boćko**. [Dokładne credits i zasady wykorzystania muzyki](docs/THIRD_PARTY_MUSIC.md).
+
+[**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś błąd](https://github.com/MateuszBock0/AuctionHammer/issues)

@@ -1445,7 +1445,7 @@ class SoloApp:
             self._text('Fantasy Tavern Music — 13 utworów',18,746,491,cfg.TEXT,center=True)
             self._text('Kompozytor: Alek Kaczan',16,746,533,cfg.TEXT,center=True)
             self._text('Wydawca: PGN Music',16,746,568,cfg.TEXT,center=True)
-            self._text('Muzyka wykorzystana za zgodą właściciela praw.',14,746,609,cfg.MUTED,center=True)
+            self._text('Album 2021 · 13 utworów · odrębne prawa do muzyki',14,746,609,cfg.MUTED,center=True)
             self._text('pgnmusic.com',16,746,648,cfg.GOLD,center=True)
             self._button(pygame.Rect(535,690,420,61),'POWRÓT DO MENU')
             self._text('Kod: MIT  ·  Muzyka: odrębna licencja PGN Music',13,746,790,cfg.MUTED,center=True)
