@@ -1192,6 +1192,33 @@ class Match:
                        for uid in p.deck+p.grave), 'Auction card leaked into normal draw'
             assert all(uid not in self.cards for uid in self.auction_discarded), 'Unchosen offer was instantiated'
         assert set(all_ids)==set(self.cards),('Physical cards mismatch',len(all_ids),len(self.cards))
+        # Every physical card must agree with the exact container holding
+        # it. Checking the global set alone misses swapped zones, misplaced
+        # auction cards and wrong owners after exchanges/captures.
+        for uid in self.bank:
+            assert self.cards[uid].zone=='bank' and self.cards[uid].owner is None, (
+                'Bank ownership/zone mismatch',uid)
+        for uid in self.excluded:
+            assert self.cards[uid].zone=='excluded' and self.cards[uid].owner is None, (
+                'Excluded card ownership/zone mismatch',uid)
+        for player in self.players:
+            assert isinstance(player.coins,int) and player.coins>=0, (
+                'Invalid coin balance',player.idx,player.coins)
+            for zone in ('hand','deck','grave','board'):
+                for uid in getattr(player,zone):
+                    assert (self.cards[uid].owner==player.idx
+                            and self.cards[uid].zone==zone), (
+                        'Player ownership/zone mismatch',uid,player.idx,zone)
+        if self.auction_catalog in ('v4','v22'):
+            for collection,zone in ((self.exiled,'exiled'),
+                                    (self.auction_used,'auction_used'),
+                                    (self.vanished,'vanished')):
+                for uid in collection:
+                    assert self.cards[uid].zone==zone, (
+                        'Removed auction card zone mismatch',uid,zone)
+        for uid,unit in self.units.items():
+            assert self.cards[uid].owner==unit.owner, (
+                'Board card/unit owners disagree',uid)
         assert all(uid not in self.bank and uid not in self.excluded for uid in self.auction_awards)
         for p in self.players:
             assert len(p.board)<=5 and all(self.cards[x].owner==p.idx for x in p.hand+p.deck+p.grave+p.board)
