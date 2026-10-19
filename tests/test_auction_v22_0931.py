@@ -208,7 +208,10 @@ class AuctionV22EdgeCollisions(unittest.TestCase):
         g.auction_awards[source]['rarity']='legendarna'
         old=g.units[target].hp
         g._heal(target,5)
-        self.assertEqual(g.units[target].hp,old-5)
+        self.assertLessEqual(old-5,0)
+        self.assertNotIn(target,g.units)
+        self.assertIn(target,g.players[1].grave)
+        self.assertEqual(g.death_counts[1],1)
         g.assert_integrity()
 
     def test_A015_rare_globally_prevents_death_trigger(self):
