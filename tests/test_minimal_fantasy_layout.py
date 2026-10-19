@@ -218,6 +218,8 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
         self.assertEqual(len(game.events),previous[2]+2)
 
     def test_right_click_opens_details_and_left_click_only_selects(self):
+        if self.app._bonus_selection_due():
+            self.app._choose_bonus('coins')
         uid,rect=next(iter(self.app.hand_layout().items()))
         self.app.click(rect.center)
         self.assertEqual(self.app.selected,uid)

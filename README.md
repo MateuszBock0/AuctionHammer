@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.40 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.41 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -45,7 +45,7 @@ Opcjonalnie `URUCHOM_AUCTIONHAMMER.bat` sprawdza na GitHubie dostępność nowsz
 | Wystawianie | Zwykle **jedna karta z ręki na własną turę**, bez opłaty w monetach |
 | Plansza | Maksymalnie **5 jednostek** na stronę; na pełnej planszy możesz zgodnie z regułami zastąpić własną jednostkę |
 | Walka | Jednostki atakują wroga lub jego bohatera, jeśli nie blokuje tego Prowokacja |
-| Monety | **+1 moneta dla obu graczy po pełnej rundzie**; w nowych meczach gracz zaczynający jako drugi otrzymuje **Chorążego 3 ATK / 5 PŻ na planszy zamiast +3 monet** (opis: „Chorąży zawsze zdąży.”; to nie jest Szybki atak). Nie atakuje w pierwszej własnej turze i po śmierci nie wraca do talii. Historyczne zapisy zachowują swoje pierwotne +3 monety lub Strażnika 5/5. W nowych meczach v22 na koniec własnej tury otrzymujesz dodatkowo **5 − liczba własnych jednostek** monet |
+| Monety | **+1 moneta dla obu graczy po pełnej rundzie**; w nowych meczach gracz zaczynający jako drugi wybiera **Chorążego 2 ATK / 5 PŻ albo +3 monety** (opis: „Chorąży zawsze zdąży.”; nie daje Szybkiego ataku). Chorąży nie atakuje w pierwszej własnej turze i po śmierci nie wraca do talii. Dawne zapisy i archiwalne audyty zachowują pierwotne +3 monety, Strażnika 5/5 albo Chorążego 3/5. W nowych meczach v22 na koniec własnej tury otrzymujesz dodatkowo **5 − liczba własnych jednostek** monet |
 | Koniec meczu | Pokonaj bohatera przeciwnika; przy jednoczesnym pokonaniu obu obowiązują reguły rozstrzygania remisu |
 
 **Runda** oznacza wykonanie po jednej turze przez obu graczy. Każdy może wystawić zwykle jedną kartę z ręki, ale nie ma kosztu zagrania. **Monety służą przede wszystkim do licytowania kart aukcyjnych**, a nie do opłacania zwykłych jednostek.
