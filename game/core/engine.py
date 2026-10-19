@@ -353,7 +353,17 @@ class Match:
             wave['decisions'].append((pending.uid,choice))
             wave['cursor']+=1
         else:
-            self._execute(pending.uid,pending.context,choice,pending.attack_target)
+            # A015 podstawowa: poczekaj na rzeczywiście wybrany wariant
+            # S04/S08 (i innych zdolności wielocelowych). Własny buff
+            # nie może zużywać ochrony przed umiejętnością ofensywną.
+            if (self.auction_catalog=='v22' and pending.context=='play'
+                    and auction_ability_rules.block_trigger(
+                        self,pending.uid,pending.context,
+                        pending.attack_target,choice=choice)):
+                self._log(f'Wieszczka anuluje wybrany efekt '
+                          f'{self.label(pending.uid)}: {choice.mode}.')
+            else:
+                self._execute(pending.uid,pending.context,choice,pending.attack_target)
         self._drain()
 
     def _queue(self,uid,context,target=None):
@@ -654,7 +664,9 @@ class Match:
             if self.cards[source].definition.id=='S32' and any(e.kind=='poison' and e.source==source for e in self.units[target].effects):return
             self._add_effect(target,'poison',total,turns,source=source,positive=False,bonus_once=bonus)
         elif target and target.startswith('hero:'):
-            self.players[int(target.split(':')[1])].hero_effects.append(Effect('poison',total,turns,source=source,positive=False))
+            self.players[int(target.split(':')[1])].hero_effects.append(
+                Effect('poison',total,turns,source=source,
+                       positive=False,bonus_once=bonus,initial_ticks=turns))
 
     @trace_effect('_grant_immunity')
     def _grant_immunity(self,target,types,expires=None,source=''):
