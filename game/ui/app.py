@@ -997,7 +997,7 @@ class SoloApp:
         pygame.draw.line(self.screen,cfg.GOLD,(104,73),(1426,73),1)
         self._text('AUCTION',34,106,22,(232,189,107))
         self._text('HAMMER',34,300,22,cfg.TEXT)
-        self._text('SOLO  ·  70 KART + AUKCJE v4  ·  BALANS v20',14,
+        self._text(f'SOLO  ·  70 KART + AUKCJE {self.game.auction_catalog.upper()}  ·  BALANS v21',14,
                    mode.x+8,33,cfg.MUTED)
         help_text='[A] EFEKTY  [H] HISTORIA  [P] POWTÓRKA  [M] MENU'
         font=self.fonts[13]
