@@ -4,9 +4,18 @@ AuctionHammer jest całkowicie darmowym MVP, a kod źródłowy ma licencję MIT.
 Oryginalne nagrania PGN Music nie są objęte tą licencją i nie są dodawane
 do repozytorium.
 
-W celu odtwarzania pełnego albumu w pętli umieść tutaj JEDEN plik
-`fantasy_tavern_full.ogg`, `fantasy_tavern_full.mp3` lub
-`fantasy_tavern_full.wav`. Gra odtworzy całość, a potem zacznie od początku.
+W celu odtwarzania całego albumu w pętli umieść tutaj **jeden plik
+`music_auctionhammer.mp3`**. Gra odtworzy go od początku do końca,
+po czym automatycznie zacznie ponownie. Nie ma potrzeby rozdzielania
+go na 13 utworów.
+
+Działa to zarówno w projekcie źródłowym Pythona, jak i w wydaniu
+Windows: umieść plik w folderze `AuctionHammer/assets/music/` leżącym
+**obok pliku `AuctionHammer.exe`**, a nie w `_internal`.
+
+Dla zgodności wstecznej obsługiwane są też pliki
+`fantasy_tavern_full.ogg`, `fantasy_tavern_full.mp3` i
+`fantasy_tavern_full.wav`.
 
 Alternatywnie użyj 13 plików .mp3, .ogg lub .wav, ponumerowanych od
 01 do 13 w kolejności albumu, np. `01 - Embers in the Wind.mp3`
