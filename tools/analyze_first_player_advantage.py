@@ -60,7 +60,8 @@ def wilson_interval(successes, attempts, z=1.95996398454):
     div=1+z*z/attempts
     middle=(p+z*z/(2*attempts))/div
     half=z*sqrt(p*(1-p)/attempts+z*z/(4*attempts*attempts))/div
-    return [max(0,middle-half),min(1,middle+half)]
+    return [0.0 if successes==0 else max(0.0,middle-half),
+            1.0 if successes==attempts else min(1.0,middle+half)]
 
 
 def early_observation(game):
