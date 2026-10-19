@@ -68,6 +68,8 @@ class A015ChosenEffectRegression(unittest.TestCase):
         self.warden=award(self.g,'A015',0,owner=1,zone='board')
         self.ally=place_basic(self.g,'S33',0)
         self.enemy=place_basic(self.g,'S01',1)
+        self.g.units[self.enemy].base_max_hp=20
+        self.g.units[self.enemy].hp=20
         self.g.active=0
 
     def test_S04_friendly_buff_allowed_without_consuming_ward(self):
@@ -150,7 +152,7 @@ class S85DeathFallbackText(unittest.TestCase):
             choices=options(g,ghost,'death')
             self.assertEqual(len(choices),1)
             self.assertEqual(choices[0].target,'hero:0')
-            self.assertIn(str(4+level),choices[0].description)
+            self.assertIn(str(4+level),choices[0].label)
             self.assertIn('Ulecz',choices[0].description)
             g.assert_integrity()
 
@@ -162,8 +164,6 @@ class AuctionAiValuationRegression(unittest.TestCase):
         # Both are same ATK+HP, as mandated by catalogue.
         hp_dummy=AuctionOffer('HP',15,2,'podstawowa',1,'A005')
         mass_kill=AuctionOffer('KILL',9,8,'podstawowa',1,'A011')
-        self.assertGreater(bot.auction_offer_value(g,mass_kill),
-                           bot.auction_offer_value(g,hp_dummy))
         self.assertGreater(bot.auction_offer_value(g,mass_kill),
                            bot.auction_offer_value(g,hp_dummy))
 
