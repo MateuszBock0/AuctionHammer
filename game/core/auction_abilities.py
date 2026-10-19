@@ -159,9 +159,16 @@ def convert_healing(game,target,target_owner,amount):
     return heal
 
 
-def global_trigger_block(game,context):
-    """A015 rare blocks death for both players; legendary play/death/end."""
-    for _uid,_unit,tier in _active_passives(game,'A015'):
+def global_trigger_block(game,context,source_owner=None):
+    """A015 v23 prevents ONLY opposing triggers; old v22 rules are retained.
+
+    Inspect every death source against the original wave snapshot before
+    removal; a Wieszczka never cancels its own allied play/end/death.
+    """
+    new_rules=getattr(game,'ruleset_version','v22')=='v23'
+    for _uid,unit,tier in _active_passives(game,'A015'):
+        if new_rules and unit.owner==source_owner:
+            continue
         if tier==2 and context in ('play','death','end'):return True
         if tier==1 and context=='death':return True
     return False
@@ -211,7 +218,7 @@ def block_trigger(game,uid,context,attacked=None,choice=None):
     """
     if context not in ('play','death','end'):
         return False
-    if global_trigger_block(game,context):
+    if global_trigger_block(game,context,game.cards[uid].owner):
         return True
     if context!='play':
         return False
