@@ -1,0 +1,86 @@
+name: 0.9.38 engine stabilization — 1000 full audited replays
+
+on:
+  push:
+    branches:
+      - feature/0938-engine-stabilization-70x51-matrix
+    paths:
+      - docs/ENGINE_STABILIZATION_0938.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  forensic-matches:
+    name: ${{ matrix.case_name }} — every replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case_name: normal-vs-normal
+            seed: 39000
+            games: 400
+            level_0: normalny
+            level_1: normalny
+          - case_name: easy-vs-hard
+            seed: 49000
+            games: 300
+            level_0: łatwy
+            level_1: trudny
+          - case_name: hard-vs-easy
+            seed: 59000
+            games: 300
+            level_0: trudny
+            level_1: łatwy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install engine dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Simulate and FULLY replay each match
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+          SDL_AUDIODRIVER: dummy
+          SDL_VIDEODRIVER: dummy
+        run: |
+          python tools/simulate_v22.py \
+            --games ${{ matrix.games }} \
+            --start-seed ${{ matrix.seed }} \
+            --max-steps 3000 \
+            --level-0 ${{ matrix.level_0 }} \
+            --level-1 ${{ matrix.level_1 }} \
+            --verify-every 1 \
+            --output-dir reports/engine0938_${{ matrix.case_name }}
+      - name: Verify coverage totals and all action hashes
+        env:
+          CASE_NAME: ${{ matrix.case_name }}
+          GAMES: ${{ matrix.games }}
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          path=Path(f"reports/engine0938_{os.environ['CASE_NAME']}/raport_100_meczow.json")
+          r=json.loads(path.read_text(encoding="utf-8"))
+          s=r["summary"]
+          assert s["requested"]==int(os.environ["GAMES"]),s
+          assert s["finished"]==s["requested"] and s["failed"]==0,s
+          assert r["configuration"]["replay_every"]==1,r["configuration"]
+          print("QA 0.9.38 FULL PASS:",os.environ["CASE_NAME"],s["finished"],"full audited match replays")
+          PY
+      - name: Store forensic test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Engine0938-${{ matrix.case_name }}
+          path: |
+            reports/engine0938_${{ matrix.case_name }}/raport_100_meczow.json
+            reports/engine0938_${{ matrix.case_name }}/wyniki_meczow.csv
+            reports/engine0938_${{ matrix.case_name }}/failures/*.json
+          if-no-files-found: warn
+          retention-days: 14
