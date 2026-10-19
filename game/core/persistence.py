@@ -185,6 +185,7 @@ def load_match(path: Path | None = None) -> Match:
         data.setdefault('auction_discarded',[])
         data.setdefault('auction_used',[])
         data.setdefault('auction_supply_version',0)
+    data.setdefault('_space_income_due',False)
     data.setdefault('auction_vouchers',[[],[]])
     data.setdefault('auction_blocked_play',set())
     for name,default in (
