@@ -22,13 +22,13 @@
 
 ### Chcę po prostu zagrać — Windows
 
-1. Wejdź w [**Releases — najnowsze wydanie**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) i pobierz **\`AuctionHammer-Windows.zip\`**.
-2. Rozpakuj archiwum. Otwórz otrzymany folder **\`AuctionHammer\`**.
-3. Uruchom **\`AuctionHammer.exe\`** lub **\`GRAJ_BEZ_INTERNETU.bat\`**.
+1. Wejdź w [**Releases — najnowsze wydanie**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) i pobierz **`AuctionHammer-Windows.zip`**.
+2. Rozpakuj archiwum. Otwórz otrzymany folder **`AuctionHammer`**.
+3. Uruchom **`AuctionHammer.exe`** lub **`GRAJ_BEZ_INTERNETU.bat`**.
 
 Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga internetu** — po pobraniu możesz grać offline.
 
-Opcjonalnie \`URUCHOM_AUCTIONHAMMER.bat\` sprawdza na GitHubie dostępność nowszej wersji i uruchamia posiadaną grę także wtedy, gdy sprawdzenie aktualizacji się nie powiedzie. Zachowaj \`AuctionHammer.exe\` razem z folderem \`_internal\`; samodzielne przeniesienie tylko pliku EXE może uniemożliwić uruchomienie.
+Opcjonalnie `URUCHOM_AUCTIONHAMMER.bat` sprawdza na GitHubie dostępność nowszej wersji i uruchamia posiadaną grę także wtedy, gdy sprawdzenie aktualizacji się nie powiedzie. Zachowaj `AuctionHammer.exe` razem z folderem `_internal`; samodzielne przeniesienie tylko pliku EXE może uniemożliwić uruchomienie.
 
 > To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
 
@@ -140,24 +140,24 @@ Grę można **zapisać i wczytać** z menu. Historia zdarzeń oraz eksport audyt
 
 Gra jest napisana w **Pythonie 3.12** z użyciem **pygame-ce**. Kod i silnik działają lokalnie; nie ma wymaganego serwera.
 
-\`\`\`bash
+```bash
 git clone https://github.com/MateuszBock0/AuctionHammer.git
 cd AuctionHammer
 python -m pip install -r requirements.txt
 python -m game.main
-\`\`\`
+```
 
-W środowisku Windows polecenie \`python\` możesz zastąpić \`py -3.12\`, jeśli tak skonfigurowany jest Twój interpreter. Do uruchamiania wydania portable **nie** potrzeba tych komend — są przeznaczone dla osób pracujących z kodem.
+W środowisku Windows polecenie `python` możesz zastąpić `py -3.12`, jeśli tak skonfigurowany jest Twój interpreter. Do uruchamiania wydania portable **nie** potrzeba tych komend — są przeznaczone dla osób pracujących z kodem.
 
 Automatyczne testy silnika, aukcji i interfejsu:
 
-\`\`\`bash
+```bash
 python -m unittest discover -s tests -v
-\`\`\`
+```
 
 ## Struktura projektu i formaty plików
 
-\`\`\`text
+```text
 AuctionHammer/
 ├── game/
 │   ├── main.py                 # Punkt startowy aplikacji
@@ -177,28 +177,28 @@ AuctionHammer/
 ├── .github/workflows/          # Testy oraz budowanie wydania Windows
 ├── requirements.txt            # Zależność pygame-ce
 └── README.md                   # Opis gry i instrukcja
-\`\`\`
+```
 
 W repozytorium używane są następujące formaty:
 
 | Format | Przeznaczenie |
 |---|---|
-| **\`.py\`** | Kod gry, silnik zasad, przeciwnik komputerowy, testy i narzędzia |
-| **\`.json\`** | Definicje kart, katalog aukcyjny, reguły, zapisy meczów i audyty |
-| **\`.md\`** | Dokumentacja Markdown: README, zasady, raporty, historia prac |
-| **\`.xlsx\`, \`.csv\`** | Arkusze i zestawienia do projektowania oraz weryfikacji kart |
-| **\`.png\`** | Elementy graficzne i podglądy interfejsu |
-| **\`.yml\`** | Konfiguracja automatycznych testów i kompilacji w GitHub Actions |
-| **\`.exe\`, \`.bat\`, \`.ps1\`** | Uruchamianie gry i aktualizatora w Windows |
-| **\`.zip\`** | Gotowa, przenośna paczka Windows z grą i wymaganymi plikami |
+| **`.py`** | Kod gry, silnik zasad, przeciwnik komputerowy, testy i narzędzia |
+| **`.json`** | Definicje kart, katalog aukcyjny, reguły, zapisy meczów i audyty |
+| **`.md`** | Dokumentacja Markdown: README, zasady, raporty, historia prac |
+| **`.xlsx`, `.csv`** | Arkusze i zestawienia do projektowania oraz weryfikacji kart |
+| **`.png`** | Elementy graficzne i podglądy interfejsu |
+| **`.yml`** | Konfiguracja automatycznych testów i kompilacji w GitHub Actions |
+| **`.exe`, `.bat`, `.ps1`** | Uruchamianie gry i aktualizatora w Windows |
+| **`.zip`** | Gotowa, przenośna paczka Windows z grą i wymaganymi plikami |
 
 **Gdzie zapisuje się gra?** Na Windows zapis meczu ma format JSON i znajduje się domyślnie pod ścieżką:
 
-\`\`\`text
+```text
 %LOCALAPPDATA%\\AuctionHammer\\savegame_v19.json
-\`\`\`
+```
 
-Końcówka \`v19\` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.32 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo można wyeksportować audyt ostatniej partii jako plik JSON.
+Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.32 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo można wyeksportować audyt ostatniej partii jako plik JSON.
 
 ## Status, dokumentacja i licencja
 
