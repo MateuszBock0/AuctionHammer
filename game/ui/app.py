@@ -1011,12 +1011,15 @@ class SoloApp:
             shade=pygame.Surface((940,34),pygame.SRCALPHA)
             shade.fill((*color,alpha))
             self.screen.blit(shade,(109,375))
-        entries=self.game.events[-2:]
-        y=378
-        for s in entries:
-            trimmed=self.cards_view.clip(s,self.fonts[12],920)
-            self._text(trimmed,12,118,y,cfg.MUTED)
-            y+=16
+        # Three short, truthful engine outcomes fit the existing strip:
+        # e.g. armor absorbed -> actual HP damage -> resulting status.
+        # The [H] history panel retains every unabridged event.
+        entries=self.game.events[-3:]
+        y=370
+        for entry in entries:
+            trimmed=self.cards_view.clip(entry,self.fonts[11],920)
+            self._text(trimmed,11,118,y,cfg.MUTED)
+            y+=15
         if self.last_error:
             self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),13,280,954,cfg.RED)
 
