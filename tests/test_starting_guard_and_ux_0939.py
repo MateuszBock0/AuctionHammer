@@ -93,9 +93,10 @@ class StartingGuard(unittest.TestCase):
                     self.assertEqual(game.audit_state_schema,2)
                 else:
                     self.assertEqual(game.audit_state_schema,3)
-                finish_mulligan(game)
-                game.end_turn()
-                record=make_report(game)["payload"]
+                from tools.simulate_v22 import simulate_one
+                completed,_=simulate_one(390079,max_steps=3000,
+                                         starting_compensation=comp)
+                record=make_report(completed)["payload"]
                 self.assertTrue(verify_replay(record,replay_factory))
                 self.assertEqual(record["summary"]["ruleset_version"],"v23")
 
@@ -113,8 +114,8 @@ class UserInterfaceAcceptance(unittest.TestCase):
         return pygame.event.Event(pygame.KEYDOWN,{"key":code})
 
     def start_turn(self):
+        # SoloApp.restart has already submitted the AI's hidden mulligan.
         self.app.game.finish_mulligan(0,[])
-        self.app.game.finish_mulligan(1,[])
 
     def test_new_game_is_guard_mode_and_a_persists_through_restart(self):
         self.assertEqual(self.app.game.starting_compensation,"unit_5_5")
