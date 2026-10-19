@@ -20,7 +20,7 @@ Nie twierdzimy, że przetestowano wszystkie możliwe układy 70 podstawowych i 5
 
 ## Bramka testów przed wydaniem
 
-- `python -m unittest discover -s tests -v` — cała regresja; liczba bazowa przed 0.9.38 wynosiła 492, w 0.9.38 dochodzi łącznie **12** nowych testów (4 w macierzy + 1 kontrola CSV + 7 testów transakcji i zapisu).
+- `python -m unittest discover -s tests -v` — cała regresja; liczba bazowa przed 0.9.38 wynosiła 492, w 0.9.38 dochodzi łącznie **15** nowych testów (4 w macierzy + 1 kontrola CSV + 7 testów transakcji i zapisu + 3 testy wykrywania celowo uszkodzonego stanu).
 - Zestaw obciążeniowy w `.github/workflows/engine-stabilization-0938.yml`: **400 normalny–normalny + 300 łatwy–trudny + 300 trudny–łatwy = 1000 pełnych rozgrywek**, `--verify-every 1`, czyli pełny replay **każdego** meczu.
 - Każda partia: zakończony zwycięstwem mecz, brak odrzuconych komend, kontrole stanu po każdej akcji, zarchiwizowany zapis i równe podpisy audytu/replay. Wyniki są zachowywane przez Actions jako artefakty diagnostyczne. Nie zaliczamy bramki, jeśli choć jedna z 1000 partii lub jej odtworzenie zakończy się błędem.
 - Po połączeniu PR wymagane są jeszcze testy na `main` i poprawne wydanie Windows z tej samej rewizji.
