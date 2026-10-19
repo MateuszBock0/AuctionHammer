@@ -44,10 +44,14 @@ def choose_actor(game):
 
 
 def simulate_one(seed,levels=("normalny","normalny"),max_steps=3000,
-                 starting_compensation="coins"):
+                 starting_compensation="coins",forced_starting_choice=None):
     """Play an entire seeded v22 match; check integrity after EVERY action."""
     game=Match(seed,audit_enabled=True,auctions_enabled=True,auction_catalog=CATALOG,
                starting_compensation=starting_compensation)
+    if forced_starting_choice is not None:
+        if starting_compensation!='choice_2_5_or_coins':
+            raise ValueError("Force-choice requires the explicit-choice mode")
+        game.choose_starting_compensation(1-game.first,forced_starting_choice)
     agents=(ComputerOpponent(0,levels[0]),ComputerOpponent(1,levels[1]))
     game.assert_integrity()
     try:
@@ -269,7 +273,7 @@ def main():
     parser.add_argument("--output-dir",default="reports/v22_100")
     parser.add_argument("--level-0",choices=LEVELS,default="normalny")
     parser.add_argument("--level-1",choices=LEVELS,default="normalny")
-    parser.add_argument("--starting-compensation",choices=("coins","unit_5_5","unit_3_5"),
+    parser.add_argument("--starting-compensation",choices=("coins","unit_5_5","unit_3_5","choice_2_5_or_coins"),
                         default="coins",help="Versioned +3 coins, 5/5 guard or 3/5 Chorazy")
     parser.add_argument("--verify-every",type=int,default=10,
                         help="Odtwórz komendy i hashe co N meczów; 0 wyłącza")
