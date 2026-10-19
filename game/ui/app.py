@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.34: ability fixes and value-aware auction AI."""
+"""AuctionHammer MVP 0.9.35: clear trait tints and real-state combat feedback."""
 from __future__ import annotations
 import os
 import re
