@@ -180,5 +180,121 @@ class AuctionV22FiveVariants(unittest.TestCase):
         self.assertEqual(state.price,0)
         g.assert_integrity()
 
+
+class AuctionV22EdgeCollisions(unittest.TestCase):
+    def test_A014_partial_heal_shield_armor_and_silencing(self):
+        from game.core.auction_abilities import convert_healing
+        g=ready(93200)
+        priest=award(g,'A014',1,zone='board')
+        target=place_basic(g,'S01',1)
+        u=g.units[target]
+        u.base_max_hp=20;u.hp=12;u.shield=1;u.armor_perm=10
+        g._heal(target,5)
+        self.assertEqual((u.hp,u.shield,u.armor_perm),(14,0,10))
+        g._add_effect(priest,'silence',source='S59',positive=False,expires=5)
+        g._heal(target,5)
+        self.assertEqual(u.hp,19)
+        g.assert_integrity()
+
+    def test_A014_full_hp_is_nominal_and_priests_do_not_stack(self):
+        g=ready(93201)
+        source=award(g,'A014',1,zone='board')
+        target=place_basic(g,'S01',1)
+        before=g.units[target].hp
+        g._heal(target,5)
+        self.assertEqual(g.units[target].hp,before-1)
+        # Once a legendary priest is obtained, highest rarity controls
+        # conversion, never two independent damage portions.
+        g.auction_awards[source]['rarity']='legendarna'
+        old=g.units[target].hp
+        g._heal(target,5)
+        self.assertEqual(g.units[target].hp,old-5)
+        g.assert_integrity()
+
+    def test_A015_rare_globally_prevents_death_trigger(self):
+        g=ready(93202)
+        ward=award(g,'A015',1,zone='board')
+        bomber=award(g,'A011',1,owner=1,zone='board',n=2)
+        victim=place_basic(g,'S01',0)
+        old=g.players[0].hp
+        g._kill_batch([bomber])
+        g._drain()
+        self.assertEqual(g.players[0].hp,old)
+        self.assertIn(victim,g.units)
+        g.assert_integrity()
+
+    def test_A015_legendary_globally_prevents_end_trigger(self):
+        g=ready(93203)
+        ward=award(g,'A015',2,zone='board')
+        bow=place_basic(g,'S27',0)
+        before=g.players[1].hp
+        g.end_turn()
+        self.assertEqual(g.players[1].hp,before)
+        g.assert_integrity()
+
+    def test_A016_rare_can_take_exact_enemy_top_deck_card_once(self):
+        g=ready(93204)
+        chosen=place_basic(g,'S01',1,'deck')
+        # Make the enemy top card deterministic.
+        deck=g.players[1].deck
+        deck.remove(chosen);deck.append(chosen)
+        src=award(g,'A016',1)
+        g.play(src)
+        own_target=g.pending.choices[0].target
+        choose(g,'cart_draw',own_target)
+        self.assertTrue(g.pending)
+        choose(g,'cart_play',chosen)
+        self.assertEqual(g.cards[chosen].owner,0)
+        self.assertEqual(g.cards[chosen].zone,'board')
+        self.assertIn(chosen,g.players[0].board)
+        self.assertNotIn(chosen,g.players[1].deck)
+        self.assertEqual(g.players[0].played_this_turn,True)
+        g.assert_integrity()
+
+    def test_A016_legendary_at_full_board_never_creates_sixth_unit(self):
+        g=ready(93205)
+        for cid in ('S01','S02','S03','S04'):
+            place_basic(g,cid,0)
+        src=award(g,'A016',2)
+        original=list(g.players[0].deck)
+        g.play(src)
+        self.assertIsNone(g.pending)
+        self.assertEqual(len(g.players[0].board),5)
+        self.assertEqual(g.players[0].deck,original)
+        g.assert_integrity()
+
+    def test_A016_pending_selection_save_reload_does_not_duplicate(self):
+        g=ready(93206)
+        src=award(g,'A016',1)
+        g.play(src)
+        self.assertIsNotNone(g.pending)
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'cart_pending.json'
+            save_match(g,path)
+            loaded=load_match(path)
+        self.assertEqual(loaded.pending.uid,src)
+        target=loaded.pending.choices[0].target
+        loaded.choose(0)
+        self.assertIn(target,loaded.players[0].hand)
+        if loaded.pending:
+            loaded.choose(0)
+        loaded.assert_integrity()
+
+    def test_A018_vouchers_survive_save_and_advance_only_once(self):
+        g=ready(93207)
+        src=award(g,'A018',2)
+        g.play(src)
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'voucher.json'
+            save_match(g,path)
+            loaded=load_match(path)
+        loaded.round=4
+        state=auction.begin(loaded)
+        self.assertEqual(state.phase,'picking')
+        self.assertEqual(state.price,0)
+        self.assertEqual(loaded.auction_vouchers[0],[])
+        loaded.assert_integrity()
+
+
 if __name__=='__main__':
     unittest.main()
