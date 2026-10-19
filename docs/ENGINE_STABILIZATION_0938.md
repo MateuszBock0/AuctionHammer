@@ -1,6 +1,6 @@
 # AuctionHammer 0.9.38 — stabilizacja silnika
 
-**Etap:** silnik i integralność stanu (bez nowego balansu kart, mechanik ani zmian UI/UX).  
+**Etap:** stabilizacja silnika i integralności stanu, bez zmian balansu kart. Na prośbę użytkownika dodano także mały, osobno testowany pakiet napraw wejścia i wskazówek podczas pierwszego meczu; pełny redesign UI/UX pozostaje zadaniem 0.9.39.  
 **Wersja zasad:** nowa gra `ruleset_version=v23`, 70 bazowych kart Game Master v19 i 17 archetypów aukcyjnych v22 (3 rzadkości, 51 wariantów).  
 **Podstawa:** projekt Game Master v19 + aneks v23 `docs/GAME_MASTER_v23_ADDENDUM.md`; historyczne mecze zachowują swój wariant zasad.  
 **Data:** 19.10.2026.
@@ -29,7 +29,7 @@ Nie twierdzimy, że przetestowano wszystkie możliwe układy 70 podstawowych i 5
 
 - Nowe karty, mechaniki aukcyjne, zmiana ATK/PŻ i kosztów zagrywania.
 - Zmiana heurystyk licytowania AI bez osobnego A/B.
-- Dźwięk, grafika, interakcje i animacje: **następny etap 0.9.39 UI/UX**, w którym powstanie osobna lista priorytetów.
+- Dźwięk i szerszy redesign UI/UX: **następny etap 0.9.39**. Wyjątek: zgłoszone i naprawione w tej gałęzi skróty F11/A, wskazówki faz i historia poza planszą; szczegóły: `docs/QA_GUIDED_TURNS_0938.md`.
 - Multiplayer online: poza zakresem celu AuctionHammer 1.0.0.
 
 **Decyzja o zakończeniu etapu:** scalanie dopiero po potwierdzeniu przejścia testów i pełnego obciążenia. Dokument nie stanowi automatycznie potwierdzenia wyników uruchomień CI.
