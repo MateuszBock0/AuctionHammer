@@ -16,3 +16,8 @@ build/
 *.spec
 # Local artifacts
 .DS_Store
+
+# Third-party recordings are not part of the MIT-licensed source
+/assets/music/*.ogg
+/assets/music/*.mp3
+/assets/music/*.wav
