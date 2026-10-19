@@ -85,6 +85,7 @@ class V23AuditRulesetIntegrity(unittest.TestCase):
 
     def test_completed_0936_v23_old_schema_replays_without_hash_migration(self):
         report=complete_report(237103,1)
+        report['version']='0.9.36'  # old signed archive's public version tag
         self.assertEqual(report['summary']['ruleset_version'],'v23')
         self.assertNotIn('ruleset_state',report['initial_state'])
         self.assertNotIn('ruleset_state',report['final_state'])
