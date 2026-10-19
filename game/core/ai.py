@@ -106,6 +106,7 @@ class ComputerOpponent:
                 strong=max((game.cards[uid].attack for uid in own.hand),default=0)
                 option='coins' if strong>=5 else 'unit_2_5'
                 game.choose_starting_compensation(self.player,option)
+                return  # Exactly one audited command per AI.step (replay invariant).
             if self.player not in game.mulligan_done:
                 game.finish_mulligan(self.player,[])
             return
