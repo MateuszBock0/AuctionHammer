@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.34",
+  "mvp": "0.9.35",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,7 +27,7 @@
     ]
   },
   "balance": "v21",
-  "ui_audit": "0922-preflight-validations",
+  "ui_audit": "0.9.35-archive-per-record-version-display-and-clamped-hero-hp-display",
   "auction_ability_activation": "active",
   "auction_supply": "v22-17-return-unbought-auction-only",
   "auction_archetypes": 17,
@@ -66,5 +66,6 @@
   "match_archive": "compressed-json-gzip-with-deduplicated-index-and-migration",
   "match_archive_menu": "history-of-completed-matches",
   "vacant_board_income": "v22-new-matches-own-turn-end-5-minus-own-board-count",
-  "old_save_income_policy": "legacy-saves-preserve-original-rules"
+  "old_save_income_policy": "legacy-saves-preserve-original-rules",
+  "ui_combat": "approved-red-double-silver-taunt-yellow-shield-and-authenticated-combat-death-fade"
 }
