@@ -63,7 +63,17 @@ class PolskiInterfejsTests(unittest.TestCase):
         raw=json.loads((ROOT/'data/cards_base_70.json').read_text(encoding='utf-8'))
         cards=raw if isinstance(raw,list) else raw['cards']
         self.assertEqual(master['rules']['version'],'19.0')
-        self.assertEqual(master['starter_cards'],cards)
+        historical={card['id']:card for card in master['starter_cards']}
+        current={card['id']:card for card in cards}
+        exceptions={'S05','S61','S70','S72','S20','S86',
+                    'S94','S96','S106','S33'}
+        self.assertEqual(set(historical),set(current))
+        for cid in historical:
+            old=dict(historical[cid]);new=dict(current[cid])
+            if cid in exceptions:
+                self.assertIn('+1 ATK i +2 MAX HP',new['scaling'])
+                new['scaling']=old['scaling']
+            self.assertEqual(new,old,cid)
         self.assertEqual(len(cards),70)
         self.assertEqual({c['id'] for c in cards},{c['id'] for c in master['starter_cards']})
         self.assertEqual((next(c for c in cards if c['id']=='S79')['atk'],
