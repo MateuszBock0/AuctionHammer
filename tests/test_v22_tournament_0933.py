@@ -45,6 +45,13 @@ class V22TournamentAcceptance(unittest.TestCase):
             self.assertTrue(all(read_report(
                 archive_path(path/"AuctionHammer-OSTATNI-MECZ.json")/entry["file"]
             )["complete_from_start"] for entry in entries))
+            self.assertTrue(all(
+                (path/row["audit_file"]).is_file() and
+                read_report(path/row["audit_file"])["seed"]==row["seed"]
+                for row in result["matches"]))
+            self.assertEqual(sum(
+                result["auction_coverage"]["rarities_initial"].values()),
+                sum(row["auction_cards_bought"] for row in result["matches"]))
             self.assertTrue((path/"raport_100_meczow.json").exists())
             self.assertTrue((path/"wyniki_meczow.csv").exists())
 
