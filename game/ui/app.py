@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+from pathlib import Path
 import pygame
 from game.ui.combat_visuals import CombatVisuals
 from game.ui.music import FantasyTavernMusic
