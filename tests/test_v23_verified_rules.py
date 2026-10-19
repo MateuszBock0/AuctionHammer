@@ -62,7 +62,20 @@ class V23OpposingA015(unittest.TestCase):
     def test_legendary_cancels_enemy_only_even_if_both_have_ward(self):
         g=ready(230110)
         ward0=award(g,'A015',2,owner=0,zone='board',n=1)
-        ward1=award(g,'A015',2,owner=1,zone='board',n=2)
+        # In real matches the bought archetype is unique. An opposing
+        # Wieszczka requires a copied/captured instance. This synthetic
+        # second instance is deliberately NOT another auction purchase.
+        from game.core.models import Card,Unit
+        uid='COPY0000001'
+        original=g.cards[ward0]
+        g.cards[uid]=Card(uid,original.definition,owner=1,zone='board')
+        g.defs[uid]=original.definition
+        g.ephemeral_ids.add(uid)
+        g.auction_awards[uid]=dict(g.auction_awards[ward0],ephemeral=True)
+        g.players[1].board.append(uid)
+        old=g.units[ward0]
+        g.units[uid]=Unit(uid,1,old.atk,old.max_hp,old.hp,old.ability_level,0)
+        ward1=uid
         self.assertTrue(global_trigger_block(g,'play',0))
         self.assertTrue(global_trigger_block(g,'play',1))
         g.units[ward1].effects.append(
@@ -131,9 +144,11 @@ class V23A018(unittest.TestCase):
     def test_last_auction_legendary_permanently_grows_without_voucher(self):
         g=ready(230130)
         card=award(g,'A018',2,owner=0,zone='hand')
-        g.auction_bag=g.auction_bag[:2]
         initial=g.cards[card].attack,g.cards[card].max_hp
-        g.play(card)
+        # Keep the actual 17-card supply integral; isolate structural
+        # "no future auction" eligibility as an independent condition.
+        with patch('game.core.auction_abilities.any_future_auction',return_value=False):
+            g.play(card)
         self.assertEqual((g.units[card].atk,g.units[card].max_hp),
                          (initial[0]+5,initial[1]+5))
         self.assertFalse(g.auction_vouchers[0])
