@@ -388,6 +388,7 @@ def make_report(game):
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
             "vacant_slot_income_enabled":bool(getattr(game,'vacant_income_enabled',False)),
+            "ruleset_version":getattr(game,'ruleset_version','v22'),
             "vacant_slot_income_total":list(getattr(game,'slot_income',[0,0])),
             # Keep exact (possibly negative) engine HP for scientific replay,
             # and a separate nonnegative number for presentation in viewers.
