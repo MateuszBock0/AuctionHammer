@@ -155,7 +155,7 @@ def state_snapshot(game):
         "auction_awards":_plain(getattr(game,"auction_awards",{}))
     }
     # Legacy v3 snapshots retain byte-identical fields for old replay files.
-    if getattr(game,'auction_catalog',None)=='v4':
+    if getattr(game,'auction_catalog',None) in ('v4','v22'):
         state['auction_v4']={
             'bag':_plain(game.auction_bag),
             'unsold_offers_history':_plain(game.auction_discarded),
@@ -356,7 +356,7 @@ def make_report(game):
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.29" if game.auction_catalog=="v4" else "0.9.21",
+        "version":"0.9.31" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
