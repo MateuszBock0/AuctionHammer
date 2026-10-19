@@ -7,6 +7,8 @@ NOT a claim to exhaust every possible combination of card interactions.
 from __future__ import annotations
 
 import unittest
+import csv
+from pathlib import Path
 from game.core.engine import Match
 from game.core.models import FACTIONS, FAMILIES
 from game.core.auction_catalog import CATALOG_V22, RARITIES, V22_CARDS
@@ -125,6 +127,24 @@ class AuctionV23FullMatrix(unittest.TestCase):
                     completed.add((aid,tier))
         self.assertEqual(completed,
                          {(a,t) for a in CATALOG_V22 for t in range(3)})
+
+    def test_published_121_row_matrix_matches_live_catalogues(self):
+        path=Path(__file__).resolve().parents[1]/'docs'/'ENGINE_COVERAGE_MATRIX_0938.csv'
+        with path.open(encoding='utf-8',newline='') as f:
+            rows=list(csv.DictReader(f))
+        definitions=Match(38310).defs
+        expected={('podstawowa',cid,'—') for cid in definitions}
+        expected.update({('aukcyjna',aid,rarity)
+                         for aid in CATALOG_V22
+                         for rarity in RARITIES})
+        actual={(row['pool'],row['card_id'],row['rarity']) for row in rows}
+        self.assertEqual(len(rows),121)
+        self.assertEqual(len(actual),121)
+        self.assertEqual(actual,expected)
+        for row in rows:
+            reference=(definitions if row['pool']=='podstawowa' else CATALOG_V22)
+            self.assertEqual(row['name'],reference[row['card_id']].name)
+            self.assertTrue(row['engine_path'] and row['test_scope'])
 
     def test_all_51_variant_texts_nonempty_and_separate_from_base_pool(self):
         game=ready(38300)
