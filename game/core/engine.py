@@ -895,6 +895,8 @@ class Match:
 
     @trace_effect('_remove_unit')
     def _remove_unit(self,uid,death):
+        if self.auction_catalog=='v4':
+            auction_ability_rules.forget_general_links(self,uid,include_source=True)
         u=self.units.pop(uid)
         if death:
             self.death_counts[u.owner]+=1
