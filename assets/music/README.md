@@ -2,11 +2,10 @@
 
 **Docelowy plik:** `assets/music/music_auctionhammer.mp3` (jeden album, około 48 minut).
 
-Właściciel projektu potwierdził uzyskanie zgody na rozpowszechnianie
-ścieżki dźwiękowej wraz z darmową grą. Nazwisko kompozytora, nazwa
-wydawcy, pochodzenie albumu i zasady licencyjne są opisane w
-[credits](../../docs/THIRD_PARTY_MUSIC.md), a credits można również
-otworzyć z głównego menu gry.
+Muzyka: *Fantasy Tavern Music* / *Fantasy Tavern Album* (2021),
+kompozytor **Alek Kaczan**, wydawca **PGN Music**.
+Szczegółowe [credits, lista utworów i warunki muzyki](../../docs/THIRD_PARTY_MUSIC.md).
+Muzyka nie jest objęta licencją MIT kodu gry.
 
 ## Stan aktualny i weryfikacja
 
@@ -32,4 +31,4 @@ Odtwarzacz obsługuje również lokalny pełny album w nazwach
 Te dodatkowe pliki nie są automatycznie publikowane.
 
 **Prawa do muzyki nie są przenoszone przez licencję MIT gry.**
-Odpowiednie warunki zgody wydawcy należy zachować w dokumentacji projektu.
+Zobacz publicznie udostępnione warunki wydawcy w dokumentacji credits.
