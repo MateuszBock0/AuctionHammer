@@ -19,34 +19,48 @@ zamiast 13 oddzielnych plików. Jeśli przy tworzeniu pliku wykonano
 montaż, cięcia lub inne modyfikacje nagrań, trzeba odpowiednio wskazać
 te zmiany w warunkach przyznanej licencji.
 
+### Pełny zapis bibliograficzny
+
+**Alek Kaczan**, *Fantasy Tavern Music* (album *Fantasy Tavern Album*,
+13 utworów), **PGN Music / Paradox Gaming Network**, 10 września 2021.
+Źródła: https://pgnmusic.com/album.php?title=Fantasy+Tavern+Music
+oraz https://pgnmusic.bandcamp.com/album/fantasy-tavern-album.
+
+Kolejność 13 utworów (Bandcamp):
+1. Embers in the Wind
+2. Tales of the Dragon
+3. Memories of the Far Realm
+4. The Loss of the Daughter
+5. Ubiquitous Flower
+6. The Long Way Home
+7. Spirits in the Wind
+8. Mysterious Beauty
+9. Clear the Tables
+10. Coins First
+11. The Dancing Barmaid
+12. Raise a Glass and Raise it High
+13. Enter the Traveling Beauty
+
 ## Status licencji
 
-Właściciel AuctionHammer **potwierdził uzyskanie zgody** na
-rozpowszechnianie muzyki wraz z grą (19 października 2026).
-To informacja przekazana przez opiekuna projektu, a nie opublikowany
-tekst od wydawcy. Kopię warunków indywidualnej zgody warto zachować
-w prywatnej dokumentacji projektu; jeżeli obejmują wymagany podpis,
-konkretną wersję licencji lub dodatkowe ograniczenia, trzeba je
-uwzględnić przed upowszechnieniem nagrania.
+Prawa do muzyki należą do PGN Music i twórców nagrań. Prywatne ustalenia
+dotyczące projektu nie są częścią publicznej dokumentacji.
 
-Na stronie PGN Music opisano ogólną licencję **CC BY-SA**, natomiast
-album w serwisie Bandcamp udostępnia link licencyjny do **CC BY 4.0**.
-Tych dokumentów nie należy automatycznie utożsamiać. Jeżeli
-indywidualna zgoda ustala inne warunki, dla wydania gry wiążące
-są warunki tej zgody.
+Polityka PGN Music wskazuje CC BY-SA, natomiast album na Bandcamp odsyła
+do CC BY 4.0. Są to różne warunki; sposób wykorzystania nagrań powinien
+być oceniony z uwzględnieniem właściwej licencji.
 
-Polityka PGN Music: https://pgnmusic.com/about.php  
-Album: https://pgnmusic.bandcamp.com/album/fantasy-tavern-album  
-CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/  
-CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+- Polityka PGN Music: https://pgnmusic.com/about.php
+- Album: https://pgnmusic.bandcamp.com/album/fantasy-tavern-album
+- Link licencyjny albumu: https://creativecommons.org/licenses/by/4.0/
+- Ogólne zasady PGN Music: https://creativecommons.org/licenses/by-sa/4.0/
 
 ## Rozdzielenie licencji
 
 - **Kod gry i dokumentacja własna:** MIT (`LICENSE`).
 - **Oryginalne nagrania muzyczne:** prawa pozostają przy PGN Music
   oraz twórcy; nie są objęte licencją MIT.
-- **Dystrybucja:** plik `assets/music/music_auctionhammer.mp3` jest
-  już śledzony w repozytorium i dołączany do gotowego wydania Windows.
-  Prawa do nagrania pozostają odrębne od licencji MIT gry.
+- **Oddzielne prawa:** podpis autora nie oznacza, że album jest
+  udostępniony na licencji MIT; należy respektować warunki PGN Music.
 
 Credits są także widoczne w grze: **Menu → CREDITS**.
