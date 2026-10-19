@@ -96,6 +96,7 @@ class SoloApp:
         self._old_pending=None
         self.animations_enabled=True
         self._recent_feedback=[]
+        self.visual_notice=''
         self._last_logged_event=len(self.game.event_journal)
         self.combat_visuals=CombatVisuals()
         self.combat_visuals.sync(self.game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
@@ -720,9 +721,24 @@ class SoloApp:
             self.last_error=str(exc)
             return False
 
+    def _toggle_animations(self):
+        """A switches cosmetic animation only, never combat mechanics."""
+        self.animations_enabled=not self.animations_enabled
+        self._recent_feedback=[]
+        self.visual_notice=('ANIMACJE WŁĄCZONE' if self.animations_enabled
+                            else 'ANIMACJE WYŁĄCZONE')
+
     def handle(self,event):
         if self.music.handle_event(event):return True
         if event.type==pygame.QUIT:return False
+        # Global shortcuts must work from the *first menu screen*,
+        # during mulligan, history/replay and any open modal.
+        if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
+            self._toggle_fullscreen()
+            return True
+        if event.type==pygame.KEYDOWN and event.key==pygame.K_a:
+            self._toggle_animations()
+            return True
         # Panele modalne odcinają interakcje od żywego silnika.
         if self.menu_open:
             if event.type==pygame.KEYDOWN and event.key==pygame.K_o:
@@ -770,9 +786,6 @@ class SoloApp:
                 height=max(min(360,max_height),min(int(event.h),max_height))
                 self.windowed_size=(width,height)
                 self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
-            return True
-        if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
-            self._toggle_fullscreen()
             return True
         if self.details_card is not None:
             if event.type==pygame.KEYDOWN and event.key in (pygame.K_ESCAPE,pygame.K_i):
@@ -835,9 +848,6 @@ class SoloApp:
                 self._open_audit_folder()
             elif event.key==pygame.K_e and self.game.phase=='finished':
                 self._export_finished_audit_once(force=True)
-            elif event.key==pygame.K_a:
-                self.animations_enabled=not self.animations_enabled
-                self._recent_feedback=[]
             elif (self.game.pending and self.game.pending.owner == 0
                   and pygame.K_1 <= event.key <= pygame.K_6):
                 index = self.choice_page * self.CHOICES_PER_PAGE + event.key - pygame.K_1
@@ -1109,6 +1119,61 @@ class SoloApp:
                 pygame.Rect(548,9,430,66),
                 pygame.Rect(998,9,441,66))
 
+    def _phase_guidance(self):
+        """Player-facing next-action advice derived ONLY from committed state."""
+        g=self.game
+        if g.phase=='finished':
+            return 'KONIEC MECZU  ·  [R] NOWA PARTIA   [H] HISTORIA   [P] POWTÓRKA'
+        if g.phase=='mulligan':
+            count=len(g.players[0].mulligan_selected)
+            if 0 not in g.mulligan_done:
+                return (f'WYMIANA STARTOWA {count}/3  ·  ZAZNACZ DO 3 KART Z RĘKI  ·  '
+                        '[ENTER] ZATWIERDŹ (MOŻESZ WYMIENIĆ ZERO)')
+            return 'WYMIANA STARTOWA  ·  KOMPUTER KOŃCZY PRZYGOTOWANIE'
+        if g.phase=='auction':
+            auction=g.auction
+            if auction is None:return 'AUKCJA  ·  PRZYGOTOWANIE OFERT'
+            if auction.phase=='bidding':
+                if auction.turn==0:
+                    return 'AUKCJA  ·  WYBIERZ OFERTĘ SUWAKIEM  ·  [ENTER] LICYTUJ  ·  [ESC] PASUJ'
+                return 'AUKCJA  ·  KOMPUTER LICYTUJE'
+            if auction.turn==0:
+                return 'AUKCJA  ·  WYBIERZ JEDNĄ KARTĘ Z OFERT (PIERWSZY / DRUGI WYBÓR)'
+            return 'AUKCJA  ·  KOMPUTER WYBIERA KARTĘ'
+        if g.pending:
+            if g.pending.owner==0:
+                return 'TWOJA TURA  ·  WYBIERZ CEL LUB WARIANT ZDOLNOŚCI PO PRAWEJ'
+            return 'TURA KOMPUTERA  ·  ROZSTRZYGANIE ZDOLNOŚCI'
+        if g.active!=0:
+            return 'TURA KOMPUTERA  ·  ZACZEKAJ NA ZAGRANIA I ATAKI RYWALA'
+        player=g.players[0]
+        if self.selected in player.hand:
+            if player.played_this_turn:
+                return 'TWOJA TURA  ·  KARTA JUŻ ZAGRANA  ·  ZAATAKUJ LUB ZAKOŃCZ [SPACJA]'
+            if len(player.board)==5:
+                return 'TWOJA TURA  ·  PEŁNA PLANSZA: WSKAŻ JEDNOSTKĘ DO ZASTĄPIENIA'
+            return 'TWOJA TURA  ·  WYBIERZ WOLNE POLE, ABY ZAGRAĆ KARTĘ'
+        if self.selected in player.board and g.legal_attacks(self.selected):
+            return 'TWOJA TURA  ·  ZAATAKUJ PODŚWIETLONY CEL (MOŻLIWY ATAK)'
+        can_attack=any(g.legal_attacks(uid) for uid in player.board)
+        can_play=bool(player.hand) and not player.played_this_turn
+        if can_play and can_attack:
+            return 'TWOJA TURA  ·  ZAGRAJ KARTĘ LUB WYBIERZ JEDNOSTKĘ DO ATAKU'
+        if can_play:
+            return 'TWOJA TURA  ·  ZAGRAJ JEDNĄ KARTĘ Z RĘKI NA PLANSZĘ'
+        if can_attack:
+            return 'TWOJA TURA  ·  WYBIERZ GOTOWĄ JEDNOSTKĘ I ZAATAKUJ'
+        return 'TWOJA TURA  ·  ZAKOŃCZ TURĘ [SPACJA]  ·  BRAK INNYCH AKCJI'
+
+    def _draw_phase_guidance(self):
+        # Stable horizontal corridor between enemy and own boards; the
+        # combat log no longer covers cards or this critical tutorial hint.
+        rect=pygame.Rect(96,375,952,31)
+        pygame.draw.rect(self.screen,(25,42,53),rect,border_radius=7)
+        pygame.draw.rect(self.screen,(111,157,172),rect,1,border_radius=7)
+        info=self.cards_view.clip(self._phase_guidance(),self.fonts[14],rect.width-25)
+        self._text(info,14,rect.x+12,rect.y+7,cfg.GOLD)
+
     def _draw_header(self):
         logo,mode,help_area=self.header_regions()
         pygame.draw.rect(self.screen,(21,34,43),pygame.Rect(83,8,1364,67),
@@ -1118,33 +1183,31 @@ class SoloApp:
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text(f'SOLO  ·  70 KART + AUKCJE {self.game.auction_catalog.upper()}  ·  BALANS v21',14,
                    mode.x+8,33,cfg.MUTED)
-        help_text='[A] EFEKTY  [H] HISTORIA  [P] POWTÓRKA  [M] MENU'
+        help_text=(f'[A] ANIM {"WŁ." if self.animations_enabled else "WYŁ."}  '
+                   '[F11] EKRAN  [H] HISTORIA  [M] MENU')
         font=self.fonts[13]
         # Rendered width is checked at runtime; never overflow the canvas.
         help_text=self.cards_view.clip(help_text,font,help_area.width-12)
         self._text(help_text,13,help_area.x+8,34,cfg.GOLD)
 
     def _draw_log(self):
-        # Delikatny, możliwy do wyłączenia [A] błysk pod ostatnimi
-        # zatwierdzonymi zdarzeniami. Żadna animacja nie wpływa na silnik.
+        """Last journal entry stays INSIDE the sidebar. H opens the full log."""
         if self.animations_enabled and self._recent_feedback:
             latest,color=self._recent_feedback[-1]
             elapsed=pygame.time.get_ticks()-latest
-            alpha=max(0,int(92*(1-elapsed/620)))
-            shade=pygame.Surface((940,34),pygame.SRCALPHA)
+            alpha=max(0,int(72*(1-elapsed/620)))
+            shade=pygame.Surface((321,35),pygame.SRCALPHA)
             shade.fill((*color,alpha))
-            self.screen.blit(shade,(109,375))
-        # Three short, truthful engine outcomes fit the existing strip:
-        # e.g. armor absorbed -> actual HP damage -> resulting status.
-        # The [H] history panel retains every unabridged event.
-        entries=self.game.events[-3:]
-        y=370
-        for entry in entries:
-            trimmed=self.cards_view.clip(entry,self.fonts[11],920)
-            self._text(trimmed,11,118,y,cfg.MUTED)
-            y+=15
+            self.screen.blit(shade,(1100,906))
+        notice=getattr(self,'visual_notice','')
+        last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
+        self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
+                   1104,909,cfg.GOLD)
+        self._text(self.cards_view.clip(notice or last,self.fonts[12],319),
+                   12,1104,929,cfg.TEXT if notice else cfg.MUTED)
         if self.last_error:
-            self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),13,280,954,cfg.RED)
+            self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),
+                       13,280,954,cfg.RED)
 
     def _attack_target_rects(self):
         """Ask the engine for *currently legal* attack targets only."""
@@ -1567,6 +1630,7 @@ class SoloApp:
             self.screen.blit(self.bg,(0,0))
             self._draw_header()
             self._draw_board()
+            self._draw_phase_guidance()
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw_cards(
                     self.screen,self.game,self.cards_view,pygame.time.get_ticks())
