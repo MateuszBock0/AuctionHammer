@@ -51,8 +51,10 @@ class AuctionV22RarityRegression(unittest.TestCase):
                     meta=game.auction_awards[uid]
                     self.assertEqual(meta['rarity'],expected)
                     self.assertEqual(meta['last_evolve_round'],round_value)
+                    from game.core.auction_catalog import v23_variant
                     self.assertEqual(game.cards[uid].definition.effect,
-                                     live_variant('v22',meta['archetype'],expected))
+                                     v23_variant('v22',meta['archetype'],expected,
+                                                 game.ruleset_version))
                     self.assertEqual((game.cards[uid].attack,game.cards[uid].max_hp),
                                      frozen[uid])
                 self.assertEqual(game.phase,'auction')
