@@ -153,7 +153,7 @@ class S85DeathFallbackText(unittest.TestCase):
             self.assertEqual(len(choices),1)
             self.assertEqual(choices[0].target,'hero:0')
             self.assertIn(str(4+level),choices[0].label)
-            self.assertIn('Ulecz',choices[0].description)
+            self.assertIn('Ulecz',choices[0].label)
             g.assert_integrity()
 
 
