@@ -148,7 +148,7 @@ def convert_healing(game,target,target_owner,amount):
     heal=amount-damage
     game._log(f'Kapłan Odwróconej Łaski: z leczenia {amount} PŻ '
               f'{damage} zmieniono w obrażenia, pozostaje leczenie {heal} PŻ.')
-    game._damage(target,damage)
+    game._damage(target,damage,defer_death=game._suspend_hero_thresholds)
     return heal
 
 
