@@ -135,6 +135,29 @@ class SoloApp:
             self._audit_notice='Nie można otworzyć folderu: '+str(exc)
             return False
 
+    def _open_archived_record(self,record):
+        """Open the exact selected match in Explorer, not just its first page."""
+        filename=str(record.get('file',''))
+        if not filename or Path(filename).name!=filename or not filename.endswith('.json.gz'):
+            self.menu_message='Nieprawidłowa nazwa pliku historii.'
+            return False
+        target=archive_path()/filename
+        if not target.is_file():
+            self.menu_message='Plik historii nie istnieje: '+filename
+            return False
+        try:
+            if os.name=='nt':
+                subprocess.Popen(['explorer.exe','/select,',str(target)],
+                                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            else:
+                subprocess.Popen(['xdg-open',str(target.parent)],
+                                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            self.menu_message='WYBRANY MECZ: '+filename
+            return True
+        except (OSError,AttributeError) as exc:
+            self.menu_message='Nie można otworzyć meczu: '+str(exc)
+            return False
+
     @staticmethod
     def _desktop_resolution():
         """Get SDL's display dimensions in its own DPI-aware window coordinates."""
@@ -1340,7 +1363,7 @@ class SoloApp:
                     index=self.archive_page*4+i
                     if index<len(self._archive_records):
                         self._archive_selected_record=self._archive_records[index]
-                        self._open_audit_folder(archive=True)
+                        self._open_archived_record(self._archive_selected_record)
                 return
             if self.menu_page=='main':
                 if i==0:
