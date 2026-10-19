@@ -562,6 +562,16 @@ def verify_replay(payload,match_factory):
                 raise ValueError("Silnik odtwarzania nie obsługuje dochodu za wolne pola")
         else:
             game.vacant_income_enabled=enabled
+    if auction_enabled and catalog=='v22':
+        report_rules=payload.get('summary',{}).get('ruleset_version')
+        if report_rules is None:
+            # Old signed archives predate the explicit ruleset field.
+            report_rules='v22' if payload.get('version') in (
+                '0.9.31','0.9.32','0.9.33','0.9.34','0.9.35') else getattr(game,'ruleset_version','v23')
+        if report_rules not in ('v22','v23'):
+            raise ValueError('Niezgodny wariant zasad w audycie')
+        game.ruleset_version=report_rules
+        game.pending_vacant_income=None
     if digest(state_snapshot(game)) != digest(payload["initial_state"]):
         raise ValueError("Początkowy stan nie odpowiada wskazanemu seed")
     for record in payload["actions"]:
