@@ -74,5 +74,25 @@ class TavernUIStageTests(unittest.TestCase):
                 self.assertTrue(app.screen.get_rect().contains(rect),(label,rect))
 
 
+    def test_music_credits_screen_renders_with_author_and_attribution(self):
+        with patch.object(SoloApp, "_desktop_resolution", return_value=(1536,864)):
+            app = SoloApp(start_in_menu=True)
+        app.menu_page = "credits"
+        seen = []
+        original = app._text
+
+        def tracked(text, size, x, y, color=None, center=False):
+            rect = original(text, size, x, y, color, center)
+            seen.append((text, rect))
+            return rect
+
+        with patch.object(app, "_text", side_effect=tracked):
+            app._draw_menu()
+        self.assertTrue(any("Alek Kaczan" in str(text) for text, _ in seen))
+        self.assertTrue(any("PGN Music" in str(text) for text, _ in seen))
+        for text, rect in seen:
+            self.assertTrue(app.screen.get_rect().contains(rect), (text, rect))
+
+
 if __name__=="__main__":
     unittest.main()
