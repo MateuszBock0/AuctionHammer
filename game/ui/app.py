@@ -1155,12 +1155,16 @@ class SoloApp:
             if player.played_this_turn:
                 return 'TWOJA TURA  ·  KARTA JUŻ ZAGRANA  ·  ZAATAKUJ LUB ZAKOŃCZ [SPACJA]'
             if len(player.board)==5:
+                if not any(g.can_play(0,self.selected,x) for x in player.board):
+                    return 'TWOJA TURA  ·  PEŁNA PLANSZA: BRAK JEDNOSTKI DO ZASTĄPIENIA  ·  [SPACJA]'
                 return 'TWOJA TURA  ·  PEŁNA PLANSZA: WSKAŻ JEDNOSTKĘ DO ZASTĄPIENIA'
             return 'TWOJA TURA  ·  WYBIERZ WOLNE POLE, ABY ZAGRAĆ KARTĘ'
         if self.selected in player.board and g.legal_attacks(self.selected):
             return 'TWOJA TURA  ·  ZAATAKUJ PODŚWIETLONY CEL (MOŻLIWY ATAK)'
         can_attack=any(g.legal_attacks(uid) for uid in player.board)
-        can_play=bool(player.hand) and not player.played_this_turn
+        can_play=(bool(player.hand) and not player.played_this_turn
+                  and (len(player.board)<5 or
+                       any(g.units[uid].attacks==0 for uid in player.board)))
         if can_play and can_attack:
             return 'TWOJA TURA  ·  ZAGRAJ KARTĘ LUB WYBIERZ JEDNOSTKĘ DO ATAKU'
         if can_play:
