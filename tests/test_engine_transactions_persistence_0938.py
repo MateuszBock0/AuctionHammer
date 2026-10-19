@@ -124,5 +124,27 @@ class MidDecisionPersistence(unittest.TestCase):
         self.assertEqual(len(g.auction_history),1)
 
 
+class InvariantFaultDetection(unittest.TestCase):
+    def test_misfiled_hand_card_is_detected(self):
+        g=ready(38420)
+        uid=g.players[0].hand[0]
+        g.cards[uid].zone='deck'
+        with self.assertRaisesRegex(AssertionError,'zone mismatch'):
+            g.assert_integrity()
+
+    def test_changed_board_owner_is_detected(self):
+        g=ready(38421)
+        card=place_basic(g,'S03',0,'board')
+        g.units[card].owner=1
+        with self.assertRaisesRegex(AssertionError,'owners disagree'):
+            g.assert_integrity()
+
+    def test_negative_currency_is_detected(self):
+        g=ready(38422)
+        g.players[0].coins=-1
+        with self.assertRaisesRegex(AssertionError,'Invalid coin balance'):
+            g.assert_integrity()
+
+
 if __name__=='__main__':
     unittest.main()
