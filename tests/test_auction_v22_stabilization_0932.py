@@ -134,6 +134,26 @@ class AuctionV22DiscardIsolation(unittest.TestCase):
         self.assertEqual(restored.auction_catalog,'v22')
         restored.assert_integrity()
 
+    def test_canonical_v22_metadata_is_live_with_draft_source_preserved(self):
+        from pathlib import Path
+        import json
+        path=Path(__file__).resolve().parents[1]/'data'/'auction'/'KATALOG_AUKCYJNY_17_v22.json'
+        spec=json.loads(path.read_text(encoding='utf-8'))
+        self.assertEqual(spec['status'],'LIVE_V22')
+        self.assertEqual(spec['count_archetypes'],17)
+        self.assertEqual(spec['count_effect_variants'],51)
+        self.assertEqual(spec['total_archetypes'],17)
+        self.assertEqual(spec['variants'],51)
+        self.assertEqual(set(CATALOG_V22),{card['id'] for card in spec['cards']})
+        self.assertEqual(sum(len(card['variants']) for card in spec['cards']),51)
+        self.assertNotIn('A017',CATALOG_V22)
+        self.assertEqual(spec['auction_rules']['status'],'IMPLEMENTED_V22_LOCAL_DEMO')
+        self.assertEqual(spec['approval']['status'],
+                         'IMPLEMENTED_IN_LOCAL_DEMO_NOT_STATISTICALLY_BALANCED')
+        self.assertEqual(spec['source_proposal_metadata']['approval']['status'],
+                         'PROPOSAL_REVIEWED_NOT_FINAL_BALANCED')
+        self.assertEqual(len(spec['source_proposal_metadata']['notes_needing_confirmation']),4)
+
     def test_v22_no_auction_after_eight_purchases_returns_one_unbought(self):
         game=ready(932035)
         for index in range(8):
