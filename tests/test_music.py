@@ -71,6 +71,17 @@ class SoundtrackTests(unittest.TestCase):
               patch("game.ui.music.sys.executable", str(package / "AuctionHammer.exe"))):
             self.assertEqual(local_music_folder(), audio_dir)
 
+    def test_credits_button_opens_music_attribution_without_gameplay_changes(self):
+        from game.ui.app import SoloApp
+
+        app = SoloApp.__new__(SoloApp)
+        app.menu_page = "main"
+        app.menu_message = ""
+        app._menu_click((925, 300))
+        self.assertEqual(app.menu_page, "credits")
+        app._menu_click((745, 713))
+        self.assertEqual(app.menu_page, "main")
+
     def test_invalid_file_does_not_crash_game(self):
         (self.folder / "fantasy_tavern_full.mp3").touch()
         with (patch.object(pygame.mixer, "get_init", return_value=True),
