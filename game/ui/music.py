@@ -14,10 +14,11 @@ EXTENSIONS = (".ogg", ".mp3", ".wav")
 def album_files(folder: Path) -> tuple[Path, ...]:
     if not folder.is_dir():
         return ()
-    for extension in EXTENSIONS:
-        full = folder / ("fantasy_tavern_full" + extension)
-        if full.is_file():
-            return (full,)
+    for stem in ("music_auctionhammer", "fantasy_tavern_full"):
+        for extension in EXTENSIONS:
+            full = folder / (stem + extension)
+            if full.is_file():
+                return (full,)
     available = sorted(f for f in folder.iterdir()
                        if f.is_file() and f.suffix.lower() in EXTENSIONS)
     tracks = []
@@ -30,11 +31,20 @@ def album_files(folder: Path) -> tuple[Path, ...]:
     return tuple(tracks)
 
 
+def local_music_folder() -> Path:
+    """In a Windows portable build, look beside AuctionHammer.exe first."""
+    if getattr(sys, "frozen", False):
+        external = Path(sys.executable).resolve().parent / "assets" / "music"
+        if album_files(external):
+            return external
+    return MUSIC_DIR
+
+
 class FantasyTavernMusic:
     """Play all tracks in order, then repeat; audio never restarts between matches."""
 
     def __init__(self, folder: Path | None = None):
-        self.tracks = album_files(Path(folder) if folder is not None else MUSIC_DIR)
+        self.tracks = album_files(Path(folder) if folder is not None else local_music_folder())
         self.index = 0
         self.end_event = None
         self.error = None
