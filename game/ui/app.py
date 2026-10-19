@@ -14,7 +14,7 @@ from game.core.audit import (audit_path, archive_path, list_archived_matches,
                              configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
-from game.core.auction_catalog import CATALOG,RARITIES,live_variant,catalog_for
+from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
@@ -578,7 +578,8 @@ class SoloApp:
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
                        rect.centerx,rect.y+155,cfg.GOLD,center=True)
-            description=(live_variant(self.game.auction_catalog,off.archetype,off.rarity)
+            description=(v23_variant(self.game.auction_catalog,off.archetype,
+                                      off.rarity,getattr(self.game,'ruleset_version','v22'))
                          if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
