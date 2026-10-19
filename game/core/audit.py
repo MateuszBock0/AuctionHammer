@@ -172,6 +172,12 @@ def state_snapshot(game):
             'pending_targets':_plain(game.auction_pending_targets),
             'wave_ops':_plain(game.auction_wave_ops)
         }
+    if getattr(game,'auction_catalog',None)=='v22':
+        state['auction_v22']={
+            'catalog_size':17,
+            'vouchers':_plain(game.auction_vouchers),
+            'blocked_play_wardens':_plain(game.auction_blocked_play),
+        }
     return state
 
 
