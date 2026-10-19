@@ -1366,11 +1366,27 @@ class Match:
         elif cid=='S85':
             if target==f'hero:{owner}':self._heal(target,4+level)
             else:regen(target,3,3,level)
-        elif cid=='S86':mod(target,'taunt',0,True)
+        elif cid=='S86':
+            if target==f'hero:{owner}' and self.ruleset_version=='v23':
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('hero_armor',target,3,uid))
+                else:self.players[owner].hero_armor+=3
+                self._log(f'{self.label(uid)}: brak sojusznika, bohater otrzymuje +3 pancerza.')
+            else:mod(target,'taunt',0,True)
         elif cid=='S87':
-            useful=self._clean(target,True);arm(target,2)
-            if useful and level:self._heal(target,level)
-        elif cid=='S88':immune(target,('poison','stun'))
+            if target==f'hero:{owner}' and self.ruleset_version=='v23':
+                self._heal(target,4)
+                self._log(f'{self.label(uid)}: brak sojusznika, próba leczenia bohatera o 4 PŻ.')
+            else:
+                useful=self._clean(target,True);arm(target,2)
+                if useful and level:self._heal(target,level)
+        elif cid=='S88':
+            if target==f'hero:{owner}' and self.ruleset_version=='v23':
+                if self._resolving_death_wave:
+                    self._wave_defense_ops.append(('hero_shield',target,1,uid))
+                else:self.players[owner].hero_shield=1
+                self._log(f'{self.label(uid)}: brak sojusznika, bohater otrzymuje Tarczę.')
+            else:immune(target,('poison','stun'))
         elif cid=='S90':
             available=sorted(self.players[owner].hand)  # migawka fizycznych identyfikatorów
             chosen=self.rng.sample(available,min(2,len(available)))
@@ -1407,7 +1423,15 @@ class Match:
             if target in self.units:
                 self.units[target].shield=1
                 self.units[target].shield_source=uid
-        elif cid=='S32':self._add_poison(target,1,2,uid,level)
+        elif cid=='S32':
+            if mode=='auto' and self.ruleset_version=='v23':
+                enemies=[x for x in self.players[1-owner].board if x in self.units]
+                if enemies:
+                    victim=min(enemies,key=lambda x:(self.units[x].hp,enemies.index(x)))
+                    self._damage(victim,2)
+                    self._log(f'{self.label(uid)}: brak nowego celu trucizny, '
+                              f'2 obrażenia dla {self.label(victim)}.')
+            else:self._add_poison(target,1,2,uid,level)
         elif cid=='S95':
             enemy=self.players[1-owner].board
             pool=[x for x in enemy if not(here and here.last_stun_target==x and here.last_stun_turn==self.players[owner].turn_count-1)]
@@ -1417,6 +1441,11 @@ class Match:
                 if applied:
                     self._damage(t,1+level)
                     if here:here.last_stun_target=t;here.last_stun_turn=self.players[owner].turn_count
+            elif enemy and self.ruleset_version=='v23':
+                victim=min(enemy,key=lambda x:(self.units[x].atk,enemy.index(x)))
+                self._damage(victim,2)
+                self._log(f'{self.label(uid)}: brak nowego celu ogłuszenia, '
+                          f'2 obrażenia dla {self.label(victim)} bez ogłuszenia.')
         elif cid=='S31':regen(target,1,2,level)
         elif cid=='S96':mod(target,'taunt',0,True,expires=next_end(target))
         elif cid=='S97':
