@@ -334,11 +334,11 @@
       },
       "variants": {
         "basic": "Na koniec własnej tury wybierz: przywołaj na wolne pole własnej planszy efemerycznego Żołnierza 1 ATK / 1 HP ALBO nadaj Królowej trwałe +1 ATK i +1 MAX HP (oraz +1 bieżącego HP).",
-        "rare": "Na koniec własnej tury wybierz: przywołaj na wolne pola do dwóch efemerycznych Żołnierzy 2 ATK / 2 HP z Prowokacją ALBO nadaj Królowej trwałe +4 ATK, +4 MAX HP (+4 bieżącego HP) i Prowokację.",
-        "legendary": "Na koniec własnej tury wybierz: przywołaj na wolne pola do dwóch efemerycznych kopii najsilniejszej innej własnej jednostki, z jej aktualnymi ATK i MAX HP, lecz BEZ zdolności; ALBO nadaj Królowej trwały bonus +ATK równy ATK tej jednostki i +MAX HP równy jej MAX HP (wraz z odpowiednim przyrostem bieżącego HP)."
+        "rare": "Na koniec własnej tury wybierz: przywołaj na wolne pola do dwóch efemerycznych Żołnierzy 2 ATK / 2 HP z Prowokacją ALBO nadaj Królowej trwałe +2 ATK, +2 MAX HP (+2 bieżącego HP) i Prowokację.",
+        "legendary": "Na koniec własnej tury wybierz: przywołaj na wolne pola do dwóch efemerycznych Żołnierzy 3 ATK / 3 HP bez zdolności ALBO nadaj Królowej trwałe +3 ATK i +3 MAX HP (oraz +3 bieżącego HP)."
       },
-      "limits_and_counterplay": "Każdy wybór następuje raz na koniec własnej tury Królowej; bonusy własne kumulują się pomiędzy turami i są buffami na planszy, nie skalowaniem karty na ręce. Najsilniejsza inna własna jednostka = największe bieżące ATK+MAX HP, przy remisie najbardziej z lewej. Brak innego sojusznika uniemożliwia warianty legendarne zależne od jego statystyk. Kopie i Żołnierze nie aktywują „Przy wystawieniu”, nie są kartami aukcyjnymi ani bazowymi, nie powracają do talii po śmierci; maksymalnie 5 jednostek na planszy.",
-      "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
+      "limits_and_counterplay": "Każdy wybór następuje raz na koniec własnej tury Królowej. Statystyki przywoływanego Żołnierza odpowiadają bonusowi w alternatywnym wzmocnieniu Królowej: 1/1, 2/2, 3/3. Żołnierze nie kopiują statystyk innych sojuszników. Bonusy własne kumulują się pomiędzy turami i są buffami na planszy, nie skalowaniem karty na ręce. Żołnierze nie aktywują „Przy wystawieniu”, nie wracają do talii ani cmentarza po śmierci; maksymalnie 5 jednostek na planszy.",
+      "review_status": "USER_APPROVED_V22_REBALANCE_2026_10_19",
       "stats_change_v3_to_v4": {
         "old_atk": 2,
         "old_hp": 9,
@@ -354,9 +354,9 @@
         "no_changes_after_acquisition": true
       },
       "review_notes_v4": [
-        "Raz na KONIEC własnej tury Królowej. Nie oznacza to możliwości zagrania dwóch kart z ręki; przywołane Żołnierze i kopie są tokenami.",
-        "Wzmocnienie jest trwałe na planszy i może kumulować się między turami, ale nie jest skalowaniem samego egzemplarza aukcyjnego w ręce.",
-        "Legendarna liczy najsilniejszą inną własną jednostkę z bieżących ATK+MAX HP, przy remisie wybiera najbardziej lewą; token z tej zdolności nie posiada zdolności."
+        "Raz na KONIEC własnej tury Królowej; przywołanie nie zużywa limitu zagrania z ręki.",
+        "Statystyki Żołnierzy 1/1, 2/2, 3/3 odpowiadają równoległym bonusom +1/+1, +2/+2, +3/+3.",
+        "Prowokację zachowują tylko rzadcy Żołnierze i rzadka Królowa; historia v4 zachowuje stare zasady."
       ]
     },
     {
