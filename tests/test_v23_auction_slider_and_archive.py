@@ -76,7 +76,8 @@ class ArchivePaginationV23Tests(unittest.TestCase):
         app.archive_page=0
         app._archive_records=[{'file':f'mecz_{i}.json.gz','version':'0.9.35'} for i in range(n)]
         app._archive_selected_record=None
-        app._open_audit_folder=lambda archive=False: True
+        app._opened_records=[]
+        app._open_archived_record=lambda record: app._opened_records.append(record)
         return app
 
     def test_all_lengths_0_1_4_5_8_9_have_right_page_count(self):
@@ -93,6 +94,7 @@ class ArchivePaginationV23Tests(unittest.TestCase):
         self.assertEqual(app.archive_page,1)
         app._menu_click((700,322+1*81+25))  # local row 2 => global index 5
         self.assertEqual(app._archive_selected_record['file'],'mecz_5.json.gz')
+        self.assertEqual(app._opened_records[0]['file'],'mecz_5.json.gz')
 
     def test_navigation_round_trip_does_not_change_archive_contents(self):
         app=self._app(5)
