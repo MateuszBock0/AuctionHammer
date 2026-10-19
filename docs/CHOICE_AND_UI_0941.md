@@ -42,3 +42,6 @@ Trzy warianty na tych samych seedach v23: stare +3 monety, wymuszony Chorąży 2
 - Artefakt z obrazami wygenerowanymi przez `tools/render_minimal_fantasy_preview.py`.
 - Ręczny Windows test pozostaje oznaczony NOT TESTED — nie oznaczać go PASS bez przeprowadzenia.
 - Kategorycznie nie usuwać plików źródłowych PNG ani nie pobierać grafik z innych gier.
+
+### Korekta heurystyki AI po pierwszym badaniu A/B
+Bazowe karty mają ATK 1–4. Początkowy próg AI `>=5` był niemożliwy do osiągnięcia — AI zawsze wybierał 2/5 (400/400). Poprawiono go do `>=4`, odpowiadającego mocnej początkowej ręce, a do testów dodano wymóg faktycznego wykorzystania **obu** opcji przez AI. Pierwotne A/B zmuszonego 2/5 pozostaje ważne, ale wynik adaptacyjny dla starej heurystyki został unieważniony i musi zostać policzony ponownie.

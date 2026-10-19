@@ -47,6 +47,17 @@ class SecondPlayerChoice(unittest.TestCase):
             g.assert_integrity()
         self.assertEqual(seats,{0,1})
 
+    def test_ai_uses_both_compensation_options_on_different_hands(self):
+        from game.core.ai import ComputerOpponent
+        observed=set()
+        for seed in range(39000,39100):
+            game=fresh(seed)
+            bot=ComputerOpponent(player=1-game.first)
+            bot.step(game)
+            observed.add(game.starting_compensation_choice)
+            self.assertEqual(len(game.audit_actions),1)
+        self.assertEqual(observed,{'coins','unit_2_5'})
+
     def test_choose_two_five_and_cannot_choose_twice(self):
         for seed in (39881,39882,39883):
             g=fresh(seed);second=1-g.first
