@@ -1,0 +1,92 @@
+name: "0.9.41 - second player choice: full replays and paired balance"
+
+on:
+  push:
+    branches: [feature/0941-second-player-choice-uiux]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay-every-match:
+    name: ${{ matrix.label }} 100% audited replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: normal-normal, games: 400, seed: 39000, level0: normalny, level1: normalny}
+          - {label: easy-hard, games: 300, seed: 49000, level0: łatwy, level1: trudny}
+          - {label: hard-easy, games: 300, seed: 59000, level0: trudny, level1: łatwy}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - name: Play and replay all matches with adaptive second-mover choice
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
+          SDL_AUDIODRIVER: dummy
+          SDL_VIDEODRIVER: dummy
+        run: |
+          python tools/simulate_v22.py --games ${{ matrix.games }} \
+            --start-seed ${{ matrix.seed }} --max-steps 3000 \
+            --level-0 ${{ matrix.level0 }} --level-1 ${{ matrix.level1 }} \
+            --starting-compensation choice_2_5_or_coins --verify-every 1 \
+            --output-dir reports/0941_${{ matrix.label }}
+      - name: Strict completion and verified hash counts
+        env:
+          LABEL: ${{ matrix.label }}
+          COUNT: ${{ matrix.games }}
+        run: |
+          python - <<'PY'
+          import os,json
+          from pathlib import Path
+          f=Path('reports/0941_'+os.environ['LABEL']+'/raport_100_meczow.json')
+          s=json.loads(f.read_text(encoding='utf-8'))['summary']
+          assert s['finished']==int(os.environ['COUNT']),s
+          assert s['audit_replays_verified']==int(os.environ['COUNT']),s
+          assert s['failed']==0,s
+          print('QA CHOICE REPLAY PASS:',os.environ['LABEL'],s['finished'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: choice0941-${{ matrix.label }}
+          path: |
+            reports/0941_${{ matrix.label }}/raport_100_meczow.json
+            reports/0941_${{ matrix.label }}/wyniki_meczow.csv
+          retention-days: 30
+          if-no-files-found: warn
+  paired-balance:
+    name: Coins / forced 2x5 / adaptive - paired seeds
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - name: Run 400 identical seeds across three compensation policies
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
+          SDL_AUDIODRIVER: dummy
+          SDL_VIDEODRIVER: dummy
+        run: |
+          python tools/balance_choice_0941.py --games 400 --start-seed 39000 \
+            --output reports/0941/balance_choice.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: choice0941-paired-balance
+          path: reports/0941/balance_choice.*
+          retention-days: 90
+          if-no-files-found: warn
