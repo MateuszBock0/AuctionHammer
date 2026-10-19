@@ -64,5 +64,7 @@
   "auction_catalog_mode": "v22",
   "auction_catalog_metadata": "17/51 live-with-archived-source-proposal",
   "match_archive": "compressed-json-gzip-with-deduplicated-index-and-migration",
-  "match_archive_menu": "history-of-completed-matches"
+  "match_archive_menu": "history-of-completed-matches",
+  "vacant_board_income": "v22-new-matches-own-turn-end-5-minus-own-board-count",
+  "old_save_income_policy": "legacy-saves-preserve-original-rules"
 }
