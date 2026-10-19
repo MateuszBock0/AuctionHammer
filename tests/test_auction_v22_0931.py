@@ -163,7 +163,8 @@ class AuctionV22FiveVariants(unittest.TestCase):
                     minimum=max(1,state.highest_effective+1-state.bid_bonus[0])
                     # Give bidder enough money regardless of start bonus.
                     g.players[0].coins=10
-                    g.auction_bid(state.turn,minimum)
+                    state.turn=0
+                    g.auction_bid(0,minimum)
                     self.assertEqual(state.highest_effective,minimum+(2,5)[tier])
                 self.assertEqual(g.auction_vouchers[0],[])
                 g.assert_integrity()
