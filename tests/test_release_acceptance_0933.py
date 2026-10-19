@@ -210,14 +210,14 @@ class ArchiveMenuAcceptance(unittest.TestCase):
         records=[{"exported_at_utc":"2026-10-19T11:20:00+00:00",
                   "winner":0,"rounds":12,"file":"game.json.gz","id":"abc"}]
         with patch("game.ui.app.list_archived_matches",return_value=records),patch.object(
-            app,"_open_audit_folder",return_value=True
-        ) as folder:
+            app,"_open_archived_record",return_value=True
+        ) as selected_file:
             app._menu_click(pygame.Rect(625,282,240,34).center)
             self.assertEqual(app.menu_page,"archive")
             self.assertEqual(app._archive_records,records)
             app._draw_menu()
             app._menu_click(pygame.Rect(535,322,420,61).center)
-            folder.assert_called_once_with(archive=True)
+            selected_file.assert_called_once_with(records[0])
             app._menu_click(pygame.Rect(535,322+4*81,420,61).center)
             self.assertEqual(app.menu_page,"main")
 
