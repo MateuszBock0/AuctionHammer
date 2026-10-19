@@ -60,8 +60,21 @@ jobs:
           foreach ($dir in @('game','assets','data','docs','tests','tools','preview','.vscode')) {
             Copy-Item -Path $dir -Destination $dest -Recurse -Force
           }
-          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
+          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
             Copy-Item -Path $f -Destination $dest -Force
+          }
+          # Ship a tracked, permitted album once, beside the portable EXE.
+          $soundtrack = 'assets/music/music_auctionhammer.mp3'
+          if (Test-Path -LiteralPath $soundtrack) {
+            $releaseTrack = Join-Path $dest $soundtrack
+            if (-not (Test-Path -LiteralPath $releaseTrack)) {
+              throw 'Licensed soundtrack is tracked but missing from Windows release.'
+            }
+            # PyInstaller --add-data also creates an unused duplicate under _internal.
+            $internalTrack = Join-Path $dest '_internal/assets/music/music_auctionhammer.mp3'
+            if (Test-Path -LiteralPath $internalTrack) {
+              Remove-Item -LiteralPath $internalTrack -Force
+            }
           }
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
           Set-Content -Path "$dest/BUILD_VERSION.txt" -Value $tag -NoNewline
