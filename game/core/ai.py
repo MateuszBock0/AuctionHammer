@@ -44,7 +44,11 @@ class ComputerOpponent:
             if state.phase=='bidding':
                 # Deterministic affordable bidding; the player may outbid.
                 budget=game.players[self.player].coins
-                ceiling=min(budget,2+state.number*2 if self.difficulty!='łatwy' else 1)
+                # Vacant slots generate compensating coins. An underdog AI
+                # must be allowed to bid SOME of them instead of hoarding.
+                basic_ceiling=2+state.number*2 if self.difficulty!='łatwy' else 1
+                comeback_budget=(5-len(game.players[self.player].board)) if self.difficulty!='łatwy' else 0
+                ceiling=min(budget,basic_ceiling+comeback_budget)
                 # Follow v22's legal *effective* minimum. This is only a
                 # compatibility fix, not a change of opponent heuristics.
                 minimum=(max(1,state.highest_effective+1-state.bid_bonus[self.player])
