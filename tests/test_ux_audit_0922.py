@@ -22,6 +22,9 @@ def shell(game,selected=None):
     app.last_error=''
     app.scroll=0
     app.auction_bid_text=''
+    app.auction_slider_value=None
+    app.auction_slider_key=None
+    app.auction_slider_dragging=False
     app.auction_status=''
     app.details_card=None
     app.sidebar_card=None
@@ -37,42 +40,38 @@ class AuctionBidPreflightTests(unittest.TestCase):
         game.players[0].coins=2
         app=shell(game)
         with patch.object(game,'auction_bid') as bid:
-            app._auction_do('min')
             app._auction_do('bid')
             bid.assert_not_called()
         self.assertIn('PASUJ',app.auction_status)
         self.assertEqual(game.auction.current_bid,2)
 
-    def test_unaffordable_custom_amount_does_not_call_engine(self):
+    def test_auction_slider_never_selects_more_than_balance(self):
         game=ready(2202)
         game.auction.turn=0
         game.auction.current_bid=1
         game.players[0].coins=4
         app=shell(game)
-        app.auction_bid_text='20'
-        with patch.object(game,'auction_bid') as bid:
-            app._auction_do('bid')
-            bid.assert_not_called()
-        self.assertIn('4 monet',app.auction_status)
+        app._shift_auction_slider(edge='balance')
+        self.assertEqual(app.auction_slider_value,4)
+        app._shift_auction_slider(200)
+        self.assertEqual(app.auction_slider_value,4)
 
-    def test_too_small_bid_does_not_call_engine(self):
+    def test_slider_begins_at_minimum_and_cannot_go_lower(self):
         game=ready(2203)
         game.auction.turn=0
         game.auction.current_bid=4
         game.players[0].coins=10
         app=shell(game)
-        app.auction_bid_text='3'
-        with patch.object(game,'auction_bid') as bid:
-            app._auction_do('bid')
-            bid.assert_not_called()
-        self.assertIn('5 monet',app.auction_status)
+        app._shift_auction_slider(-5)
+        self.assertEqual(app.auction_slider_value,5)
 
     def test_affordable_bid_still_uses_real_engine(self):
         game=ready(2204)
         game.auction.turn=0
         game.players[0].coins=12
         app=shell(game)
-        app.auction_bid_text='5'
+        app._shift_auction_slider(edge='minimum')
+        app._shift_auction_slider(+4)
         app._auction_do('bid')
         self.assertEqual(game.auction.current_bid,5)
         self.assertEqual(game.auction.highest_bidder,0)
