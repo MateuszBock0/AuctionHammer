@@ -195,7 +195,7 @@ W repozytorium używane są następujące formaty:
 **Gdzie zapisuje się gra?** Na Windows zapis meczu ma format JSON i znajduje się domyślnie pod ścieżką:
 
 ```text
-%LOCALAPPDATA%\\AuctionHammer\\savegame_v19.json
+%LOCALAPPDATA%\AuctionHammer\savegame_v19.json
 ```
 
 Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.32 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo można wyeksportować audyt ostatniej partii jako plik JSON.
