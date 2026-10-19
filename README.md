@@ -215,11 +215,15 @@ folder `assets/music` obok pliku `AuctionHammer.exe` (nie w
 Starsze nazwy pełnego albumu oraz zestaw 13 ponumerowanych utworów
 nadal są obsługiwane.
 
-**Audio jest opcjonalne i nie jest zawarte w repozytorium ani paczce Windows**:
-przed publiczną redystrybucją utworów trzeba wyjaśnić warunki licencji
-bezpośrednio z PGN Music. Własne, legalnie pozyskane pliki umieść w
-`assets/music/`; brak plików nie wpływa na działanie gry. Gra nie pobiera
-muzyki automatycznie z YouTube.
+**Plik MP3 może być dystrybuowany razem z grą:** właściciel projektu
+potwierdził uzyskanie zgody na wykorzystanie i udostępnianie muzyki.
+Po dodaniu `assets/music/music_auctionhammer.mp3` przez standardowy
+`git push`, album znajdzie się w repozytorium i automatycznie
+w paczce ZIP na Windows. **38,2 MB mieści się w limicie Git (100 MiB)**,
+choć jest za duże na formularz GitHub w przeglądarce.
+Muzyka jest podpisana w **Menu → CREDITS**, README oraz dokumentacji
+prawnej. Nagrania mają osobne warunki licencyjne i nie podlegają MIT.
+Bez pliku gra nadal uruchamia się bez dźwięku.
 
 [Jak umieścić album](assets/music/README.md) ·
 [Pochodzenie, autorzy i licencja muzyki](docs/THIRD_PARTY_MUSIC.md)
