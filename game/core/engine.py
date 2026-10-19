@@ -349,6 +349,39 @@ class Match:
     def _queue(self,uid,context,target=None):
         self.trigger_queue.append((uid,context,target))
 
+    def _play_deck_effect(self,owner,uid):
+        """A016: physically move a selected deck card to board, no hand play spent."""
+        p=self.players[owner]
+        self._check(uid in p.deck and len(p.board)<5 and self.cards[uid].owner==owner,
+                    'Kartograf: brak karty w talii lub wolnego pola')
+        p.deck.remove(uid)
+        card=self.cards[uid]
+        card.zone='board'
+        u=Unit(uid,owner,card.attack,card.max_hp,card.max_hp,card.ability_level,p.turn_count)
+        self.units[uid]=u
+        p.board.append(uid)
+        u.fallback_double_pending=card.double_on_first_eligible
+        card.double_on_first_eligible=False
+        if p.next_fast or card.quick_next_turn==p.turn_count or card.quick_on_first_summon:
+            self._add_effect(uid,'quick',expires=p.turn_count,source='deck-play')
+            p.next_fast=False
+        card.quick_next_turn=None
+        card.quick_on_first_summon=False
+        self._log(f'Kartograf: dodatkowo wystawiono {self.label(uid)} {u.atk}/{u.hp} z talii.')
+        self._update_auras(defer_reactive=True)
+        self.position_reactions_due=True
+        if card.definition.faction=='Elfy' or card.definition.id in ('S34','S35'):
+            self._queue(uid,'play')
+        if card.definition.id=='S106':
+            u.shield=1;u.shield_source=uid
+        if card.definition.id=='S39' and u.ability_level:
+            u.armor_perm+=u.ability_level
+        if self.auction_catalog in ('v4','v22'):
+            auction_ability_rules.mark_general_new_ally(self,uid)
+            if card.definition.id in catalog_for(self.auction_catalog) and (
+                    card.definition.trigger=='Przy wystawieniu' or card.definition.id=='A002'):
+                self._queue(uid,'play')
+
     def _drain(self):
         if self._draining:return
         self._draining=True
@@ -643,6 +676,8 @@ class Match:
                 for ally in self.players[u.owner].board:
                     if ally in self.units and self.cards[ally].definition.id=='S104' and not self._disabled(self.units[ally]):
                         amount += 2+self.units[ally].ability_level
+            if self.auction_catalog=='v22':
+                amount=auction_ability_rules.convert_healing(self,target,u.owner,amount)
             old=u.hp
             u.hp=min(u.max_hp,u.hp+max(0,amount))
             if self.auction_catalog in ('v4','v22') and u.hp>old:
@@ -650,6 +685,8 @@ class Match:
                           f'({old} → {u.hp}/{u.max_hp}).')
         elif target and target.startswith('hero:'):
             p=self.players[int(target.split(':')[1])]
+            if self.auction_catalog=='v22':
+                amount=auction_ability_rules.convert_healing(self,target,p.idx,amount)
             old=p.hp;p.hp=min(100,p.hp+max(0,amount))
             if self.auction_catalog in ('v4','v22') and p.hp>old:
                 self._log(f'{p.name} odzyskuje {p.hp-old} PŻ '
