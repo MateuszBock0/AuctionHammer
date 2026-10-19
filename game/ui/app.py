@@ -61,6 +61,8 @@ class SoloApp:
         self.menu_page='main'
         self.menu_message=''
         self._archive_records=[]
+        self.archive_page=0
+        self._archive_selected_record=None
         self.history_open=False
         self.history_scroll=0
         self.replay_index=None
@@ -1227,11 +1229,22 @@ class SoloApp:
         if self.menu_page=='main' and history_button.collidepoint(pos):
             try:
                 self._archive_records=list_archived_matches()
+                self.archive_page=0
+                self._archive_selected_record=None
                 self.menu_message=''
                 self.menu_page='archive'
             except (OSError,ValueError,TypeError) as exc:
                 self.menu_message='Nie można odczytać historii: '+str(exc)
             return
+        if self.menu_page=='archive':
+            total=max(1,(len(self._archive_records)+3)//4)
+            self.archive_page=max(0,min(getattr(self,'archive_page',0),total-1))
+            if pygame.Rect(535,715,170,36).collidepoint(pos):
+                self.archive_page=max(0,self.archive_page-1)
+                return
+            if pygame.Rect(785,715,170,36).collidepoint(pos):
+                self.archive_page=min(total-1,self.archive_page+1)
+                return
         buttons=[pygame.Rect(535,322+i*81,420,61) for i in range(5)]
         for i,rect in enumerate(buttons):
             if not rect.collidepoint(pos):continue
@@ -1239,8 +1252,11 @@ class SoloApp:
             if self.menu_page=='archive':
                 if i==4:
                     self.menu_page='main'
-                elif i < len(self._archive_records[:4]):
-                    self._open_audit_folder(archive=True)
+                else:
+                    index=self.archive_page*4+i
+                    if index<len(self._archive_records):
+                        self._archive_selected_record=self._archive_records[index]
+                        self._open_audit_folder(archive=True)
                 return
             if self.menu_page=='main':
                 if i==0:
@@ -1323,7 +1339,9 @@ class SoloApp:
             self._text('Kod: MIT  ·  Muzyka: odrębna licencja PGN Music',13,746,790,cfg.MUTED,center=True)
             return
         if self.menu_page=='archive':
-            records=self._archive_records[:4]
+            total=max(1,(len(self._archive_records)+3)//4)
+            self.archive_page=max(0,min(getattr(self,'archive_page',0),total-1))
+            records=self._archive_records[self.archive_page*4:(self.archive_page+1)*4]
             items=tuple(
                 self.cards_view.clip(
                     f'{item.get("exported_at_utc","")[:16].replace("T"," ")}  ·  '
@@ -1334,6 +1352,15 @@ class SoloApp:
                 for item in records)
             items=items+tuple('—' for _ in range(4-len(items)))+('WRÓĆ DO MENU',)
             self._text(f'ZAPISANE MECZE: {len(self._archive_records)}',16,746,287,cfg.GOLD,center=True)
+            self._button(pygame.Rect(535,715,170,36),'POPRZEDNIA',
+                         active=self.archive_page>0,small=True)
+            self._text(f'STRONA {self.archive_page+1}/{total}',13,746,733,
+                       cfg.GOLD,center=True)
+            self._button(pygame.Rect(785,715,170,36),'NASTĘPNA',
+                         active=self.archive_page+1<total,small=True)
+            if not self._archive_records:
+                self._text('BRAK ZAPISANYCH MECZÓW',15,746,699,
+                           cfg.MUTED,center=True)
         elif self.menu_page=='main':
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')
