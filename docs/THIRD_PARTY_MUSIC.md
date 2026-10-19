@@ -12,7 +12,6 @@
 
 > Music courtesy of PGN Music (https://pgnmusic.com/).
 > Fantasy Tavern Music — composed by Alek Kaczan.
-> Used with permission of the rights holder.
 
 Odtwarzana w grze kopia to pojedynczy plik MP3 zawierający pełny album,
 zamiast 13 oddzielnych plików. Jeśli przy tworzeniu pliku wykonano
@@ -43,10 +42,7 @@ Kolejność 13 utworów (Bandcamp):
 
 ## Status licencji
 
-Prawa do muzyki należą do PGN Music i twórców nagrań. Prywatne ustalenia
-dotyczące projektu nie są częścią publicznej dokumentacji.
-
-Polityka PGN Music wskazuje CC BY-SA, natomiast album na Bandcamp odsyła
+Prawa do muzyki należą do PGN Music i twórców nagrań. Polityka PGN Music wskazuje CC BY-SA, natomiast album na Bandcamp odsyła
 do CC BY 4.0. Są to różne warunki; sposób wykorzystania nagrań powinien
 być oceniony z uwzględnieniem właściwej licencji.
 
