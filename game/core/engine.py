@@ -433,7 +433,9 @@ class Match:
                     # Do this AFTER a possible Wieszczka cancellation so a
                     # blocked on-play effect consumes neither cards nor RNG.
                     if (auction_context and ctx=='play' and
-                            self.auction_awards.get(uid,{}).get('archetype')=='A016'):
+                            self.auction_awards.get(uid,{}).get('archetype')=='A016'
+                            and (auction_ability_rules.rarity(self,uid)<2 or
+                                 len(self.players[self.cards[uid].owner].board)<5)):
                         self._refill_deck_from_grave(self.cards[uid].owner)
                     choices=(auction_ability_rules.options(self,uid,ctx,tgt)
                              if auction_context else options(self,uid,ctx,tgt))
