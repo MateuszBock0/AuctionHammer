@@ -464,7 +464,7 @@ def execute(game,uid,context,choice,attacked=None):
     if context=='auction_discard':
         if target in foe.hand:
             foe.hand.remove(target)
-            if game.auction_catalog=='v4' and target in game.auction_awards:
+            if game.auction_catalog in ('v4','v22') and target in game.auction_awards:
                 # Legendary A009 must never recycle an auction card into a
                 # basic graveyard, even after stealing/swapping hands.
                 game.auction_used.append(target)
