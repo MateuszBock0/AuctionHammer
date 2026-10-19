@@ -250,7 +250,7 @@ def _spawn(game,uid,atk,hp,taunt=False):
     game.serial+=1
     cid=f'SUM{game.serial:07d}'
     d=CardDefinition(cid,'Żołnierz Królowej','Ludzie',
-                     'Prowokacja' if taunt else 'Tarcza','Pasywna',
+                     'Prowokacja' if taunt else 'Bez zdolności','Pasywna',
                      atk,hp,'Prowokacja' if taunt else 'Bez zdolności',
                      'Jednostka efemeryczna',0,0)
     game.cards[cid]=Card(cid,d,owner=owner,zone='board')
