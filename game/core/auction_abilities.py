@@ -145,6 +145,8 @@ def _capture(game,uid,target,chain=False):
     old=unit.owner
     if old==owner:return False
     game.players[old].board.remove(target)
+    # A captured ally must not continue benefiting from their old general.
+    forget_general_links(game,target)
     unit.owner=owner
     unit.played_turn=game.players[owner].turn_count
     unit.attacks=0
@@ -166,6 +168,7 @@ def _kill(game,uid,target):
 
 def _exile(game,uid,target):
     if target in game.units:
+        forget_general_links(game,target,include_source=True)
         unit=game.units.pop(target)
         game.players[unit.owner].board.remove(target)
     elif target in game.cards and game.cards[target].zone=='hand':
@@ -295,6 +298,17 @@ def rescue_heroes(game):
         _save_hero(game,owner)
 
 
+def forget_general_links(game,uid,include_source=False):
+    """Buff targets are physical battlefield incarnations, not card UIDs forever."""
+    for src,target in list(game.auction_general_targets.items()):
+        if target==uid or (include_source and src==uid):
+            game.auction_general_targets.pop(src,None)
+    for src,recipients in list(game.auction_general_grants.items()):
+        recipients.discard(uid)
+        if include_source and src==uid:
+            game.auction_general_grants.pop(src,None)
+
+
 def mark_general_new_ally(game,uid):
     """Only units entering after an active legendary general receive its flag."""
     if uid not in game.units:return
@@ -310,10 +324,12 @@ def boosted_attack(game,uid):
     if not unit:return False
     for src,target in game.auction_general_targets.items():
         if (target==uid and src in game.units and rarity(game,src)==1
+            and game.units[src].owner==unit.owner
             and not game._disabled(game.units[src])):
             return True
     for src,recipients in game.auction_general_grants.items():
         if (uid in recipients and src in game.units and rarity(game,src)==2
+            and game.units[src].owner==unit.owner
             and not game._disabled(game.units[src])):
             return True
     return False
