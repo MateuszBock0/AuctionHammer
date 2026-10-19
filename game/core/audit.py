@@ -138,6 +138,7 @@ def state_snapshot(game):
             "_resolving_death_wave":game._resolving_death_wave,
             "_next_death_wave_id":game._next_death_wave_id,
             "_next_turn_due":game._next_turn_due,
+            "_space_income_due":getattr(game,'_space_income_due',False),
             "position_reactions_due":game.position_reactions_due,
             "_suspend_hero_thresholds":game._suspend_hero_thresholds
         },
