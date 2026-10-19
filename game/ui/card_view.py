@@ -216,9 +216,21 @@ class CardView:
         f=font or self.font(10,True)
         self._center(screen,self.clip(text,f,rect.width-6),rect,f,foreground)
 
+    @staticmethod
+    def board_tint(statuses):
+        """ONLY the three explicitly approved card overlays, never debuffs."""
+        kinds={status.category for status in statuses}
+        if 'shield' in kinds:
+            return (255,210,64,37)    # shield/protection: pale gold
+        if 'taunt' in kinds:
+            return (184,192,205,43)   # taunt: brushed silver
+        if 'double' in kinds:
+            return (227,69,78,37)     # double attack: subtle crimson
+        return None
+
     def draw(self,screen,card,rect,unit=None,selected=False,dim=False,
              hover=False,statuses=(),ready=None,attacks_remaining=None,
-             attacks_total=None):
+             attacks_total=None,hp_override=None):
         d=card.definition
         cue=card_cue(card,unit)
         summary=ability_summary(card,unit)
@@ -368,7 +380,8 @@ class CardView:
             self._pill(screen,tag,count,(43,105,72) if ready else (74,78,89),sf)
         # ATK + PŻ last: large, opaque, never dimmed or overlapped.
         attack=unit.atk if board else card.attack
-        hp=unit.hp if board else card.max_hp
+        hp=(max(0,int(hp_override)) if board and hp_override is not None
+            else max(0,unit.hp) if board else card.max_hp)
         max_hp=unit.max_hp if board else card.max_hp
         label_font=self.font(10 if large else 9,True)
         value_font=self.font(25 if large else (22 if rect.height>=210 else 20),True)
@@ -389,6 +402,15 @@ class CardView:
         xx=health_box.centerx-total//2
         screen.blit(hh,(xx,health_box.bottom-hh.get_height()-2))
         screen.blit(mm,(xx+hh.get_width(),health_box.bottom-mm.get_height()-4))
+        # Board-level signature traits use exactly ONE restrained whole-card
+        # tint. Existing status labels explain additional simultaneous traits.
+        # Poison/stun/regen, etc. never colour the whole card.
+        if board:
+            tint=self.board_tint(statuses)
+            if tint is not None:
+                overlay=pygame.Surface(rect.size,pygame.SRCALPHA)
+                overlay.fill(tint)
+                screen.blit(overlay,rect.topleft)
         # Selection overlays stay on the edge and are visually distinct.
         if selected:
             pygame.draw.rect(screen,cfg.GOLD,rect.inflate(5,5),3,border_radius=12)
