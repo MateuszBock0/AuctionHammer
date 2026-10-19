@@ -54,11 +54,14 @@ class AuctionCoreTests(unittest.TestCase):
             m.end_turn()
             self.assertEqual(m.phase,'turn',turn)
         before=[p.coins for p in m.players]
+        finishing=m.active
+        bonus=5-len(m.players[finishing].board)
         m.end_turn()
         self.assertEqual(m.phase,'auction')
         self.assertEqual(m.round,4)
         self.assertEqual([p.coins for p in m.players],
-                         [x+1 for x in before])
+                         [x+1+(bonus if idx==finishing else 0)
+                          for idx,x in enumerate(before)])
         self.assertEqual([o.hp for o in m.auction.offers],[3,6,12])
         self.assertEqual([o.atk for o in m.auction.offers],[3,3,3])
         self.assertEqual(m.auction.free_first,m.first)
