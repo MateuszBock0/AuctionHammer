@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.35",
+  "mvp": "0.9.36",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -67,5 +67,21 @@
   "match_archive_menu": "history-of-completed-matches",
   "vacant_board_income": "v22-new-matches-own-turn-end-5-minus-own-board-count",
   "old_save_income_policy": "legacy-saves-preserve-original-rules",
-  "ui_combat": "approved-red-double-silver-taunt-yellow-shield-and-authenticated-combat-death-fade"
+  "ui_combat": "approved-red-double-silver-taunt-yellow-shield-and-authenticated-combat-death-fade",
+  "ruleset_version": "v23",
+  "ruleset_addendum": "data/game_rules_v23_addendum.json",
+  "music_asset": "assets/music/music_auctionhammer.mp3",
+  "music_runtime": "FantasyTavernMusic-real-mp3-looped-30-percent",
+  "v23_implementations": [
+    "auction_bid_slider",
+    "ten_scaling_text_errata",
+    "deferred_vacant_income",
+    "A018_legendary_fallback",
+    "A014_nominal_healing_explanation",
+    "A015_opposing_owner_only",
+    "S86_S87_S88_death_fallback",
+    "S32_S95_no-target_fallback",
+    "archive_pagination_four",
+    "historic_ruleset_compatibility"
+  ]
 }
