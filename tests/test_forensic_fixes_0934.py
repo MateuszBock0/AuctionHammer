@@ -128,6 +128,22 @@ class A015ChosenEffectRegression(unittest.TestCase):
         self.assertEqual(len(g.auction_blocked_play),1)
         g.assert_integrity()
 
+    def test_choice_based_enemy_aura_is_blocked_but_friendly_aura_allowed(self):
+        # S34 can choose allied aura or enemy debuff without target UID.
+        for mode in ('ally','enemy'):
+            with self.subTest(mode=mode):
+                g=ready(934152 if mode=='ally' else 934153)
+                ward=award(g,'A015',0,owner=1,zone='board')
+                place_basic(g,'S34',0,'hand')
+                g.active=0
+                g.play('S34')
+                self.assertIsNotNone(g.pending)
+                self.assertIn(mode,[c.mode for c in g.pending.choices])
+                choose(g,mode)
+                self.assertEqual(ward in g.auction_blocked_play,
+                                 mode=='enemy')
+                g.assert_integrity()
+
     def test_forced_hostile_S01_still_blocked_on_play(self):
         g=self.g
         place_basic(g,'S01',0,'hand')
