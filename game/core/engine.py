@@ -23,9 +23,9 @@ class Match:
                  starting_compensation: str = "coins"):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
-        if starting_compensation not in ("coins", "unit_5_5"):
+        if starting_compensation not in ("coins", "unit_5_5", "unit_3_5"):
             raise ValueError("Unsupported starting compensation")
-        if starting_compensation == "unit_5_5" and not (auctions_enabled and auction_catalog=="v22"):
+        if starting_compensation in ("unit_5_5", "unit_3_5") and not (auctions_enabled and auction_catalog=="v22"):
             raise ValueError("Starter guard requires the live v22 catalog")
         self.starting_compensation=starting_compensation
         # Opt in from the real game client; bulk simulations remain lightweight.
@@ -36,7 +36,7 @@ class Match:
         self.ruleset_version='v23' if auctions_enabled and auction_catalog=='v22' else 'v19'
         # The v23 audit schema records waiting end-turn income as well as
         # the effective ruleset. Old archived signatures keep schema 1.
-        self.audit_state_schema=(3 if starting_compensation=="unit_5_5" else
+        self.audit_state_schema=(3 if starting_compensation in ("unit_5_5","unit_3_5") else
                                  2 if self.ruleset_version=='v23' else 1)
         self.pending_vacant_income=None
         # New v22 matches use the approved vacant-slot economy. Old saves
@@ -125,22 +125,34 @@ class Match:
                 else:
                     p.deck.append(uid); self.cards[uid].zone='deck'
             self.rng.shuffle(p.deck)
-        if self.starting_compensation=="unit_5_5":
-            # Separate token, never one of the 70 basic cards; summoned
-            # before the first action and exhausted during its first own turn.
+        if self.starting_compensation in ("unit_5_5","unit_3_5"):
+            # Independent from the canonical 70 cards and 51 auction variants.
+            # Keep the original 5/5 CardDefinition byte-for-byte unchanged:
+            # historical 0.9.39 audits compare the *exact* initial state.
             second=1-self.first
             uid="SUM_START_GUARD"
-            definition=CardDefinition(
-                uid,"Strażnik Drugiego Gracza","Ludzie","Bez zdolności",
-                "Pasywna",5,5,"Stała jednostka 5/5 bez zdolności specjalnych.",
-                "Brak wzrostu; po śmierci nie wraca do talii.",0,0)
+            if self.starting_compensation=="unit_5_5":
+                definition=CardDefinition(
+                    uid,"Strażnik Drugiego Gracza","Ludzie","Bez zdolności",
+                    "Pasywna",5,5,"Stała jednostka 5/5 bez zdolności specjalnych.",
+                    "Brak wzrostu; po śmierci nie wraca do talii.",0,0)
+                attack=5
+            else:
+                definition=CardDefinition(
+                    uid,"Chorąży","Ludzie","Bez zdolności",
+                    "Pasywna",3,5,"Chorąży zawsze zdąży.",
+                    "Brak wzrostu; po śmierci nie wraca do talii.",0,0)
+                attack=3
             self.cards[uid]=Card(uid,definition,owner=second,zone="board")
-            self.units[uid]=Unit(uid,second,5,5,5,0,1)
+            # No Quick Attack: played_turn=1 prevents attacks on owner's first turn.
+            self.units[uid]=Unit(uid,second,attack,5,5,0,1)
             self.players[second].board.append(uid)
             self.ephemeral_ids.add(uid)
         self._log('Rozdano po 5 kart na rękę i do talii. Po jednym egzemplarzu na typ.')
         if self.starting_compensation=="unit_5_5":
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma Strażnika 5/5 na planszy, bez premii monet.')
+        elif self.starting_compensation=="unit_3_5":
+            self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma Chorążego 3/5 na planszy, bez premii monet.')
         else:
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
         if self.auctions_enabled:
