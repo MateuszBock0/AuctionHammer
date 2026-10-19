@@ -1,6 +1,19 @@
 # AuctionHammer — gra karciana
 
-**AuctionHammer 0.9.30** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v21), **pełne aukcje v4 z 12 archetypami i 36 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+**AuctionHammer 0.9.31** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v21), **pełne aukcje v22 z 17 archetypami i 51 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
+
+## Wersja 0.9.31 — aukcje 17 kart / 51 wariantów
+
+- Pięć nowych archetypów A013, A014, A015, A016 i A018 (**A017 nie istnieje**).
+- A013: obrażenia procentowe względem bieżącego MAX PŻ, z Tarcza i bez pancerza.
+- A014: stałe blokowanie lub odwracanie wrogiego leczenia w obrażenia.
+- A015: jednokrotne anulowanie wymierzonej w Ciebie zdolności Przy wystawieniu oraz globalne blokady wyzwalaczy.
+- A016: wybór kart z talii, przejęcie fizycznej karty z obcej talii i dodatkowe wystawienie bez zużywania zagrania z ręki.
+- A018: kupon na skuteczną ofertę (+2/+5) albo gwarantowane zwycięstwo następnej aukcji za 0 monet.
+- **8 pełnych aukcji maksymalnie**: z 17 archetypów każda rozstrzygnięta aukcja trwale rozdaje 2, a trzeci niewykupiony wraca do samej puli aukcyjnej. Poniżej trzech dostępnych ofert kolejnej aukcji nie ma.
+- **Kompatybilność:** mecze rozpoczęte jako v3 i v4 zachowują poprzedni katalog; nowe rozgrywki używają v22. Lokalny przeciwnik bez nowych poziomów trudności.
+
+[Działające reguły i interpretacje v22](docs/auction/RELEASE_V22_0931.md).
 
 ## Wersja 0.9.30 — balans statystyk v21
 
