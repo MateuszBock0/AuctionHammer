@@ -9,14 +9,14 @@ from dataclasses import dataclass
 
 # Solid contrasting palette: one colour per type of effect.
 STATUS_COLORS = {
-    'taunt': (243, 174, 70),
+    'taunt': (184, 192, 205),
     'poison': (173, 214, 81),
     'stun': (194, 136, 244),
     'regen': (84, 218, 160),
-    'shield': (88, 192, 247),
+    'shield': (255, 210, 64),
     'armor': (171, 191, 210),
     'quick': (75, 226, 219),
-    'double': (255, 144, 99),
+    'double': (227, 69, 78),
     'atk_up': (112, 220, 120),
     'atk_down': (242, 108, 113),
     'hp_up': (135, 225, 152),

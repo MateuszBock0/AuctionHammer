@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.34: ability fixes and value-aware auction AI."""
+"""AuctionHammer MVP 0.9.35: clear trait tints and real-state combat feedback."""
 from __future__ import annotations
 import os
 import re
@@ -866,7 +866,10 @@ class SoloApp:
                 self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
                      selected=selected,hover=rect.collidepoint(self.mouse_pos()),
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
-                      attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit)
+                     attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit,
+                     hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
+                                  if self.animations_enabled and self.replay_index is None
+                                  else None))
         self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
         for uid in self._play_replacement_targets():
             rect=self.slot_rect(0,self.game.players[0].board.index(uid))
@@ -1300,6 +1303,7 @@ class SoloApp:
             items=tuple(
                 self.cards_view.clip(
                     f'{item.get("exported_at_utc","")[:16].replace("T"," ")}  ·  '
+                    f'v{item.get("version","?")}  ·  '
                     f'{"WYGRANA" if item.get("winner")==0 else "PORAŻKA"}  ·  '
                     f'{item.get("rounds","?")} rund  [FOLDER]',
                     self.fonts[16],390)
@@ -1320,7 +1324,7 @@ class SoloApp:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
         self._text(
-            'Archiwum JSON.GZ · kliknij mecz, aby otworzyć folder'
+            'Archiwum zawiera różne wersje gry; historia zachowuje wersję i dawne zasady'
             if self.menu_page=='archive' else
             '70 bazowych · 17 aukcyjnych (v22) · [O] AUDYT',
             13,746,790,cfg.MUTED,center=True)
@@ -1399,6 +1403,9 @@ class SoloApp:
             self.screen.blit(self.bg,(0,0))
             self._draw_header()
             self._draw_board()
+            if self.replay_index is None and self.animations_enabled:
+                self.combat_visuals.draw_cards(
+                    self.screen,self.game,self.cards_view,pygame.time.get_ticks())
             self._draw_attack_targets()
             self._draw_sidebar()
             self._draw_log()

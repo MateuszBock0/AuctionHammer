@@ -424,6 +424,10 @@ class Match:
                     if wave['cursor']<len(wave['sources']):
                         uid,choices=wave['sources'][wave['cursor']]
                         if not choices:
+                            # A genuine death ability may have no surviving
+                            # legal recipient. Explain the no-op to players.
+                            self._log(f'{self.label(uid)}: zdolność przy śmierci '
+                                      'nie zadziałała — brak legalnego celu.')
                             wave['cursor']+=1
                         elif len(choices)==1 and choices[0].mode=='auto':
                             wave['decisions'].append((uid,choices[0]))
@@ -457,7 +461,19 @@ class Match:
                         self._refill_deck_from_grave(self.cards[uid].owner)
                     choices=(auction_ability_rules.options(self,uid,ctx,tgt)
                              if auction_context else options(self,uid,ctx,tgt))
-                    if not choices:continue
+                    if not choices:
+                        # Passive A002's legendary aura needs no selection:
+                        # it is NOT a failed targeted on-play ability.
+                        if not (ctx=='play' and
+                                self.cards[uid].definition.id=='A002'
+                                and uid in self.auction_awards):
+                            trigger_name={'play':'przy wystawieniu',
+                                          'end':'na koniec tury',
+                                          'attack':'przy ataku'}.get(ctx,ctx)
+                            self._log(f'{self.label(uid)}: zdolność '
+                                      f'{trigger_name} nie zadziałała — '
+                                      'brak legalnego celu.')
+                        continue
                     if len(choices)==1 and choices[0].mode=='auto':
                         self._execute(uid,ctx,choices[0],tgt)
                     else:
