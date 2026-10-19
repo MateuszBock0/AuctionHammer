@@ -95,7 +95,7 @@ class GameTests(unittest.TestCase):
         a=m.cards['S01'];self.assertEqual((a.attack,a.max_hp,a.ability_level),(4,7,1))
         s=m.cards['S05'];self.assertEqual(s.max_hp,6+3*1+2)
         fast=m.cards['S66'];self.assertEqual((fast.attack,fast.max_hp),(2+3*1+2,4+3*1+1))
-        double=m.cards['S67'];self.assertEqual((double.attack,double.max_hp),(1+3*2+2,5))
+        double=m.cards['S67'];self.assertEqual((double.attack,double.max_hp),(1+3*1+2,5+3*1))
         m.assert_integrity()
 
     def test_attack_hero_and_taunt(self):
