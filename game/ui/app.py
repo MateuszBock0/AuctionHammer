@@ -1183,8 +1183,9 @@ class SoloApp:
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
             first='TY' if self.game.first==0 else 'KOMPUTER'
+            # Below the details button (bottom=726), above mulligan count.
             self._text(f'ZACZYNA: {first}  ·  DRUGI: STRAŻNIK 5/5',
-                       12,1104,715,cfg.MUTED)
+                       11,1104,728,cfg.MUTED)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
             self._text('Kliknij do 3 kart z ręki albo pomiń [ENTER]',12,
                        1104,773,cfg.TEXT)
