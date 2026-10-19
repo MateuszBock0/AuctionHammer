@@ -85,7 +85,11 @@ class SoloApp:
         self.auction_slider_key=None
         self.auction_slider_dragging=False
         self.auction_status=''
-        self.ai.step(self.game)  # AI mulligan is committed, player's hand still hidden from it.
+        self.ai.step(self.game)  # One audited command per step, even during mulligan.
+        if self.game.phase=='mulligan' and 1 not in self.game.mulligan_done:
+            # AI was second and chose its compensation; now finish its own
+            # hidden mulligan without exposing or evaluating the human hand.
+            self.ai.step(self.game)
         self.selected=None
         self.hover=None
         self.scroll=0
