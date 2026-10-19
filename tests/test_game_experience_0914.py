@@ -143,10 +143,13 @@ class EffectsTests(unittest.TestCase):
         unit.hp=4
         visual.sync(game,unit_rect,hero_rect,1050)
         self.assertIn('heal',{p.kind for p in visual.pulses})
-        game.players[0].board.remove('S01')
-        game.units.pop('S01')
+        # A death animation must be backed by a real death event;
+        # replacement, exile or board removal are not "ZGON".
+        game.units['S01'].hp=0
+        game._kill_batch(['S01'])
         visual.sync(game,unit_rect,hero_rect,1080)
         self.assertIn('death',{p.kind for p in visual.pulses})
+        self.assertEqual([c.uid for c in visual.fallen_cards],['S01'])
         self.assertEqual(game.players[0].hp,initial[0])
         canvas=pygame.Surface((800,600))
         visual.draw(canvas,1180,pygame.font.SysFont('segoeui',16))
