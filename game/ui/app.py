@@ -469,6 +469,8 @@ class SoloApp:
             self.auction_slider_value=minimum
             self.auction_slider_dragging=False
         if minimum<=coins:
+            if self.auction_slider_value is None:
+                self.auction_slider_value=minimum
             self.auction_slider_value=max(minimum,min(
                 coins,int(self.auction_slider_value)))
         else:
