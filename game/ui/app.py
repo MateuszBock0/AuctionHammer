@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.37: signed v23 audits and visible conditional ability details."""
+"""AuctionHammer MVP 0.9.39: guided state, safe confirm and guarded start."""
 from __future__ import annotations
 import os
 import re
@@ -1016,7 +1016,8 @@ class SoloApp:
         g=self.game
         self._export_finished_audit_once()
         self._capture_visual_feedback()
-        if self.menu_open or self.history_open or self.replay_index is not None:
+        if (self.menu_open or self.history_open
+                or self.replay_index is not None or self.confirm_action is not None):
             return
         if g.phase!='finished' and self.details_card is None:
             if self._old_pending is not g.pending:
@@ -1181,6 +1182,9 @@ class SoloApp:
             self._button(pygame.Rect(1103,686,316,40),'PEŁNY OPIS KARTY  [I]',accent=True,small=True)
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
+            first='TY' if self.game.first==0 else 'KOMPUTER'
+            self._text(f'ZACZYNA: {first}  ·  DRUGI: STRAŻNIK 5/5',
+                       12,1104,715,cfg.MUTED)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
             self._text('Kliknij do 3 kart z ręki albo pomiń [ENTER]',12,
                        1104,773,cfg.TEXT)
@@ -1669,12 +1673,18 @@ class SoloApp:
         page=journal[max(0,end-24):end]
         for i,item in enumerate(page):
             yy=226+i*26
-            turn=f'R{item["round"]:02} · {"GRACZ" if item["active"]==0 else "AI"}'
+            if i%2==0:
+                pygame.draw.rect(self.screen,(35,53,64),
+                                 pygame.Rect(167,yy-2,1141,25),border_radius=3)
+            turn=f'R{item["round"]:02} · {"TY" if item["active"]==0 else "AI"}'
+            message=item['text']
+            color=(self._feedback_color(message) or cfg.TEXT)
             self._text(f'{item["seq"]:04}',13,179,yy,cfg.GOLD)
             self._text(turn,13,232,yy,cfg.MUTED)
-            line=self.cards_view.clip(item['text'],self.fonts[14],873)
-            self._text(line,14,390,yy,cfg.TEXT)
-        self._text('Pełny dziennik pozostaje dostępny przez cały mecz.',13,174,866,cfg.MUTED)
+            self._text(self.cards_view.clip(message,self.fonts[14],873),
+                       14,390,yy,color)
+        self._text(f'Wyświetlono {len(page)} z {len(journal)} zdarzeń.  '
+                   'H/ESC — powrót na planszę.',13,174,866,cfg.MUTED)
 
     def _draw_replay_controls(self):
         shade=pygame.Surface((cfg.WINDOW_WIDTH,87),pygame.SRCALPHA)
