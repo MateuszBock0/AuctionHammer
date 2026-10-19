@@ -105,7 +105,9 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         g.active=0
         for uid in list(g.bank)[:5]:
             place_basic(g,uid,0)
-            g.units[uid].attacks=1
+            # A unit can have two attacks (S79 / Double Attack). Ensure
+            # *all* five are genuinely exhausted, independent of abilities.
+            g.units[uid].attacks=2
         g.players[0].played_this_turn=False
         self.assertEqual(len(g.players[0].board),5)
         app.selected=g.players[0].hand[0]
