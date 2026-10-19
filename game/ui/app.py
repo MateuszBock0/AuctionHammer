@@ -97,6 +97,7 @@ class SoloApp:
         self.animations_enabled=True
         self._recent_feedback=[]
         self.visual_notice=''
+        self.visual_notice_tick=-10000
         self._last_logged_event=len(self.game.event_journal)
         self.combat_visuals=CombatVisuals()
         self.combat_visuals.sync(self.game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
@@ -727,6 +728,7 @@ class SoloApp:
         self._recent_feedback=[]
         self.visual_notice=('ANIMACJE WŁĄCZONE' if self.animations_enabled
                             else 'ANIMACJE WYŁĄCZONE')
+        self.visual_notice_tick=pygame.time.get_ticks()
 
     def handle(self,event):
         if self.music.handle_event(event):return True
@@ -1098,6 +1100,8 @@ class SoloApp:
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
+            self._text('Kliknij do 3 kart z ręki albo pomiń [ENTER]',12,
+                       1104,773,cfg.TEXT)
             self._button(pygame.Rect(1182,808,243,59),'ZATWIERDŹ WYMIANĘ',accent=True)
         elif self.game.phase=='finished':
             self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
@@ -1199,7 +1203,9 @@ class SoloApp:
             shade=pygame.Surface((321,35),pygame.SRCALPHA)
             shade.fill((*color,alpha))
             self.screen.blit(shade,(1100,906))
-        notice=getattr(self,'visual_notice','')
+        notice=(getattr(self,'visual_notice','')
+                if pygame.time.get_ticks()-getattr(self,'visual_notice_tick',-10000)<2400
+                else '')
         last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
         self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
                    1104,909,cfg.GOLD)
@@ -1542,7 +1548,7 @@ class SoloApp:
             self._button(pygame.Rect(625,282,240,34),'HISTORIA MECZÓW',small=True)
             self._button(pygame.Rect(875,282,160,34),'CREDITS',small=True)
         else:
-            items=(f'ANIMACJE: {"WŁ." if self.animations_enabled else "WYŁ."}',
+            items=(f'ANIMACJE [A]: {"WŁ." if self.animations_enabled else "WYŁ."}',
                    'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
                    'ZAPISZ MECZ','POWRÓT DO MENU')
         for i,label in enumerate(items):
@@ -1550,11 +1556,14 @@ class SoloApp:
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
             self._text(status,14,746,753,cfg.GOLD,center=True)
-        self._text(
-            'Archiwum zawiera różne wersje gry; historia zachowuje wersję i dawne zasady'
+        footer=(
+            'Archiwum zachowuje wersje i dawne zasady'
             if self.menu_page=='archive' else
-            '70 bazowych · 17 aukcyjnych (v22) · [O] AUDYT',
-            13,746,790,cfg.MUTED,center=True)
+            '[A] animacje walki (nie muzyka) · [F11] pełny ekran'
+            if self.menu_page=='settings' else
+            'F11 — pełny ekran · A — animacje · H — historia · M — menu'
+        )
+        self._text(footer,13,746,790,cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
