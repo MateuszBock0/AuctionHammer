@@ -543,7 +543,14 @@ def verify_replay(payload,match_factory):
     # mismatch caused ONLY by the newer starting economy.
     if auction_enabled and catalog=='v22':
         summary=payload.get('summary',{})
-        enabled=summary.get('vacant_slot_income_enabled',False)
+        if 'vacant_slot_income_enabled' in summary:
+            enabled=summary['vacant_slot_income_enabled']
+        elif payload.get('version') in ('0.9.31','0.9.32','0.9.33'):
+            enabled=False  # Archive predates the new 0.9.34 economy.
+        else:
+            # A deliberately minimal in-memory replay payload need not
+            # include report metadata. Preserve the factory's actual rules.
+            enabled=getattr(game,'vacant_income_enabled',False)
         if type(enabled) is not bool:
             raise ValueError("Niezgodna flaga dochodu za wolne pola w audycie")
         if not hasattr(game,'vacant_income_enabled'):
