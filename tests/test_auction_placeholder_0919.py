@@ -277,8 +277,9 @@ class AuctionUITests(unittest.TestCase):
         box=pygame.Rect(203,112,1076,732)
         for i in range(3):
             self.assertTrue(box.contains(app.auction_offer_rect(i)))
-        for action in ('pass','min','bid'):
+        for action in ('pass','bid'):
             self.assertTrue(box.contains(app.auction_control_rect(action)))
+        self.assertTrue(box.contains(app.auction_slider_rect()))
 
     def test_real_pygame_auction_draw_and_rarity_text(self):
         from game.ui.app import SoloApp
