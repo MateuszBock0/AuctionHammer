@@ -45,8 +45,12 @@ class ComputerOpponent:
                 # Deterministic affordable bidding; the player may outbid.
                 budget=game.players[self.player].coins
                 ceiling=min(budget,2+state.number*2 if self.difficulty!='łatwy' else 1)
-                if state.current_bid<ceiling:
-                    game.auction_bid(self.player,state.current_bid+1)
+                # Follow v22's legal *effective* minimum. This is only a
+                # compatibility fix, not a change of opponent heuristics.
+                minimum=(max(1,state.highest_effective+1-state.bid_bonus[self.player])
+                         if game.auction_catalog=='v22' else state.current_bid+1)
+                if minimum<=ceiling:
+                    game.auction_bid(self.player,minimum)
                 else:
                     game.auction_pass(self.player)
             else:
