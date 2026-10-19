@@ -20,7 +20,7 @@ import gzip
 FORMAT="AuctionHammer.MatchAudit"
 SCHEMA=1
 FILENAME="AuctionHammer-OSTATNI-MECZ.json"
-ACTIONS=("mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
+ACTIONS=("choose_starting_compensation","mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
          "auction_bid","auction_pass","auction_pick")
 
 
