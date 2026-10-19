@@ -1,30 +1,41 @@
-# PGN Music: Fantasy Tavern Album (opcjonalne audio)
+# Muzyka Fantasy Tavern w AuctionHammer
 
-AuctionHammer jest całkowicie darmowym MVP, a kod źródłowy ma licencję MIT.
-Oryginalne nagrania PGN Music nie są objęte tą licencją i nie są dodawane
-do repozytorium.
+**Docelowy plik:** `assets/music/music_auctionhammer.mp3` (jeden album, około 48 minut).
 
-W celu odtwarzania całego albumu w pętli umieść tutaj **jeden plik
-`music_auctionhammer.mp3`**. Gra odtworzy go od początku do końca,
-po czym automatycznie zacznie ponownie. Nie ma potrzeby rozdzielania
-go na 13 utworów.
+Właściciel projektu potwierdził uzyskanie zgody na rozpowszechnianie
+ścieżki dźwiękowej wraz z darmową grą. Nazwisko kompozytora, nazwa
+wydawcy, pochodzenie albumu i zasady licencyjne są opisane w
+[credits](../../docs/THIRD_PARTY_MUSIC.md), a credits można również
+otworzyć z głównego menu gry.
 
-Działa to zarówno w projekcie źródłowym Pythona, jak i w wydaniu
-Windows: umieść plik w folderze `AuctionHammer/assets/music/` leżącym
-**obok pliku `AuctionHammer.exe`**, a nie w `_internal`.
+## Publikacja dużego pliku na GitHubie
 
-Dla zgodności wstecznej obsługiwane są też pliki
+38,2 MB przekracza limit formularza GitHub w przeglądarce (25 MiB),
+ale mieści się w limicie standardowego Git (100 MiB).
+
+1. Zaktualizuj swój lokalny projekt: `git pull --ff-only`.
+2. Skopiuj `music_auctionhammer.mp3` dokładnie do `assets/music/`.
+3. Otwórz terminal w katalogu `AuctionHammer` i wykonaj:
+
+```powershell
+git add assets/music/music_auctionhammer.mp3
+git commit -m "Add permitted PGN Music soundtrack"
+git push origin main
+```
+
+Po udanym `git push` automatyczna kompilacja Windows skopiuje plik
+do `AuctionHammer/assets/music/music_auctionhammer.mp3` w gotowej
+paczce ZIP. Gracze nie muszą niczego pobierać osobno.
+
+Nie zmieniaj nazwy pliku. Odtwarzacz zapętla **całą ścieżkę**, również
+przy zmianie menu i pomiędzy meczami.
+
+## Zgodność wsteczna
+
+Odtwarzacz obsługuje również lokalny pełny album w nazwach
 `fantasy_tavern_full.ogg`, `fantasy_tavern_full.mp3` i
-`fantasy_tavern_full.wav`.
+`fantasy_tavern_full.wav`, albo wszystkie 13 ponumerowanych utworów.
+Te dodatkowe pliki nie są automatycznie publikowane.
 
-Alternatywnie użyj 13 plików .mp3, .ogg lub .wav, ponumerowanych od
-01 do 13 w kolejności albumu, np. `01 - Embers in the Wind.mp3`
-oraz `13 - Enter the Traveling Beauty.mp3`. Gra odtworzy całą
-trzynastkę w kolejności, po czym rozpocznie od 01.
-
-Brak plików muzycznych nigdy nie blokuje uruchomienia gry.
-Oficjalna strona: https://pgnmusic.bandcamp.com/album/fantasy-tavern-album
-
-Przed dodaniem plików audio do publicznego GitHuba sprawdź zasady
-redystrybucji u właściciela nagrań.
-Zobacz: ../../docs/THIRD_PARTY_MUSIC.md
+**Prawa do muzyki nie są przenoszone przez licencję MIT gry.**
+Odpowiednie warunki zgody wydawcy należy zachować w dokumentacji projektu.
