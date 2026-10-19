@@ -549,8 +549,8 @@ class Match:
             for pl in self.players:pl.coins+=1
             self._log('Pełna runda: +1 moneta dla obu graczy.')
             # Rarity evolution is tied to full completed rounds, not hand turns.
-            # It changes draft tier metadata only; skills remain disabled.
-            if self.auctions_enabled and self.auction_catalog in ("v3","v4"):
+            # Old v3 upgrades inert descriptions; v4/v22 upgrades the live effect.
+            if self.auctions_enabled and self.auction_catalog in ("v3","v4","v22"):
                 auction_rules.advance_rarity(self,self.round-1)
         self._next_turn_due=True
         self._update_auras()
