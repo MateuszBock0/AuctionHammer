@@ -1,386 +1,213 @@
-# AuctionHammer — gra karciana
-
-**AuctionHammer 0.9.32** to lokalna gra karciana fantasy solo przeciwko komputerowi: 70 kart podstawowych (balans v21), **pełne aukcje v22 z 17 archetypami i 51 aktywnymi wariantami zdolności**, bez kosztu zagrania kart. Zachowano reguły bazowe GAME_MASTER_v19 i dotychczasowe AI. Nie planujemy w tej wersji multiplayera ani rozbudowy przeciwnika.
-
-## Wersja 0.9.32 — stabilizacja aukcji v22
-
-- **A009, legendarna:** karta aukcyjna odrzucona po wymianie rąk trafia
-  wyłącznie do `auction_used`, nigdy do cmentarza/talii 70 kart. Poprawka
-  działa także po zapisie i wczytaniu meczu podczas wyboru.
-- **Ewolucja rzadkości:** kupione karty v22 awansują po kolejnych 3
-  ukończonych rundach od zakupu, na ręce i planszy. Rzadkość zmienia
-  aktywny wariant tekstu/zdolności, ale **nie** podnosi bazowego ATK/PŻ.
-- **A015 i zapis/wczytanie:** dodatkowe testy pojedynczego skontrowania
-  Przy wystawieniu, wyciszenia, globalnej blokady, wyborów A016 i
-  kuponów A018 oraz granic aukcji.
-- Katalog v22 ma spójne liczniki **17 archetypów / 51 wariantów** i
-  odrębny zapis historycznej proweniencji DRAFT. Nie deklarujemy
-  statystycznie zweryfikowanego balansu.
-- **Balans v21, dotychczasowy AI, lokalna gra solo i wygląd** bez zmian.
-
-[Pełny raport 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md).
-
-## Wersja 0.9.31 — aukcje 17 kart / 51 wariantów
-
-- Pięć nowych archetypów A013, A014, A015, A016 i A018 (**A017 nie istnieje**).
-- A013: obrażenia procentowe względem bieżącego MAX PŻ, z Tarcza i bez pancerza.
-- A014: stałe blokowanie lub odwracanie wrogiego leczenia w obrażenia.
-- A015: jednokrotne anulowanie wymierzonej w Ciebie zdolności Przy wystawieniu oraz globalne blokady wyzwalaczy.
-- A016: wybór kart z talii, przejęcie fizycznej karty z obcej talii i dodatkowe wystawienie bez zużywania zagrania z ręki.
-- A018: kupon na skuteczną ofertę (+2/+5) albo gwarantowane zwycięstwo następnej aukcji za 0 monet.
-- **8 pełnych aukcji maksymalnie**: z 17 archetypów każda rozstrzygnięta aukcja trwale rozdaje 2, a trzeci niewykupiony wraca do samej puli aukcyjnej. Poniżej trzech dostępnych ofert kolejnej aukcji nie ma.
-- **Kompatybilność:** mecze rozpoczęte jako v3 i v4 zachowują poprzedni katalog; nowe rozgrywki używają v22. Lokalny przeciwnik bez nowych poziomów trudności.
-
-[Działające reguły i interpretacje v22](docs/auction/RELEASE_V22_0931.md).
-
-## Wersja 0.9.30 — balans statystyk v21
-
-- Wprowadzono 46 nowych przyrostów statystyk za każdą ukończoną własną turę karty na ręce. Wszystkie 70 kart zachowują bazowe ATK/PŻ i efekty v20.
-- 58 kart otrzymuje +1 ATK / +1 PŻ na turę na ręce; 12 kart zachowuje +2 ATK.
-- Premie jakości co trzy ukończone tury: Tarcza/Prowokacja +1 ATK / +2 PŻ; Szybki atak +2 ATK / +1 PŻ; Podwójny atak +2 ATK.
-- Aukcje pozostają v4 (12 kart), aby oddzielnie sprawdzić wpływ balansu przed v22.
-
-## Poprzednie wydanie 0.9.29 — naprawa awarii przy przywoływaniu przez A010
-
-- Naprawiono rzeczywistą awarię Windows **KeyError: SUM0000007** po wybraniu „Przywołaj jednostki” na Królowej Tysiąca Twarzy.
-- Efemeryczne jednostki `SUM...` mają teraz osobny sposób generowania podsumowań i oznaczeń UI, bez szukania ich w tabeli 70 kart podstawowych.
-- Żołnierz 1/1 jest opisany jako **bez zdolności**, a żołnierz 2/2 w wariancie rzadkim jako **z Prowokacją**; podstawowy żołnierz nie udaje, że ma Tarczę.
-- Testy obejmują wywołanie rzeczywistego `SoloApp.draw()`, rysowanie planszy podczas wyboru i po przywołaniu, panel szczegółów, wszystkie trzy poziomy rzadkości, zapis/odczyt i opuszczenie planszy.
-- Otrzymany pakiet **balansu v21 oraz 17 aukcji v22** to na razie projekt `CANDIDATE/DRAFT`; nie został automatycznie aktywowany w grze. [Weryfikacja pakietu](docs/auction/BALANCE_V21_AUCTION_V22_REVIEW.md).
-
-## Nowości 0.9.28 — poprawność aukcji i komunikaty walki
-
-- **Macierz 36 scenariuszy akceptacyjnych** (A001–A012 × podstawowa/rzadka/legendarna) sprawdza *konkretny wynik* zdolności, nie tylko istnienie jej wyboru. Dodatkowe przypadki łączą śmierć, wyciszenie, przejęcia, aurę, wskrzeszanie na pełnej planszy i kopiowanie.
-- Poprawiono dwa błędy mechaniczne: **A010** nie leczy dwukrotnie przy pojedynczym zwiększeniu MAX PŻ; premie **A002** nie przetrwają śmierci, ponownego wystawienia ani przejęcia dawnego sojusznika przez przeciwnika.
-- Historia wydarzeń podaje **rzeczywistą utratę PŻ**, obrażenia pochłonięte przez **Tarczę i pancerz**, faktyczne odzyskiwanie zdrowia, statusy i zmiany aur. Pasek wydarzeń pokazuje ostatnie trzy komunikaty; pełna historia dostępna jest przez **H**.
-- Blokada obrażeń jest sygnalizowana na niebiesko, zranienia na czerwono, a leczenie na zielono. Bez zmiany podstawowego układu ekranu.
-- Katalog 70 kart, obecne AI, zasady bazowe i osobny woreczek aukcyjny pozostają bez zmian. Historyczne zapisy v3 zachowują dawny format zdarzeń.
-
-Szczegóły i kryteria akceptacyjne: [raport 0.9.28](docs/auction/ACCEPTANCE_MATRIX_0928.md).
-
-## Poprawki po prawdziwym meczu — 0.9.27
-
-- Ekran zwycięstwa pokazuje **faktyczną liczbę zgonów jednostek od
-  początku meczu**, nie bieżącą długość cmentarza. Ponowne dobranie
-  i śmierć tej samej karty zwiększa licznik ponownie; wygnanie, zamiana
-  i zastępowanie kart bez zgonu nie są liczone. W starych niekompletnych
-  zapisach UI uczciwie oznacza zgony liczone dopiero od wczytania.
-- Atak zablokowany przez Tarczę jest widoczny w dzienniku zdarzeń jako
-  **Tarcza blokuje ... obrażeń**, wraz z nazwą chronionej jednostki.
-- Wszystkie **36 aktywnych wariantów aukcji v4** prezentują dokładnie
-  tekst z kanonicznego katalogu, aktualną rzadkość oraz poprawny
-  poziom zakupionej karty. Historyczne karty v3 pozostają nieaktywne.
-- A008, A009, A010 nie prezentują wyborów niemożliwych do wykonania,
-  gdy brakuje odpowiednich celów.
-- Po pięciu pełnych aukcjach pozostają dwa niekupione archetypy; **nie
-  rozpoczynamy kolejnej aukcji**, gdy dostępne są mniej niż trzy oferty.
-- Testy regresyjne obejmują również rzeczywisty scenariusz
-  **Widmo Otchłani → Tkacz Run (Tarcza nadana przez Mistrza Tarczy)**.
-
-[Szczegółowy audyt i testy 0.9.27](docs/auction/AUDIT_AND_FIXES_0927.md).
-
-## Domknięcie kompletnego demo 0.9.26 — zachowane niewykupione aukcje
-
-- **Wszystkie 12 archetypów / 36 wersji zdolności już działa** (zakres pierwotnie
-  proponowanych wydań 0.9.23–0.9.26). Zachowano lokalną grę i obecne AI.
-- **Niewykupiony archetyp wraca WYŁĄCZNIE do puli aukcyjnej** i może pojawić
-  się ponownie po kolejnych trzech rundach. Rzadkość i statystyki są
-  losowane / wyliczane na nowo zgodnie z rundą zakupu.
-- Archetyp kupiony przez gracza jest usuwany z dostępnej puli, a jego
-  fizyczna karta nie przechodzi do zwykłego stosu dobierania nawet po śmierci.
-- Bank **70 podstawowych kart** pozostaje oddzielny przez cały mecz.
-- Aukcja wymaga trzech różnych ofert i przyznaje dwie karty; maksymalnie
-  pięć aukcji po rundach 3/6/9/12/15 przy skończonej puli 12 archetypów.
-  Pozostałe dwa niewykupione archetypy nie giną, ale do kolejnej aukcji
-  brakuje trzeciej oferty.
-- Automatyczne testy obejmują 36 wariantów, woreczek, 0 ATK, zapis/wczytanie,
-  deterministyczną powtórkę meczu i render headless Pygame.
-
-Pełne zasady i lista testów: [release demo 0.9.26](docs/auction/RELEASE_V4_0926.md).
-
-## Nowości 0.9.23 — aktywne zdolności aukcyjne v4
-
-- 12 odrębnych archetypów aukcyjnych (A001–A012), 36 wykonywanych wariantów podstawowych, rzadkich i legendarnych.
-- Aukcja co trzy pełne rundy; wzrost statystyk NOWYCH ofert: `ATK(R)=ATK(3)+(R-3)//3`, `PŻ(R)=R+8-ATK(R)`. Karty zakupione wcześniej nie rosną dalej.
-- Efekty zgonów, przejmowania, kopiowania, wygnania, przywołania, wymiany rąk, wyciszania, leczenia i ochrony bohatera są wykonywane przez rzeczywistą kolejkę Match.
-- Stare zapisy v3 zachowują dawną logikę bez aktywowania nowych zdolności; nowe mecze lokalne używają v4.
-- Szczegóły: [implementacja aukcji v4](docs/auction/RELEASE_V4_0923.md).
-
-## Nowości 0.9.22 — poprawki po audycie meczu
-
-- Nie da się już wysyłać z interfejsu licytacji ponad posiadane monety ani zbyt niskich ofert. Niedostępne przyciski są wyszarzone; komunikat podpowiada **PASUJ**.
-- Na pełnej planszy (5/5) podświetlane są jednostki, które można zastąpić bez wykorzystanego ataku. Nielegalne próby wystawienia są przechwytywane przed silnikiem.
-- Kliknięcia w niedozwolone cele ataku nie generują błędnych komend. Komunikaty objaśniają **Prowokację**, brak gotowości i limit ataków.
-- Dodano testy regresyjne interfejsu i kombinacji **S91 + S09** zaobserwowanej w meczu 0.9.21; nie zmieniano wartości kart ani reguł walki.
-- Szczegóły: [audyt 0.9.22](docs/UX_AUDIT_0922.md).
-
-**Uwaga dotycząca 0.9.23:** ta wersja błędnie wykluczała trzecie, niewykupione oferty z przyszłych aukcji. **W 0.9.26 jest to naprawione:** niewykupiony archetyp wraca wyłącznie do puli aukcyjnej; nie trafia do zwykłego banku 70 kart. Także zapisy gier z 0.9.23 są migrowane. [Nowe zasady](docs/auction/RELEASE_V4_0926.md).
-
-## Uruchamianie w Windows
-
-Pobierz [najnowsze wydanie gry](https://github.com/MateuszBock0/AuctionHammer/releases/latest), rozpakuj folder `AuctionHammer`, a następnie kliknij dwukrotnie plik **`URUCHOM_AUCTIONHAMMER.bat`**. Nie musisz instalować Pythona, dodatkowych bibliotek, Gita ani edytora kodu.
-
-- **`URUCHOM_AUCTIONHAMMER.bat`** sprawdza dostępność aktualizacji i uruchamia grę. Gdy nie ma internetu, uruchamia dostępną wersję lokalną.
-- **`GRAJ_BEZ_INTERNETU.bat`** uruchamia zainstalowaną grę bez sprawdzania aktualizacji.
-- **`AuctionHammer.exe`** uruchamia grę bezpośrednio.
-
-Plik `AuctionHammer.exe` musi znajdować się w tym samym folderze co katalog `_internal`. Internet jest potrzebny do pobrania aktualizacji, **nie do rozgrywki**.
-
-## Sterowanie
-
-1. Kliknij kartę na ręce, a następnie wolne pole własnej planszy. Możesz również przeciągnąć kartę.
-2. Zaznacz gotową do ataku jednostkę i kliknij dopuszczalny cel: wrogą jednostkę albo bohatera przeciwnika. Jeśli wróg ma aktywną **Prowokację**, wybór celu jest ograniczony do jednostek z tą cechą.
-3. Gdy zdolność wymaga decyzji, wybierz odpowiedni wariant w osobnym panelu po prawej stronie. Legalne cele są podświetlone, również na ręce (np. w przypadku S66). Jeżeli nie ma żadnego legalnego celu, gra pomija efekt, ale pozwala wystawić kartę.
-4. Klawisze **1–6** odpowiadają pozycjom na bieżącej stronie wyboru. Strony zmienia się strzałkami lub przyciskami na panelu.
-5. **I** otwiera pełne informacje o wskazanej karcie. Kółko myszy przewija opis.
-6. **Spacja** kończy turę. **F11** przełącza tryb pełnoekranowy. **R** rozpoczyna nowy mecz.
-
-Przy pierwszym rozdaniu można wymienić do trzech wybranych kart. Zaznaczone karty mają złotą ramkę i numer wyboru.
-
-## Nowości 0.9.14 — animacje, historia, menu i zapis
-
-- Po uruchomieniu gry pojawia się **menu główne**. **M** otwiera je ponownie
-  podczas meczu. Menu pozwala rozpocząć nową grę, kontynuować bieżącą
-  rozgrywkę, wczytać zapis i wejść w ustawienia.
-- W **ustawieniach** można przełączać animacje i pełny ekran, wybrać
-  poziom AI (**łatwy, normalny, trudny**) oraz **zapisać mecz**.
-  Zapis trafia do `%LOCALAPPDATA%\\AuctionHammer\\savegame_v19.json`
-  (w systemach bez LOCALAPPDATA — do katalogu danych użytkownika).
-  Zapis obejmuje wszystkie stany kart, statusy, aktywne wybory i RNG.
-- **A** włącza lub wyłącza efekty walki. Efekty obrażeń, leczenia,
-  tarczy, pancerza, trucizny, ogłuszenia, zgonu oraz pociski ataków
-  wynikają z zatwierdzonych działań silnika. Nie wpływają na rozgrywkę.
-- **H** otwiera pełną **historię zdarzeń**; kółkiem myszy i strzałkami
-  można przewijać dziennik, bez limitu poprzednich 160 wpisów.
-- **P** otwiera **powtórkę aktualnej partii**. Strzałki lewo/prawo
-  pozwalają oglądać kolejne zapisane stany planszy, **P/Esc** wraca
-  do gry. Migawki są tylko do odczytu; obejmują maks. 480 ostatnich zmian
-  stanu i nie są zapisywane na dysku. Pełny dziennik jest zachowywany
-  w pliku zapisu meczu.
-- 35 ikon **Minimal Fantasy** z dostarczonego pakietu agenta UI
-  zostało dołączonych do wersji portable w skompresowanym atlasie PNG.
-  Ikony nie zawierają dynamicznych wartości ATAK/PŻ ani poziomu zdolności.
-- **Narzędzie AI:** `python tools/simulate_ai_levels.py --games 1000`
-  porównuje poziomy AI na rzeczywistym silniku. Poziom trudny korzysta
-  z lepszych heurystyk, nie z pełnego przeszukiwania drzewa gry.
-
-Zmiany nie dodają aukcji ani kosztów zagrania i nie zmieniają Game Master v19.
-
-## Aktualizacja 0.9.15 — ikony wysokiej jakości
-
-Po kontroli przesłanej paczki ikon usunięto stratną wizualnie wersję
-atlasu 24 px/24 kolory. Nowy atlas ma 40 px na piktogram, 256 kolorów
-i przezroczystość, a mimo to zajmuje tylko około 29 KB. Wszystkie
-35 wzorów są takie same, jak w paczce źródłowej; pozostają zachowane
-ich znaczenia (14 rodzin zdolności, 16 statusów, 5 frakcji).
-
-Wszystkie opisy, wartości ATAK/PŻ oraz rozmiary kart pozostają
-niezmienione. Bez zmian zasad Game Master v19.
-Podgląd Pygame: `preview/IKONY_35_WYSOKA_JAKOSC_0915.png`.
-Szczegóły audytu: [Ikony Minimal Fantasy — 0.9.15](docs/IKONY_MINIMAL_FANTASY_0915.md).
-
-## Aktualizacja 0.9.16 — Visual Polish
-
-Oprawa gry przeszła całościowy pass Minimal Fantasy:
-- ciemne kamienne tło z grawerowanymi symbolami, wydzielone strefy
-  komputer/gracz/ręka i winietowanie;
-- zdobione sloty, panele i przyciski (hover/pressed/disabled),
-  metaliczne obramowania kart oraz subtelne ornamenty;
-- ulepszone animacje ataku, obrażeń, leczenia i statusów, iskry zgonu,
-  pojawianie się jednostki oraz sygnalizacja zmiany tury;
-- korekty czytelności: rozdzielony nagłówek instrukcji, prawdziwe
-  mierzenie szerokości logu, statusy oddzielone od przycisku [I],
-  ekran końcowy z przyciskiem w panelu wyniku.
-
-Wszystkie 70 kart, ich statystyki i umiejętności działają jak dotąd.
-Żadne nowe mechaniki, aukcje ani koszty kart nie zostały dodane.
-
-Testy automatycznie sprawdzają ułożenie tekstów i klikalność na
-logicznych DPI 100%, 125% oraz 150% (wymagany również test na
-rzeczywistym monitorze). Zrzuty nowych ekranów:
-`preview/VISUAL_0916_*.png`.
-
-[Raport z poprawek i ograniczeń](docs/VISUAL_POLISH_0916.md).
-
-## Aktualizacja 0.9.17 — prześlij cały ostatni mecz do audytu
-
-Po zakończeniu gry AuctionHammer automatycznie tworzy **jeden plik JSON**
-z pełną historią komend, wyborów, stanów planszy i wewnętrznych
-rozstrzygnięć zdolności oraz fal śmierci:
-
-`%LOCALAPPDATA%\\AuctionHammer\\AuctionHammer-OSTATNI-MECZ.json`
-
-Na ekranie końcowym naciśnij **O** (lub **OTWÓRZ FOLDER**) i
-prześlij plik **AuctionHammer-OSTATNI-MECZ.json** do ChatGPT.
-**E** ponawia eksport. [O] działa także z menu głównego.
-
-Nowy **ukończony** mecz nadpisuje ten sam plik. Nie przechowujemy
-wielu zakończonych partii; starszy audyt jest zastępowany automatycznie.
-Plik znajduje się poza folderem z aktualizacjami EXE i nie znika
-podczas aktualizacji przez BAT.
-
-Raport obejmuje również **ukryte karty komputera** i seed losowy,
-więc pojawia się dopiero po zakończeniu gry. Zawiera sumę SHA-256
-i pozwala ponownie odtworzyć komendy na silniku v19 poleceniem
-`python tools/verify_last_match.py`. Starsze wczytane zapisy
-będą poprawnie oznaczone jako częściowe, zamiast sugerować
-nieistniejącą pełną historię.
-
-[Dokładna specyfikacja i instrukcja](docs/LAST_MATCH_AUDIT_0917.md).
-
-## Aktualizacja 0.9.18 — czytelne PŻ i dokładniejszy audyt
-
-- Bohater pokonany śmiertelnym ciosem wyświetla **0/100 PŻ** w UI
-  (również na ekranie zakończenia). Rzeczywista ujemna wartość
-  pozostaje w silniku i w JSON, aby nie zgubić informacji o obrażeniach.
-- Testy regresji sprawdzają oczyszczanie, truciznę (w tym odporność),
-  ogłuszenie (w tym wygaśnięcie) i Podwójny atak S115/S79/S67.
-- Audyt ostatniego meczu przechowuje **początkową trudność AI,
-  każdą zmianę jej poziomu, poziom przy poszczególnych akcjach
-  oraz pełny 40-znakowy SHA commita gry**.
-- Wydanie Windows umieszcza identyfikator buildu w środku EXE
-  i sprawdza go w GitHub Actions. Brak oryginalnego commita
-  oznaczamy jako `unknown`, zamiast zgadywać.
-- Zapis gry zachowuje ustawienie AI i przywraca je po wczytaniu.
-
-Nowy obraz Pygame: `preview/VISUAL_0918_KONIEC_0_PZ.png`.
-
-[Szczegóły testów i metadanych](docs/COMBAT_AUDIT_HOTFIX_0918.md).
-
-## Aktualizacja 0.9.19 — karczemne UI i testowe aukcje
-
-**Wybrane elementy Tavern UI Pack v2:** drewniana faktura stołu jako
-subtelna warstwa pod panelami i mosiężny separator na ekranie aukcji.
-Nie użyto pełnego tła bogato wyposażonej karczmy ani ciężkich ramek
-wokół kart — zasłaniałyby teksty i miejsca interakcji. Cały interfejs
-pozostaje offline i zachowuje dotychczasowy kontrast.
-
-**Aukcje po rundach 3, 6, 9...:** po wypłaceniu obu graczom +1 monety
-rozpoczyna się licytacja bez limitu czasu. Wystawiane są trzy tymczasowe
-karty, każda **3 ATAK, Prowokacja i jednorazowa Tarcza**, o PŻ odpowiednio
-**3, 6 i 12**. Rzadkości losowane są niezależnie 60/30/10%; pozostają
-informacyjne aż do wdrożenia rzeczywistego katalogu aukcyjnego.
-Numer aukcji jest poziomem zapisanym na zdobytym egzemplarzu.
-
-Przebieg: oferuj co najmniej o 1 monetę więcej, pasuj lub przebij ofertę
-komputera. Zwycięzca płaci za **pierwszy wybór**, rywal bierze jedną
-z pozostałych kart **za darmo**, trzeci wariant nie jest rozdawany.
-Gdy obaj pasują bez oferty, darmowy pierwszy wybór przysługuje
-naprzemiennie rozpoczynającemu mecz i jego rywalowi.
-Wybrane karty trafiają na ręce (bez limitu 5), zachowują stałe statystyki,
-nie skalują się w ręce i po wystawieniu grają jak jednostki bazowe.
-
-- **Klawiatura:** cyfry + Enter do złożenia oferty; w fazie wyboru
-  **1/2/3** wybiera odpowiednią ofertę.
-- **Przyciski:** PASUJ, PODBIJ +1, LICYTUJ lub kliknij wybraną kartę.
-- **M:** można otworzyć menu i zapisać grę nawet podczas aukcji.
-
-Stare zapisy 0.9.18 pozostają w dotychczasowym trybie bez aukcji,
-bez dopisywania historycznie nieodbytych licytacji. Audyt JSON z
-nowego meczu zapisuje wszystkie nowe akcje aukcyjne.
-
-**Nie ma jeszcze** żadnych płatnych aktywacji zdolności, kopiowania,
-przejmowania, wskrzeszania czy finalnego katalogu 36 kart aukcyjnych.
-Mechaniki i balans pozostałych 70 kart nie zostały zmienione.
-
-[Analiza paczki i szczegóły implementacji](docs/TAVERN_AUCTION_PROTOTYPE_0919.md).
-
-## Wydanie 0.9.20 — pełny wygląd drewnianej karczmy
-
-Warstwa graficzna **Tavern UI Pack v2** jest teraz widoczna w całej grze:
-tło z kominkiem i drewnianymi stołami, ciemne drewniane strefy
-planszy, mosiężne ramy slotów, przyciski i ornamenty menu/aukcji.
-Wykorzystano skompresowane, dostarczone wcześniej oryginalne grafiki,
-bez pobierania czegokolwiek przez internet podczas rozgrywki.
-
-Zachowano nieprzezroczyste strefy pod kartami i napisami. Teksty,
-rozmiary kart i hitboxy nie uległy zmianom. **Wydanie 0.9.20 nie
-zmienia zasad aukcji 0.9.19 ani zestawu 70 podstawowych kart.**
-
-Podglądy: `preview/VISUAL_0920_TAWERNA_PELNA_PLANSZA.png`,
-`preview/VISUAL_0920_DREWNIANE_MENU.png` i
-`preview/VISUAL_0920_DREWNIANA_AUKCJA.png`.
-
-## Wydanie 0.9.21 — 12 archetypów aukcyjnych i ewolucja rzadkości
-
-Nowa partia korzysta z roboczego katalogu v3: **12 unikalnych
-archetypów** i **36 tekstów wariantów** (podstawowa / rzadka /
-legendarna). Na aukcji losowane są trzy różne archetypy;
-rzadkości niezależnie **60% / 30% / 10%**. Statystyki karty
-wynikają z zakończonej rundy: **ATK + MAX PŻ = R + 8**.
-Po zakupie ATK i MAX PŻ nie rosną, także w ręce.
-
-**Rzadkość ewoluuje co 3 pełne rundy od zakupu** aż do
-legendarnej. Pokonanie karty aukcyjnej daje odpowiednio
-**1 / 2 / 3 monety** według rzadkości.
-
-**Złożone zdolności A001–A012 nie działają jeszcze.**
-Na ekranie aukcji i na kartach są jawnie oznaczone jako
-*NIEAKTYWNA / PLANOWANA*. Nazwy i docelowe opisy są
-dostępne, ale żadne niezaprojektowane rozstrzygnięcie
-kopiowania, wyciszenia, przejęcia czy wskrzeszenia nie
-jest wykonywane. Są to grywalne jednostki o swoich
-bazowych ATK i PŻ, bez zdolności specjalnych.
-
-**Wczytane partie z 0.9.19/0.9.20** zachowują dawnych
-Strażników 3/6/12 i ich Prowokację + Tarczę, bez zmiany
-reguł istniejącego meczu. Audyt JSON zapisuje tryb katalogu
-oraz każdą ewolucję rzadkości.
-
-[Opis etapu i testów](docs/AUCTION_FOUNDATION_0921.md) ·
-[Oryginalny katalog v3](docs/KATALOG_AUKCYJNY_12_v3.md).
-
-## Karty, efekty i skalowanie
-
-Wszystkie **napisy widoczne w grze są po polsku**. Karty pokazują moment aktywacji zdolności: **Przy zagraniu, Przy ataku, Przy śmierci, Na koniec tury, Pasywna**. Obok pojawia się symbol rodziny efektu, jego bieżąca wartość oraz zielony pasek wzrostu.
-
-Przykładowe oznaczenia: **OBR** — obrażenia, **LECZ** — leczenie, **PANC** — pancerz, **PŻ** — punkty życia, **SZYBKI** — Szybki atak, **2 ATAKI** — Podwójny atak, **PROW** — Prowokacja.
-
-Karty otrzymują indywidualny przyrost statystyk po każdej zakończonej własnej turze na ręce. Zdolności zwiększają poziom **co trzy takie tury** (po 3, 6, 9 itd.). Zielony pasek wskazuje *co dokładnie* się wzmacnia. W dużym podglądzie pogrubiona zielona liczba oznacza wartość podlegającą skalowaniu, ale nie czas trwania statusu ani liczbę dozwolonych ataków.
-
-## Dopasowanie do ekranu
-
-Gra automatycznie dostosowuje początkowy rozmiar okna do dostępnej przestrzeni, w tym do skalowania obrazu w Windows. Można zmieniać rozmiar okna bez rozciągania kart i bez przesuwania obszarów klikalnych względem grafiki. Klawisz **F11** przełącza pełny ekran.
-
-## Obowiązujące zasady i dokumenty
-
-| Plik | Przeznaczenie |
-| --- | --- |
-| `AUCTIONHAMMER_MASTER.md` | Aktualny opis projektu i wskazanie obowiązujących źródeł |
-| `data/GAME_MASTER.json` | Aktualny uporządkowany zapis zasad i katalogu v19 |
-| `data/game_rules_v19.json` | Aktualny, odrębny zbiór zasad v19; zgodny z `GAME_MASTER.json` |
-| `data/event_order_v19.json` | Obowiązująca kolejność zdarzeń, wspólne fale zgonów i kaskady |
-| `docs/FALE_ZGONOW_v19_MVP_0910.md` | Opis naprawy kolejki zdarzeń i testów |
-| `data/cards_base_70.json` | **Jedyne bieżące źródło definicji 70 kart**, wczytywane przez silnik |
-| `docs/V19_INTEGRATION_AND_UI.md` | Zmiany zasad v19 i ich implementacja |
-| `docs/GAME_MASTER_v17.md` | **Archiwum** wcześniejszej specyfikacji v17 — nie jest katalogiem aktualnych kart |
-| `data/event_order_v17.json` | Historyczny dokument kolejności zdarzeń; wersję aktualną określa `event_order_v19.json` |
-| `game/core/` | Silnik meczu |
-| `game/ui/` | Interfejs gry |
-| `tests/` | Automatyczne testy |
-
-Zmiany S66, S67, S79, S114 i S115 z v19 są zaimplementowane, podobnie jak zatwierdzone zmiany S20, S82, S90, S91, S105 i S109. Mechanizm grup **jednoczesnych zgonów** został przebudowany i objęty testami w MVP 0.9.10, lecz nadal nie przeprowadzono wyczerpującej walidacji wszystkich możliwych kombinacji. Nie przedstawiamy bieżącego prototypu jako ostatecznie zbalansowanej ani w pełni zweryfikowanej wersji gry.
-
-## MVP 0.9.10 — jednoczesne zgony i kolejka zdarzeń
-
-Grupy jednostek ginących jednocześnie są obecnie rozpatrywane we **wspólnej fali**. Najpierw ustalane są wszystkie legalne cele i zbierane wybory, a dopiero potem wykonywane są konsekwencje. Kolejne zgony wywołane tą falą trafiają do następnej grupy. Uzupełniono testy kaskad, osłon, statusów i śmierci bohaterów, a losowania kart S90/S91 zapisują odtwarzalne informacje w dzienniku. Szczegółowe zasady i ograniczenia znajdują się w [opisie wdrożenia fal śmierci](docs/FALE_ZGONOW_v19_MVP_0910.md).
-
-Dane autorytatywnej kolejności zdarzeń przechowuje `data/event_order_v19.json`. Historyczny plik `data/event_order_v17.json` służy wyłącznie do porównywania starszych decyzji.
-
-## Rozwój i aktualizacje
-
-Po zatwierdzeniu zmian w gałęzi `main` GitHub automatycznie uruchamia testy i przygotowuje przenośne wydanie dla Windows. Kod można edytować lokalnie po zainstalowaniu Pythona i zależności z `requirements.txt`. **Do zwykłego grania te narzędzia nie są potrzebne.**
-
-## Minimal Fantasy — wyższe karty (MVP 0.9.11)
-
-Nowy, uproszczony wygląd z zachowaniem klimatu fantasy: **125 × 195 px** na ręce, **148 × 220 px** na planszy i **255 × 380 px** w podglądzie. Dynamiczne, wyraźne plakietki **ATAK** i **PŻ** pozostają widoczne ponad ilustracjami oraz przyciemnieniem, a zdolności zachowują pełną zgodność z Game Master v19.
-
-- Lewy przycisk wybiera kartę i służy do zagrywania lub ataku; **I** i prawy przycisk otwierają duży podgląd.
-- Zielony pasek oznacza ulepszenie zdolności co trzy własne tury na ręce; oddzielny postęp jest widoczny tylko na ręce.
-- Złota ramka oznacza zaznaczoną kartę, turkusowa — legalny cel ataku, fioletowa — legalny cel zdolności.
-- Krótkie animowane podświetlenie wpisów dziennika zdarzeń można wyłączyć i ponownie włączyć klawiszem **A**.
-- Wszystkie karty są generowane z aktualnych danych 70 kart; nie ma statystyk zapisanych na sztywno w ilustracjach.
-
-Zrzuty ekranu wygenerowane prawdziwym rendererem Pygame znajdują się w katalogu `preview/` wydania Windows oraz w artefaktach GitHub Actions.
-
-**Instrukcja wdrożenia, lista testów i opis cofania:** [Minimal Fantasy — wysokie karty](docs/MINIMAL_FANTASY_WYSOKIE_KARTY.md).
+# AuctionHammer
+
+### Taktyczna gra karciana fantasy, w której zwycięstwo zależy nie tylko od kart na ręce, ale też od tego, co wylicytujesz.
+
+**AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
+
+**Aktualna wersja: 0.9.32 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+
+> **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
+
+[**Pobierz grę — Windows ZIP**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś błąd lub pomysł](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zasady aukcji v22](docs/auction/RELEASE_V22_0931.md)
+
+## Dlaczego warto spróbować?
+
+- **Każda partia tworzy inną armię.** Karty trafiają do graczy z jednej wspólnej, losowanej puli, a limit pięciu jednostek na planszy wymusza podejmowanie decyzji.
+- **Czekanie też jest strategią.** Podstawowe karty stają się silniejsze, gdy trzymasz je na ręce. Możesz wystawić jednostkę od razu albo rozwinąć ją przed kluczową walką.
+- **Aukcje zmieniają przebieg meczu.** Trzy rzadkie możliwości, dwóch rywali i tylko dwie kupione karty. Licytujesz przede wszystkim **prawo pierwszego wyboru**.
+- **Zdolności łączą się w kombinacje.** Tarcza, Prowokacja, trucizna, ogłuszenie i leczenie spotykają się z przejęciami jednostek, kopiowaniem, wskrzeszaniem, wygnaniem czy blokowaniem zdolności.
+- **Widzisz, co się wydarzyło.** Historia walki wyjaśnia obrażenia, pochłanianie przez Tarczę i pancerz, leczenie oraz zmiany statusów. Mecz można zapisać i przeanalizować.
+
+## Pobieranie i uruchamianie
+
+### Chcę po prostu zagrać — Windows
+
+1. Wejdź w [**Releases — najnowsze wydanie**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) i pobierz **\`AuctionHammer-Windows.zip\`**.
+2. Rozpakuj archiwum. Otwórz otrzymany folder **\`AuctionHammer\`**.
+3. Uruchom **\`AuctionHammer.exe\`** lub **\`GRAJ_BEZ_INTERNETU.bat\`**.
+
+Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga internetu** — po pobraniu możesz grać offline.
+
+Opcjonalnie \`URUCHOM_AUCTIONHAMMER.bat\` sprawdza na GitHubie dostępność nowszej wersji i uruchamia posiadaną grę także wtedy, gdy sprawdzenie aktualizacji się nie powiedzie. Zachowaj \`AuctionHammer.exe\` razem z folderem \`_internal\`; samodzielne przeniesienie tylko pliku EXE może uniemożliwić uruchomienie.
+
+> To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
+
+## Jak wygląda rozgrywka?
+
+**Twój cel:** sprowadzić punkty życia (PŻ) bohatera komputera do zera, zanim komputer pokona Ciebie. Obaj bohaterowie rozpoczynają z **100 PŻ**.
+
+| Element | Zasada |
+|---|---|
+| Tryb | 1 gracz kontra komputer, lokalnie |
+| Początek partii | 5 kart na ręce i 5 we własnej talii dla każdego gracza |
+| Wymiana początkowa | Możesz wymienić do 3 kart przed rozpoczęciem meczu |
+| Początek tury | Dobierasz z własnej talii, aż masz 5 kart na ręce lub skończą się dostępne karty |
+| Wystawianie | Zwykle **jedna karta z ręki na własną turę**, bez opłaty w monetach |
+| Plansza | Maksymalnie **5 jednostek** na stronę; na pełnej planszy możesz zgodnie z regułami zastąpić własną jednostkę |
+| Walka | Jednostki atakują wroga lub jego bohatera, jeśli nie blokuje tego Prowokacja |
+| Monety | **+1 moneta dla obu graczy po pełnej rundzie**; gracz zaczynający jako drugi dostaje **+3 monety na start** |
+| Koniec meczu | Pokonaj bohatera przeciwnika; przy jednoczesnym pokonaniu obu obowiązują reguły rozstrzygania remisu |
+
+**Runda** oznacza wykonanie po jednej turze przez obu graczy. Każdy może wystawić zwykle jedną kartę z ręki, ale nie ma kosztu zagrania. **Monety służą przede wszystkim do licytowania kart aukcyjnych**, a nie do opłacania zwykłych jednostek.
+
+### Karty i walka
+
+W podstawowej puli jest **70 unikatowych kart** z pięciu frakcji: **Elfy, Dzikie bestie, Potwory, Krasnoludy i Ludzie**. Karty mają **ATK (atak)**, **PŻ (punkty życia)**, frakcję, rodzaj zdolności oraz warunek jej aktywacji.
+
+Zależnie od jednostki zdolność uruchamia się m.in. **przy wystawieniu**, **podczas ataku**, **przy śmierci**, **na koniec tury** lub działa **pasywnie**.
+
+Przykłady ważnych efektów:
+
+- **Prowokacja** — ogranicza przeciwnikowi wybór celów ataku.
+- **Tarcza** — pochłania następne trafienie, po czym znika; **pancerz** zmniejsza przyjmowane obrażenia.
+- **Trucizna, ogłuszenie, wyciszenie** — przeszkadzają jednostkom walczyć lub korzystać ze zdolności.
+- **Regeneracja i leczenie** — przedłużają obecność jednostek i bohaterów na polu bitwy.
+- **Szybki lub podwójny atak** — pozwalają działać wcześniej albo zaatakować więcej niż raz.
+
+Podczas standardowego starcia dwóch jednostek obie mogą zadać sobie obrażenia **jednocześnie**. Zwykła jednostka nie atakuje od razu w turze wystawienia, chyba że odpowiedni efekt na to pozwala. Kiedy jednostka ginie, jej zdolność „Przy śmierci” może jeszcze wpłynąć na wynik potyczki.
+
+### Karty stają się silniejsze na ręce
+
+W AuctionHammer nie każdą kartę opłaca się zagrywać natychmiast. **Karty podstawowe otrzymują przyrost statystyk za ukończone własne tury spędzone na ręce**. W aktualnym balansie v21:
+
+- **58 kart** zyskuje **+1 ATK i +1 PŻ** za turę na ręce;
+- **12 kart** zyskuje **+2 ATK** za turę na ręce.
+
+Co trzy takie tury wybrane rodzaje zdolności otrzymują dodatkową premię: np. **Tarcza i Prowokacja +1 ATK / +2 PŻ**, a **Szybki atak +2 ATK / +1 PŻ**. Po zagraniu jednostki jej rozwój na ręce się kończy.
+
+To zachęca do wyboru między **siłą teraz** a **silniejszą kartą później**.
+
+## Aukcje — najważniejsza mechanika AuctionHammer
+
+**Po każdej trzeciej pełnej rundzie** (3., 6., 9., 12. itd.) pojawia się aukcja, o ile w osobnej puli pozostają przynajmniej trzy niewykupione archetypy. Aukcje są integralną częścią meczu, a nie osobnym sklepem.
+
+### Jak przebiega aukcja?
+
+1. Gra losuje **3 różne karty aukcyjne** z dostępnej puli oraz niezależnie ustala ich rzadkości.
+2. Ty i komputer **licytujecie monetami lub pasujecie**. Każda kolejna skuteczna oferta musi przebić poprzednią.
+3. **Zwycięzca licytacji płaci swoją ofertę i wybiera pierwszy** jedną z trzech kart.
+4. Drugi gracz **za darmo wybiera jedną z dwóch pozostałych**. Ostatecznie każdy otrzymuje po jednej karcie na rękę.
+5. **Trzecia, niewykupiona karta nie przepada**: jej archetyp wraca do **wyłącznie aukcyjnej puli** i może pojawić się później, z nowo wyliczonymi statystykami i nowym losowaniem rzadkości.
+
+Jeśli obaj gracze spasują bez żadnej oferty, prawo pierwszego wyboru przypada graczowi określonemu przez reguły kolejności aukcji. Wygrać licytację nie znaczy więc zabrać wszystkich kart — **kupujesz pierwszeństwo wyboru jednej**.
+
+**Przykład:** Na aukcji pojawiają się trzy karty. Ty oferujesz 8 monet, komputer pasuje. Płacisz 8 i wybierasz tę, która najlepiej uzupełnia Twoją armię. Komputer dostaje drugą wybraną przez siebie, a niewykupiony archetyp wraca do kolejnych aukcji.
+
+### Rzadkość, siła i ograniczona podaż
+
+| Cecha | Jak działa |
+|---|---|
+| Katalog | **17 archetypów aukcyjnych** — w tym pięć dodanych w v22 |
+| Warianty | **Podstawowa (60%)**, **rzadka (30%)**, **legendarna (10%)** — losowane dla każdej oferty |
+| Zdolności | **51 wariantów**: każdy archetyp ma trzy możliwe opisy i efekty |
+| Statystyki | ATK i maksymalne PŻ oferty zależą od rundy aukcji; karty oferowane później są statystycznie silniejsze |
+| Po zakupie | Statystyki kupionej karty **zostają ustalone na stałe** — karta nie rośnie na ręce |
+| Awans rzadkości | Co **3 ukończone rundy od zakupu**: podstawowa → rzadka → legendarna; zmienia się zdolność, nie ATK/PŻ |
+| Dostępność | Kupiony archetyp jest usuwany z puli; niewykupiony może wrócić |
+| Koniec aukcji | Z 17 archetypów da się rozstrzygnąć maksymalnie **8 pełnych aukcji**; przy mniej niż 3 dostępnych nie odbywa się następna |
+
+**Karty aukcyjne nigdy nie trafiają do zwykłego dobierania 70 kart.** Możesz je uzyskać wyłącznie przez zakup na aukcji. Po zdobyciu pojawiają się na ręce i obowiązuje je normalny limit wystawiania. Gdy zakupiona karta zostanie usunięta z gry, nie wraca do zwykłego cmentarza i talii.
+
+### Co można wylicytować?
+
+Oprócz mocnych jednostek aukcje wprowadzają znacznie bardziej nietypowe zdolności: **przejęcia jednostek wroga, wskrzeszanie, kopiowanie, wygnanie, wymianę kart z ręki, wyciszanie, manipulację zdrowiem bohaterów, ratowanie przed śmiercią, przywoływanie nowych żołnierzy** oraz **aury**, które zmieniają możliwości całej planszy.
+
+W katalogu v22 znajdziesz również karty nastawione na przebijanie wysokiego PŻ, odwracanie leczenia w obrażenia, blokowanie zdolności, wyciąganie kart z talii oraz specjalne bonusy do kolejnych aukcji.
+
+Szczegółowe opisy każdej wersji znajdują się w [katalogu 17 kart aukcyjnych (JSON)](data/auction/KATALOG_AUKCYJNY_17_v22.json) i [dokumentacji aukcji v22](docs/auction/RELEASE_V22_0931.md).
+
+## Sterowanie i przydatne funkcje
+
+| Akcja | Sterowanie |
+|---|---|
+| Wystaw kartę | Kliknij kartę na ręce, następnie własne pole; możesz też przeciągnąć kartę |
+| Zaatakuj | Kliknij gotową jednostkę i legalny cel ataku |
+| Wybierz efekt | Kliknij opcję po prawej stronie; **1–6** wybiera opcje na aktualnej stronie |
+| Zakończ turę | **Spacja** |
+| Informacje o karcie | **I** |
+| Historia zdarzeń | **H** |
+| Powtórka meczu | **P** |
+| Włącz/wyłącz efekty wizualne | **A** |
+| Menu i zapis | **M** |
+| Pełny ekran | **F11** |
+| Nowa partia | **R** |
+
+Podczas aukcji możesz składać oferty w panelu, pasować i wybierać karty myszą. Dostępne są również cyfry oraz **Enter** do zatwierdzenia wpisanej kwoty.
+
+Grę można **zapisać i wczytać** z menu. Historia zdarzeń oraz eksport audytu ostatniej partii ułatwiają sprawdzenie, dlaczego jednostka przeżyła atak albo jak zadziałały połączone efekty. Funkcje powtórki i audytu mają charakter diagnostyczny — nie jest to tryb gry wieloosobowej.
+
+## Uruchomienie ze źródeł (dla programistów)
+
+Gra jest napisana w **Pythonie 3.12** z użyciem **pygame-ce**. Kod i silnik działają lokalnie; nie ma wymaganego serwera.
+
+\`\`\`bash
+git clone https://github.com/MateuszBock0/AuctionHammer.git
+cd AuctionHammer
+python -m pip install -r requirements.txt
+python -m game.main
+\`\`\`
+
+W środowisku Windows polecenie \`python\` możesz zastąpić \`py -3.12\`, jeśli tak skonfigurowany jest Twój interpreter. Do uruchamiania wydania portable **nie** potrzeba tych komend — są przeznaczone dla osób pracujących z kodem.
+
+Automatyczne testy silnika, aukcji i interfejsu:
+
+\`\`\`bash
+python -m unittest discover -s tests -v
+\`\`\`
+
+## Struktura projektu i formaty plików
+
+\`\`\`text
+AuctionHammer/
+├── game/
+│   ├── main.py                 # Punkt startowy aplikacji
+│   ├── core/                   # Zasady, aukcje, zdolności, AI, zapis i audyt
+│   └── ui/                     # Interfejs i prezentacja kart w Pygame
+├── data/
+│   ├── cards_base_70.json      # Aktualne 70 kart podstawowych
+│   ├── GAME_MASTER.json        # Ustrukturyzowana dokumentacja reguł
+│   └── auction/
+│       ├── KATALOG_AUKCYJNY_17_v22.json  # Aktualne aukcje
+│       └── KATALOG_AUKCYJNY_12_v4.json   # Starszy katalog, zgodność zapisów
+├── assets/                     # Grafika i elementy interfejsu
+├── tests/                      # Testy automatyczne
+├── tools/                      # Narzędzia, symulacje i diagnostyka
+├── docs/                       # Szczegółowe zasady, raporty i historia zmian
+├── reference/                  # Arkusze referencyjne kart
+├── .github/workflows/          # Testy oraz budowanie wydania Windows
+├── requirements.txt            # Zależność pygame-ce
+└── README.md                   # Opis gry i instrukcja
+\`\`\`
+
+W repozytorium używane są następujące formaty:
+
+| Format | Przeznaczenie |
+|---|---|
+| **\`.py\`** | Kod gry, silnik zasad, przeciwnik komputerowy, testy i narzędzia |
+| **\`.json\`** | Definicje kart, katalog aukcyjny, reguły, zapisy meczów i audyty |
+| **\`.md\`** | Dokumentacja Markdown: README, zasady, raporty, historia prac |
+| **\`.xlsx\`, \`.csv\`** | Arkusze i zestawienia do projektowania oraz weryfikacji kart |
+| **\`.png\`** | Elementy graficzne i podglądy interfejsu |
+| **\`.yml\`** | Konfiguracja automatycznych testów i kompilacji w GitHub Actions |
+| **\`.exe\`, \`.bat\`, \`.ps1\`** | Uruchamianie gry i aktualizatora w Windows |
+| **\`.zip\`** | Gotowa, przenośna paczka Windows z grą i wymaganymi plikami |
+
+**Gdzie zapisuje się gra?** Na Windows zapis meczu ma format JSON i znajduje się domyślnie pod ścieżką:
+
+\`\`\`text
+%LOCALAPPDATA%\\AuctionHammer\\savegame_v19.json
+\`\`\`
+
+Końcówka \`v19\` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — również AuctionHammer 0.9.32 używa tego formatu. Dane obejmują m.in. karty, statusy, fazę aukcji i stan losowania, aby można było wznowić mecz. Dodatkowo można wyeksportować audyt ostatniej partii jako plik JSON.
+
+## Status, dokumentacja i licencja
+
+**0.9.32 to aktywnie rozwijane demo**, z lokalnym przeciwnikiem i zaimplementowanymi aukcjami v22 (17 archetypów, 51 wariantów). Aktualna wersja zawiera również balans v21 kart podstawowych. Na tym etapie **nie ma multiplayera online**.
+
+- [Pobierz najnowsze wydanie Windows](https://github.com/MateuszBock0/AuctionHammer/releases/latest)
+- [Zasady i interpretacje aukcji v22](docs/auction/RELEASE_V22_0931.md) · [Stabilizacja 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md)
+- [Game Master / reguły projektu](AUCTIONHAMMER_MASTER.md)
+- [Archiwum wcześniejszego README i historii wydań](docs/README_HISTORIA_DO_0932.md)
+- [Zgłoś problem lub propozycję](https://github.com/MateuszBock0/AuctionHammer/issues)
+
+Projekt udostępniany jest na licencji [MIT](LICENSE). Autor: **Mateusz Boćko**.
