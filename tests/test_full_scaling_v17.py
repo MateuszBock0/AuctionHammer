@@ -162,8 +162,8 @@ class FullScalingAudit(unittest.TestCase):
                     c=g.cards[cid]
                     c.hand_turns=turns
                     level=turns//3
-                    atk_bonus=2*level if definition.family in ("Szybki atak","Podwójny atak") else 0
-                    hp_bonus=(3*level if definition.family in ("Tarcza","Prowokacja")
+                    atk_bonus=(2 if definition.family in ("Szybki atak","Podwójny atak") else 1 if definition.family in ("Tarcza","Prowokacja") else 0)*level
+                    hp_bonus=(2*level if definition.family in ("Tarcza","Prowokacja")
                               else level if definition.family=="Szybki atak" else 0)
                     self.assertEqual(c.ability_level,level)
                     self.assertEqual(c.attack,definition.atk + turns*definition.growth_atk + atk_bonus)
