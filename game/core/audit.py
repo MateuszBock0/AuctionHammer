@@ -389,7 +389,10 @@ def make_report(game):
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
             "vacant_slot_income_enabled":bool(getattr(game,'vacant_income_enabled',False)),
             "vacant_slot_income_total":list(getattr(game,'slot_income',[0,0])),
+            # Keep exact (possibly negative) engine HP for scientific replay,
+            # and a separate nonnegative number for presentation in viewers.
             "hero_hp":{str(p.idx):p.hp for p in game.players},
+            "hero_hp_display":{str(p.idx):max(0,p.hp) for p in game.players},
             "unit_deaths":{str(p.idx):game.death_counts[p.idx]
                            for p in game.players}
             if (getattr(game,'death_counts',None) is not None and
