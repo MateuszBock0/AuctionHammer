@@ -312,8 +312,8 @@ def ability_summary(card, unit=None) -> AbilitySummary:
         if d.effect.startswith('NIEAKTYWNA'):
             return AbilitySummary('ZDOLNOŚĆ NIEAKTYWNA',
                                   d.effect+' Brak skalowania na ręce.')
-        from game.core.auction_catalog import V4_CARDS
-        variants=V4_CARDS.get(d.id,{}).get('variants',{})
+        from game.core.auction_catalog import V22_CARDS
+        variants=V22_CARDS.get(d.id,{}).get('variants',{})
         label={'basic':'PODSTAWOWA','rare':'RZADKA',
                'legendary':'LEGENDARNA'}
         rarity=next((label[tier] for tier,text in variants.items()
