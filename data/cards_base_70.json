@@ -28,9 +28,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -64,9 +64,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -82,9 +82,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -100,9 +100,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -154,9 +154,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -172,9 +172,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -208,9 +208,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -226,9 +226,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v19 (faction identity adjustment)",
     "implementation_status": "ENGINE_INTEGRATION_V19",
@@ -254,9 +254,9 @@
     "faction": "Elfy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v19 (faction identity adjustment)",
     "implementation_status": "ENGINE_INTEGRATION_V19",
@@ -300,9 +300,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -336,9 +336,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -354,9 +354,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: +1 do liczby zdejmowanych punktów pancerza ALBO do dodatkowych obrażeń bez pancerza.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -372,9 +372,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -426,9 +426,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -444,9 +444,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -480,9 +480,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -498,9 +498,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -516,9 +516,9 @@
     "faction": "Dzikie bestie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v19 (faction identity adjustment)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -552,9 +552,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -588,9 +588,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -606,9 +606,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -624,9 +624,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -678,9 +678,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; przy braku celu +1 do jednorazowego leczenia bohatera za poziom.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -696,9 +696,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -732,9 +732,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -750,9 +750,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -768,9 +768,9 @@
     "faction": "Potwory",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -804,9 +804,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -840,9 +840,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -858,9 +858,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -876,9 +876,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -930,9 +930,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: +1 do ŁĄCZNEGO leczenia z jednej porcji regeneracji; czas trwania bez zmian.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -948,9 +948,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -984,9 +984,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1002,9 +1002,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1020,9 +1020,9 @@
     "faction": "Krasnoludy",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1038,9 +1038,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: +1 do obrażeń zdolności (za każdy ukończony próg).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1056,9 +1056,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: +1 do leczenia ze zdolności.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1092,9 +1092,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: +1 do modułu zmiany MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1110,9 +1110,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: +1 do pancerza przyznanego/odebranego przez zdolność.",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -1128,9 +1128,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (nie zwiększaj liczby tarcz).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1182,9 +1182,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: +1 do samoregeneracji HP na koniec KAŻDEJ własnej tury, dopóki jednostka znajduje się na planszy i zdolność działa (za każdy ukończony próg).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "ENGINE_INTEGRATION_V19"
@@ -1200,9 +1200,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +3 MAX HP (czas prowokacji bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1236,9 +1236,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: przy pierwszej aktywacji zdolności po wystawieniu przyznaj dodatkowo 1 trwałego pancerza chronionej jednostce (za każdy poziom).",
     "hand_growth": {
-      "atk_per_hand_turn": 0,
-      "hp_per_hand_turn": 2,
-      "growth_profile": "Defensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v13 (balance)",
     "implementation_status": "specification_not_playtested_in_full_engine"
@@ -1254,9 +1254,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK i +1 MAX HP.",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v19 (faction identity adjustment)",
     "implementation_status": "ENGINE_INTEGRATION_V19",
@@ -1279,9 +1279,9 @@
     "faction": "Ludzie",
     "scaling": "Co 3 własne tury na ręce: dodatkowo +2 ATK (liczba ataków bez zmian).",
     "hand_growth": {
-      "atk_per_hand_turn": 2,
-      "hp_per_hand_turn": 0,
-      "growth_profile": "Ofensywny"
+      "atk_per_hand_turn": 1,
+      "hp_per_hand_turn": 1,
+      "growth_profile": "Zrównoważony"
     },
     "card_origin_version": "v19 (faction identity adjustment)",
     "implementation_status": "ENGINE_INTEGRATION_V19",
