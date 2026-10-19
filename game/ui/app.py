@@ -12,7 +12,7 @@ from game.core.audit import (audit_path, write_last_match, initialize_audit,
                              configure_audit_context, record_ai_difficulty)
 from game import config as cfg
 from game.core.engine import Match
-from game.core.auction_catalog import CATALOG,RARITIES,v4_variant
+from game.core.auction_catalog import CATALOG,RARITIES,live_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS
@@ -64,7 +64,7 @@ class SoloApp:
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
-        self.game=Match(audit_enabled=True,auctions_enabled=True,auction_catalog='v4')
+        self.game=Match(audit_enabled=True,auctions_enabled=True,auction_catalog='v22')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -441,7 +441,8 @@ class SoloApp:
         a=self.game.auction
         if a is None or a.phase!='bidding' or a.turn!=0:
             return 'Teraz nie możesz licytować.'
-        minimum=max(1,a.current_bid+1)
+        minimum=(max(1,a.highest_effective+1-a.bid_bonus[0])
+                 if self.game.auction_catalog=='v22' else max(1,a.current_bid+1))
         coins=self.game.players[0].coins
         if amount<minimum:
             return f'Minimalna oferta to {minimum} monet.'
@@ -457,7 +458,8 @@ class SoloApp:
             if operation=='pass':
                 game.auction_pass(0)
             elif operation in ('bid','min'):
-                minimum=max(1,game.auction.current_bid+1)
+                minimum=(max(1,game.auction.highest_effective+1-game.auction.bid_bonus[0])
+                         if game.auction_catalog=='v22' else max(1,game.auction.current_bid+1))
                 amount=(int(self.auction_bid_text)
                         if operation=='bid' and self.auction_bid_text else minimum)
                 issue=self._auction_bid_issue(amount)
@@ -496,7 +498,7 @@ class SoloApp:
         self.theme.carved_panel(self.screen,pygame.Rect(219,125,1044,694),opacity=82)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
-        self._text('12 ARCHETYPÓW · 36 AKTYWNYCH WARIANTÓW ZDOLNOŚCI',16,
+        self._text('17 ARCHETYPÓW · 51 AKTYWNYCH WARIANTÓW ZDOLNOŚCI',16,
                    741,205,cfg.TEXT,center=True)
         self.theme.ornament(self.screen,565,228,350,22)
         for i,off in enumerate(a.offers):
@@ -506,7 +508,7 @@ class SoloApp:
             self._panel(rect,(52,37,26) if not claimed else (38,34,29),
                         cfg.GOLD if selectable else cfg.PANEL_BORDER,14)
             self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
-            adef=CATALOG.get(off.archetype)
+            adef=catalog_for(self.game.auction_catalog).get(off.archetype)
             self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
                        rect.centerx,rect.y+17,cfg.GOLD,center=True)
             name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
@@ -516,8 +518,8 @@ class SoloApp:
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
             self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
                        rect.centerx,rect.y+155,cfg.GOLD,center=True)
-            description=(v4_variant(off.archetype,off.rarity)
-                         if adef and self.game.auction_catalog=='v4' else
+            description=(live_variant(self.game.auction_catalog,off.archetype,off.rarity)
+                         if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
             lines=self._wrap(description,13,rect.width-36)
@@ -534,14 +536,16 @@ class SoloApp:
         who=self.game.players[a.turn].name
         if a.phase=='bidding':
             self._text(f'LICYTUJE: {who}  ·  NAJWYŻSZA: {a.current_bid}  ·  '
-                       f'TWOJE MONETY: {self.game.players[0].coins}',16,
+                       f'TWOJE MONETY: {self.game.players[0].coins}' +
+                       (f' · BONUS +{a.bid_bonus[0]} · SIŁA {a.highest_effective}' if self.game.auction_catalog=="v22" else ''),16,
                        741,650,cfg.TEXT,center=True)
             leader='BRAK' if a.highest_bidder is None else self.game.players[a.highest_bidder].name
-            self._text(f'PROWADZI: {leader}  ·  WYMAGANE MIN. {a.current_bid+1}  '
-                       f'·  KWOTA: {self.auction_bid_text or str(a.current_bid+1)}',14,
+            self._text(f'PROWADZI: {leader}  ·  WYMAGANE MIN. {max(1,a.highest_effective+1-a.bid_bonus[0]) if self.game.auction_catalog=="v22" else a.current_bid+1}  '
+                       f'·  KWOTA: {self.auction_bid_text or str(max(1,a.highest_effective+1-a.bid_bonus[0]) if self.game.auction_catalog=="v22" else a.current_bid+1)}',14,
                        741,690,cfg.MUTED,center=True)
             if a.turn==0:
-                minimum=max(1,a.current_bid+1)
+                minimum=(max(1,a.highest_effective+1-a.bid_bonus[0])
+                 if self.game.auction_catalog=='v22' else max(1,a.current_bid+1))
                 coins=self.game.players[0].coins
                 affordable=coins>=minimum
                 typed=int(self.auction_bid_text) if self.auction_bid_text else minimum

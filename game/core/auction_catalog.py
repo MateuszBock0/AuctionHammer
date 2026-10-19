@@ -116,3 +116,40 @@ def stats_v4(archetype: str, completed_round: int):
     atk+=(completed_round-3)//3
     hp=completed_round+8-atk
     return atk,hp
+
+
+# Live v22 extends the v4 catalog; v3/v4 historical games retain their
+# original twelve-archetype rule set for deterministic save/replay.
+_V22_DATA=json.loads((_V4_ROOT/'data'/'auction'/'KATALOG_AUKCYJNY_17_v22.json').read_text(encoding='utf-8'))
+V22_CARDS={card['id']:card for card in _V22_DATA['cards']}
+assert len(V22_CARDS)==17 and 'A017' not in V22_CARDS
+assert all(len(card['variants'])==3 for card in V22_CARDS.values())
+_V22_NEW={
+    'A013':('Łamacz Bastionów',4,'play','Obrażenia'),
+    'A014':('Kapłan Odwróconej Łaski',3,'passive','Leczenie'),
+    'A015':('Wieszczka Zerwanych Zaklęć',2,'passive','Oczyszczanie'),
+    'A016':('Kartograf Utraconych Ścieżek',3,'play','Oczyszczanie'),
+    'A018':('Licytator Złamanego Paktu',1,'play','Pancerz'),
+}
+CATALOG_V22=dict(CATALOG)
+for _key,(_name,_atk,_trigger,_family) in _V22_NEW.items():
+    _texts=V22_CARDS[_key]['variants']
+    CATALOG_V22[_key]=AuctionArchetype(
+        _key,_name,_atk,_trigger,_family,
+        (_texts['basic'],_texts['rare'],_texts['legendary']))
+assert len(CATALOG_V22)==17
+
+def catalog_for(mode):
+    return CATALOG_V22 if mode=='v22' else CATALOG
+
+def active_auction_cards(mode):
+    return V22_CARDS if mode=='v22' else V4_CARDS
+
+def live_variant(mode,archetype,rarity):
+    return active_auction_cards(mode)[archetype]['variants'][_V4_RARITIES[rarity]]
+
+def stats_v22(archetype,completed_round):
+    if archetype not in V22_CARDS or completed_round<3 or completed_round%3:
+        raise ValueError('Invalid v22 archetype or auction round')
+    attack=V22_CARDS[archetype]['stats_at_round_3_example']['atk']+(completed_round-3)//3
+    return attack, completed_round+8-attack

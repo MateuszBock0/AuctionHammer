@@ -1,3 +1,7 @@
+> **DOKUMENT HISTORYCZNY (v20).** Dawne informacje o niepołączonych PR i nieaktywnych aukcjach dotyczą wyłącznie stanu sprzed 0.9.23. Aktualnie 0.9.31 aktywuje balans v21 i 17 aukcji v22. Zobacz [aktualny opis v22](auction/RELEASE_V22_0931.md).
+
+---
+
 # AUCTIONHAMMER — MASTER GAME DESIGN v20: aktualizacja balansu
 
 **Status:** gotowa specyfikacja korekt kart; implementacja na gałęzi PR #21, nieautomatycznie scalona z `main`.

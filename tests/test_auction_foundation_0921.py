@@ -281,7 +281,7 @@ class CatalogUITests(unittest.TestCase):
             return rect
         with patch.object(app,"_text",side_effect=wrapper):
             app._draw_auction()
-        self.assertTrue(any("12 ARCHETYPÓW" in label for label,_ in recorded))
+        self.assertTrue(any("17 ARCHETYPÓW" in label for label,_ in recorded))
         self.assertTrue(any("PLANOWANA" in label for label,_ in recorded))
         screen=pygame.Rect(0,0,1480,980)
         for label,rect in recorded:
