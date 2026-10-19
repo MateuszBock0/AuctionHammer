@@ -194,6 +194,7 @@ def load_match(path: Path | None = None) -> Match:
     # so their audit snapshots must NOT silently acquire new fields.
     data.setdefault('audit_state_schema',1)
     data.setdefault('starting_compensation','coins')
+    data.setdefault('starting_compensation_choice',None)
     data.setdefault('pending_vacant_income',None)
     data.setdefault('slot_income',[0,0])
     data.setdefault('slot_income_turns',[0,0])

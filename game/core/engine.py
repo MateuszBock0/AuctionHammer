@@ -23,11 +23,12 @@ class Match:
                  starting_compensation: str = "coins"):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
-        if starting_compensation not in ("coins", "unit_5_5", "unit_3_5"):
+        if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
             raise ValueError("Unsupported starting compensation")
-        if starting_compensation in ("unit_5_5", "unit_3_5") and not (auctions_enabled and auction_catalog=="v22"):
+        if starting_compensation in ("unit_5_5", "unit_3_5", "choice_2_5_or_coins") and not (auctions_enabled and auction_catalog=="v22"):
             raise ValueError("Starter guard requires the live v22 catalog")
         self.starting_compensation=starting_compensation
+        self.starting_compensation_choice=None  # signed only for new schema 4
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
@@ -36,7 +37,8 @@ class Match:
         self.ruleset_version='v23' if auctions_enabled and auction_catalog=='v22' else 'v19'
         # The v23 audit schema records waiting end-turn income as well as
         # the effective ruleset. Old archived signatures keep schema 1.
-        self.audit_state_schema=(3 if starting_compensation in ("unit_5_5","unit_3_5") else
+        self.audit_state_schema=(4 if starting_compensation=="choice_2_5_or_coins" else
+                                 3 if starting_compensation in ("unit_5_5","unit_3_5") else
                                  2 if self.ruleset_version=='v23' else 1)
         self.pending_vacant_income=None
         # New v22 matches use the approved vacant-slot economy. Old saves
@@ -153,6 +155,8 @@ class Match:
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma Strażnika 5/5 na planszy, bez premii monet.')
         elif self.starting_compensation=="unit_3_5":
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma Chorążego 3/5 na planszy, bez premii monet.')
+        elif self.starting_compensation=="choice_2_5_or_coins":
+            self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz wybierze Chorążego 2/5 lub +3 monety.')
         else:
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
         if self.auctions_enabled:
@@ -182,6 +186,34 @@ class Match:
 
     def _player(self): return self.players[self.active]
 
+    @audit_action('choose_starting_compensation')
+    def choose_starting_compensation(self,player_idx,selection):
+        """One deterministic and audited pre-turn decision by the second mover."""
+        self._check(self.phase=='mulligan','Wybór startowy jest już zamknięty')
+        self._check(self.starting_compensation=='choice_2_5_or_coins',
+                    'Ten mecz nie używa wyboru rekompensaty')
+        self._check(player_idx==1-self.first,'Tylko drugi gracz wybiera rekompensatę')
+        self._check(self.starting_compensation_choice is None,
+                    'Rekompensata została już wybrana')
+        self._check(player_idx not in self.mulligan_done,'Najpierw wybierz rekompensatę')
+        self._check(selection in ('coins','unit_2_5'),'Nieznana rekompensata')
+        self.starting_compensation_choice=selection
+        if selection=='coins':
+            self.players[player_idx].coins+=3
+            self._log(f'{self.players[player_idx].name}: wybrano +3 monety na start.')
+        else:
+            uid='SUM_START_GUARD'
+            definition=CardDefinition(
+                uid,'Chorąży','Ludzie','Bez zdolności','Pasywna',2,5,
+                'Chorąży zawsze zdąży.',
+                'Brak wzrostu; po śmierci nie wraca do talii.',0,0)
+            self.cards[uid]=Card(uid,definition,owner=player_idx,zone='board')
+            self.units[uid]=Unit(uid,player_idx,2,5,5,0,1)
+            self.players[player_idx].board.append(uid)
+            self.ephemeral_ids.add(uid)
+            self._log(f'{self.players[player_idx].name}: wybrano Chorążego 2/5 na start.')
+        self.assert_integrity()
+
     @audit_action('mulligan_toggle')
     def mulligan_toggle(self, uid):
         self._check(self.phase=='mulligan','Mulligan zakończony')
@@ -197,6 +229,10 @@ class Match:
     def finish_mulligan(self, player_idx=0, selected=None):
         self._check(self.phase=='mulligan','Nie ten etap')
         self._check(player_idx not in self.mulligan_done,'Mulligan już zakończony')
+        self._check(not (self.starting_compensation=='choice_2_5_or_coins'
+                        and player_idx==1-self.first
+                        and self.starting_compensation_choice is None),
+                    'Najpierw wybierz: Chorąży 2/5 lub +3 monety')
         p=self.players[player_idx]
         selected=list(p.mulligan_selected if selected is None else selected)
         self._check(len(selected)<=3 and len(selected)==len(set(selected)) and all(x in p.hand for x in selected),'Niedozwolony mulligan')
