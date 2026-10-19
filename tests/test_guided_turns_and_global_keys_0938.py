@@ -96,6 +96,24 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         app.selected=None
         self.assertIn('ZAKOŃCZ TURĘ',app._phase_guidance())
 
+    def test_no_false_play_prompt_after_all_five_board_units_attacked(self):
+        app=self.app
+        app.menu_open=False
+        app.game.finish_mulligan(0,[])
+        g=app.game
+        g.phase='turn'
+        g.active=0
+        for uid in list(g.bank)[:5]:
+            place_basic(g,uid,0)
+            g.units[uid].attacks=1
+        g.players[0].played_this_turn=False
+        self.assertEqual(len(g.players[0].board),5)
+        app.selected=g.players[0].hand[0]
+        self.assertIn('BRAK JEDNOSTKI DO ZASTĄPIENIA',app._phase_guidance())
+        app.selected=None
+        self.assertIn('ZAKOŃCZ TURĘ',app._phase_guidance())
+        g.assert_integrity()
+
     def test_log_is_confined_to_sidebar_and_history_is_explicit_overlay(self):
         app=self.app
         calls=[]
