@@ -18,7 +18,7 @@ from game.core.engine import Match
 from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
-from game.ui.card_view import CardView, FACTION_COLORS
+from game.ui.card_view import CardView, FACTION_COLORS, ART
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note
@@ -96,6 +96,7 @@ class SoloApp:
         self.tooltip_open=False
         self.details_card=None
         self.details_scroll=0
+        self.details_image_zoom=False
         self.sidebar_card=None
         self._old_pending=None
         self._recent_feedback=[]
@@ -219,6 +220,7 @@ class SoloApp:
         if uid not in self.game.cards:return
         self.details_card=uid
         self.details_scroll=0
+        self.details_image_zoom=False
 
     def _create_background(self):
         return self.theme.background((cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT))
@@ -905,10 +907,16 @@ class SoloApp:
         if self.details_card is not None:
             if event.type==pygame.KEYDOWN and event.key in (pygame.K_ESCAPE,pygame.K_i):
                 self.details_card=None
+            elif event.type==pygame.KEYDOWN and event.key==pygame.K_g:
+                self.details_image_zoom=not self.details_image_zoom
             elif event.type==pygame.MOUSEWHEEL:
                 self.details_scroll=max(0,min(getattr(self,'details_maxscroll',0),self.details_scroll-event.y*35))
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
-                self.details_card=None
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(194,806,255,40).collidepoint(pos):
+                    self.details_image_zoom=not self.details_image_zoom
+                else:
+                    self.details_card=None
             return True
         if self._bonus_selection_due():
             if event.type==pygame.KEYDOWN:
@@ -1499,18 +1507,42 @@ class SoloApp:
         pygame.draw.line(self.screen,(66,91,106),(489,160),(489,843),2)
         self._text('PODGLĄD KARTY',16,186,105,cfg.GOLD)
         details_attack=attack_display(self.game,uid) if u else None
-        self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
-                             unit=u,selected=True,
-                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
-                             ready=details_attack.ready if u else None,
-                             attacks_total=details_attack.limit if u else None,
-                             attacks_remaining=details_attack.remaining if u else None)
-        self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
-        self._text(f'Aktywacja: {d.trigger}',16,194,600)
-        self._text(f'Rodzina: {d.family}',16,194,629)
-        self._text(f'Poziom zdolności: {cue.ability_level}',18,194,660,cfg.GOLD)
-        self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
-                   14,194,689,cfg.MUTED)
+        if self.details_image_zoom:
+            # "Contain" is important here: see the ENTIRE existing image.
+            if d.id in ART or (d.id=='SUM_START_GUARD' and d.name=='Chorąży'):
+                file=ART.get(d.id,ART['S34'])
+                artwork=self.cards_view.images.get_card_image(
+                    file,(276,520),mode='contain')
+            else:
+                artwork=self.cards_view.art(d.id,d.faction,(276,520),d.family,d.name)
+            self.screen.blit(artwork,(184,164))
+            self._text('POWIĘKSZONA ORYGINALNA ILUSTRACJA',13,186,697,cfg.MUTED)
+        else:
+            self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
+                                 unit=u,selected=True,
+                                 statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
+                                 ready=details_attack.ready if u else None,
+                                 attacks_total=details_attack.limit if u else None,
+                                 attacks_remaining=details_attack.remaining if u else None)
+            self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
+            self._text(f'Aktywacja: {d.trigger}',16,194,600)
+            self._text(f'Rodzina: {d.family}',16,194,629)
+            label=(f'Poziom zdolności: {cue.ability_level}' if not d.id.startswith('SUM')
+                   else 'JEDNOSTKA BEZ ROZWOJU NA RĘCE')
+            self._text(self.cards_view.clip(label,self.fonts[16],276),16,194,659,cfg.GOLD)
+            self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
+                       14,194,685,cfg.MUTED)
+            # Archetype baseline and actual MAX HP are distinct from wounds.
+            current_atk=u.atk if u else card.attack
+            current_max=u.max_hp if u else card.max_hp
+            self._text(f'ATK  BAZA {d.atk} → TERAZ {current_atk}',14,194,717,cfg.TEXT)
+            self._text(f'MAX PŻ  BAZA {d.hp} → TERAZ {current_max}',14,194,741,cfg.TEXT)
+            if u:
+                self._text(f'BIEŻĄCE PŻ: {max(0,u.hp)}/{current_max}',
+                           14,194,765,cfg.MUTED)
+        self._button(pygame.Rect(194,806,255,40),
+                     '[G] KARTA' if self.details_image_zoom else '[G] ILUSTRACJA',
+                     small=True,accent=self.details_image_zoom)
 
         self._text(self.cards_view.clip(d.name,self.fonts[28],760),28,520,115,FACTION_COLORS[d.faction])
         self._infographic_box(pygame.Rect(520,159,228,70),'AKTUALNY EFEKT',cue.base,cue.color,
