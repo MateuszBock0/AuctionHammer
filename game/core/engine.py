@@ -26,6 +26,9 @@ class Match:
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
         self.auction_catalog=auction_catalog
+        # Explicit ruleset: archived v22 games keep their original semantics.
+        self.ruleset_version='v23' if auctions_enabled and auction_catalog=='v22' else 'v19'
+        self.pending_vacant_income=None
         # New v22 matches use the approved vacant-slot economy. Old saves
         # retain their original flag (or default to False on migration).
         self.vacant_income_enabled=(
@@ -515,6 +518,21 @@ class Match:
                     self.end_queue=None
                     self._finalize_end_turn()
                     continue
+                if (self.pending_vacant_income is not None and
+                        not self.trigger_queue and not self.death_waves
+                        and self.active_death_wave is None):
+                    owner=self.pending_vacant_income
+                    self.pending_vacant_income=None  # consume before any auction
+                    player=self.players[owner]
+                    if self.vacant_income_enabled and self.phase=='turn' and player.hp>0:
+                        empty=5-len(player.board)
+                        self._check(0<=empty<=5,'Nieprawidłowa liczba wolnych pól')
+                        player.coins+=empty
+                        self.slot_income[owner]+=empty
+                        self.slot_income_turns[owner]+=1
+                        self._log(f'{player.name}: +{empty} monet(y) za {empty} '
+                                  'wolnych pól na koniec własnej tury.')
+                    continue
                 if self._next_turn_due:
                     # Resolve queued death triggers and hero lethal BEFORE starting a new turn.
                     self._next_turn_due=False
@@ -606,10 +624,13 @@ class Match:
                 auction_rules.advance_rarity(self,self.round-1)
         self._next_turn_due=True
         self._update_auras()
-        if self.vacant_income_enabled and self.phase=='turn' and p.hp>0:
-            # Paid to the owner of the ending turn, AFTER end-of-turn effects
-            # and current board removals. This is independent from the usual
-            # +1 coin awarded to both players after each completed round.
+        if (self.ruleset_version=='v23' and
+                self.vacant_income_enabled and self.phase=='turn'):
+            # Defers payment until all death waves and Pending choices settle.
+            # Serialized even if a user saves during a pending death decision.
+            self.pending_vacant_income=p.idx
+        elif self.vacant_income_enabled and self.phase=='turn' and p.hp>0:
+            # Historical v22 save semantics are retained.
             empty=5-len(p.board)
             self._check(0<=empty<=5,'Nieprawidłowa liczba wolnych pól')
             p.coins+=empty
@@ -870,11 +891,15 @@ class Match:
         # Zbieramy stan wszystkich umierających PRZED usunięciem pierwszej
         # jednostki. Nagrody naliczamy dokładnie raz za fizyczną instancję.
         snapshot=[]
-        global_death_block=(self.auction_catalog=='v22' and
-                            auction_ability_rules.global_trigger_block(self,'death'))
         for uid in ordered:
             unit=self.units[uid]
-            blocked=self._disabled(unit) or global_death_block
+            # Each death source is tested against OPPOSING A015 only in v23.
+            # Evaluate against the intact batch snapshot before removing any
+            # simultaneous deaths, so both sides retain symmetric protection.
+            blocked=(self._disabled(unit) or
+                     (self.auction_catalog=='v22' and
+                      auction_ability_rules.global_trigger_block(
+                          self,'death',unit.owner)))
             self._death_disabled[uid]=blocked
             self._death_levels[uid]=unit.ability_level
             snapshot.append((uid,unit.owner,blocked,
