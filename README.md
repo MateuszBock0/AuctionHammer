@@ -45,7 +45,7 @@ Opcjonalnie `URUCHOM_AUCTIONHAMMER.bat` sprawdza na GitHubie dostępność nowsz
 | Wystawianie | Zwykle **jedna karta z ręki na własną turę**, bez opłaty w monetach |
 | Plansza | Maksymalnie **5 jednostek** na stronę; na pełnej planszy możesz zgodnie z regułami zastąpić własną jednostkę |
 | Walka | Jednostki atakują wroga lub jego bohatera, jeśli nie blokuje tego Prowokacja |
-| Monety | **+1 moneta dla obu graczy po pełnej rundzie**; gracz zaczynający jako drugi dostaje **+3 monety na start** |
+| Monety | **+1 moneta dla obu graczy po pełnej rundzie**; gracz zaczynający jako drugi dostaje **+3 monety na start**. W nowych meczach v22 na koniec własnej tury otrzymujesz dodatkowo **5 − liczba własnych jednostek** monet |
 | Koniec meczu | Pokonaj bohatera przeciwnika; przy jednoczesnym pokonaniu obu obowiązują reguły rozstrzygania remisu |
 
 **Runda** oznacza wykonanie po jednej turze przez obu graczy. Każdy może wystawić zwykle jedną kartę z ręki, ale nie ma kosztu zagrania. **Monety służą przede wszystkim do licytowania kart aukcyjnych**, a nie do opłacania zwykłych jednostek.
@@ -205,7 +205,7 @@ Końcówka `v19` oznacza nazwę **formatu zapisu**, a nie wersję aplikacji — 
 **0.9.34 to aktywnie rozwijane demo**, z lokalnym przeciwnikiem i zaimplementowanymi aukcjami v22 (17 archetypów, 51 wariantów). Aktualna wersja zawiera również balans v21 kart podstawowych. Na tym etapie **nie ma multiplayera online**.
 
 - [Pobierz najnowsze wydanie Windows](https://github.com/MateuszBock0/AuctionHammer/releases/latest)
-- **0.9.34:** poprawki S11 (trucizna bohatera), A015 (wybór wrogiego celu), S85 (etykieta leczenia) i AI aukcji oceniajacego ATK, PŻ oraz zdolności. Bez nowego kosztu kart ani zmian bonusu monet za wolne pola.
+- **0.9.34:** poprawki S11 (trucizna bohatera), A015 (wybór wrogiego celu), S85 (etykieta leczenia), ocena ATK/PŻ/zdolności przez AI oraz **+1 moneta za każde wolne pole planszy na koniec własnej tury** (0–5, także dla komputera). Stare zapisy zachowują starą ekonomię.
 - **0.9.33:** Kartograf odzyskuje karty z cmentarza przy pustej talii; Królowa przywołuje Żołnierzy 1/1, 2/2 lub 3/3, a wszystkie mecze są trwale archiwizowane.
 - [Zasady i interpretacje aukcji v22](docs/auction/RELEASE_V22_0931.md) · [Stabilizacja 0.9.32](docs/auction/RELEASE_V22_STABILIZATION_0932.md)
 - [Game Master / reguły projektu](AUCTIONHAMMER_MASTER.md)
