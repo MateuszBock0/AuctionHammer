@@ -80,6 +80,8 @@ class Match:
         self.deferred_attack: tuple[str,str] | None = None
         self.end_queue: deque[str] | None = None
         self._next_turn_due = False
+        # Award the free-board-slot income once after ALL end-turn triggers resolve.
+        self._space_income_due = False
         self.position_reactions_due = False
         self._draining = False
         self.winner: int | None = None
@@ -486,6 +488,13 @@ class Match:
                     self._next_turn_due=False
                     self._check_winner()
                     if self.phase=='finished':break
+                    if self._space_income_due:
+                        player=self._player()
+                        free_slots=max(0,5-len(player.board))
+                        player.coins+=free_slots
+                        self._space_income_due=False
+                        self._log(f'{player.name}: +{free_slots} monet za '
+                                  f'{free_slots} wolnych miejsc ({len(player.board)}/5 jednostek).')
                     if (self.auctions_enabled and (self.round-1)%3==0
                             and self.round>1
                             and (self.auction_catalog not in ('v4','v22') or len(self.auction_bag)>=3)
@@ -571,6 +580,7 @@ class Match:
             if self.auctions_enabled and self.auction_catalog in ("v3","v4","v22"):
                 auction_rules.advance_rarity(self,self.round-1)
         self._next_turn_due=True
+        self._space_income_due=True
         self._update_auras()
 
     def _has(self,u,kind):return any(e.kind==kind for e in u.effects)
