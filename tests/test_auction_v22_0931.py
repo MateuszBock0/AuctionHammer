@@ -299,5 +299,37 @@ class AuctionV22EdgeCollisions(unittest.TestCase):
         loaded.assert_integrity()
 
 
+
+class AuctionV22FullSoloAudit(unittest.TestCase):
+    def test_v22_unchanged_ai_plays_and_replays_deterministically(self):
+        from game.core.ai import ComputerOpponent
+        from game.core.audit import state_snapshot,verify_replay
+        m=Match(93199,auctions_enabled=True,auction_catalog='v22',
+                audit_enabled=True)
+        ai=[ComputerOpponent(0),ComputerOpponent(1)]
+        for step in range(260):
+            if m.phase=='finished':break
+            if m.phase=='mulligan':
+                for bot in ai:bot.step(m)
+            elif m.phase=='auction':
+                ai[m.auction.turn].step(m)
+            elif m.pending:
+                ai[m.pending.owner].step(m)
+            else:
+                ai[m.active].step(m)
+            m.assert_integrity()
+        self.assertGreaterEqual(len(m.auction_history),1)
+        self.assertEqual(len(m.audit_actions)>0,True)
+        report={'seed':m.seed,'complete_from_start':m.audit_complete,
+                'initial_state':m.audit_initial,'actions':m.audit_actions,
+                'event_journal':list(m.event_journal),
+                'internal_events':m.audit_internal,
+                'final_state':state_snapshot(m)}
+        self.assertIn('auction_v22',report['final_state'])
+        self.assertTrue(verify_replay(report,
+            lambda seed,auctions_enabled=False,auction_catalog='v22':
+                Match(seed,audit_enabled=True,auctions_enabled=auctions_enabled,
+                      auction_catalog=auction_catalog)))
+
 if __name__=='__main__':
     unittest.main()
