@@ -1,10 +1,10 @@
 {
   "project": "AuctionHammer",
-  "version": "DRAFT_v4_reviewed",
+  "version": "v22_live_0.9.32",
   "status": "LIVE_V22",
   "reference": "GAME_MASTER_v19 + DRAFT_AUCTION_12_v2 + user revisions 2026-10-18",
-  "count_archetypes": 12,
-  "count_effect_variants": 36,
+  "count_archetypes": 17,
+  "count_effect_variants": 51,
   "auction_rules": {
     "first_offer_after_completed_round": 3,
     "every_completed_rounds": 3,
@@ -29,8 +29,8 @@
     "card_play_limit_per_turn": 1,
     "board_limit": 5,
     "no_timers": true,
-    "auction_ability_activation_costs": "not_set_in_this_draft",
-    "status": "PROPOSED_DRAFT_NOT_APPROVED",
+    "auction_ability_activation_costs": "none",
+    "status": "IMPLEMENTED_V22_LOCAL_DEMO",
     "two_cards_awarded_per_auction": true,
     "each_player_wins_max_one_card_per_auction": true,
     "third_offer_returns_to_auction_pool": true,
@@ -51,7 +51,7 @@
     "all_passive_or_triggered_abilities_no_separately_paid_activation_in_v4": true,
     "effect_wording_preservation": "All 36 v3 variant texts kept verbatim; clarifications outside variants",
     "no_auction_engine_implemented_in_repo": false,
-    "auction_integration_scope": "0.9.21 implements the v3 auction foundation (offers, bids, rarities, rewards); v4 ability execution and proposed v4 stats formula remain inactive."
+    "auction_integration_scope": "0.9.32: auction v22 live, 17 archetypes, 51 variants, independent basic deck"
   },
   "cards": [
     {
@@ -509,24 +509,7 @@
     "A011",
     "A012"
   ],
-  "notes_needing_confirmation": [
-    {
-      "id": "A002",
-      "point": "Bazowa premia „wszystkie jednostki”: literalnie obie plansze, także jednostki wroga. Rzadka/legendarna działają na sojuszników; wybór i zmiana beneficjenta w wersji rzadkiej do doprecyzowania."
-    },
-    {
-      "id": "A012",
-      "point": "Rzadkie „wybierz” zinterpretowano jako wybranie kierunku kopiowania HP, bez równoczesnej zamiany. Alternatywna interpretacja to zwykła zamiana obu sald HP."
-    },
-    {
-      "id": "A004",
-      "point": "Kopie są automatycznie zagrywane na wolne pole i wyzwalają Przy wystawieniu (bo użyto „zagraj”). Wymaga testu rekurencyjnych kopii i identyfikatorów."
-    },
-    {
-      "id": "A010",
-      "point": "Wzmocnienia Królowej są trwałymi i kumulującymi się buffami co koniec własnej tury, mimo braku skalowania statystyk aukcyjnych na ręce."
-    }
-  ],
+  "notes_needing_confirmation": [],
   "source_version": "DRAFT_v3",
   "review_date": "2026-10-18",
   "stat_balance_changes": [
@@ -592,15 +575,47 @@
     }
   ],
   "approval": {
-    "status": "PROPOSAL_REVIEWED_NOT_FINAL_BALANCED",
-    "ability_text_changed_from_v3": false,
-    "stats_tuned": 5,
-    "auction_rules_vs_legacy": "v4 proposal for 12 special archetypes takes precedence where it explicitly conflicts with reserved v19 auction placeholder rules; starter 70 untouched",
-    "not_verified": "actual full v19 engine integration, ranked PvP win rates, real bidding behavior, price curve"
+    "status": "IMPLEMENTED_IN_LOCAL_DEMO_NOT_STATISTICALLY_BALANCED",
+    "scope": "17 live archetypes and 51 rarity variants in AuctionHammer solo",
+    "validated_by": "tests/test_auction_v22_0931.py + tests/test_auction_v22_stabilization_0932.py",
+    "limits": "CI validates enumerated scenarios; not proof of every combination or PvP balance",
+    "source_proposal_preserved_in": "source_proposal_metadata"
   },
   "total_archetypes": 17,
   "variants": 51,
   "removed_archetypes": [
     "A017"
-  ]
+  ],
+  "source_proposal_metadata": {
+    "version": "DRAFT_v4_reviewed",
+    "approval": {
+      "status": "PROPOSAL_REVIEWED_NOT_FINAL_BALANCED",
+      "ability_text_changed_from_v3": false,
+      "stats_tuned": 5,
+      "auction_rules_vs_legacy": "v4 proposal for 12 special archetypes takes precedence where it explicitly conflicts with reserved v19 auction placeholder rules; starter 70 untouched",
+      "not_verified": "actual full v19 engine integration, ranked PvP win rates, real bidding behavior, price curve"
+    },
+    "notes_needing_confirmation": [
+      {
+        "id": "A002",
+        "point": "Bazowa premia „wszystkie jednostki”: literalnie obie plansze, także jednostki wroga. Rzadka/legendarna działają na sojuszników; wybór i zmiana beneficjenta w wersji rzadkiej do doprecyzowania."
+      },
+      {
+        "id": "A012",
+        "point": "Rzadkie „wybierz” zinterpretowano jako wybranie kierunku kopiowania HP, bez równoczesnej zamiany. Alternatywna interpretacja to zwykła zamiana obu sald HP."
+      },
+      {
+        "id": "A004",
+        "point": "Kopie są automatycznie zagrywane na wolne pole i wyzwalają Przy wystawieniu (bo użyto „zagraj”). Wymaga testu rekurencyjnych kopii i identyfikatorów."
+      },
+      {
+        "id": "A010",
+        "point": "Wzmocnienia Królowej są trwałymi i kumulującymi się buffami co koniec własnej tury, mimo braku skalowania statystyk aukcyjnych na ręce."
+      }
+    ],
+    "rules_status": "PROPOSED_DRAFT_NOT_APPROVED",
+    "rule_activation_costs": "not_set_in_this_draft",
+    "rule_integration_scope": "0.9.21 implements the v3 auction foundation (offers, bids, rarities, rewards); v4 ability execution and proposed v4 stats formula remain inactive."
+  },
+  "rules_interpretations": "docs/auction/RELEASE_V22_0931.md"
 }

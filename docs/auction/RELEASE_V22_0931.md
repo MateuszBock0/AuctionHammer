@@ -1,5 +1,10 @@
 # AuctionHammer 0.9.31 — aktywny katalog aukcyjny v22
 
+> **Uaktualnienie 0.9.32:** naprawiono brak ewolucji rzadkości w trybie v22
+> i odrzucanie kart aukcyjnych przez A009 do zwykłego cmentarza.
+> [Poprawki, testy i kompatybilność](RELEASE_V22_STABILIZATION_0932.md).
+> Pozostałe zasady niniejszego dokumentu pozostają obowiązujące.
+
 **Status: LIVE.** 17 niepowtarzalnych archetypów (A001–A016, A018;
 bez A017) × 3 rzadkości = **51 wariantów opisów i zdolności**.
 Przyszłe aukcje są dostępne wyłącznie w nowych meczach

@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.31",
+  "mvp": "0.9.32",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -37,10 +37,12 @@
   "match_death_counter": "lifetime-real-deaths-not-grave-size",
   "shield_combat_feedback": "explicit-absorbed-damage-log",
   "auction_minimum_distinct_offers": 3,
-  "auction_acceptance": "51-executable-ability-variants-plus-collision-tests",
+  "auction_acceptance": "v22-51-variants-plus-v22-rarity/A009/A015-interaction-and-resume-regressions",
   "auction_fixes": [
     "A010-single-HP-growth",
-    "A002-expired-beneficiary-on-exit-or-capture"
+    "A002-expired-beneficiary-on-exit-or-capture",
+    "A009-v22-auction-discard-isolation",
+    "v22-rarity-evolves-every-three-completed-rounds"
   ],
   "combat_explanations": [
     "actual_HP_damage",
@@ -53,5 +55,6 @@
   "queen_summon_render": "SUM-ephemeral-render-all-rarities",
   "next_balance": "v21-live",
   "next_auction_catalog": "v22-live",
-  "auction_catalog_mode": "v22"
+  "auction_catalog_mode": "v22",
+  "auction_catalog_metadata": "17/51 live-with-archived-source-proposal"
 }
