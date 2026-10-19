@@ -589,7 +589,8 @@ def verify_replay(payload,match_factory):
         signed_schema=initial.get('ruleset_state')
         if signed_schema is None:
             game.audit_state_schema=1
-        elif (signed_schema.get('audit_schema')==2
+        elif (isinstance(signed_schema,dict)
+              and signed_schema.get('audit_schema')==2
               and signed_schema.get('version')=='v23'
               and signed_schema.get('pending_vacant_income') is None
               and signed_schema.get('vacant_income_enabled') is
