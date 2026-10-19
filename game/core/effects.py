@@ -42,7 +42,13 @@ def options(game, uid: str, context: str, attacked: str | None = None) -> list[C
         return c('board_double',[x for x in ally if x in game.units])
     # v18/v19: when no allied board recipient survives a death, fall back.
     if cid in ('S20','S82','S85') and not ally:
-        return [Choice('auto',f'hero:{owner}','Bohater otrzymuje ochronę')]
+        if cid=='S85':
+            level=(game.units[uid].ability_level if uid in game.units
+                   else game._death_levels.get(uid,0))
+            text=f'Ulecz własnego bohatera o {4+level} PŻ'
+        else:
+            text='Bohater otrzymuje ochronę'
+        return [Choice('auto',f'hero:{owner}',text)]
     if cid == 'S91' and not ally:
         return [Choice('auto',None,'Losowa karta w ręce otrzymuje bonus')]
     if cid in SELF_OR_AUTOMATIC:
