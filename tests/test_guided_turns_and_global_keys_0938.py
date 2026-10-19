@@ -146,8 +146,8 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
             return r
         with patch.object(app,'_text',side_effect=spy):
             app._draw_phase_guidance()
-        self.assertEqual(len(labels),1)
-        self.assertTrue(pygame.Rect(96,375,952,31).contains(labels[0][1]))
+        self.assertEqual(len(labels),2)
+        self.assertTrue(all(pygame.Rect(96,373,952,54).contains(rect) for _,rect in labels))
         app.draw()
 
 
