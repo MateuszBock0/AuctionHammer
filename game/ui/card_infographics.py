@@ -126,14 +126,10 @@ def card_cue(card, unit=None) -> CardCue:
         )
     if d.id.startswith('A0'):
         old_v3=d.effect.startswith('NIEAKTYWNA')
-        from game.core.auction_catalog import V22_CARDS,V4_CARDS
-        variants_v22=V22_CARDS.get(d.id,{}).get('variants',{})
-        variants_v4=V4_CARDS.get(d.id,{}).get('variants',{})
-        level_labels=(('basic','PODSTAWOWA'),('rare','RZADKA'),
-                      ('legendary','LEGENDARNA'))
-        current=next((label for variants in (variants_v22,variants_v4)
-                      for key,label in level_labels
-                      if variants.get(key)==d.effect),None)
+        from game.ui.auction_copy import identify_auction_variant
+        hit=identify_auction_variant(d)
+        current=({'podstawowa':'PODSTAWOWA','rzadka':'RZADKA',
+                  'legendarna':'LEGENDARNA'}[hit[0]] if hit else None)
         # An auction purchase level is NOT a standard hand ability level.
         purchase_level=re.search(r'POZIOM\s+(\d+)',d.scaling)
         level=int(purchase_level.group(1)) if purchase_level else level
