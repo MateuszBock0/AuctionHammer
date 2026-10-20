@@ -27,9 +27,9 @@ class CombatAnalysisTests(unittest.TestCase):
     def test_armor_and_death_keep_exact_before_and_after_no_fake_hp(self):
         original=self._snapshot()
         attacker_before=copy.deepcopy(original["units"]["A"])
-        attacker_after=copy.deepcopy(attacker_before,attacks=1)
+        attacker_after=dict(attacker_before,attacks=1)
         defender_before=copy.deepcopy(original["units"]["B"])
-        defender_after=copy.deepcopy(defender_before,current_armor=0)
+        defender_after=dict(defender_before,current_armor=0)
         first={
             "seq":1,"operation":"attack","args":["B","A"],"result":"ok",
             "actor_before":1,"round_before":3,
