@@ -395,7 +395,13 @@ def make_report(game):
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.38" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
+        # MatchAudit.version identifies the build which actually exported this
+        # document, not the v22 rule family originally introduced in 0.9.38.
+        # Historical signed payloads retain their original version unchanged.
+        "version":getattr(game,"audit_metadata",{}).get(
+            "build",{}).get("version") or (
+            "0.9.44" if game.auction_catalog=="v22" else
+            "0.9.30" if game.auction_catalog=="v4" else "0.9.21"),
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
