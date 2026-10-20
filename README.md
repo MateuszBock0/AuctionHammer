@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.42 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.43 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -28,7 +28,15 @@
 
 Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga internetu** — po pobraniu możesz grać offline.
 
-Opcjonalnie `URUCHOM_AUCTIONHAMMER.bat` sprawdza na GitHubie dostępność nowszej wersji i uruchamia posiadaną grę także wtedy, gdy sprawdzenie aktualizacji się nie powiedzie. Zachowaj `AuctionHammer.exe` razem z folderem `_internal`; samodzielne przeniesienie tylko pliku EXE może uniemożliwić uruchomienie.
+**Jednym kliknięciem:** `URUCHOM_AUCTIONHAMMER.bat` pobiera ZIP i sumę SHA-256, weryfikuje je i instaluje **obok poprzedniej wersji**. Dopiero po sprawdzeniu kompletności przełącza grę na nowe wydanie. Gdy internet nie działa lub pobranie się nie powiedzie, uruchamia dostępną wersję. Nie nadpisuje starszego EXE ani plików zapisanych meczów.
+
+**Offline:** `GRAJ_BEZ_INTERNETU.bat` uruchamia aktywną wersję bez kontaktu z GitHubem.
+
+**Cofnięcie aktualizacji:** uruchom `COFNIJ_AKTUALIZACJE.bat`, ewentualnie `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\portable_launcher.ps1 -Rollback`.
+
+**Migracja ze starszej wersji:** jeżeli masz launcher 0.9.42 lub starszy, najbezpieczniej **raz pobrać i rozpakować cały ZIP 0.9.43 do nowego folderu**. Stary BAT wywołuje poprzedni aktualizator, który nie gwarantował przywrócenia plików przy przerwanym kopiowaniu. Kolejne aktualizacje 0.9.43+ nie nadpisują działającej instalacji. Zachowaj folder `_internal` przy EXE. Zapisy w `%LOCALAPPDATA%\\AuctionHammer` są wspólne i bezpieczne.
+
+Szczegóły: [QA aktualizatora Windows 0.9.43](docs/QUALITY_RELEASE_0943.md).
 
 > To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
 
@@ -214,7 +222,7 @@ Nagrania pozostają materiałem podmiotów trzecich i **nie podlegają licencji 
 
 ## Status, dokumentacja i licencja
 
-**Aktualny status: 0.9.38 — grywalne demo offline, aktywnie rozwijane.** Dostępne są rozgrywka przeciw AI, 70 kart podstawowych, 17 archetypów i 51 wariantów aukcyjnych, animacje walki, zapis i archiwum meczów. Multiplayer online nie jest jeszcze dostępny.
+**Aktualny status: 0.9.43 — grywalne demo offline, aktywnie rozwijane.** Dostępne są rozgrywka przeciw AI, 70 kart podstawowych, 17 archetypów i 51 wariantów aukcyjnych, animacje walki, zapis i archiwum meczów. Multiplayer online nie jest jeszcze dostępny.
 
 **Ostatnie aktualizacje w skrócie:** stabilizacja silnika i poprawki pierwszej rozgrywki 0.9.38 (macierz 70+51, silniejsze niezmienniki własności i stref kart, testy akcji niedozwolonych i zapisów w toku wyboru), zasady v23, suwak licytacji, paginacja archiwum, czytelniejsze opisy warunkowych zdolności i dokładniejsze audyty z odtwarzaniem meczów. Szczegółowych poprawek nie powielamy tutaj — pełne informacje są w dokumentacji:
 
