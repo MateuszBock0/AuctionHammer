@@ -45,7 +45,7 @@ class TutorialLogicTests(unittest.TestCase):
         g.audit_actions.append({"result":"ok","command_owner":0,"operation":"attack"})
         coach.observe(g)
         self.assertEqual(coach.hint(g).stage,4)
-        g.auction=SimpleNamespace(phase="bidding")
+        g.auction=SimpleNamespace(phase="bidding",turn=0)
         g.phase="auction"
         self.assertIn("LICYTACJA",coach.hint(g).title)
         g.auction.phase="picking"

@@ -2306,7 +2306,7 @@ class SoloApp:
                              pygame.Rect(354,y-6,780,61),1,border_radius=10)
             pygame.draw.circle(self.screen,(190,140,64),(396,y+24),19)
             self._text(number,15,396,y+24,(29,27,25),center=True)
-            self._text(title,17,432,y,cfg.GOLD)
+            self._text(title,18,432,y,cfg.GOLD)
             self._text(description,14,432,y+27,cfg.TEXT)
         self._button(pygame.Rect(421,764,377,55),'ROZPOCZNIJ NAUKĘ  [ENTER]',accent=True)
         self._button(pygame.Rect(829,764,218,55),'POMIŃ  [ESC]')
