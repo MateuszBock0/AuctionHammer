@@ -13,9 +13,22 @@ import pygame
 
 ASSET_ROOT=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parents[2]))/'assets'/'ui'/'tavern'
 
+# Consistent, restrained candlelit-walnut palette. Gold is an accent
+# rather than a background. The original faction palette is unchanged.
+TAVERN_PANEL_BG=(58,43,27)
+TAVERN_PANEL_INNER=(76,57,37)
+TAVERN_TOOLTIP_BG=(68,50,31)
+TAVERN_GOLD=(214,176,92)
+TAVERN_BRASS=(168,128,67)
+TAVERN_HOVER_GOLD=(232,196,111)
+TAVERN_TEXT=(241,231,214)
+TAVERN_MUTED=(206,189,160)
+TAVERN_SHADOW=(28,20,12)
+TAVERN_SCRIM=(34,22,12)
+
 INK=(12,19,27)
-SLATE=(29,44,56)
-BRASS=(185,145,79)
+SLATE=TAVERN_PANEL_BG
+BRASS=TAVERN_BRASS
 SILVER=(100,128,140)
 PLAYER=(72,141,120)
 ENEMY=(149,87,105)
@@ -29,12 +42,12 @@ class VisualTheme:
     def background(size):
         w,h=size
         art=pygame.Surface(size).convert()
-        # Deep teal-to-umber stone, like a candlelit medieval map table.
+        # Warm walnut fallback, not blue-black when the scene is absent.
         for y in range(h):
             t=y/max(1,h-1)
             wave=.5+.5*math.cos(t*math.pi*2.1)
-            base=(int(15+8*t+4*wave),int(24+7*t+3*wave),
-                  int(32+8*t+2*wave))
+            base=(int(32+13*t+4*wave),int(22+10*t+2*wave),
+                  int(14+6*t+wave))
             pygame.draw.line(art,base,(0,y),(w,y))
         # Actual Tavern UI Pack v2 scenery; dark wells below keep units legible.
         scene=ASSET_ROOT/'tavern_scene.jpg'
@@ -44,6 +57,10 @@ class VisualTheme:
                 art.blit(pygame.transform.smoothscale(im,(w,h)),(0,0))
             except (pygame.error,OSError):
                 pass
+        # Subtle warm tint keeps the original tavern photograph legible.
+        candlelight=pygame.Surface(size,pygame.SRCALPHA)
+        candlelight.fill((93,54,23,44))
+        art.blit(candlelight,(0,0))
         rng=random.Random(916)
         # Carved slate grain (no dynamically changing noise / flicker).
         grain=pygame.Surface(size,pygame.SRCALPHA)
@@ -80,9 +97,9 @@ class VisualTheme:
         # Distinct but calm well surfaces for player/AI/hand.
         overlays=pygame.Surface(size,pygame.SRCALPHA)
         for rect,c in (
-            (pygame.Rect(82,90,983,315),(29,23,22,211)),
-            (pygame.Rect(82,406,983,310),(31,26,23,214)),
-            (pygame.Rect(82,713,983,246),(38,28,21,224))):
+            (pygame.Rect(82,90,983,315),(58,38,25,206)),
+            (pygame.Rect(82,406,983,310),(61,41,27,209)),
+            (pygame.Rect(82,713,983,246),(69,45,28,216))):
             pygame.draw.rect(overlays,c,rect,border_radius=21)
             pygame.draw.rect(overlays,(198,151,93,48),rect,1,border_radius=21)
         # Edge vignette using narrow translucent strokes, no expensive blur.
@@ -90,7 +107,7 @@ class VisualTheme:
             alpha=int((33-n)*1.35)
             r=pygame.Rect(n*2,n*2,w-n*4,h-n*4)
             if r.width>0 and r.height>0:
-                pygame.draw.rect(overlays,(0,0,0,alpha),r,2,border_radius=15)
+                pygame.draw.rect(overlays,(*TAVERN_SHADOW,alpha),r,2,border_radius=15)
         art.blit(overlays,(0,0))
         return art
 
@@ -141,25 +158,25 @@ class VisualTheme:
             screen.blit(self._textures[key],rect)
 
     def panel(self,screen,rect,fill=None,line=None,radius=12):
-        base=fill or SLATE
-        # Warm walnut panels, while ally/enemy accent colors remain visible.
-        base=(int(base[0]*.48+58*.52),
-              int(base[1]*.48+38*.52),
-              int(base[2]*.48+25*.52))
+        base=fill or TAVERN_PANEL_BG
+        # Allow chosen browns to show through instead of flattening all
+        # overlays into near-black. Keep cool faction borders intact.
+        base=tuple(int(channel*.78+wood*.22)
+                   for channel,wood in zip(base,TAVERN_PANEL_BG))
         accent=line or BRASS
         shadow=pygame.Surface((rect.width+12,rect.height+12),pygame.SRCALPHA)
-        pygame.draw.rect(shadow,(0,0,0,79),
+        pygame.draw.rect(shadow,(*TAVERN_SHADOW,88),
                          pygame.Rect(6,7,rect.width,rect.height),
                          border_radius=radius+1)
         screen.blit(shadow,(rect.x-6,rect.y-5))
-        pygame.draw.rect(screen,(19,12,8),rect,border_radius=radius)
+        pygame.draw.rect(screen,TAVERN_SHADOW,rect,border_radius=radius)
         core=rect.inflate(-2,-2)
         pygame.draw.rect(screen,base,core,border_radius=max(2,radius-2))
         # Bevel: bronze highlights at the upper edge; recessed bottom.
         pygame.draw.line(screen,tuple(min(255,c+24) for c in base),
                          (rect.left+radius,rect.top+2),
                          (rect.right-radius,rect.top+2),1)
-        pygame.draw.line(screen,(24,16,10),
+        pygame.draw.line(screen,(36,25,14),
                          (rect.left+radius,rect.bottom-3),
                          (rect.right-radius,rect.bottom-3),1)
         pygame.draw.rect(screen,accent,rect,1,border_radius=radius)
@@ -188,7 +205,7 @@ class VisualTheme:
         accent=PLAYER if owner==0 else ENEMY
         self.panel(screen,rect,(43,34,27),accent,12)
         inner=rect.inflate(-12,-12)
-        pygame.draw.rect(screen,(24,22,22),inner,border_radius=9)
+        pygame.draw.rect(screen,(38,29,22),inner,border_radius=9)
         pygame.draw.rect(screen,(95,68,42),inner,1,border_radius=9)
         # Small corner-line engraving; never under a placed card's labels.
         for sx in (rect.x+11,rect.right-11):
