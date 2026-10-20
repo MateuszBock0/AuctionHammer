@@ -92,6 +92,8 @@ class SoloApp:
             self.ai.step(self.game)
         self.selected=None
         self.hover=None
+        self._hover_uid=None
+        self._hover_start_ms=0
         self.scroll=0
         self.choice_page=0
         self.last_error=''
@@ -208,6 +210,112 @@ class SoloApp:
 
     def mouse_pos(self):
         return self._physical_to_virtual(pygame.mouse.get_pos())
+
+    HOVER_PREVIEW_DELAY_MS=420
+
+    def _update_hover_target(self,pos,now=None):
+        """Track pointer dwell on the visible hand; no Match action or RNG."""
+        if now is None:
+            now=pygame.time.get_ticks()
+        if (self.menu_open or self.history_open or self.replay_index is not None
+                or self.details_card is not None or self.confirm_action
+                or self.game.phase in ('finished','auction')
+                or self._bonus_selection_due() or self.drag_start is not None):
+            uid=None
+        else:
+            uid=next((uid for uid,area in self.hand_layout().items()
+                      if area.collidepoint(pos)),None)
+        if uid!=self._hover_uid:
+            self._hover_uid=uid
+            self._hover_start_ms=now
+
+    def _hover_preview_ready(self,now=None):
+        if now is None:
+            now=pygame.time.get_ticks()
+        uid=self._hover_uid
+        return (uid is not None
+                and uid in self.game.players[0].hand
+                and uid in self.hand_layout()
+                and now-self._hover_start_ms>=self.HOVER_PREVIEW_DELAY_MS
+                and not (self.menu_open or self.history_open or self.confirm_action
+                         or self.replay_index is not None or self.details_card is not None
+                         or self.drag_start is not None or self._bonus_selection_due()
+                         or self.game.phase in ('auction','finished')))
+
+    def _hovered_status(self,pos):
+        """Find a drawn status badge, never infer undisplayed effects."""
+        uid=self.card_under(pos)
+        if uid not in self.game.cards:
+            return None
+        if uid in self.game.units:
+            unit=self.game.units[uid]
+            rect=self.slot_rect(unit.owner,self.game.players[unit.owner].board.index(uid))
+            statuses=active_statuses(self.game,uid)
+            board=True
+        else:
+            rect=self.hand_layout().get(uid)
+            if rect is None:
+                return None
+            statuses=hand_grants(self.game,uid)
+            board=False
+        for status,area,remaining in self.cards_view.visible_status_hitboxes(
+                rect,statuses,board=board):
+            if area.collidepoint(pos):
+                return status,remaining
+        return None
+
+    def _draw_hover_guidance(self):
+        """Context-only tooltips over the finished board, not inside modals."""
+        if (self.menu_open or self.history_open or self.replay_index is not None
+                or self.details_card is not None or self.confirm_action
+                or self.game.phase in ('auction','finished')
+                or self._bonus_selection_due() or self.drag_start is not None):
+            return
+        pos=self.mouse_pos()
+        hit=self._hovered_status(pos)
+        if hit is not None:
+            status,remaining=hit
+            title=status.name if status is not None else f'POZOSTAŁE EFEKTY: {len(remaining)}'
+            color=status.color if status is not None else cfg.GOLD
+            if status is not None:
+                items=[status.detail]
+                if status.source:
+                    items.append('Źródło: '+status.source)
+            else:
+                items=[f'{st.name}: {st.detail}' for st in remaining[:4]]
+                if len(remaining)>4:
+                    items.append(f'Jeszcze {len(remaining)-4} efektów — pełny wykaz [I]')
+            rows=[]
+            for item in items:
+                rows.extend(self._wrap(item,13,369))
+            rows=rows[:6]
+            height=62+23*len(rows)
+            rect=pygame.Rect(min(pos[0]+19,cfg.WINDOW_WIDTH-421),
+                             min(pos[1]+18,cfg.WINDOW_HEIGHT-height-14),
+                             408,height)
+            rect.x=max(8,rect.x);rect.y=max(8,rect.y)
+            self._panel(rect,(37,40,39),color,9)
+            self._text(self.cards_view.clip(title,self.fonts[16],382),
+                       16,rect.x+12,rect.y+9,color)
+            for index,row in enumerate(rows):
+                self._text(self.cards_view.clip(row,self.fonts[13],380),
+                           13,rect.x+12,rect.y+40+index*23,cfg.TEXT)
+            return
+        if not self._hover_preview_ready():
+            return
+        uid=self._hover_uid
+        # A full-size, truthful card. Overlay is above the battlefield but
+        # leaves the hand and its clicks untouched; it disappears on movement.
+        hand_rect=self.hand_layout()[uid]
+        left=max(82,min(772,hand_rect.centerx-143))
+        box=pygame.Rect(left,289,286,439)
+        self._panel(box,(35,35,32),cfg.GOLD,11)
+        self._text('KARTA NA RĘCE · PODGLĄD',13,box.x+13,box.y+11,cfg.GOLD)
+        card=self.game.cards[uid]
+        self.cards_view.draw(self.screen,card,pygame.Rect(box.x+15,box.y+34,255,380),
+                             statuses=hand_grants(self.game,uid))
+        self._text('PRAWY KLIK / [I] — PEŁNY OPIS',12,
+                   box.x+13,box.bottom-20,cfg.MUTED)
 
     def _present(self):
         viewport=self._viewport()
@@ -830,6 +938,8 @@ class SoloApp:
     def handle(self,event):
         if self.music.handle_event(event):return True
         if event.type==pygame.QUIT:return self._request_exit()
+        if event.type==pygame.MOUSEMOTION:
+            self._update_hover_target(self._physical_to_virtual(event.pos))
         # Global shortcuts must work from the *first menu screen*,
         # during mulligan, history/replay and any open modal.
         if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
@@ -1142,6 +1252,11 @@ class SoloApp:
                      hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
                                   if self.animations_enabled and self.replay_index is None
                                   else None))
+                # Outline only truly legal attacks, not perceived attack
+                # strength or status guesses. Selected target remains dominant.
+                if owner==0 and attack_info.ready and not selected:
+                    pygame.draw.rect(self.screen,(121,196,160),rect.inflate(6,6),
+                                     2,border_radius=13)
         self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
         for uid in self._play_replacement_targets():
             rect=self.slot_rect(0,self.game.players[0].board.index(uid))
@@ -1169,6 +1284,15 @@ class SoloApp:
                                  selected=(uid==self.selected or marked),
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
                                  statuses=hand_grants(self.game,uid))
+            if (self.game.phase=='turn' and self.game.active==0
+                    and not self.game.pending and not p0.played_this_turn):
+                # Respect exact game.can_play including five-slot replacement.
+                can_place=(self.game.can_play(0,uid,None) if len(p0.board)<5
+                           else any(self.game.can_play(0,uid,replaced)
+                                    for replaced in p0.board))
+                if can_place and uid!=self.selected:
+                    pygame.draw.rect(self.screen,(207,164,90),rect.inflate(6,6),
+                                     2,border_radius=12)
             if marked:
                 pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(9,9),4,border_radius=12)
                 badge=pygame.Rect(rect.x+6,rect.y+72,rect.width-12,29)
@@ -1302,6 +1426,8 @@ class SoloApp:
         if g.phase=='finished':
             return 'KONIEC MECZU  ·  [R] NOWA PARTIA   [H] HISTORIA   [P] POWTÓRKA'
         if g.phase=='mulligan':
+            if self._bonus_selection_due():
+                return 'WYBÓR REKOMPENSATY  ·  [1] CHORĄŻY 2/5 LUB [2] +3 MONETY'
             count=len(g.players[0].mulligan_selected)
             if 0 not in g.mulligan_done:
                 return (f'WYMIANA STARTOWA {count}/3  ·  ZAZNACZ DO 3 KART Z RĘKI  ·  '
@@ -1858,6 +1984,7 @@ class SoloApp:
             self._draw_sidebar()
             self._draw_log()
             self._draw_choices()
+            self._draw_hover_guidance()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:
