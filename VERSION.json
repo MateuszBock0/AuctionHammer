@@ -154,5 +154,10 @@
     "offline_html": "AuctionHammer-KSIEGA-STARC.html in LOCALAPPDATA after finished match",
     "interface": "KSIĘGA STARC button or W key on finished screen",
     "backwards_compatible": "no change to game state rules or MatchAudit schema 1"
+  },
+  "ui_quality_0944": {
+    "visible_quit": "Always-visible WYJDŹ in battle header and main menu; existing save confirmation retained",
+    "card_hover": "Restrained brass/gold outline on both hand and deployed cards",
+    "inactive_cards": "Grayscale art only for stun, spent attacks or summoning restriction; double/quick preserved; stats and statuses unaffected"
   }
 }

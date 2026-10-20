@@ -81,11 +81,14 @@ class VisualPolishTests(unittest.TestCase):
             self.assertFalse(a.colliderect(b))
         labels=self._traced_labels(app._draw_header)
         self._assert_separated_labels(labels)
-        self.assertEqual(len(labels),4)
+        # 0.9.44 adds an explicit EXIT button in the existing right-hand
+        # header region, without allowing any of its labels to overlap.
+        self.assertEqual(len(labels),5)
         self.assertTrue(logo.contains(labels[0][1]))
         self.assertTrue(logo.contains(labels[1][1]))
         self.assertTrue(mode.contains(labels[2][1]))
         self.assertTrue(help_area.contains(labels[3][1]))
+        self.assertTrue(help_area.contains(labels[4][1]))
 
     def test_instruction_board_and_full_side_labels_do_not_overlap(self):
         app=self.app

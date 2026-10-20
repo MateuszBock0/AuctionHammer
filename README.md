@@ -246,3 +246,10 @@ Nagrania pozostają materiałem podmiotów trzecich i **nie podlegają licencji 
 Po zakończeniu meczu gra automatycznie zapisuje **Księgę Starć** w `%LOCALAPPDATA%\\AuctionHammer\\AuctionHammer-KSIEGA-STARC.html` obok podpisanego JSON `AuctionHammer-OSTATNI-MECZ.json`. Na ekranie wyniku kliknij **KSIĘGA STARC [W]**, aby otworzyć raport w przeglądarce. Możesz filtrować po graczu, karcie, walce zakończonej zgonem; każdy atak pokazuje stan jednostek **PRZED / PO** (ATK, HP/MAX, pancerz, tarcza, statusy, licznik ataków), zapisane mikrooperacje oraz dziennik zdarzeń. W przypadku ataku z wyborem zdolności raport obejmuje również późniejszą komendę `choose`.
 
 Oryginalny audyt zawiera teraz `payload.combat_analysis.attacks` i `summary.combat_attacks`. Silnik, reguły, RNG i format replay nie ulegają zmianie. Starsze podpisane pliki audytów można przeanalizować bez modyfikowania ich zawartości poleceniem `python -m game.core.combat_html \"ścieżka-do-audytu.json\"` w repozytorium źródłowym.
+
+### 0.9.44 — sterowanie i stan jednostek
+
+- Widoczny przycisk **WYJDŹ** w prawym górnym rogu planszy i **WYJDŹ Z GRY** w głównym menu. W trakcie niezapisanej partii zachowane potwierdzenie zapisu.
+- Delikatne złoto-mosiężne podświetlenie ramki karty pod kursorem (karty na ręce i planszy).
+- Przygaszone, szare **ilustracje** jednostek ogłuszonych, z wykorzystanym limitem ataków lub świeżo wystawionych bez Szybkiego ataku. Statystyki i statusy pozostają czytelne. Podwójny atak i Szybki atak bazują na faktycznym stanie silnika, nie na zgadywaniu przez UI. Oczekiwanie na turę samo w sobie nie przygasza jednostek.
+

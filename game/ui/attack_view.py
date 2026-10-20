@@ -49,3 +49,24 @@ def attack_display(game, uid: str) -> AttackDisplay:
     if conditional:
         reason += ' · 2. PO 1. ATAKU'
     return AttackDisplay(remaining,limit,spent,legal,reason,conditional)
+
+def inactive_card_reason(game, uid: str) -> str:
+    """Card-specific reason for muting a deployed unit's ART only.
+
+    Mirror Match.legal_attacks restrictions that belong to the unit itself.
+    Turn ownership, pending choices and opponent turns do NOT gray every
+    unit; double/quick attacks and stun use the engine's actual live rules.
+    This function is observational and never changes the match.
+    """
+    unit=game.units.get(uid)
+    if unit is None or game.phase not in ('turn','auction'):
+        return ''
+    if game._has(unit,'stun'):
+        return 'OGŁUSZONA'
+    limit=2 if game._double(unit) else 1
+    if unit.attacks>=limit:
+        return 'ATAKI WYKORZYSTANE'
+    if (unit.played_turn==game.players[unit.owner].turn_count
+            and not game._fast(unit)):
+        return 'NOWA JEDNOSTKA'
+    return ''

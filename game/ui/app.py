@@ -26,7 +26,7 @@ from game.ui.card_view import CardView, FACTION_COLORS, ART
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note
-from game.ui.attack_view import attack_display
+from game.ui.attack_view import attack_display, inactive_card_reason
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 
@@ -1010,6 +1010,16 @@ class SoloApp:
                 self.windowed_size=(width,height)
                 self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
             return True
+        # Always-visible exit control during gameplay (the menu gets its own).
+        # Do not route clicks through obscuring modal layers or auctions.
+        if (event.type==pygame.MOUSEBUTTONUP and event.button==1
+                and not (self.confirm_action or self.menu_open or self.history_open
+                         or self.replay_index is not None or self.details_card
+                         or self._bonus_selection_due()
+                         or self.game.phase in ('auction','finished'))
+                and self.exit_button_rect().collidepoint(
+                    self._physical_to_virtual(event.pos))):
+            return self._request_exit()
         if self.confirm_action is not None:
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_ESCAPE:
@@ -1042,7 +1052,8 @@ class SoloApp:
                 elif event.key==pygame.K_RETURN and self.menu_page=='main':
                     self.menu_open=False
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
-                self._menu_click(self._physical_to_virtual(event.pos))
+                if self._menu_click(self._physical_to_virtual(event.pos)) is False:
+                    return False
             return True
         if self.replay_index is not None:
             if event.type==pygame.KEYDOWN:
@@ -1304,6 +1315,7 @@ class SoloApp:
                 attack_info=attack_display(self.game,uid)
                 self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
                      selected=selected,hover=rect.collidepoint(self.mouse_pos()),
+                     dim=bool(inactive_card_reason(self.game,uid)),
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
                      attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit,
                      hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
@@ -1340,6 +1352,7 @@ class SoloApp:
             self.cards_view.draw(self.screen,self.game.cards[uid],rect,
                                  selected=(uid==self.selected or marked),
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
+                                 hover=rect.collidepoint(self.mouse_pos()),
                                  statuses=hand_grants(self.game,uid))
             if (self.game.phase=='turn' and self.game.active==0
                     and not self.game.pending and not p0.played_this_turn):
@@ -1403,6 +1416,10 @@ class SoloApp:
                     self._text(detail,12,1126,yy+21,cfg.MUTED)
                 if len(statuses)>2:
                     self._text(f'+{len(statuses)-2} pozostałych efektów — [I]',12,1105,648,cfg.MUTED)
+                reason=inactive_card_reason(self.game,card_id) or attack_display(self.game,card_id).reason
+                self._text(self.cards_view.clip('MOŻLIWOŚĆ ATAKU: '+reason,
+                                               self.fonts[12],316),
+                           12,1105,667,cfg.GOLD if reason=='GOTOWA' else cfg.MUTED)
             else:
                 grants=hand_grants(self.game,card_id)
                 if grants:
@@ -1470,6 +1487,11 @@ class SoloApp:
             self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ',active=can,accent=can)
         if self.game.phase!='finished':
             self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
+
+    @staticmethod
+    def exit_button_rect():
+        """Fixed hit target on the internal canvas; scales with the viewport."""
+        return pygame.Rect(1349,27,86,34)
 
     @staticmethod
     def header_regions():
@@ -1554,11 +1576,13 @@ class SoloApp:
         self._text(f'SOLO  ·  70 KART + AUKCJE {self.game.auction_catalog.upper()}  ·  BALANS v21',14,
                    mode.x+8,33,cfg.MUTED)
         help_text=(f'[A] ANIM {"WŁ." if self.animations_enabled else "WYŁ."}  '
-                   '[F11] EKRAN  [H] HISTORIA  [M] MENU')
+                   '[F11] EKRAN  [M] MENU')
         font=self.fonts[13]
-        # Rendered width is checked at runtime; never overflow the canvas.
-        help_text=self.cards_view.clip(help_text,font,help_area.width-12)
+        # Reserve a dedicated, clearly clickable exit button on the right.
+        help_text=self.cards_view.clip(help_text,font,
+                                      self.exit_button_rect().x-help_area.x-18)
         self._text(help_text,13,help_area.x+8,34,cfg.GOLD)
+        self._button(self.exit_button_rect(),'WYJDŹ',small=True)
 
     def _draw_log(self):
         """Last journal entry stays INSIDE the sidebar. H opens the full log."""
@@ -1791,7 +1815,13 @@ class SoloApp:
         self._text('Kółko myszy: przewiń opis • Zielone pogrubienie: wartość rosnąca',13,524,857,cfg.MUTED)
         self._button(pygame.Rect(1095,853,201,39),'ZAMKNIJ [I / ESC]',small=True)
 
+    @staticmethod
+    def menu_exit_rect():
+        return pygame.Rect(535,722,420,52)
+
     def _menu_click(self,pos):
+        if self.menu_page=='main' and self.menu_exit_rect().collidepoint(pos):
+            return self._request_exit()
         credits_button=pygame.Rect(875,282,160,34)
         if self.menu_page=='main' and credits_button.collidepoint(pos):
             self.menu_page='credits'
@@ -1941,6 +1971,7 @@ class SoloApp:
                    'USTAWIENIA','WRÓĆ DO GRY')
             self._button(pygame.Rect(625,282,240,34),'HISTORIA MECZÓW',small=True)
             self._button(pygame.Rect(875,282,160,34),'CREDITS',small=True)
+            self._button(self.menu_exit_rect(),'WYJDŹ Z GRY  [Q]',small=True)
         else:
             items=(f'ANIMACJE [A]: {"WŁ." if self.animations_enabled else "WYŁ."}',
                    'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
@@ -1949,7 +1980,8 @@ class SoloApp:
             self._button(pygame.Rect(535,322+i*81,420,61),label,accent=i==0)
         if self.menu_message:
             status=self.cards_view.clip(self.menu_message,self.fonts[14],620)
-            self._text(status,14,746,753,cfg.GOLD,center=True)
+            self._text(status,14,746,784 if self.menu_page=='main' else 753,
+                       cfg.GOLD,center=True)
         footer=(
             'Archiwum zachowuje wersje i dawne zasady'
             if self.menu_page=='archive' else
@@ -1957,7 +1989,8 @@ class SoloApp:
             if self.menu_page=='settings' else
             'F11 — pełny ekran · A — animacje · H — historia · M — menu'
         )
-        self._text(footer,13,746,790,cfg.MUTED,center=True)
+        self._text(footer,13,746,810 if self.menu_page=='main' else 790,
+                   cfg.MUTED,center=True)
 
     def _draw_history_overlay(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
