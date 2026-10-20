@@ -31,6 +31,16 @@ function Read-VersionPointer([string]$path) {
     return $value.ToLowerInvariant()
 }
 
+function Legacy-BuildTag {
+    $stamp = Join-Path $project 'BUILD_VERSION.txt'
+    if ((Test-Path -LiteralPath $legacyExe -PathType Leaf) -and
+        (Test-Path -LiteralPath (Join-Path $project '_internal') -PathType Container) -and
+        (Test-Path -LiteralPath $stamp -PathType Leaf)) {
+        return (Read-VersionPointer $stamp)
+    }
+    return ''
+}
+
 function Installed-Exe([string]$tag) {
     if ($tag -notmatch '^build-[0-9a-f]{8}$') { return $null }
     $dir = Join-Path $versions $tag
@@ -227,7 +237,10 @@ try {
                 $latest = Invoke-RestMethod -Uri $releaseApi -Headers $headers -TimeoutSec 7
                 $tag = [string]$latest.tag_name
                 if ($tag -notmatch '^build-[0-9a-fA-F]{8}$') { throw 'Unknown release tag format.' }
-                if (Installed-Exe $tag) {
+                if ((Legacy-BuildTag) -eq $tag) {
+                    Write-Host '[Aktualizacja] This extracted Windows ZIP already contains the latest release.'
+                    $archive = ''
+                } elseif (Installed-Exe $tag) {
                     $current = Read-VersionPointer $activeFile
                     if ($current -ne $tag) {
                         if ($current -and (Installed-Exe $current)) {
