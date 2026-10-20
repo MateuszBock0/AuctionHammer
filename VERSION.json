@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.46.1",
+  "mvp": "0.9.47",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -173,5 +173,14 @@
     "highlights": "read-only phase-driven card, target, bonus and auction borders",
     "other": "AI-turn context text on auctions",
     "rules_unchanged": true
+  },
+  "ux_stage_0947": {
+    "scope": "read-only Gameplay Clarity HUD, legal play slot outlines, contextual card badge, committed-journal feedback",
+    "legal_actions": "from Match.can_play and Match.legal_attacks",
+    "card_count": "played_this_turn 0/1 or 1/1",
+    "attacks": "number of own units with at least one legal target (not remaining hits)",
+    "feedback": "exact committed journal text and label even with animations off",
+    "end_turn": "legal as before; accent when no playable card or ready attacking unit",
+    "rules_changed": false
   }
 }
