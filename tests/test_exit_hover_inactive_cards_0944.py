@@ -19,6 +19,7 @@ def guard_game():
     match=Match(4451,auctions_enabled=True,auction_catalog='v22',
                 starting_compensation='unit_3_5',audit_enabled=True)
     assert 'SUM_START_GUARD' in match.units
+    match.phase='turn'  # force only the rendering context, not a game action
     return match
 
 
@@ -68,6 +69,7 @@ class CombatAvailabilityVisualTests(unittest.TestCase):
         game=guard_game()
         uid='SUM_START_GUARD'
         game.units[uid].effects.append(Effect('stun'))
+        game.phase='mulligan'
         self.assertEqual(inactive_card_reason(game,uid),'')
         self.assertEqual(inactive_card_reason(game,'missing'),'')
         game.phase='finished'
@@ -153,8 +155,6 @@ class ExitAndBoardDrawingTests(unittest.TestCase):
         with patch.object(app.cards_view,'draw',wraps=app.cards_view.draw) as painted:
             with patch.object(app,'mouse_pos',return_value=(0,0)):
                 app._draw_board()
-        args=[call for call in painted.call_args_list if
-              len(call.args)>2 and call.args[2] is game.cards[uid]]
         # CardView.draw(screen,card,rect,unit,...) — identify by card object.
         args=[call for call in painted.call_args_list if
               len(call.args)>1 and call.args[1] is game.cards[uid]]
