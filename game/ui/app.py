@@ -1171,7 +1171,10 @@ class SoloApp:
                         target=self.target_under(pos)
                         replace=target if target in self.game.players[0].board and len(self.game.players[0].board)==5 else None
                         self._try_play(card,replace)
-                    return
+                    # An event handled by the UI MUST return True.
+                    # SoloApp.run() treats False/None as a request to quit;
+                    # previously every successful drag shut down the window.
+                    return True
             self.click(pos)
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==3:
             point=self._physical_to_virtual(event.pos)
