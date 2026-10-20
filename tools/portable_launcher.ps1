@@ -187,7 +187,7 @@ function Start-Installed {
 }
 
 # Prevent simultaneous activations when the user double-clicks the BAT twice.
-$mutex = New-Object System.Threading.Mutex($false,'Local\AuctionHammerPortableUpdater')
+$mutex = [System.Threading.Mutex]::new($false,'Local\AuctionHammerPortableUpdater')
 $locked = $false
 try {
     $locked = $mutex.WaitOne(15000)
@@ -223,7 +223,14 @@ try {
                 $tag = [string]$latest.tag_name
                 if ($tag -notmatch '^build-[0-9a-fA-F]{8}$') { throw 'Unknown release tag format.' }
                 if (Installed-Exe $tag) {
-                    Write-Host '[Aktualizacja] Already on a verified local version.'
+                    $current = Read-VersionPointer $activeFile
+                    if ($current -ne $tag) {
+                        if ($current -and (Installed-Exe $current)) {
+                            Atomic-WritePointer $previousFile $current
+                        }
+                        Atomic-WritePointer $activeFile $tag
+                    }
+                    Write-Host '[Aktualizacja] Verified version already installed locally.'
                     $archive = ''
                 } else {
                     $zipAsset = $latest.assets | Where-Object { $_.name -eq 'AuctionHammer-Windows.zip' } | Select-Object -First 1
