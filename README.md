@@ -126,6 +126,12 @@ W katalogu v22 znajdziesz również karty nastawione na przebijanie wysokiego P�
 
 Szczegółowe opisy każdej wersji znajdują się w [katalogu 17 kart aukcyjnych (JSON)](data/auction/KATALOG_AUKCYJNY_17_v22.json) i [dokumentacji aukcji v22](docs/auction/RELEASE_V22_0931.md).
 
+## Samouczek i podręczna pomoc (0.9.46)
+
+W **Menu → Samouczek** rozpoczniesz nowy, prowadzony mecz. Samouczek reaguje na rzeczywiste akcje: wymianę startową, zagranie karty, pierwszy atak i aukcję. Podpowiedzi są krótkie, nie blokują sterowania i nie wpływają na logikę ani losowanie. Przy rozpoczęciu samouczka podczas trwającej partii gra pyta, czy zapisać ją przed rozpoczęciem nowej.
+
+Naciśnij **F1**, aby otworzyć podręcznik z czterema stronami: pierwszy mecz, walka i statusy, monety i aukcje, sterowanie i diagnostyka. Strony zmieniasz strzałkami, a zamykasz F1 lub Esc. **T** włącza albo wyłącza wskazówki podczas normalnej rozgrywki. Gdy jednostka nie może zaatakować, wskazówka na planszy wyjaśnia wynik aktualnych kontroli legalności silnika, zamiast zgadywać zasady.
+
 ## Sterowanie i przydatne funkcje
 
 | Akcja | Sterowanie |
