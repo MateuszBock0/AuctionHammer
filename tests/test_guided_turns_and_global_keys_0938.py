@@ -56,6 +56,9 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
 
     def test_first_mulligan_guidance_explains_three_and_zero_and_confirmation(self):
         app=self.app
+        if app._bonus_selection_due():
+            self.assertIn('WYBÓR REKOMPENSATY',app._phase_guidance())
+            app._choose_bonus('coins')
         self.assertIn('ZAZNACZ DO 3 KART',app._phase_guidance())
         self.assertIn('ENTER',app._phase_guidance())
         self.assertIn('ZERO',app._phase_guidance())
