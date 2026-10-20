@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.41",
+  "mvp": "0.9.42",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -91,11 +91,20 @@
   "starting_compensation_choice_audit_schema": 4,
   "starting_compensation_bonus_card": "Chorąży, 2/5, Chorąży zawsze zdąży.",
   "starting_compensation_archive_0939": "unit_5_5_guard_no_coins",
-  "starting_compensation_available_modes": ["coins", "unit_5_5", "unit_3_5"],
+  "starting_compensation_available_modes": ["coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"],
   "starting_compensation_card_name": "Chorąży",
   "starting_compensation_card_flavor": "Chorąży zawsze zdąży.",
   "starting_compensation_legacy_saves": "coins_plus3",
-  "starting_compensation_audit_schema": 3,
+  "starting_compensation_audit_schema": 4,
+  "ux_stage_0942": {
+    "hover_card_preview_dwell_ms": 420,
+    "status_tooltip_from_active_statuses": true,
+    "attack_ready_legal_outlines": true,
+    "play_card_can_play_outlines": true,
+    "tavern_bonus_selection": true,
+    "zoom_original_assets_only": true,
+    "rules_and_auctions_unchanged": true
+  },
   "ux_stage_0939": {
     "global_video_resize": true,
     "non_destructive_restart_and_quit": true,

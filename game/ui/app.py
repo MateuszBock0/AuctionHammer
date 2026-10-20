@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.40: Chorazy 3/5 with versioned starter modes."""
+"""AuctionHammer MVP 0.9.42: tavern card and action readability without engine changes."""
 from __future__ import annotations
 import os
 import re
@@ -7,7 +7,11 @@ from pathlib import Path
 import pygame
 from game.ui.combat_visuals import CombatVisuals
 from game.ui.music import FantasyTavernMusic
-from game.ui.visual_theme import VisualTheme
+from game.ui.visual_theme import (
+    VisualTheme, TAVERN_PANEL_BG, TAVERN_PANEL_INNER, TAVERN_TOOLTIP_BG,
+    TAVERN_GOLD, TAVERN_BRASS, TAVERN_HOVER_GOLD, TAVERN_TEXT,
+    TAVERN_MUTED, TAVERN_SCRIM
+)
 from game.ui.match_history import MatchRecorder
 from game.core.persistence import save_match, load_match, save_path
 from game.core.audit import (audit_path, archive_path, list_archived_matches,
@@ -92,6 +96,8 @@ class SoloApp:
             self.ai.step(self.game)
         self.selected=None
         self.hover=None
+        self._hover_uid=None
+        self._hover_start_ms=0
         self.scroll=0
         self.choice_page=0
         self.last_error=''
@@ -209,6 +215,117 @@ class SoloApp:
     def mouse_pos(self):
         return self._physical_to_virtual(pygame.mouse.get_pos())
 
+    HOVER_PREVIEW_DELAY_MS=420
+
+    def _update_hover_target(self,pos,now=None):
+        """Track pointer dwell on the visible hand; no Match action or RNG."""
+        if now is None:
+            now=pygame.time.get_ticks()
+        if (self.menu_open or self.history_open or self.replay_index is not None
+                or self.details_card is not None or self.confirm_action
+                or self.game.phase in ('finished','auction')
+                or self._bonus_selection_due() or self.drag_start is not None
+                or self.game.pending is not None):
+            uid=None
+        else:
+            uid=next((uid for uid,area in self.hand_layout().items()
+                      if area.collidepoint(pos)),None)
+        if uid!=self._hover_uid:
+            self._hover_uid=uid
+            self._hover_start_ms=now
+
+    def _hover_preview_ready(self,now=None):
+        if now is None:
+            now=pygame.time.get_ticks()
+        uid=self._hover_uid
+        return (uid is not None
+                and uid in self.game.players[0].hand
+                and uid in self.hand_layout()
+                and now-self._hover_start_ms>=self.HOVER_PREVIEW_DELAY_MS
+                and not (self.menu_open or self.history_open or self.confirm_action
+                         or self.replay_index is not None or self.details_card is not None
+                         or self.drag_start is not None or self._bonus_selection_due()
+                         or self.game.pending is not None
+                         or self.game.phase in ('auction','finished')))
+
+    def _hovered_status(self,pos):
+        """Find a drawn status badge, never infer undisplayed effects."""
+        uid=self.card_under(pos)
+        if uid not in self.game.cards:
+            return None
+        if uid in self.game.units:
+            unit=self.game.units[uid]
+            rect=self.slot_rect(unit.owner,self.game.players[unit.owner].board.index(uid))
+            statuses=active_statuses(self.game,uid)
+            board=True
+        else:
+            rect=self.hand_layout().get(uid)
+            if rect is None:
+                return None
+            statuses=hand_grants(self.game,uid)
+            board=False
+        for status,area,remaining in self.cards_view.visible_status_hitboxes(
+                rect,statuses,board=board):
+            if area.collidepoint(pos):
+                return status,remaining
+        return None
+
+    def _draw_hover_guidance(self):
+        """Context-only tooltips over the finished board, not inside modals."""
+        if (self.menu_open or self.history_open or self.replay_index is not None
+                or self.details_card is not None or self.confirm_action
+                or self.game.phase in ('auction','finished')
+                or self._bonus_selection_due() or self.drag_start is not None
+                or self.game.pending is not None):
+            return
+        pos=self.mouse_pos()
+        hit=self._hovered_status(pos)
+        if hit is not None:
+            status,remaining=hit
+            title=status.name if status is not None else f'POZOSTAŁE EFEKTY: {len(remaining)}'
+            color=status.color if status is not None else cfg.GOLD
+            if status is not None:
+                items=[status.detail]
+                if status.source:
+                    items.append('Źródło: '+status.source)
+            else:
+                items=[f'{st.name}: {st.detail}' for st in remaining[:4]]
+                if len(remaining)>4:
+                    items.append(f'Jeszcze {len(remaining)-4} efektów — pełny wykaz [I]')
+            rows=[]
+            for item in items:
+                rows.extend(self._wrap(item,13,369))
+            rows=rows[:6]
+            height=62+23*len(rows)
+            rect=pygame.Rect(min(pos[0]+19,cfg.WINDOW_WIDTH-421),
+                             min(pos[1]+18,cfg.WINDOW_HEIGHT-height-14),
+                             408,height)
+            rect.x=max(8,rect.x);rect.y=max(8,rect.y)
+            self._panel(rect,TAVERN_TOOLTIP_BG,color,9)
+            self._text(self.cards_view.clip(title,self.fonts[16],382),
+                       16,rect.x+12,rect.y+9,color)
+            for index,row in enumerate(rows):
+                self._text(self.cards_view.clip(row,self.fonts[13],380),
+                           13,rect.x+12,rect.y+40+index*23,TAVERN_TEXT)
+            return
+        if not self._hover_preview_ready():
+            return
+        uid=self._hover_uid
+        # A full-size, truthful card. Overlay is above the battlefield but
+        # leaves the hand and its clicks untouched; it disappears on movement.
+        hand_rect=self.hand_layout()[uid]
+        left=max(82,min(772,hand_rect.centerx-143))
+        box=pygame.Rect(left,289,286,439)
+        self._panel(box,TAVERN_PANEL_BG,TAVERN_GOLD,11)
+        pygame.draw.rect(self.screen,TAVERN_BRASS,box.inflate(-9,-9),
+                         1,border_radius=8)
+        self._text('KARTA NA RĘCE · PODGLĄD',13,box.x+13,box.y+11,TAVERN_GOLD)
+        card=self.game.cards[uid]
+        self.cards_view.draw(self.screen,card,pygame.Rect(box.x+15,box.y+34,255,380),
+                             statuses=hand_grants(self.game,uid))
+        self._text('PRAWY KLIK / [I] — PEŁNY OPIS',12,
+                   box.x+13,box.bottom-20,TAVERN_MUTED)
+
     def _present(self):
         viewport=self._viewport()
         self.window.fill((5,9,14))
@@ -250,7 +367,7 @@ class SoloApp:
         return result
 
     def _infographic_box(self,rect,title,value,color,subtitle=''):
-        self._panel(rect,(31,50,58),color,9)
+        self._panel(rect,TAVERN_PANEL_INNER,color,9)
         self._text(title,12,rect.x+9,rect.y+5,cfg.MUTED)
         # Long upgrade formulas should remain completely visible, not ellipsized
         # in the narrow laptop sidebar.
@@ -292,8 +409,8 @@ class SoloApp:
         return cy+size+7
 
     def _panel(self,rect,fill=None,line=None,radius=14):
-        self.theme.panel(self.screen,rect,fill or cfg.PANEL,
-                         line or cfg.PANEL_BORDER,radius)
+        self.theme.panel(self.screen,rect,fill or TAVERN_PANEL_BG,
+                         line or TAVERN_BRASS,radius)
 
     def _button(self,rect,label,active=True,accent=False,small=False):
         mp=self.mouse_pos()
@@ -590,9 +707,9 @@ class SoloApp:
         a=self.game.auction
         if self.game.phase!='auction' or a is None:return
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        overlay.fill((4,8,13,229))
+        overlay.fill((*TAVERN_SCRIM,225))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(203,112,1076,732),(58,39,28),cfg.GOLD,16)
+        self._panel(pygame.Rect(203,112,1076,732),TAVERN_PANEL_BG,TAVERN_GOLD,16)
         self.theme.carved_panel(self.screen,pygame.Rect(219,125,1044,694),opacity=82)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
                    741,152,cfg.GOLD,center=True)
@@ -761,18 +878,38 @@ class SoloApp:
     def _draw_bonus_selection(self):
         if not self._bonus_selection_due():return
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        shade.fill((5,8,12,225))
+        shade.fill((*TAVERN_SCRIM,212))
         self.screen.blit(shade,(0,0))
-        panel=pygame.Rect(340,282,800,390)
-        self._panel(panel,(32,46,53),cfg.GOLD,15)
-        self._text('TWÓJ WYBÓR NA START',28,740,322,cfg.GOLD,center=True)
-        self._text('Zaczynasz jako drugi. Wybierz dokładnie jedną rekompensatę.',
-                   16,740,381,cfg.TEXT,center=True)
-        self._button(pygame.Rect(438,443,604,67),'[1] CHORĄŻY 2 ATAK / 5 PŻ',
-                     accent=True)
-        self._button(pygame.Rect(438,537,604,67),'[2] +3 MONETY')
-        self._text('Chorąży: bez zdolności, nie atakuje w pierwszej własnej turze.',
-                   14,740,626,cfg.MUTED,center=True)
+        panel=pygame.Rect(340,262,800,421)
+        self._panel(panel,TAVERN_PANEL_BG,TAVERN_GOLD,15)
+        self.theme.carved_panel(self.screen,panel.inflate(-21,-18),opacity=47)
+        self._text('DAR DLA DRUGIEGO GRACZA',28,740,302,cfg.GOLD,center=True)
+        self._text('Jedna decyzja przed wymianą kart. Wybierz swoją rekompensatę.',
+                   16,740,369,TAVERN_TEXT,center=True)
+        pygame.draw.line(self.screen,TAVERN_BRASS,(442,412),(1038,412),1)
+        # Original S34 artwork and original button hitboxes: no new assets.
+        guard_area=pygame.Rect(438,443,604,67)
+        self.theme.button(self.screen,guard_area,guard_area.collidepoint(self.mouse_pos()),
+                          True,True,False)
+        portrait=self.cards_view.images.get_card_image(
+            ART['S34'],(80,55),mode='contain')
+        self.screen.blit(portrait,(guard_area.x+13,guard_area.y+6))
+        self._text('[1] CHORĄŻY  2 ATK / 5 PŻ',18,guard_area.x+111,
+                   guard_area.y+9,cfg.TEXT)
+        self._text('„Chorąży zawsze zdąży.” · Jednostka bez zdolności',
+                   12,guard_area.x+111,guard_area.y+41,TAVERN_MUTED)
+        coin_area=pygame.Rect(438,537,604,67)
+        self.theme.button(self.screen,coin_area,coin_area.collidepoint(self.mouse_pos()),
+                          True,False,False)
+        for dx in (0,12,24):
+            center=(coin_area.x+34+dx,coin_area.y+32)
+            pygame.draw.circle(self.screen,(159,112,46),center,19)
+            pygame.draw.circle(self.screen,cfg.GOLD,center,15,2)
+        self._text('[2] +3 MONETY',18,coin_area.x+112,coin_area.y+9,cfg.TEXT)
+        self._text('Więcej środków na rozgrywkę · bez dodatkowej jednostki',
+                   12,coin_area.x+112,coin_area.y+41,TAVERN_MUTED)
+        self._text('Chorąży nie atakuje w swojej pierwszej turze i zajmuje pole.',
+                   13,740,638,TAVERN_MUTED,center=True)
         if self.last_error:
             self._text(self.cards_view.clip(self.last_error,self.fonts[13],690),
                        13,740,654,cfg.RED,center=True)
@@ -812,10 +949,10 @@ class SoloApp:
 
     def _draw_confirmation(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        shade.fill((4,8,14,229))
+        shade.fill((*TAVERN_SCRIM,225))
         self.screen.blit(shade,(0,0))
         panel=pygame.Rect(379,292,724,390)
-        self._panel(panel,(33,45,55),cfg.GOLD,16)
+        self._panel(panel,TAVERN_PANEL_INNER,TAVERN_GOLD,16)
         action='nowej gry' if self.confirm_action=='restart' else 'wyjścia'
         self._text('NIEZAPISANA ROZGRYWKA',28,742,333,cfg.GOLD,center=True)
         self._text('Przed rozpoczęciem '+action+' zdecyduj, co zrobić z obecną partią.',
@@ -830,6 +967,8 @@ class SoloApp:
     def handle(self,event):
         if self.music.handle_event(event):return True
         if event.type==pygame.QUIT:return self._request_exit()
+        if event.type==pygame.MOUSEMOTION:
+            self._update_hover_target(self._physical_to_virtual(event.pos))
         # Global shortcuts must work from the *first menu screen*,
         # during mulligan, history/replay and any open modal.
         if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
@@ -1142,6 +1281,11 @@ class SoloApp:
                      hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
                                   if self.animations_enabled and self.replay_index is None
                                   else None))
+                # Outline only truly legal attacks, not perceived attack
+                # strength or status guesses. Selected target remains dominant.
+                if owner==0 and attack_info.ready and not selected:
+                    pygame.draw.rect(self.screen,(121,196,160),rect.inflate(6,6),
+                                     2,border_radius=13)
         self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
         for uid in self._play_replacement_targets():
             rect=self.slot_rect(0,self.game.players[0].board.index(uid))
@@ -1169,6 +1313,15 @@ class SoloApp:
                                  selected=(uid==self.selected or marked),
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
                                  statuses=hand_grants(self.game,uid))
+            if (self.game.phase=='turn' and self.game.active==0
+                    and not self.game.pending and not p0.played_this_turn):
+                # Respect exact game.can_play including five-slot replacement.
+                can_place=(self.game.can_play(0,uid,None) if len(p0.board)<5
+                           else any(self.game.can_play(0,uid,replaced)
+                                    for replaced in p0.board))
+                if can_place and uid!=self.selected:
+                    pygame.draw.rect(self.screen,(207,164,90),rect.inflate(6,6),
+                                     2,border_radius=12)
             if marked:
                 pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(9,9),4,border_radius=12)
                 badge=pygame.Rect(rect.x+6,rect.y+72,rect.width-12,29)
@@ -1184,7 +1337,7 @@ class SoloApp:
 
     def _draw_sidebar(self):
         rect=pygame.Rect(self.SIDEBAR_X,78,364,872)
-        self._panel(rect,(23,35,47),cfg.PANEL_BORDER,16)
+        self._panel(rect,TAVERN_PANEL_INNER,TAVERN_BRASS,16)
         if self.game.pending and self.game.pending.owner == 0:
             self._draw_choice_sidebar()
             return
@@ -1287,7 +1440,8 @@ class SoloApp:
                 self._text('NASTĘPNA KARTA: SZYBKI ATAK',13,1104,796,STATUS_COLORS['quick'])
             can=self.game.active==0 and not self.game.pending
             self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ',active=can,accent=can)
-        self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
+        if self.game.phase!='finished':
+            self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
 
     @staticmethod
     def header_regions():
@@ -1302,6 +1456,8 @@ class SoloApp:
         if g.phase=='finished':
             return 'KONIEC MECZU  ·  [R] NOWA PARTIA   [H] HISTORIA   [P] POWTÓRKA'
         if g.phase=='mulligan':
+            if self._bonus_selection_due():
+                return 'WYBÓR REKOMPENSATY  ·  [1] CHORĄŻY 2/5 LUB [2] +3 MONETY'
             count=len(g.players[0].mulligan_selected)
             if 0 not in g.mulligan_done:
                 return (f'WYMIANA STARTOWA {count}/3  ·  ZAZNACZ DO 3 KART Z RĘKI  ·  '
@@ -1350,8 +1506,8 @@ class SoloApp:
         # 54 px of dedicated space, strictly between the two board rows.
         # Two typographic levels are easier to scan than a single truncated log.
         rect=pygame.Rect(96,373,952,54)
-        pygame.draw.rect(self.screen,(25,42,53),rect,border_radius=7)
-        pygame.draw.rect(self.screen,(111,157,172),rect,1,border_radius=7)
+        pygame.draw.rect(self.screen,TAVERN_PANEL_INNER,rect,border_radius=7)
+        pygame.draw.rect(self.screen,TAVERN_BRASS,rect,1,border_radius=7)
         parts=self._phase_guidance().split('  ·  ')
         title=parts[0]
         detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
@@ -1362,7 +1518,7 @@ class SoloApp:
 
     def _draw_header(self):
         logo,mode,help_area=self.header_regions()
-        pygame.draw.rect(self.screen,(21,34,43),pygame.Rect(83,8,1364,67),
+        pygame.draw.rect(self.screen,TAVERN_PANEL_BG,pygame.Rect(83,8,1364,67),
                          border_radius=12)
         pygame.draw.line(self.screen,cfg.GOLD,(104,73),(1426,73),1)
         self._text('AUCTION',34,106,22,(232,189,107))
@@ -1451,7 +1607,7 @@ class SoloApp:
 
         # Skill description is fully separated from interactive controls.
         info=pygame.Rect(1094,145,342,239)
-        self._panel(info,(31,47,59),cfg.PANEL_BORDER,12)
+        self._panel(info,TAVERN_PANEL_INNER,TAVERN_BRASS,12)
         self._text(self.cards_view.clip(card.name,self.fonts[18],312),
                    18,1107,162,FACTION_COLORS[card.faction])
         self._text(f'Aktywacja: {card.trigger}',14,1107,191,cfg.TEXT)
@@ -1464,17 +1620,17 @@ class SoloApp:
             self._text('Pełny opis: naciśnij [I]',12,1107,354,cfg.MUTED)
 
         pane=pygame.Rect(1094,394,342,500)
-        self._panel(pane,(22,37,49),cfg.GOLD,12)
+        self._panel(pane,TAVERN_PANEL_BG,TAVERN_GOLD,12)
         self._text(f'WYBIERZ CEL / WARIANT ({len(pending.choices)})',
                    14,1107,410,cfg.GOLD)
         self._text('Wybierz cel lub sposób działania.',13,1107,437,cfg.TEXT)
-        pygame.draw.line(self.screen,cfg.PANEL_BORDER,(1107,458),(1421,458),1)
+        pygame.draw.line(self.screen,TAVERN_BRASS,(1107,458),(1421,458),1)
         for index,rect in self.choice_bounds():
             choice=pending.choices[index]
             hovered=rect.collidepoint(self.mouse_pos())
-            pygame.draw.rect(self.screen,(50,76,85) if hovered else (39,59,72),
+            pygame.draw.rect(self.screen,(98,72,42) if hovered else TAVERN_PANEL_INNER,
                              rect,border_radius=8)
-            pygame.draw.rect(self.screen,cfg.HOVER if hovered else cfg.PANEL_BORDER,
+            pygame.draw.rect(self.screen,TAVERN_HOVER_GOLD if hovered else TAVERN_BRASS,
                              rect,2,border_radius=8)
             label=self._wrap(choice.label.replace('  →  ',' → '),13,288)
             number=index-self.choice_page*self.CHOICES_PER_PAGE+1
@@ -1505,10 +1661,10 @@ class SoloApp:
         detail_summary=(f'{summary.full}  [DODATKOWA ZASADA v23] {v23_note}'
                         if v23_note else summary.full)
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        shade.fill((1,5,10,226));self.screen.blit(shade,(0,0))
+        shade.fill((*TAVERN_SCRIM,225));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,75,1190,831)
-        self._panel(box,(24,38,52),FACTION_COLORS[d.faction],18)
-        pygame.draw.line(self.screen,(66,91,106),(489,160),(489,843),2)
+        self._panel(box,TAVERN_PANEL_INNER,FACTION_COLORS[d.faction],18)
+        pygame.draw.line(self.screen,TAVERN_BRASS,(489,160),(489,843),2)
         self._text('PODGLĄD KARTY',16,186,105,cfg.GOLD)
         details_attack=attack_display(self.game,uid) if u else None
         if self.details_image_zoom:
@@ -1539,8 +1695,13 @@ class SoloApp:
             # Archetype baseline and actual MAX HP are distinct from wounds.
             current_atk=u.atk if u else card.attack
             current_max=u.max_hp if u else card.max_hp
-            self._text(f'ATK  BAZA {d.atk} → TERAZ {current_atk}',14,194,717,cfg.TEXT)
-            self._text(f'MAX PŻ  BAZA {d.hp} → TERAZ {current_max}',14,194,741,cfg.TEXT)
+            # Real deltas only; wounds stay separate from maximum HP.
+            atk_label=(f'ATK  BAZA {d.atk} → TERAZ {current_atk}'
+                       if current_atk!=d.atk else f'ATK  {current_atk} (bez zmian)')
+            hp_label=(f'MAX PŻ  BAZA {d.hp} → TERAZ {current_max}'
+                      if current_max!=d.hp else f'MAX PŻ  {current_max} (bez zmian)')
+            self._text(atk_label,14,194,717,cfg.TEXT)
+            self._text(hp_label,14,194,741,cfg.TEXT)
             if u:
                 self._text(f'BIEŻĄCE PŻ: {max(0,u.hp)}/{current_max}',
                            14,194,765,cfg.MUTED)
@@ -1706,9 +1867,9 @@ class SoloApp:
 
     def _draw_menu(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        shade.fill((4,9,16,234))
+        shade.fill((*TAVERN_SCRIM,230))
         self.screen.blit(shade,(0,0))
-        self._panel(pygame.Rect(420,170,650,660),(56,35,23),cfg.GOLD,19)
+        self._panel(pygame.Rect(420,170,650,660),TAVERN_PANEL_BG,TAVERN_GOLD,19)
         self.theme.carved_panel(self.screen,pygame.Rect(432,186,625,632),opacity=98)
         self._text('AUCTIONHAMMER',46,746,223,cfg.GOLD,center=True)
         self._text('TAWERNA · GAME MASTER v23',16,746,269,cfg.MUTED,center=True)
@@ -1772,10 +1933,10 @@ class SoloApp:
 
     def _draw_history_overlay(self):
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        shade.fill((3,7,12,218))
+        shade.fill((*TAVERN_SCRIM,210))
         self.screen.blit(shade,(0,0))
         panel=pygame.Rect(135,86,1205,818)
-        self._panel(panel,(25,40,52),cfg.GOLD,13)
+        self._panel(panel,TAVERN_PANEL_INNER,TAVERN_GOLD,13)
         journal=self.game.event_journal
         self._text(f'HISTORIA MECZU ({len(journal)} ZDARZEŃ)',28,173,126,cfg.GOLD)
         self._text('H / ESC — zamknij     P — zobacz zapisane stany planszy',15,174,168,cfg.MUTED)
@@ -1785,7 +1946,7 @@ class SoloApp:
         for i,item in enumerate(page):
             yy=226+i*26
             if i%2==0:
-                pygame.draw.rect(self.screen,(35,53,64),
+                pygame.draw.rect(self.screen,(90,65,42),
                                  pygame.Rect(167,yy-2,1141,25),border_radius=3)
             turn=f'R{item["round"]:02} · {"TY" if item["active"]==0 else "AI"}'
             message=item['text']
@@ -1799,7 +1960,7 @@ class SoloApp:
 
     def _draw_replay_controls(self):
         shade=pygame.Surface((cfg.WINDOW_WIDTH,87),pygame.SRCALPHA)
-        shade.fill((13,22,35,232))
+        shade.fill((*TAVERN_SCRIM,232))
         self.screen.blit(shade,(0,cfg.WINDOW_HEIGHT-87))
         frame=self.recorder.get(self.replay_index)
         self._text(f'POWTÓRKA · STAN {self.replay_index+1}/{len(self.recorder.frames)}'
@@ -1809,9 +1970,9 @@ class SoloApp:
     def _draw_gameover(self):
         if self.game.phase!='finished':return
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        overlay.fill((0,0,0,170))
+        overlay.fill((*TAVERN_SCRIM,173))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(332,226,810,586),(28,44,58),cfg.GOLD,16)
+        self._panel(pygame.Rect(332,226,810,586),TAVERN_PANEL_INNER,TAVERN_GOLD,16)
         won=self.game.winner==0
         self._text('ZWYCIĘSTWO!' if won else 'PORAŻKA',46,738,300,
                    cfg.GREEN if won else cfg.RED,center=True)
@@ -1858,6 +2019,7 @@ class SoloApp:
             self._draw_sidebar()
             self._draw_log()
             self._draw_choices()
+            self._draw_hover_guidance()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:

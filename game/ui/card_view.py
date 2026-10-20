@@ -232,6 +232,45 @@ class CardView:
             return (227,69,78,37)     # double attack: subtle crimson
         return None
 
+    def visible_status_hitboxes(self,rect,statuses,board=False):
+        """Return exactly the hoverable UI marks, without touching Match.
+
+        Each item is (VisibleStatus | None, hitbox, hidden_statuses). None is
+        the existing +N mark and describes the statuses not individually drawn.
+        Hitboxes follow the same geometry as draw(); tiny hand markers receive
+        a modest hit target without moving the actual three-pixel marks.
+        """
+        if not statuses:
+            return []
+        art=card_zones(rect)['art']
+        large=rect.height>=320
+        if not board and not large:
+            hits=[(st,pygame.Rect(rect.x-5,art.y+i*7-1,13,8),())
+                  for i,st in enumerate(statuses[:3])]
+            if len(statuses)>3:
+                hits.append((None,pygame.Rect(rect.x-5,art.bottom-8,13,11),
+                             tuple(statuses[3:])))
+            return hits
+        from game.ui.game_icons import status_icon_key
+        ordered=sorted(statuses,key=lambda st:(
+            PRIORITY.index(st.category) if st.category in PRIORITY else 99))
+        x=art.x+3
+        y=art.bottom-17
+        result=[]
+        for st in ordered[:2]:
+            icon=self.icons.get(status_icon_key(st),'statuses',13)
+            if icon is not None:
+                width=37
+            else:
+                label=self.clip(st.short,self.font(9,True),34)
+                width=max(23,min(39,self.font(9,True).size(label)[0]+8))
+            result.append((st,pygame.Rect(x,y,width,14),()))
+            x+=width+3
+        if len(ordered)>2:
+            result.append((None,pygame.Rect(art.right-29,y,26,14),
+                           tuple(ordered[2:])))
+        return result
+
     def draw(self,screen,card,rect,unit=None,selected=False,dim=False,
              hover=False,statuses=(),ready=None,attacks_remaining=None,
              attacks_total=None,hp_override=None):
