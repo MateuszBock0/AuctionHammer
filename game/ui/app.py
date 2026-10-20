@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.40: Chorazy 3/5 with versioned starter modes."""
+"""AuctionHammer MVP 0.9.42: tavern card and action readability without engine changes."""
 from __future__ import annotations
 import os
 import re
@@ -220,7 +220,8 @@ class SoloApp:
         if (self.menu_open or self.history_open or self.replay_index is not None
                 or self.details_card is not None or self.confirm_action
                 or self.game.phase in ('finished','auction')
-                or self._bonus_selection_due() or self.drag_start is not None):
+                or self._bonus_selection_due() or self.drag_start is not None
+                or self.game.pending is not None):
             uid=None
         else:
             uid=next((uid for uid,area in self.hand_layout().items()
@@ -240,6 +241,7 @@ class SoloApp:
                 and not (self.menu_open or self.history_open or self.confirm_action
                          or self.replay_index is not None or self.details_card is not None
                          or self.drag_start is not None or self._bonus_selection_due()
+                         or self.game.pending is not None
                          or self.game.phase in ('auction','finished')))
 
     def _hovered_status(self,pos):
@@ -269,7 +271,8 @@ class SoloApp:
         if (self.menu_open or self.history_open or self.replay_index is not None
                 or self.details_card is not None or self.confirm_action
                 or self.game.phase in ('auction','finished')
-                or self._bonus_selection_due() or self.drag_start is not None):
+                or self._bonus_selection_due() or self.drag_start is not None
+                or self.game.pending is not None):
             return
         pos=self.mouse_pos()
         hit=self._hovered_status(pos)
@@ -871,16 +874,36 @@ class SoloApp:
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((5,8,12,225))
         self.screen.blit(shade,(0,0))
-        panel=pygame.Rect(340,282,800,390)
-        self._panel(panel,(32,46,53),cfg.GOLD,15)
-        self._text('TWÓJ WYBÓR NA START',28,740,322,cfg.GOLD,center=True)
-        self._text('Zaczynasz jako drugi. Wybierz dokładnie jedną rekompensatę.',
-                   16,740,381,cfg.TEXT,center=True)
-        self._button(pygame.Rect(438,443,604,67),'[1] CHORĄŻY 2 ATAK / 5 PŻ',
-                     accent=True)
-        self._button(pygame.Rect(438,537,604,67),'[2] +3 MONETY')
-        self._text('Chorąży: bez zdolności, nie atakuje w pierwszej własnej turze.',
-                   14,740,626,cfg.MUTED,center=True)
+        panel=pygame.Rect(340,262,800,421)
+        self._panel(panel,(43,38,29),cfg.GOLD,15)
+        self.theme.carved_panel(self.screen,panel.inflate(-21,-18),opacity=38)
+        self._text('DAR DLA DRUGIEGO GRACZA',28,740,302,cfg.GOLD,center=True)
+        self._text('Jedna decyzja przed wymianą kart. Wybierz swoją rekompensatę.',
+                   16,740,369,cfg.TEXT,center=True)
+        pygame.draw.line(self.screen,(153,120,65),(442,412),(1038,412),1)
+        # Original S34 artwork and original button hitboxes: no new assets.
+        guard_area=pygame.Rect(438,443,604,67)
+        self.theme.button(self.screen,guard_area,guard_area.collidepoint(self.mouse_pos()),
+                          True,True,False)
+        portrait=self.cards_view.images.get_card_image(
+            ART['S34'],(80,55),mode='contain')
+        self.screen.blit(portrait,(guard_area.x+13,guard_area.y+6))
+        self._text('[1] CHORĄŻY  2 ATK / 5 PŻ',18,guard_area.x+111,
+                   guard_area.y+9,cfg.TEXT)
+        self._text('„Chorąży zawsze zdąży.” · Jednostka bez zdolności',
+                   12,guard_area.x+111,guard_area.y+41,cfg.MUTED)
+        coin_area=pygame.Rect(438,537,604,67)
+        self.theme.button(self.screen,coin_area,coin_area.collidepoint(self.mouse_pos()),
+                          True,False,False)
+        for dx in (0,12,24):
+            center=(coin_area.x+34+dx,coin_area.y+32)
+            pygame.draw.circle(self.screen,(159,112,46),center,19)
+            pygame.draw.circle(self.screen,cfg.GOLD,center,15,2)
+        self._text('[2] +3 MONETY',18,coin_area.x+112,coin_area.y+9,cfg.TEXT)
+        self._text('Więcej środków na rozgrywkę · bez dodatkowej jednostki',
+                   12,coin_area.x+112,coin_area.y+41,cfg.MUTED)
+        self._text('Chorąży nie atakuje w swojej pierwszej turze i zajmuje pole.',
+                   13,740,638,cfg.MUTED,center=True)
         if self.last_error:
             self._text(self.cards_view.clip(self.last_error,self.fonts[13],690),
                        13,740,654,cfg.RED,center=True)
@@ -1411,7 +1434,8 @@ class SoloApp:
                 self._text('NASTĘPNA KARTA: SZYBKI ATAK',13,1104,796,STATUS_COLORS['quick'])
             can=self.game.active==0 and not self.game.pending
             self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ',active=can,accent=can)
-        self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
+        if self.game.phase!='finished':
+            self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
 
     @staticmethod
     def header_regions():
@@ -1665,8 +1689,13 @@ class SoloApp:
             # Archetype baseline and actual MAX HP are distinct from wounds.
             current_atk=u.atk if u else card.attack
             current_max=u.max_hp if u else card.max_hp
-            self._text(f'ATK  BAZA {d.atk} → TERAZ {current_atk}',14,194,717,cfg.TEXT)
-            self._text(f'MAX PŻ  BAZA {d.hp} → TERAZ {current_max}',14,194,741,cfg.TEXT)
+            # Real deltas only; wounds stay separate from maximum HP.
+            atk_label=(f'ATK  BAZA {d.atk} → TERAZ {current_atk}'
+                       if current_atk!=d.atk else f'ATK  {current_atk} (bez zmian)')
+            hp_label=(f'MAX PŻ  BAZA {d.hp} → TERAZ {current_max}'
+                      if current_max!=d.hp else f'MAX PŻ  {current_max} (bez zmian)')
+            self._text(atk_label,14,194,717,cfg.TEXT)
+            self._text(hp_label,14,194,741,cfg.TEXT)
             if u:
                 self._text(f'BIEŻĄCE PŻ: {max(0,u.hp)}/{current_max}',
                            14,194,765,cfg.MUTED)
