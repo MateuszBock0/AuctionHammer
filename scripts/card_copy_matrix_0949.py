@@ -12,7 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import sys
 
-from game.core.auction_catalog import CATALOG, TRIGGER, V22_CARDS, v23_variant
+from game.core.auction_catalog import CATALOG_V22, TRIGGER, V22_CARDS, v23_variant
 from game.ui.auction_copy import display_auction_copy
 from game.ui.card_infographics import card_cue
 from game.ui.card_summary import ability_summary
@@ -48,7 +48,7 @@ def rows():
         })
     assert len(V22_CARDS)==17,'Unexpected auction catalogue size'
     for aid in sorted(V22_CARDS):
-        archetype=CATALOG[aid]
+        archetype=CATALOG_V22[aid]
         for tier in RARITIES:
             definition=SimpleNamespace(
                 id=aid,name=archetype.name,trigger=TRIGGER[archetype.trigger],
