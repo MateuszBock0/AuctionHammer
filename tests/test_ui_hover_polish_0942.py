@@ -29,6 +29,10 @@ class HoverAndTavernAcceptance(unittest.TestCase):
         with patch.object(SoloApp,'_desktop_resolution',return_value=(1536,864)):
             self.app=SoloApp(start_in_menu=True)
         self.app.menu_open=False
+        # A new game may randomly put the human second. Resolve its blocking
+        # compensation modal before generic hand-hover tests.
+        if self.app._bonus_selection_due():
+            self.app._choose_bonus('coins')
     def tearDown(self):
         pygame.quit()
 
