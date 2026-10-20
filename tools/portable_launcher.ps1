@@ -232,6 +232,9 @@ try {
         if ($now -and (Installed-Exe $now)) { Atomic-WritePointer $previousFile $now }
         Atomic-WritePointer $activeFile $prior
         Write-Host ('[Rollback] Restored ' + $prior)
+        # Release updater lock before waiting for the game's window to close.
+        $mutex.ReleaseMutex()
+        $locked = $false
         exit (Start-Installed)
     }
     if (-not $SkipUpdate) {
@@ -297,6 +300,11 @@ try {
                 Remove-Item -LiteralPath $download -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
+    }
+    # The mutex protects *installation*, not the duration of gameplay.
+    if ($locked) {
+        $mutex.ReleaseMutex()
+        $locked = $false
     }
     exit (Start-Installed)
 } finally {
