@@ -96,6 +96,22 @@ jobs:
           foreach ($p in @('AuctionHammer.exe','_internal','BUILD_VERSION.txt','VERSION.json','tools/portable_launcher.ps1','URUCHOM_AUCTIONHAMMER.bat')) {
             if (-not (Test-Path -LiteralPath (Join-Path $check $p))) { throw ('Release missing: ' + $p) }
           }
+      - name: Test installing the REAL packaged Windows ZIP through the portable launcher
+        shell: powershell
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'AuctionHammer-release-smoke'
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          $zip = (Resolve-Path 'AuctionHammer-Windows.zip').Path
+          $sum = (Resolve-Path 'AuctionHammer-Windows.zip.sha256').Path
+          $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'tools/portable_launcher.ps1' -ProjectRoot $root -PackagePath $zip -ChecksumPath $sum -VersionTag $tag -NoLaunch
+          if ($LASTEXITCODE -ne 0) { throw 'Real ZIP installer smoke test failed' }
+          $active = (Get-Content -LiteralPath (Join-Path $root 'ACTIVE_RELEASE.txt') -Raw).Trim()
+          if ($active -ne $tag) { throw ('Wrong active release: ' + $active) }
+          $installed = Join-Path (Join-Path (Join-Path $root '.auctionhammer-versions') $tag) 'AuctionHammer.exe'
+          if (-not (Test-Path -LiteralPath $installed)) { throw 'Installed EXE missing' }
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'tools/portable_launcher.ps1' -ProjectRoot $root -SkipUpdate -NoLaunch
+          if ($LASTEXITCODE -ne 0) { throw 'Offline launcher smoke test failed' }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
