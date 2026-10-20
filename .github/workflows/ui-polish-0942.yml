@@ -1,0 +1,48 @@
+name: "0.9.42 Tavern UI - read-only hover and visual acceptance"
+
+on:
+  push:
+    branches: [feature/0942-ui-visual-interaction-polish]
+  pull_request:
+    branches: [feature/0941-second-player-choice-uiux, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-acceptance:
+    name: Verify accurate hover, 70 cards and read-only Match
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SDL_AUDIODRIVER: dummy
+      SDL_VIDEODRIVER: dummy
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - name: UI-only targeted tests
+        run: python -m unittest discover -s tests -p "test_ui_hover_polish_0942.py" -v
+      - name: Render four authentic Pygame visual review scenes
+        run: python tools/render_ui_hover_0942.py
+      - name: Assert four nonempty review screenshots
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths=sorted(Path('preview/ui_0942').glob('*.png'))
+          assert len(paths)==4,[str(p) for p in paths]
+          assert all(p.stat().st_size>1000 for p in paths)
+          print('4 authentic UI review images verified')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AuctionHammer0942-UI-review
+          path: preview/ui_0942/*.png
+          if-no-files-found: error
+          retention-days: 60
