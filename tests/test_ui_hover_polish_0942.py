@@ -153,7 +153,7 @@ class HoverAndTavernAcceptance(unittest.TestCase):
     def test_version_matches_metadata(self):
         from game import config
         data=json.loads((Path(__file__).resolve().parents[1]/'VERSION.json').read_text(encoding='utf-8'))
-        self.assertEqual(data['mvp'],'0.9.46.1')
+        self.assertEqual(data['mvp'],'0.9.47')
         self.assertIn(data['mvp'],config.WINDOW_TITLE)
         self.assertEqual(data['starting_compensation_audit_schema'],4)
         self.assertIn('choice_2_5_or_coins',data['starting_compensation_available_modes'])

@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.46.1 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.47 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -39,6 +39,16 @@ Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga
 Szczegóły: [QA aktualizatora Windows 0.9.43](docs/QUALITY_RELEASE_0943.md).
 
 > To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
+
+## Czytelność rozgrywki (0.9.47)
+
+- Pasek tury pokazuje **KARTA 0/1 lub 1/1** oraz **GOTOWE DO ATAKU: N**, oparte na rzeczywistej legalności zagrań i ataków. N oznacza liczbę gotowych jednostek, nie liczbę trafień.
+- Po wybraniu karty z ręki **złote obrysy** wskazują legalne wolne pola lub zastąpienia; **turkusowe** obrysy wskazują legalne cele ataku, a **fioletowe** — cele zdolności.
+- Panel karty pokazuje kontekstowy status: **ZAGRAJ KARTĘ**, **ATAK GOTOWY**, **ATAK WSTRZYMANY**, **KARTA RYWALA**.
+- Przycisk **ZAKOŃCZ TURĘ [SPACJA]** wyróżnia się mocniej po wykorzystaniu dostępnych akcji. Wcześniejsze zakończenie tury nadal jest dozwolone.
+- Krótkie komunikaty na dole panelu opisują prawdziwe, zatwierdzone zdarzenia: obronę tarczą/pancerzem, obrażenia, leczenie, statusy i zgony. Działają również przy wyłączonych animacjach.
+
+Zmiany mają charakter tylko wizualny i nie modyfikują reguł, kart, AI, aukcji, RNG ani podpisanego audytu. Szczegóły: [Gameplay Clarity 0.9.47](docs/GAMEPLAY_CLARITY_0947.md).
 
 ## Jak wygląda rozgrywka?
 
