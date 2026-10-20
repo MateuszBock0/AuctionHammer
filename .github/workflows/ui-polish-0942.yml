@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   ui-acceptance:
@@ -46,3 +46,18 @@ jobs:
           path: preview/ui_0942/*.png
           if-no-files-found: error
           retention-days: 60
+
+      - name: Publish standalone PNGs for direct browser links
+        if: github.event_name == 'push' && github.ref == 'refs/heads/feature/0942-ui-visual-interaction-polish'
+        run: |
+          mkdir -p docs/screenshots/ui_0942
+          cp preview/ui_0942/*.png docs/screenshots/ui_0942/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/ui_0942/*.png
+          if git diff --cached --quiet; then
+            echo "Existing screenshots already current"
+          else
+            git commit -m "docs(ui): publish 0.9.42 screenshot PNGs for direct viewing"
+            git push origin HEAD:feature/0942-ui-visual-interaction-polish
+          fi
