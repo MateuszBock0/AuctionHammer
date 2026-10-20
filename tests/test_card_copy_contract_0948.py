@@ -16,7 +16,13 @@ ROOT=Path(__file__).resolve().parents[1]
 BASIC={x['id']:x for x in json.loads((ROOT/'data/cards_base_70.json').read_text(encoding='utf8'))}
 
 def base_card(card_id,level=0):
-    return SimpleNamespace(definition=SimpleNamespace(**BASIC[card_id]),ability_level=level)
+    raw=BASIC[card_id]
+    # The real CardDefinition uses flattened per-turn growth attributes;
+    # JSON fixture values are nested under hand_growth.
+    definition=SimpleNamespace(
+        **{**raw,'growth_atk':raw['hand_growth']['atk_per_hand_turn'],
+                 'growth_hp':raw['hand_growth']['hp_per_hand_turn']})
+    return SimpleNamespace(definition=definition,ability_level=level,hand_turns=0)
 
 def auc(archetype,rarity,ruleset='v23',mode='v22'):
     names={'podstawowa':'PODSTAWOWA','rzadka':'RZADKA','legendarna':'LEGENDARNA'}
