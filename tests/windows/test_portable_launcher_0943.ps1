@@ -74,7 +74,8 @@ try {
     Assert-True ((Test-Path -LiteralPath (Join-Path $install ".auctionhammer-versions/$($first.tag)/_internal"))) 'Missing bundled runtime'
 
     # A second verified version is deployed alongside the first.
-    Invoke-QA $install $second | Out-Null
+    $secondLog = Invoke-QA $install $second
+    Write-Host ('Second activation details: ' + $secondLog)
     Assert-True ((Read-Active $install) -eq $second.tag) 'Second activation'
     Assert-True (((Get-Content (Join-Path $install 'PREVIOUS_RELEASE.txt') -Raw).Trim()) -eq $first.tag) 'Previous release pointer'
     Assert-True ((Test-Path -LiteralPath (Join-Path $install ".auctionhammer-versions/$($first.tag)/AuctionHammer.exe"))) 'Rollback binary lost'
