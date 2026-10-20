@@ -1845,19 +1845,23 @@ class SoloApp:
         active=self.combat_notice_active
         if active is not None and 0<=now-active[0]<2600:
             cue=active[1]
-            rect=pygame.Rect(1099,903,330,68)
+            # The sidebar ends at y=950: keep the entire ticker and both
+            # lines of text inside it, including the latest truncated line.
+            rect=pygame.Rect(1099,899,330,49)
             pygame.draw.rect(self.screen,(43,35,29),rect,border_radius=8)
             pygame.draw.rect(self.screen,cue.color,rect,2,border_radius=8)
             count=len(self.combat_notice_queue)
             heading=cue.label+(f'  ·  DALEJ {count}  [H]' if count else '  ·  [H]')
-            self._text(self.cards_view.clip(heading,self.fonts[13],304),
-                       13,1108,907,cue.color)
-            lines=self._wrap(notice or cue.message,12,306)
-            for i,line in enumerate(lines[:2]):
-                self._text(self.cards_view.clip(line,self.fonts[12],306),
-                           12,1108,931+18*i,cfg.TEXT)
-            if len(lines)>2:
-                self._text('… [H] PEŁEN ZAPIS',11,1110,960,cfg.GOLD)
+            self._text(self.cards_view.clip(heading,self.fonts[12],304),
+                       12,1108,900,cue.color)
+            lines=self._wrap(notice or cue.message,11,306)
+            if lines:
+                self._text(self.cards_view.clip(lines[0],self.fonts[11],306),
+                           11,1108,918,cfg.TEXT)
+                if len(lines)>1:
+                    last=lines[1]+('…' if len(lines)>2 else '')
+                    self._text(self.cards_view.clip(last,self.fonts[11],306),
+                               11,1108,934,cfg.TEXT)
         else:
             last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
             self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
@@ -2455,7 +2459,8 @@ class SoloApp:
         if (not self.tutorial.active or self.tutorial_welcome_open
                 or self.menu_open or self.history_open or self.help_open
                 or self.confirm_action is not None or self.details_card is not None
-                or self.replay_index is not None):
+                or self.replay_index is not None
+                or self.auction_inspect_index is not None):
             return
         accent=(255,219,125) if pygame.time.get_ticks()//420%2==0 else (219,158,70)
         for rect in self._tutorial_targets()[:8]:
