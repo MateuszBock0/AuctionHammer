@@ -1,10 +1,10 @@
 name: Build portable Windows + Release
 on:
   push:
-    branches: [main]
+    branches: [main, feature/0943-quality-release-safe-launcher]
   workflow_dispatch:
 concurrency:
-  group: auctionhammer-windows-main
+  group: auctionhammer-windows-${{ github.ref }}
   cancel-in-progress: true
 permissions:
   contents: write
