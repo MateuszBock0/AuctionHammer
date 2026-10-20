@@ -54,6 +54,23 @@ def _participant(role, participant):
         _stats(participant["before"]), _stats(participant["after"]))
 
 
+def _participant_died(participant):
+    """A removed unit or a hero reduced to <=0 HP counts as a fatal outcome.
+
+    Heroes remain in the signed state after death; unlike units, their
+    participant.after is not None. Only inspect documented audit snapshots.
+    """
+    if participant.get("before") is None:
+        return False
+    after = participant.get("after")
+    if after is None:
+        return True
+    hp = after.get("hp")
+    return (after.get("type") == "hero"
+            and isinstance(hp, (int, float)) and not isinstance(hp, bool)
+            and hp <= 0)
+
+
 def _micro(step):
     title = _e(step.get("operation", "?"))
     if step.get("operation") == "_damage":
@@ -72,7 +89,7 @@ def _micro(step):
 def _battle(item):
     attacker = item["attacker"]
     defender = item["defender"]
-    death = (attacker["after"] is None or defender["after"] is None)
+    death = (_participant_died(attacker) or _participant_died(defender))
     title = "{} → {}".format(attacker["name"], defender["name"])
     searchable = (title + " " + attacker["uid"] + " " + defender["uid"]
                   + " " + " ".join(item["events"])).lower()
@@ -98,7 +115,7 @@ def render_combat_html(payload):
         attacks = build_combat_analysis(payload)
     total = len(attacks)
     resolved_choices = sum(len(item["actions"]) > 1 for item in attacks)
-    death_attacks = sum(item["defender"]["after"] is None for item in attacks)
+    death_attacks = sum(_participant_died(item["defender"]) for item in attacks)
     cards = "\n".join(_battle(item) for item in attacks)
     document = r"""<!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
