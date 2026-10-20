@@ -25,7 +25,8 @@ from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS, ART
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
-from game.ui.v23_help import v23_base_card_note
+from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
+from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
@@ -98,6 +99,7 @@ class SoloApp:
         self.auction_slider_key=None
         self.auction_slider_dragging=False
         self.auction_status=''
+        self.auction_inspect_index=None
         self.ai.step(self.game)  # One audited command per step, even during mulligan.
         if self.game.phase=='mulligan' and 1 not in self.game.mulligan_done:
             # AI was second and chose its compensation; now finish its own
@@ -719,9 +721,20 @@ class SoloApp:
         except (IllegalMove,ValueError) as exc:
             self.auction_status=str(exc)
 
+    @staticmethod
+    def auction_inspection_rect(index):
+        rect=SoloApp.auction_offer_rect(index)
+        return pygame.Rect(rect.x+26,rect.y+277,rect.width-52,32)
+
     def _auction_click(self,pos):
         a=self.game.auction
-        if a is None or a.turn!=0:return
+        if a is None:return
+        # Inspecting an offer never submits a bid or purchases the card.
+        for i in range(len(a.offers)):
+            if self.auction_inspection_rect(i).collidepoint(pos):
+                self.auction_inspect_index=i
+                return
+        if a.turn!=0:return
         if a.phase=='picking':
             for i,offer in enumerate(a.offers):
                 if self.auction_offer_rect(i).collidepoint(pos):
@@ -735,6 +748,40 @@ class SoloApp:
                 if self.auction_control_rect(action).collidepoint(pos):
                     self._auction_do(action)
                     return
+
+    def _draw_auction_inspection(self):
+        a=self.game.auction
+        index=self.auction_inspect_index
+        if (self.game.phase!='auction' or a is None or index is None
+                or index>=len(a.offers)):
+            return
+        offer=a.offers[index]
+        definition=catalog_for(self.game.auction_catalog).get(offer.archetype)
+        raw=(v23_variant(self.game.auction_catalog,offer.archetype,
+                         offer.rarity,getattr(self.game,'ruleset_version','v22'))
+             if definition is not None and self.game.auction_catalog in ('v4','v22')
+             else definition.abilities[RARITIES.index(offer.rarity)]
+             if definition is not None else 'Nie znaleziono definicji.')
+        description=full_preview_auction_copy(
+            offer.archetype,offer.rarity,
+            getattr(self.game,'ruleset_version','v22'),raw)
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((*TAVERN_SCRIM,240));self.screen.blit(shade,(0,0))
+        rect=pygame.Rect(255,190,972,593)
+        self._panel(rect,TAVERN_PANEL_INNER,cfg.GOLD,18)
+        name=definition.name if definition is not None else offer.archetype
+        self._text(self.cards_view.clip(name,self.fonts[28],890),
+                   28,294,226,cfg.GOLD)
+        self._text(f'OFERTA {index+1}  ·  {offer.rarity.upper()}  ·  '
+                   f'{offer.atk} ATK / {offer.hp} PŻ',16,296,282,cfg.TEXT)
+        self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
+        lines=self._wrap(description,18,853)
+        for i,line in enumerate(lines[:13]):
+            self._text(line,18,296,378+i*25,cfg.TEXT)
+        if len(lines)>13:
+            self._text('DALSZY TEKST: [I] / ORYGINALNY OPIS KARTY',13,
+                       296,708,cfg.MUTED)
+        self._button(pygame.Rect(934,710,239,49),'ZAMKNIJ  [ESC]',small=True)
 
     def _draw_auction(self):
         a=self.game.auction
@@ -771,10 +818,16 @@ class SoloApp:
                          if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
+            rules=getattr(self.game,'ruleset_version','v22')
+            if adef is not None and self.game.auction_catalog=='v22':
+                description=preview_auction_copy(off.archetype,off.rarity,rules,
+                                                 description)
             lines=self._wrap(description,13,rect.width-36)
             for j,line in enumerate(lines[:4]):
-                self._text(line,13,rect.centerx,rect.y+190+24*j,
+                self._text(line,13,rect.centerx,rect.y+190+23*j,
                            cfg.TEXT,center=True)
+            inspect=self.auction_inspection_rect(i)
+            self._button(inspect,'PEŁNA ZDOLNOŚĆ',small=True)
             if claimed:
                 selected_by=next(p for p,card in a.picks.items() if card==off.uid)
                 self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
@@ -1193,6 +1246,18 @@ class SoloApp:
                     self._choose_bonus('coins')
             return True
         if self.game.phase=='auction':
+            if self.auction_inspect_index is not None:
+                if event.type==pygame.KEYDOWN and event.key in (
+                        pygame.K_ESCAPE,pygame.K_i,pygame.K_RETURN):
+                    self.auction_inspect_index=None
+                elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                    self.auction_inspect_index=None
+                return True
+            if event.type==pygame.KEYDOWN and event.key in (
+                    pygame.K_1,pygame.K_2,pygame.K_3):
+                if self.game.auction.phase=='bidding':
+                    self.auction_inspect_index=event.key-pygame.K_1
+                    return True
             if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
                 self.menu_page='main'
                 self.menu_open=True
@@ -1489,12 +1554,23 @@ class SoloApp:
             self._infographic_box(pygame.Rect(1267,210,157,70),'ROZWÓJ CO 3 TURY',cue.upgrade,cfg.GREEN,cue.next_threshold)
             self._infographic_box(pygame.Rect(1104,290,320,69),'AKTUALNY EFEKT',cue.base,cue.color,
                                   f'ATAK {u.atk if u else c.attack} / PŻ {u.hp if u else c.max_hp}')
-            self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
-            yy=405
-            for line in self._wrap(summary.full,13,312)[:3]:
-                self._text(line,13,1105,yy,cfg.TEXT);yy+=18
-            if len(self._wrap(summary.full,13,312))>3:
-                self._text('Pełny opis i wartości: [I]',12,1105,464,cfg.MUTED)
+            rules=getattr(self.game,'ruleset_version','v22')
+            conditional=v23_base_card_short_note(d.id,rules)
+            if conditional:
+                self._text('DODATKOWA ZASADA v23',15,1105,380,cfg.GOLD)
+                short_lines=self._wrap(conditional,13,311)
+                for i,line in enumerate(short_lines[:3]):
+                    self._text(self.cards_view.clip(line,self.fonts[13],311),
+                               13,1105,406+i*19,cfg.TEXT)
+                self._text('PEŁNA REGUŁA I OPIS  [I]',12,1105,465,cfg.GOLD)
+            else:
+                self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
+                description_lines=self._wrap(summary.full,13,312)
+                for i,line in enumerate(description_lines[:3]):
+                    self._text(self.cards_view.clip(line,self.fonts[13],311),
+                               13,1105,405+i*18,cfg.TEXT)
+                if len(description_lines)>3:
+                    self._text('PEŁNY OPIS I WARUNKI  [I]',12,1105,464,cfg.GOLD)
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
             self._text(self.cards_view.clip(cue.growth,self.fonts[13],309),13,1105,517,cfg.MUTED)
             if u:
@@ -1894,8 +1970,9 @@ class SoloApp:
         cue=card_cue(card,u)
         summary=ability_summary(card,u)
         v23_note=v23_base_card_note(d.id,getattr(self.game,'ruleset_version','v22'))
-        detail_summary=(f'{summary.full}  [DODATKOWA ZASADA v23] {v23_note}'
-                        if v23_note else summary.full)
+        # Show one coherent full text, not a duplicated baseline plus a
+        # truncated v23 appendix. Historical ruleset descriptions are untouched.
+        detail_summary=v23_note or summary.full
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((*TAVERN_SCRIM,225));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,75,1190,831)
@@ -2079,6 +2156,7 @@ class SoloApp:
                         self._last_logged_event=len(game.event_journal)
                         self._recent_feedback=[]
                         self.combat_notice_active=None
+                        self.auction_inspect_index=None
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
                         self.recorder=MatchRecorder()
@@ -2417,6 +2495,7 @@ class SoloApp:
             self._draw_hover_guidance()
             self._draw_gameover()
             self._draw_auction()
+            self._draw_auction_inspection()
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw(self.screen,pygame.time.get_ticks(),
                                          self.fonts_bold[16])
