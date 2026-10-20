@@ -122,6 +122,7 @@ class SoloApp:
         self._old_pending=None
         self._recent_feedback=[]
         self.combat_notice_active=None
+        self.combat_notice_queue=[]
         self.visual_notice=''
         self.visual_notice_tick=-10000
         self._last_logged_event=len(self.game.event_journal)
@@ -1384,27 +1385,34 @@ class SoloApp:
         return None
 
     def _capture_visual_feedback(self):
+        """FIFO of committed combat events, including when VFX is disabled."""
         events=[event['text'] for event in self.game.event_journal]
         if len(events)<self._last_logged_event:
             self._last_logged_event=0
             self.combat_notice_active=None
-        if len(events)>self._last_logged_event:
-            timestamp=pygame.time.get_ticks()
-            for event in events[self._last_logged_event:]:
-                notice=combat_notice(event)
-                # Ticker is useful even if optional animations are turned off.
-                if notice is not None:
-                    self.combat_notice_active=(timestamp,notice)
-                if self.animations_enabled:
-                    color=self._feedback_color(event)
-                    if color:
-                        self._recent_feedback.append((timestamp,color))
-            self._recent_feedback=self._recent_feedback[-2:]
-            self._last_logged_event=len(events)
+            self.combat_notice_queue=[]
         now=pygame.time.get_ticks()
+        for event in events[self._last_logged_event:]:
+            notice=combat_notice(event)
+            if notice is not None:
+                if self.combat_notice_active is None:
+                    self.combat_notice_active=(now,notice)
+                else:
+                    # A bounded visual queue; the authoritative H history keeps
+                    # every event without any truncation or reconstruction.
+                    self.combat_notice_queue.append(notice)
+                    self.combat_notice_queue=self.combat_notice_queue[-24:]
+            if self.animations_enabled:
+                color=self._feedback_color(event)
+                if color:
+                    self._recent_feedback.append((now,color))
+        self._last_logged_event=len(events)
+        self._recent_feedback=self._recent_feedback[-2:]
         self._recent_feedback=[e for e in self._recent_feedback if now-e[0]<620]
-        if self.combat_notice_active and now-self.combat_notice_active[0]>=3400:
-            self.combat_notice_active=None
+        if self.combat_notice_active and now-self.combat_notice_active[0]>=2600:
+            self.combat_notice_active=(
+                (now,self.combat_notice_queue.pop(0))
+                if self.combat_notice_queue else None)
 
     def update(self):
         g=self.game
@@ -1747,6 +1755,7 @@ class SoloApp:
         rect=pygame.Rect(96,372,952,56)
         hint=self.tutorial.hint(self.game)
         if hint is not None:
+            # Keep the five-step coach visible alongside the real turn HUD.
             # Readable gold framed lesson, not an ordinary journal message.
             pygame.draw.rect(self.screen,(47,38,25),rect,border_radius=9)
             pygame.draw.rect(self.screen,(249,201,100),rect,3,border_radius=9)
@@ -1754,16 +1763,19 @@ class SoloApp:
                              pygame.Rect(rect.x+3,rect.y+4,6,rect.height-8),
                              border_radius=3)
             title,detail=hint.title,hint.detail
-            self._text(self.cards_view.clip(title,self.fonts[18],695),
-                       18,rect.x+18,rect.y+3,cfg.GOLD)
-            self._text(self.cards_view.clip(detail,self.fonts[14],780),
-                       14,rect.x+18,rect.y+31,cfg.TEXT)
+            self._text(self.cards_view.clip(title,self.fonts[16],524),
+                       16,rect.x+18,rect.y+3,cfg.GOLD)
+            self._text(self.cards_view.clip(detail,self.fonts[13],528),
+                       13,rect.x+18,rect.y+31,cfg.TEXT)
             for index in range(5):
-                dot=pygame.Rect(rect.right-160+index*22,rect.y+8,14,9)
+                dot=pygame.Rect(rect.right-155+index*23,rect.y+5,14,8)
                 pygame.draw.rect(self.screen,cfg.GOLD if index<hint.stage else (89,78,64),
                                  dot,border_radius=3)
-            self._text('POMOC [F1]   WYŁĄCZ [T]',12,rect.right-235,
-                       rect.y+33,cfg.GOLD)
+            if self.game.phase=='turn':
+                self._draw_turn_counters(rect,compact=True)
+            else:
+                self._text('POMOC [F1]   WYŁĄCZ [T]',12,rect.right-220,
+                           rect.y+32,cfg.GOLD)
             return
         pygame.draw.rect(self.screen,TAVERN_PANEL_INNER,rect,border_radius=7)
         pygame.draw.rect(self.screen,TAVERN_BRASS,rect,1,border_radius=7)
@@ -1780,23 +1792,29 @@ class SoloApp:
             self._text(self.cards_view.clip(detail if len(parts)>1 else title,
                                             self.fonts[13],525),
                        13,rect.x+12,rect.y+31,cfg.TEXT)
-            for x,w,label,enabled in (
-                    (650,169,f'KARTA {hud.played_cards}/1',
-                     hud.is_human_turn and hud.can_play),
-                    (831,205,f'GOTOWE DO ATAKU: {hud.ready_units}',
-                     hud.is_human_turn and hud.ready_units>0)):
-                pill=pygame.Rect(x,rect.y+9,w,38)
-                color=cfg.GREEN if enabled else TAVERN_MUTED
-                pygame.draw.rect(self.screen,(49,43,32),pill,border_radius=7)
-                pygame.draw.rect(self.screen,color,pill,2 if enabled else 1,
-                                 border_radius=7)
-                self._text(self.cards_view.clip(label,self.fonts[13],w-16),
-                           13,pill.centerx,pill.centery,color,center=True)
+            self._draw_turn_counters(rect)
             return
         self._text(self.cards_view.clip(title,self.fonts[14],rect.width-28),
                    14,rect.x+12,rect.y+4,cfg.GOLD)
         self._text(self.cards_view.clip(detail,self.fonts[13],rect.width-28),
                    13,rect.x+12,rect.y+29,cfg.TEXT)
+
+    def _draw_turn_counters(self,rect,compact=False):
+        """One shared read-only HUD for normal play AND opt-in tutorials."""
+        hud=turn_readout(self.game)
+        for x,w,label,enabled in (
+                (650,169,f'KARTA {hud.played_cards}/1',
+                 hud.is_human_turn and hud.can_play),
+                (831,205,f'GOTOWE DO ATAKU: {hud.ready_units}',
+                 hud.is_human_turn and hud.ready_units>0)):
+            pill=pygame.Rect(x,rect.y+(24 if compact else 9),
+                             w,27 if compact else 38)
+            color=cfg.GREEN if enabled else TAVERN_MUTED
+            pygame.draw.rect(self.screen,(49,43,32),pill,border_radius=7)
+            pygame.draw.rect(self.screen,color,pill,2 if enabled else 1,
+                             border_radius=7)
+            self._text(self.cards_view.clip(label,self.fonts[13],w-16),
+                       13,pill.centerx,pill.centery,color,center=True)
 
     def _draw_header(self):
         logo,mode,help_area=self.header_regions()
@@ -1817,24 +1835,27 @@ class SoloApp:
         self._button(self.exit_button_rect(),'WYJDŹ',small=True)
 
     def _draw_log(self):
-        """Readable latest committed combat event inside the existing sidebar."""
+        """Two-line read-only combat ticker with an ordered event backlog."""
         now=pygame.time.get_ticks()
         notice=(getattr(self,'visual_notice','')
                 if now-getattr(self,'visual_notice_tick',-10000)<2400
                 else '')
         active=self.combat_notice_active
-        recent=active is not None and 0<=now-active[0]<3400
-        if recent:
+        if active is not None and 0<=now-active[0]<2600:
             cue=active[1]
-            rect=pygame.Rect(1099,903,330,46)
+            rect=pygame.Rect(1099,903,330,68)
             pygame.draw.rect(self.screen,(43,35,29),rect,border_radius=8)
             pygame.draw.rect(self.screen,cue.color,rect,2,border_radius=8)
-            self._text(self.cards_view.clip(cue.label+'  ·  [H] HISTORIA',
-                                            self.fonts[13],306),
+            count=len(self.combat_notice_queue)
+            heading=cue.label+(f'  ·  DALEJ {count}  [H]' if count else '  ·  [H]')
+            self._text(self.cards_view.clip(heading,self.fonts[13],304),
                        13,1108,907,cue.color)
-            self._text(self.cards_view.clip(notice or cue.message,
-                                            self.fonts[13],307),
-                       13,1108,928,cfg.TEXT)
+            lines=self._wrap(notice or cue.message,12,306)
+            for i,line in enumerate(lines[:2]):
+                self._text(self.cards_view.clip(line,self.fonts[12],306),
+                           12,1108,931+18*i,cfg.TEXT)
+            if len(lines)>2:
+                self._text('… [H] PEŁEN ZAPIS',11,1110,960,cfg.GOLD)
         else:
             last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
             self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
@@ -1868,7 +1889,9 @@ class SoloApp:
             return []
         player=g.players[0]
         if len(player.board)<5 and g.can_play(0,self.selected,None):
-            return [self.slot_rect(0,index) for index in range(len(player.board),5)]
+            # Match.play appends the new unit at len(board), regardless of
+            # clicked empty position. Highlight ONLY that actual destination.
+            return [self.slot_rect(0,len(player.board))]
         if len(player.board)==5:
             return [self.slot_rect(0,index) for index,uid in enumerate(player.board)
                     if g.can_play(0,self.selected,uid)]
@@ -2156,6 +2179,7 @@ class SoloApp:
                         self._last_logged_event=len(game.event_journal)
                         self._recent_feedback=[]
                         self.combat_notice_active=None
+                        self.combat_notice_queue=[]
                         self.auction_inspect_index=None
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
@@ -2404,7 +2428,7 @@ class SoloApp:
                 return [pygame.Rect(1201,816,221,52)]
             if self.selected in player.hand:
                 if len(player.board)<5:
-                    return [self.slot_rect(0,i) for i in range(len(player.board),5)]
+                    return [self.slot_rect(0,len(player.board))]
                 return [self.slot_rect(0,i) for i,uid in enumerate(player.board)
                         if g.can_play(0,self.selected,uid)]
             return list(self.hand_layout().values())
