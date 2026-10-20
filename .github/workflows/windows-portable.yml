@@ -64,7 +64,7 @@ jobs:
           foreach ($dir in @('game','assets','data','docs','tests','tools','preview','.vscode')) {
             Copy-Item -Path $dir -Destination $dest -Recurse -Force
           }
-          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
+          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','COFNIJ_AKTUALIZACJE.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
             Copy-Item -Path $f -Destination $dest -Force
           }
           # Ship a tracked, permitted album once, beside the portable EXE.
