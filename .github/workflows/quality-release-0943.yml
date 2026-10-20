@@ -1,0 +1,45 @@
+name: "0.9.43 Quality & Release - Windows Launcher QA"
+on:
+  push:
+    branches: [feature/0943-quality-release-safe-launcher]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-native-launcher:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: PowerShell 5.1 atomic updater fault-injection tests
+        shell: powershell
+        run: |
+          & "$env:GITHUB_WORKSPACE/tests/windows/test_portable_launcher_0943.ps1"
+      - name: Verify launcher and offline scripts exist
+        shell: powershell
+        run: |
+          foreach ($p in @('URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','tools/portable_launcher.ps1')) {
+            if (-not (Test-Path -LiteralPath $p)) { throw ('Missing launcher: ' + $p) }
+          }
+          $meta = Get-Content 'VERSION.json' -Raw | ConvertFrom-Json
+          if ($meta.mvp -ne '0.9.43') {throw 'Expected 0.9.43 metadata'}
+  python-regressions:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Complete game & UI tests on Windows
+        run: python -m unittest discover -s tests -v

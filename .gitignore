@@ -22,3 +22,9 @@ build/
 /assets/music/*.mp3
 /assets/music/*.wav
 !/assets/music/music_auctionhammer.mp3
+
+# Portable 0.9.43 updater: state and archived builds are local to each install.
+.auctionhammer-versions/
+ACTIVE_RELEASE.txt
+PREVIOUS_RELEASE.txt
+.auctionhammer-pointer-*.tmp

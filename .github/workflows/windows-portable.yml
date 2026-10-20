@@ -1,10 +1,10 @@
 name: Build portable Windows + Release
 on:
   push:
-    branches: [main]
+    branches: [main, feature/0943-quality-release-safe-launcher]
   workflow_dispatch:
 concurrency:
-  group: auctionhammer-windows-main
+  group: auctionhammer-windows-${{ github.ref }}
   cancel-in-progress: true
 permissions:
   contents: write
@@ -28,6 +28,10 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -v
+      - name: Test verified SHA256 updater and atomic rollback on Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          & "$env:GITHUB_WORKSPACE/tests/windows/test_portable_launcher_0943.ps1"
       - name: Render Minimal Fantasy screenshots
         env:
           SDL_VIDEODRIVER: dummy
@@ -60,7 +64,7 @@ jobs:
           foreach ($dir in @('game','assets','data','docs','tests','tools','preview','.vscode')) {
             Copy-Item -Path $dir -Destination $dest -Recurse -Force
           }
-          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
+          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','COFNIJ_AKTUALIZACJE.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
             Copy-Item -Path $f -Destination $dest -Force
           }
           # Ship a tracked, permitted album once, beside the portable EXE.
@@ -79,11 +83,42 @@ jobs:
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
           Set-Content -Path "$dest/BUILD_VERSION.txt" -Value $tag -NoNewline
           Compress-Archive -Path $dest -DestinationPath 'AuctionHammer-Windows.zip' -Force
+          $hash = (Get-FileHash -LiteralPath 'AuctionHammer-Windows.zip' -Algorithm SHA256).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText((Join-Path (Get-Location) 'AuctionHammer-Windows.zip.sha256'), ($hash + ' *AuctionHammer-Windows.zip'), [Text.Encoding]::ASCII)
+          Write-Host ('SHA256 ' + $hash)
+      - name: Verify archive and checksum on Windows
+        shell: powershell
+        run: |
+          $sum = ((Get-Content -Raw 'AuctionHammer-Windows.zip.sha256').Trim() -split '\s+')[0]
+          $actual = (Get-FileHash 'AuctionHammer-Windows.zip' -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sum -ne $actual) {throw 'Published checksum mismatch'}
+          $check = 'release/AuctionHammer'
+          foreach ($p in @('AuctionHammer.exe','_internal','BUILD_VERSION.txt','VERSION.json','tools/portable_launcher.ps1','URUCHOM_AUCTIONHAMMER.bat')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $check $p))) { throw ('Release missing: ' + $p) }
+          }
+      - name: Test installing the REAL packaged Windows ZIP through the portable launcher
+        shell: powershell
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'AuctionHammer-release-smoke'
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          $zip = (Resolve-Path 'AuctionHammer-Windows.zip').Path
+          $sum = (Resolve-Path 'AuctionHammer-Windows.zip.sha256').Path
+          $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'tools/portable_launcher.ps1' -ProjectRoot $root -PackagePath $zip -ChecksumPath $sum -VersionTag $tag -NoLaunch
+          if ($LASTEXITCODE -ne 0) { throw 'Real ZIP installer smoke test failed' }
+          $active = (Get-Content -LiteralPath (Join-Path $root 'ACTIVE_RELEASE.txt') -Raw).Trim()
+          if ($active -ne $tag) { throw ('Wrong active release: ' + $active) }
+          $installed = Join-Path (Join-Path (Join-Path $root '.auctionhammer-versions') $tag) 'AuctionHammer.exe'
+          if (-not (Test-Path -LiteralPath $installed)) { throw 'Installed EXE missing' }
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'tools/portable_launcher.ps1' -ProjectRoot $root -SkipUpdate -NoLaunch
+          if ($LASTEXITCODE -ne 0) { throw 'Offline launcher smoke test failed' }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: AuctionHammer-Windows
-          path: AuctionHammer-Windows.zip
+          path: |
+            AuctionHammer-Windows.zip
+            AuctionHammer-Windows.zip.sha256
       - name: Publish stable latest-release download URL
         if: github.ref == 'refs/heads/main'
         shell: pwsh
@@ -91,4 +126,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
-          gh release create $tag 'AuctionHammer-Windows.zip' --title "AuctionHammer Portable $tag" --notes "Portable Windows release. Extract AuctionHammer and launch URUCHOM_AUCTIONHAMMER.bat. Python and pygame-ce are bundled." --latest --target '${{ github.sha }}'
+          gh release create $tag 'AuctionHammer-Windows.zip' 'AuctionHammer-Windows.zip.sha256' --title "AuctionHammer Portable $tag" --notes "AuctionHammer 0.9.43+ portable Windows release. Verified SHA-256 update, side-by-side versions and rollback. Extract the folder once and launch URUCHOM_AUCTIONHAMMER.bat. Old EXE and user saves remain intact during update." --latest --target '${{ github.sha }}'
