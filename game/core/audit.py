@@ -13,6 +13,8 @@ from dataclasses import fields, is_dataclass
 from functools import wraps
 from hashlib import sha256
 from pathlib import Path
+from .combat_analysis import build_combat_analysis
+from .combat_html import render_combat_html, FILENAME as COMBAT_HTML_FILENAME
 import json
 import os
 import gzip
@@ -378,11 +380,28 @@ def make_report(game):
         initialize_audit(game,complete=False)
     initial=game.audit_initial
     final=state_snapshot(game)
+    names={uid:card.definition.name for uid,card in game.cards.items()}
+    names.update({'hero:0':game.players[0].name,
+                  'hero:1':game.players[1].name})
+    # Read-only derivation: never touches Match, random state or action hashes.
+    combat_payload={
+        'initial_state':initial,
+        'actions':game.audit_actions,
+        'internal_events':game.audit_internal,
+        'event_journal':game.event_journal
+    }
+    combat=build_combat_analysis(combat_payload,names)
     payload={
         "format":FORMAT,
         "schema":SCHEMA,
         "specification":"GAME_MASTER_v19",
-        "version":"0.9.38" if game.auction_catalog=="v22" else "0.9.30" if game.auction_catalog=="v4" else "0.9.21",
+        # MatchAudit.version identifies the build which actually exported this
+        # document, not the v22 rule family originally introduced in 0.9.38.
+        # Historical signed payloads retain their original version unchanged.
+        "version":getattr(game,"audit_metadata",{}).get(
+            "build",{}).get("version") or (
+            "0.9.44" if game.auction_catalog=="v22" else
+            "0.9.30" if game.auction_catalog=="v4" else "0.9.21"),
         "exported_at_utc":datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seed":game.seed,
         "first_player":game.first,
@@ -398,11 +417,19 @@ def make_report(game):
         "actions":game.audit_actions,
         "internal_events":game.audit_internal,
         "event_journal":list(game.event_journal),
+        "combat_analysis":{
+            "schema":1,
+            "source":"signed-action-state-diffs-and-traced-effects",
+            "note":("Stany uczestników przed atakiem i po pełnym rozstrzygnięciu, "
+                    "łącznie z wyborami zdolności. Brak jednostki po ataku = null."),
+            "attacks":combat
+        },
         "final_state":final,
         "summary":{
             "winner":game.winner,
             "rounds":game.round,
             "action_commands":len(game.audit_actions),
+            "combat_attacks":len(combat),
             "internal_operations":len(game.audit_internal),
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
@@ -518,6 +545,12 @@ def write_last_match(game,path=None):
     _archive_document(report,dest)
     _atomic_write(dest,(json.dumps(report,ensure_ascii=False,indent=2,
                                    allow_nan=False)+"\n").encode("utf-8"))
+    # Only the real application export generates a companion HTML automatically.
+    # Explicit-path programmatic audits remain one-file, preserving old test
+    # harnesses and users' output-directory contracts.
+    if path is None:
+        html_path=dest.with_name(COMBAT_HTML_FILENAME)
+        _atomic_write(html_path,render_combat_html(report["payload"]).encode("utf-8"))
     return dest
 
 

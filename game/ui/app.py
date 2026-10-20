@@ -153,6 +153,27 @@ class SoloApp:
             self._audit_notice='Nie można otworzyć folderu: '+str(exc)
             return False
 
+    def _open_combat_book(self):
+        """Open the offline Księga Starć only AFTER a finished match."""
+        from game.core.combat_html import FILENAME as COMBAT_HTML_FILENAME
+        report=audit_path().with_name(COMBAT_HTML_FILENAME)
+        if not report.is_file() and self.game.phase=='finished':
+            self._export_finished_audit_once(force=True)
+        if not report.is_file():
+            self._audit_notice='BRAK KSIĘGI STARC — najpierw zakończ mecz.'
+            return False
+        try:
+            if os.name=='nt':
+                os.startfile(str(report))
+            else:
+                subprocess.Popen(['xdg-open',str(report)],
+                                 stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.DEVNULL)
+            return True
+        except (OSError,AttributeError) as exc:
+            self._audit_notice='Nie można otworzyć Księgi Starć: '+str(exc)
+            return False
+
     def _open_archived_record(self,record):
         """Open the exact selected match in Explorer, not just its first page."""
         filename=str(record.get('file',''))
@@ -514,6 +535,8 @@ class SoloApp:
                 self._export_finished_audit_once(force=True)
             elif pygame.Rect(738,702,325,46).collidepoint(pos):
                 self._open_audit_folder()
+            elif pygame.Rect(885,637,239,52).collidepoint(pos):
+                self._open_combat_book()
             return
         if g.pending:
             if g.pending.owner != 0:
@@ -1134,6 +1157,8 @@ class SoloApp:
                 self._open_audit_folder()
             elif event.key==pygame.K_e and self.game.phase=='finished':
                 self._export_finished_audit_once(force=True)
+            elif event.key==pygame.K_w and self.game.phase=='finished':
+                self._open_combat_book()
             elif (self.game.pending and self.game.pending.owner == 0
                   and pygame.K_1 <= event.key <= pygame.K_6):
                 index = self.choice_page * self.CHOICES_PER_PAGE + event.key - pygame.K_1
@@ -1996,6 +2021,7 @@ class SoloApp:
         self._text('H — historia  ·  P — powtórka  ·  R — nowy mecz',
                    15,738,608,cfg.MUTED,center=True)
         self._button(pygame.Rect(608,637,260,52),'NOWY MECZ',accent=True)
+        self._button(pygame.Rect(885,637,239,52),'KSIĘGA STARC  [W]',small=True)
         self._button(pygame.Rect(392,702,325,46),'EKSPORT AUDYTU  [E]',small=True,accent=True)
         self._button(pygame.Rect(738,702,325,46),'OTWÓRZ FOLDER  [O]',small=True)
         notice=getattr(self,'_audit_notice','')

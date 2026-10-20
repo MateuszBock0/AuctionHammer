@@ -26,7 +26,11 @@ jobs:
             if (-not (Test-Path -LiteralPath $p)) { throw ('Missing launcher: ' + $p) }
           }
           $meta = Get-Content 'VERSION.json' -Raw | ConvertFrom-Json
-          if ($meta.mvp -ne '0.9.43') {throw 'Expected 0.9.43 metadata'}
+          if (-not $meta.mvp) {throw 'Missing version in metadata'}
+          $config = Get-Content 'game/config.py' -Raw
+          if (-not $config.Contains([string]$meta.mvp)) {
+            throw ('UI version differs from VERSION.json: ' + $meta.mvp)
+          }
   python-regressions:
     runs-on: windows-latest
     timeout-minutes: 25
