@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.47",
+  "mvp": "0.9.48",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -182,5 +182,16 @@
     "feedback": "exact committed journal text and label even with animations off",
     "end_turn": "legal as before; accent when no playable card or ready attacking unit",
     "rules_changed": false
+  },
+  "ui_stage_0948": {
+    "source": "verified_user_supplied_0.9.46.1_card_copy_archive",
+    "verified_package_entries": 25,
+    "base_card_descriptions": 13,
+    "conditional_v23_descriptions": 5,
+    "auction_v23_variants": 7,
+    "historical_effect_strings_unchanged": true,
+    "gameplay_ux": "combined tutor and HUD, exact append slot, FIFO combat notices, full auction offer description, contextual sidebar",
+    "rules_unchanged": true,
+    "manual_windows_visual_acceptance": "pending"
   }
 }

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import re
 
 from game.ui.card_infographics import first_scalable_value
+from game.ui.auction_copy import identify_auction_variant, display_auction_copy
 
 
 # Klucze są ID z data/cards_base_70.json, a nie kolejnymi pozycjami w banku.
@@ -35,16 +36,16 @@ SPECS = {
         "full": "Wybrany sojusznik dostaje {v} trwałego pancerza."
     },
     "S05": {
-        "short": "Tarcza + pancerz → sojusznik",
-        "full": "Daje sojusznikowi tarczę i 1 trwałego pancerza; rozwój dodaje MAX PŻ, nie tarcze."
+        "short": "Tarcza + 1 pancerza; rozwój: +1 ATK/+2 MAX PŻ",
+        "full": "Tarcza i 1 trwałego pancerza dla sojusznika. Rozwój co 3 tury w ręce dodaje tej karcie +1 ATK i +2 MAX PŻ; nie zwiększa liczby Tarcz."
     },
     "S58": {
         "short": "Trucizna → wróg; suma {total}",
         "full": "Wybrany wróg: trucizna {tick} na aktywację przez {ticks} tury, łącznie {total} obrażeń."
     },
     "S59": {
-        "short": "Ogłusza wroga + {v} obr.",
-        "full": "Wybranego wroga ogłusza na 1 jego turę i zadaje {v} obrażeń."
+        "short": "Ogłuszenie; 3 obr., przy sukcesie {s59_success} obr.",
+        "full": "Spróbuj ogłuszyć wybraną wrogą jednostkę na 1 jej własną turę. Zadaj 3 obrażenia; jeżeli ogłuszenie faktycznie zadziałało, zadaj zamiast tego {s59_success} obrażeń (3 + poziom)."
     },
     "S60": {
         "short": "Regen. → sojusznik; suma {total}",
@@ -55,8 +56,8 @@ SPECS = {
         "full": "Wybranemu sojusznikowi nadaje Prowokację do opuszczenia planszy."
     },
     "S07": {
-        "short": "Oczyszcza: swój / wróg",
-        "full": "Wybór: usuwa negatywne efekty z własnej jednostki (leczy o {v} PŻ) ALBO pozytywne z wroga."
+        "short": "Czyszczenie: swój cel 1 lub {s07_heal_if_clean} PŻ; wróg do {level} obr.",
+        "full": "Wybór: oczyść własną jednostkę z ujemnych efektów i ulecz ją o 1 PŻ (lub {s07_heal_if_clean}, jeśli usunięto efekt); ALBO usuń dodatnie efekty wroga i, jeśli cokolwiek usunięto, zadaj {level} obrażeń."
     },
     "S64": {
         "short": "Sojusznik: odp. na truciznę",
@@ -87,8 +88,8 @@ SPECS = {
         "full": "Wybór: sobie +{v} MAX/bieżącego PŻ albo wrogowi -{v} MAX PŻ do jego najbliższej tury."
     },
     "S12": {
-        "short": "Usuwa do {v} pancerza celu",
-        "full": "Przed walką odbiera celowi ataku maks. {v} pancerza."
+        "short": "Usuń do {s12_value} pancerza; bez pancerza: {s12_value} obr.",
+        "full": "Przed standardową walką usuń do {s12_value} pancerza z celu ataku (jednostki lub bohatera). Jeśli nie ma pancerza, zamiast tego zadaj mu {s12_value} obrażeń."
     },
     "S70": {
         "short": "Tarcza dla siebie przed walką",
@@ -99,8 +100,8 @@ SPECS = {
         "full": "Cel ataku: trucizna {tick} na aktywację przez {ticks} tury, łącznie {total} obrażeń."
     },
     "S15": {
-        "short": "Ogłusza atakowaną jednostkę",
-        "full": "Przed walką ogłusza atakowaną jednostkę na 1 jej turę; bonus obrażeń za poziom: {level}."
+        "short": "Ogłuszenie przy ataku; gdy skuteczne: +{s15_if_stunned} obr.",
+        "full": "Przy ataku jednostki: spróbuj ogłuszyć cel na 1 jego własną turę. Tylko gdy ogłuszenie zadziała, zadaj przed walką {s15_if_stunned} dodatkowych obrażeń (1 bazowe + poziom). W przeciwnym razie brak dodatkowych obrażeń tej zdolności."
     },
     "S71": {
         "short": "Regen. siebie; suma {total}",
@@ -111,16 +112,16 @@ SPECS = {
         "full": "Przed walką zyskuje Prowokację do końca swojej najbliższej własnej tury."
     },
     "S74": {
-        "short": "Usuwa premie atakowanego wroga",
-        "full": "Przed walką z jednostką usuwa jej wszystkie tymczasowe pozytywne efekty."
+        "short": "Oczyszcza wroga; {s74_success}/{s74_other} obr.",
+        "full": "Przed standardową walką z jednostką usuń jej tymczasowe dodatnie efekty. Jeśli cokolwiek usunięto, zadaj {s74_success} dodatkowych obrażeń; jeśli nic nie usunięto, zadaj {s74_other} dodatkowych obrażeń."
     },
     "S76": {
         "short": "Odporność na ogłuszenie: sobie",
         "full": "Przed walką zyskuje odporność na ogłuszenie do końca swojej najbliższej tury."
     },
     "S78": {
-        "short": "Szybki dla innego nowego sojusz.",
-        "full": "Przed walką pozwala innej własnej jednostce wystawionej w tej turze atakować natychmiast."
+        "short": "Szybki: świeży sojusznik / karta na ręce",
+        "full": "Przy ataku nadaj Szybki atak innej własnej jednostce wystawionej w tej turze. Jeśli takiej nie ma, wybierz własną kartę w ręce: otrzyma Szybki atak przy najbliższym wystawieniu."
     },
     "S79": {
         "short": "2. atak dopiero po 1. legalnym",
@@ -155,12 +156,12 @@ SPECS = {
         "full": "Po śmierci wybrany wróg dostaje truciznę {tick} na aktywację przez {ticks} tury (łącznie {total})."
     },
     "S84": {
-        "short": "Ogłusza wroga + {v} obr.",
-        "full": "Po śmierci ogłusza wroga na 1 jego turę i zadaje {v} obrażeń."
+        "short": "Po śmierci: ogłuszenie; 4 lub {s84_success} obr.",
+        "full": "Przy śmierci spróbuj ogłuszyć wybraną wrogą jednostkę na 1 jej własną turę. Zadaj 4 obrażenia; jeżeli ogłuszenie faktycznie zadziałało, zadaj zamiast tego {s84_success} obrażeń (4 + poziom)."
     },
     "S85": {
-        "short": "Regen. → sojusznik; suma {total}",
-        "full": "Po śmierci pozostały sojusznik otrzymuje regenerację {tick} przez {ticks} tury (łącznie {total})."
+        "short": "Po śmierci: regeneracja sojusznika / +{s85_hero} PŻ bohatera",
+        "full": "Przy śmierci nałóż na inną własną jednostkę regenerację {tick} PŻ przez {ticks} jej własne tury (łącznie {total}). Jeżeli nie ma innej własnej jednostki, zamiast tego ulecz bohatera jednorazowo o {s85_hero} PŻ."
     },
     "S86": {
         "short": "Prowokacja → pozostały sojusz.",
@@ -183,8 +184,8 @@ SPECS = {
         "full": "Po śmierci daje Podwójny atak pozostałemu sojusznikowi; gdy brak — losowej karcie w ręce na pierwszą legalną turę."
     },
     "S27": {
-        "short": "{v} obr. → wróg z min. PŻ",
-        "full": "Na koniec tury rani za {v} wroga o najniższym aktualnym PŻ."
+        "short": "Koniec tury: {v} obr. najsłabszy wróg / bohater",
+        "full": "Na koniec własnej tury zadaj {v} obrażeń wrogiej jednostce o najniższym bieżącym PŻ; jeśli brak wrogich jednostek, zadaj {v} obrażeń wrogiemu bohaterowi."
     },
     "S25": {
         "short": "Leczy {v} → wybrany sojusz.",
@@ -223,12 +224,12 @@ SPECS = {
         "full": "Na koniec tury daje sojusznikowi Prowokację do końca jego najbliższej własnej tury."
     },
     "S97": {
-        "short": "Oczyszcza negatywy sojusznika",
-        "full": "Na koniec tury usuwa wszystkie tymczasowe negatywne efekty wybranego sojusznika."
+        "short": "Oczyść; ulecz {s97_success}/{s97_other} PŻ",
+        "full": "Na koniec własnej tury usuń tymczasowe ujemne efekty wybranego sojusznika. Jeśli usunięto co najmniej jeden efekt, ulecz go o {s97_success} PŻ; w przeciwnym razie o {s97_other} PŻ."
     },
     "S99": {
-        "short": "Sojusznik: odp. na truciznę",
-        "full": "Na koniec tury daje sojusznikowi odporność na truciznę do końca jego najbliższej tury."
+        "short": "Odporność na truciznę +1 pancerza; rozwój +{level} trwałego",
+        "full": "Na koniec własnej tury nadaj sojusznikowi odporność na truciznę oraz 1 tymczasowego pancerza do końca jego najbliższej własnej tury. Przy pierwszej aktywacji zdolności po wystawieniu rozwój daje chronionemu celowi dodatkowo {level} trwałego pancerza."
     },
     "S101": {
         "short": "Szybki → karta w ręce na nast. turę",
@@ -267,8 +268,8 @@ SPECS = {
         "full": "Wróg raniący tę jednostkę standardowo otrzymuje truciznę {tick} przez {ticks} tury (łącznie {total})."
     },
     "S108": {
-        "short": "Ogłusza pierwszy raz naprzeciw",
-        "full": "Pierwsze ustawienie wroga naprzeciw ogłusza go na 1 turę; tego samego nie drugi raz; bonus obr.: {level}."
+        "short": "Nowy wróg naprzeciw: ogłuszenie +{s108_if_stunned} obr.",
+        "full": "Gdy wroga jednostka po raz pierwszy znajdzie się naprzeciw Trębacza, spróbuj ją ogłuszyć na 1 jej własną turę. Jeśli to się uda, zadaj jej {s108_if_stunned} obrażeń (1 bazowe + poziom); jeśli nie, nie zadaj obrażeń. Ten sam wróg nie aktywuje ponownie zdolności podczas tego wystawienia."
     },
     "S109": {
         "short": "Samoregeneracja {v} co turę",
@@ -312,17 +313,15 @@ def ability_summary(card, unit=None) -> AbilitySummary:
         if d.effect.startswith('NIEAKTYWNA'):
             return AbilitySummary('ZDOLNOŚĆ NIEAKTYWNA',
                                   d.effect+' Brak skalowania na ręce.')
-        from game.core.auction_catalog import V22_CARDS,V4_CARDS
-        label={'basic':'PODSTAWOWA','rare':'RZADKA',
-               'legendary':'LEGENDARNA'}
-        # Old saved v4 games use their own canonical texts, including A010.
-        rarity=next((label[tier] for catalog in (V22_CARDS,V4_CARDS)
-                     for tier,text in catalog.get(d.id,{}).get('variants',{}).items()
-                     if text==d.effect),None)
-        if rarity is not None:
+        variant=identify_auction_variant(d)
+        if variant is not None:
+            rarity={'podstawowa':'PODSTAWOWA',
+                    'rzadka':'RZADKA',
+                    'legendarna':'LEGENDARNA'}[variant[0]]
             return AbilitySummary(f'AKTYWNA · {rarity}',
-                                  d.effect+' Statystyki po zakupie pozostają stałe; '
-                                  'rzadkość rośnie co 3 ukończone rundy od zakupu.')
+                                  display_auction_copy(d)+' Statystyki po zakupie '
+                                  'pozostają stałe; rzadkość rośnie co 3 '
+                                  'ukończone rundy od zakupu.')
         # Noncanonical or legacy text must not be falsely certified as v4.
         return AbilitySummary('OPIS AUKCYJNY — SPRAWDŹ WERSJĘ',d.effect)
     # Starter compensation tokens have no spell; their effect text is a
@@ -376,6 +375,17 @@ def ability_summary(card, unit=None) -> AbilitySummary:
         'ticks': ticks,
         'total': total,
         'level': level,
+        's07_heal_if_clean':1+level,
+        's12_value':2+level,
+        's15_if_stunned':1+level,
+        's59_success':3+level,
+        's74_success':3+level,
+        's74_other':2+level,
+        's84_success':4+level,
+        's85_hero':4+level,
+        's97_success':2+level,
+        's97_other':1+level,
+        's108_if_stunned':1+level,
     }
     return AbilitySummary(spec['short'].format(**values),
                           spec['full'].format(**values))

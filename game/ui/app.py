@@ -25,7 +25,8 @@ from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS, ART
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
-from game.ui.v23_help import v23_base_card_note
+from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
+from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
@@ -98,6 +99,7 @@ class SoloApp:
         self.auction_slider_key=None
         self.auction_slider_dragging=False
         self.auction_status=''
+        self.auction_inspect_index=None
         self.ai.step(self.game)  # One audited command per step, even during mulligan.
         if self.game.phase=='mulligan' and 1 not in self.game.mulligan_done:
             # AI was second and chose its compensation; now finish its own
@@ -120,6 +122,7 @@ class SoloApp:
         self._old_pending=None
         self._recent_feedback=[]
         self.combat_notice_active=None
+        self.combat_notice_queue=[]
         self.visual_notice=''
         self.visual_notice_tick=-10000
         self._last_logged_event=len(self.game.event_journal)
@@ -719,9 +722,20 @@ class SoloApp:
         except (IllegalMove,ValueError) as exc:
             self.auction_status=str(exc)
 
+    @staticmethod
+    def auction_inspection_rect(index):
+        rect=SoloApp.auction_offer_rect(index)
+        return pygame.Rect(rect.x+26,rect.y+277,rect.width-52,32)
+
     def _auction_click(self,pos):
         a=self.game.auction
-        if a is None or a.turn!=0:return
+        if a is None:return
+        # Inspecting an offer never submits a bid or purchases the card.
+        for i in range(len(a.offers)):
+            if self.auction_inspection_rect(i).collidepoint(pos):
+                self.auction_inspect_index=i
+                return
+        if a.turn!=0:return
         if a.phase=='picking':
             for i,offer in enumerate(a.offers):
                 if self.auction_offer_rect(i).collidepoint(pos):
@@ -735,6 +749,40 @@ class SoloApp:
                 if self.auction_control_rect(action).collidepoint(pos):
                     self._auction_do(action)
                     return
+
+    def _draw_auction_inspection(self):
+        a=self.game.auction
+        index=self.auction_inspect_index
+        if (self.game.phase!='auction' or a is None or index is None
+                or index>=len(a.offers)):
+            return
+        offer=a.offers[index]
+        definition=catalog_for(self.game.auction_catalog).get(offer.archetype)
+        raw=(v23_variant(self.game.auction_catalog,offer.archetype,
+                         offer.rarity,getattr(self.game,'ruleset_version','v22'))
+             if definition is not None and self.game.auction_catalog in ('v4','v22')
+             else definition.abilities[RARITIES.index(offer.rarity)]
+             if definition is not None else 'Nie znaleziono definicji.')
+        description=full_preview_auction_copy(
+            offer.archetype,offer.rarity,
+            getattr(self.game,'ruleset_version','v22'),raw)
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((*TAVERN_SCRIM,240));self.screen.blit(shade,(0,0))
+        rect=pygame.Rect(255,190,972,593)
+        self._panel(rect,TAVERN_PANEL_INNER,cfg.GOLD,18)
+        name=definition.name if definition is not None else offer.archetype
+        self._text(self.cards_view.clip(name,self.fonts[28],890),
+                   28,294,226,cfg.GOLD)
+        self._text(f'OFERTA {index+1}  ·  {offer.rarity.upper()}  ·  '
+                   f'{offer.atk} ATK / {offer.hp} PŻ',16,296,282,cfg.TEXT)
+        self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
+        lines=self._wrap(description,18,853)
+        for i,line in enumerate(lines[:13]):
+            self._text(line,18,296,378+i*25,cfg.TEXT)
+        if len(lines)>13:
+            self._text('DALSZY TEKST: [I] / ORYGINALNY OPIS KARTY',13,
+                       296,708,cfg.MUTED)
+        self._button(pygame.Rect(934,710,239,49),'ZAMKNIJ  [ESC]',small=True)
 
     def _draw_auction(self):
         a=self.game.auction
@@ -771,10 +819,16 @@ class SoloApp:
                          if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
+            rules=getattr(self.game,'ruleset_version','v22')
+            if adef is not None and self.game.auction_catalog=='v22':
+                description=preview_auction_copy(off.archetype,off.rarity,rules,
+                                                 description)
             lines=self._wrap(description,13,rect.width-36)
             for j,line in enumerate(lines[:4]):
-                self._text(line,13,rect.centerx,rect.y+190+24*j,
+                self._text(line,13,rect.centerx,rect.y+190+23*j,
                            cfg.TEXT,center=True)
+            inspect=self.auction_inspection_rect(i)
+            self._button(inspect,'PEŁNA ZDOLNOŚĆ',small=True)
             if claimed:
                 selected_by=next(p for p,card in a.picks.items() if card==off.uid)
                 self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
@@ -1193,6 +1247,18 @@ class SoloApp:
                     self._choose_bonus('coins')
             return True
         if self.game.phase=='auction':
+            if self.auction_inspect_index is not None:
+                if event.type==pygame.KEYDOWN and event.key in (
+                        pygame.K_ESCAPE,pygame.K_i,pygame.K_RETURN):
+                    self.auction_inspect_index=None
+                elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                    self.auction_inspect_index=None
+                return True
+            if event.type==pygame.KEYDOWN and event.key in (
+                    pygame.K_1,pygame.K_2,pygame.K_3):
+                if self.game.auction.phase=='bidding':
+                    self.auction_inspect_index=event.key-pygame.K_1
+                    return True
             if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
                 self.menu_page='main'
                 self.menu_open=True
@@ -1319,36 +1385,45 @@ class SoloApp:
         return None
 
     def _capture_visual_feedback(self):
+        """FIFO of committed combat events, including when VFX is disabled."""
         events=[event['text'] for event in self.game.event_journal]
         if len(events)<self._last_logged_event:
             self._last_logged_event=0
             self.combat_notice_active=None
-        if len(events)>self._last_logged_event:
-            timestamp=pygame.time.get_ticks()
-            for event in events[self._last_logged_event:]:
-                notice=combat_notice(event)
-                # Ticker is useful even if optional animations are turned off.
-                if notice is not None:
-                    self.combat_notice_active=(timestamp,notice)
-                if self.animations_enabled:
-                    color=self._feedback_color(event)
-                    if color:
-                        self._recent_feedback.append((timestamp,color))
-            self._recent_feedback=self._recent_feedback[-2:]
-            self._last_logged_event=len(events)
+            self.combat_notice_queue=[]
         now=pygame.time.get_ticks()
+        for event in events[self._last_logged_event:]:
+            notice=combat_notice(event)
+            if notice is not None:
+                if self.combat_notice_active is None:
+                    self.combat_notice_active=(now,notice)
+                else:
+                    # A bounded visual queue; the authoritative H history keeps
+                    # every event without any truncation or reconstruction.
+                    self.combat_notice_queue.append(notice)
+                    self.combat_notice_queue=self.combat_notice_queue[-24:]
+            if self.animations_enabled:
+                color=self._feedback_color(event)
+                if color:
+                    self._recent_feedback.append((now,color))
+        self._last_logged_event=len(events)
+        self._recent_feedback=self._recent_feedback[-2:]
         self._recent_feedback=[e for e in self._recent_feedback if now-e[0]<620]
-        if self.combat_notice_active and now-self.combat_notice_active[0]>=3400:
-            self.combat_notice_active=None
+        if self.combat_notice_active and now-self.combat_notice_active[0]>=2600:
+            self.combat_notice_active=(
+                (now,self.combat_notice_queue.pop(0))
+                if self.combat_notice_queue else None)
 
     def update(self):
         g=self.game
+        if g.phase!='auction':
+            self.auction_inspect_index=None
         self._export_finished_audit_once()
         self._capture_visual_feedback()
         self.tutorial.observe(g)
         if (self.menu_open or self.history_open or self.help_open
-                or self.tutorial_welcome_open or self.replay_index is not None
-                or self.confirm_action is not None):
+                or self.tutorial_welcome_open or self.auction_inspect_index is not None
+                or self.replay_index is not None or self.confirm_action is not None):
             return
         if g.phase!='finished' and self.details_card is None:
             if self._old_pending is not g.pending:
@@ -1489,12 +1564,23 @@ class SoloApp:
             self._infographic_box(pygame.Rect(1267,210,157,70),'ROZWÓJ CO 3 TURY',cue.upgrade,cfg.GREEN,cue.next_threshold)
             self._infographic_box(pygame.Rect(1104,290,320,69),'AKTUALNY EFEKT',cue.base,cue.color,
                                   f'ATAK {u.atk if u else c.attack} / PŻ {u.hp if u else c.max_hp}')
-            self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
-            yy=405
-            for line in self._wrap(summary.full,13,312)[:3]:
-                self._text(line,13,1105,yy,cfg.TEXT);yy+=18
-            if len(self._wrap(summary.full,13,312))>3:
-                self._text('Pełny opis i wartości: [I]',12,1105,464,cfg.MUTED)
+            rules=getattr(self.game,'ruleset_version','v22')
+            conditional=v23_base_card_short_note(d.id,rules)
+            if conditional:
+                self._text('DODATKOWA ZASADA v23',15,1105,380,cfg.GOLD)
+                short_lines=self._wrap(conditional,13,311)
+                for i,line in enumerate(short_lines[:3]):
+                    self._text(self.cards_view.clip(line,self.fonts[13],311),
+                               13,1105,406+i*19,cfg.TEXT)
+                self._text('PEŁNA REGUŁA I OPIS  [I]',12,1105,465,cfg.GOLD)
+            else:
+                self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
+                description_lines=self._wrap(summary.full,13,312)
+                for i,line in enumerate(description_lines[:3]):
+                    self._text(self.cards_view.clip(line,self.fonts[13],311),
+                               13,1105,405+i*18,cfg.TEXT)
+                if len(description_lines)>3:
+                    self._text('PEŁNY OPIS I WARUNKI  [I]',12,1105,464,cfg.GOLD)
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
             self._text(self.cards_view.clip(cue.growth,self.fonts[13],309),13,1105,517,cfg.MUTED)
             if u:
@@ -1671,6 +1757,7 @@ class SoloApp:
         rect=pygame.Rect(96,372,952,56)
         hint=self.tutorial.hint(self.game)
         if hint is not None:
+            # Keep the five-step coach visible alongside the real turn HUD.
             # Readable gold framed lesson, not an ordinary journal message.
             pygame.draw.rect(self.screen,(47,38,25),rect,border_radius=9)
             pygame.draw.rect(self.screen,(249,201,100),rect,3,border_radius=9)
@@ -1678,16 +1765,19 @@ class SoloApp:
                              pygame.Rect(rect.x+3,rect.y+4,6,rect.height-8),
                              border_radius=3)
             title,detail=hint.title,hint.detail
-            self._text(self.cards_view.clip(title,self.fonts[18],695),
-                       18,rect.x+18,rect.y+3,cfg.GOLD)
-            self._text(self.cards_view.clip(detail,self.fonts[14],780),
-                       14,rect.x+18,rect.y+31,cfg.TEXT)
+            self._text(self.cards_view.clip(title,self.fonts[16],524),
+                       16,rect.x+18,rect.y+3,cfg.GOLD)
+            self._text(self.cards_view.clip(detail,self.fonts[13],528),
+                       13,rect.x+18,rect.y+31,cfg.TEXT)
             for index in range(5):
-                dot=pygame.Rect(rect.right-160+index*22,rect.y+8,14,9)
+                dot=pygame.Rect(rect.right-155+index*23,rect.y+5,14,8)
                 pygame.draw.rect(self.screen,cfg.GOLD if index<hint.stage else (89,78,64),
                                  dot,border_radius=3)
-            self._text('POMOC [F1]   WYŁĄCZ [T]',12,rect.right-235,
-                       rect.y+33,cfg.GOLD)
+            if self.game.phase=='turn':
+                self._draw_turn_counters(rect,compact=True)
+            else:
+                self._text('POMOC [F1]   WYŁĄCZ [T]',12,rect.right-220,
+                           rect.y+32,cfg.GOLD)
             return
         pygame.draw.rect(self.screen,TAVERN_PANEL_INNER,rect,border_radius=7)
         pygame.draw.rect(self.screen,TAVERN_BRASS,rect,1,border_radius=7)
@@ -1704,23 +1794,29 @@ class SoloApp:
             self._text(self.cards_view.clip(detail if len(parts)>1 else title,
                                             self.fonts[13],525),
                        13,rect.x+12,rect.y+31,cfg.TEXT)
-            for x,w,label,enabled in (
-                    (650,169,f'KARTA {hud.played_cards}/1',
-                     hud.is_human_turn and hud.can_play),
-                    (831,205,f'GOTOWE DO ATAKU: {hud.ready_units}',
-                     hud.is_human_turn and hud.ready_units>0)):
-                pill=pygame.Rect(x,rect.y+9,w,38)
-                color=cfg.GREEN if enabled else TAVERN_MUTED
-                pygame.draw.rect(self.screen,(49,43,32),pill,border_radius=7)
-                pygame.draw.rect(self.screen,color,pill,2 if enabled else 1,
-                                 border_radius=7)
-                self._text(self.cards_view.clip(label,self.fonts[13],w-16),
-                           13,pill.centerx,pill.centery,color,center=True)
+            self._draw_turn_counters(rect)
             return
         self._text(self.cards_view.clip(title,self.fonts[14],rect.width-28),
                    14,rect.x+12,rect.y+4,cfg.GOLD)
         self._text(self.cards_view.clip(detail,self.fonts[13],rect.width-28),
                    13,rect.x+12,rect.y+29,cfg.TEXT)
+
+    def _draw_turn_counters(self,rect,compact=False):
+        """One shared read-only HUD for normal play AND opt-in tutorials."""
+        hud=turn_readout(self.game)
+        for x,w,label,enabled in (
+                (650,169,f'KARTA {hud.played_cards}/1',
+                 hud.is_human_turn and hud.can_play),
+                (831,205,f'GOTOWE DO ATAKU: {hud.ready_units}',
+                 hud.is_human_turn and hud.ready_units>0)):
+            pill=pygame.Rect(x,rect.y+(24 if compact else 9),
+                             w,27 if compact else 38)
+            color=cfg.GREEN if enabled else TAVERN_MUTED
+            pygame.draw.rect(self.screen,(49,43,32),pill,border_radius=7)
+            pygame.draw.rect(self.screen,color,pill,2 if enabled else 1,
+                             border_radius=7)
+            self._text(self.cards_view.clip(label,self.fonts[13],w-16),
+                       13,pill.centerx,pill.centery,color,center=True)
 
     def _draw_header(self):
         logo,mode,help_area=self.header_regions()
@@ -1741,24 +1837,27 @@ class SoloApp:
         self._button(self.exit_button_rect(),'WYJDŹ',small=True)
 
     def _draw_log(self):
-        """Readable latest committed combat event inside the existing sidebar."""
+        """Two-line read-only combat ticker with an ordered event backlog."""
         now=pygame.time.get_ticks()
         notice=(getattr(self,'visual_notice','')
                 if now-getattr(self,'visual_notice_tick',-10000)<2400
                 else '')
         active=self.combat_notice_active
-        recent=active is not None and 0<=now-active[0]<3400
-        if recent:
+        if active is not None and 0<=now-active[0]<2600:
             cue=active[1]
-            rect=pygame.Rect(1099,903,330,46)
+            rect=pygame.Rect(1099,903,330,68)
             pygame.draw.rect(self.screen,(43,35,29),rect,border_radius=8)
             pygame.draw.rect(self.screen,cue.color,rect,2,border_radius=8)
-            self._text(self.cards_view.clip(cue.label+'  ·  [H] HISTORIA',
-                                            self.fonts[13],306),
+            count=len(self.combat_notice_queue)
+            heading=cue.label+(f'  ·  DALEJ {count}  [H]' if count else '  ·  [H]')
+            self._text(self.cards_view.clip(heading,self.fonts[13],304),
                        13,1108,907,cue.color)
-            self._text(self.cards_view.clip(notice or cue.message,
-                                            self.fonts[13],307),
-                       13,1108,928,cfg.TEXT)
+            lines=self._wrap(notice or cue.message,12,306)
+            for i,line in enumerate(lines[:2]):
+                self._text(self.cards_view.clip(line,self.fonts[12],306),
+                           12,1108,931+18*i,cfg.TEXT)
+            if len(lines)>2:
+                self._text('… [H] PEŁEN ZAPIS',11,1110,960,cfg.GOLD)
         else:
             last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
             self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
@@ -1792,7 +1891,9 @@ class SoloApp:
             return []
         player=g.players[0]
         if len(player.board)<5 and g.can_play(0,self.selected,None):
-            return [self.slot_rect(0,index) for index in range(len(player.board),5)]
+            # Match.play appends the new unit at len(board), regardless of
+            # clicked empty position. Highlight ONLY that actual destination.
+            return [self.slot_rect(0,len(player.board))]
         if len(player.board)==5:
             return [self.slot_rect(0,index) for index,uid in enumerate(player.board)
                     if g.can_play(0,self.selected,uid)]
@@ -1894,8 +1995,9 @@ class SoloApp:
         cue=card_cue(card,u)
         summary=ability_summary(card,u)
         v23_note=v23_base_card_note(d.id,getattr(self.game,'ruleset_version','v22'))
-        detail_summary=(f'{summary.full}  [DODATKOWA ZASADA v23] {v23_note}'
-                        if v23_note else summary.full)
+        # Show one coherent full text, not a duplicated baseline plus a
+        # truncated v23 appendix. Historical ruleset descriptions are untouched.
+        detail_summary=v23_note or summary.full
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((*TAVERN_SCRIM,225));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,75,1190,831)
@@ -2079,6 +2181,8 @@ class SoloApp:
                         self._last_logged_event=len(game.event_journal)
                         self._recent_feedback=[]
                         self.combat_notice_active=None
+                        self.combat_notice_queue=[]
+                        self.auction_inspect_index=None
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
                         self.recorder=MatchRecorder()
@@ -2326,7 +2430,7 @@ class SoloApp:
                 return [pygame.Rect(1201,816,221,52)]
             if self.selected in player.hand:
                 if len(player.board)<5:
-                    return [self.slot_rect(0,i) for i in range(len(player.board),5)]
+                    return [self.slot_rect(0,len(player.board))]
                 return [self.slot_rect(0,i) for i,uid in enumerate(player.board)
                         if g.can_play(0,self.selected,uid)]
             return list(self.hand_layout().values())
@@ -2431,6 +2535,7 @@ class SoloApp:
                 and not (self.menu_open or self.history_open or self.details_card
                          or self.confirm_action or self._bonus_selection_due())):
             self._button(self.exit_button_rect(), 'WYJDŹ', small=True)
+        if self.replay_index is None:self._draw_auction_inspection()
         if self.replay_index is not None:self._draw_replay_controls()
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
