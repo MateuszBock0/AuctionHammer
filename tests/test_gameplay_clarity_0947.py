@@ -202,6 +202,48 @@ class GameplayCanvasTests(unittest.TestCase):
         app.handle(pygame.event.Event(pygame.KEYDOWN,{'key':pygame.K_ESCAPE}))
         self.assertIsNone(app.auction_inspect_index)
 
+    def test_combat_ticker_fits_entirely_inside_sidebar(self):
+        app=self.app
+        from game.ui.gameplay_clarity import combat_notice
+        app.combat_notice_active=(1000,combat_notice(
+            'Niedźwiedź Grzmotu zadaje wyjątkowo długi ciąg obrażeń '
+            'dochodzący jednocześnie do kilku wrogich jednostek na planszy.'))
+        app.combat_notice_queue=[]
+        with patch('game.ui.app.pygame.time.get_ticks',return_value=1100):
+            with patch('game.ui.app.pygame.draw.rect',
+                       wraps=pygame.draw.rect) as rectangles:
+                with patch.object(app,'_text',wraps=app._text) as writing:
+                    app._draw_log()
+        sidebar=pygame.Rect(app.SIDEBAR_X,78,364,872)
+        ticker=[c.args[2] for c in rectangles.call_args_list
+                if len(c.args)>2 and isinstance(c.args[2],pygame.Rect)
+                and c.args[2].x==1099]
+        self.assertTrue(ticker)
+        self.assertTrue(all(sidebar.contains(rect) for rect in ticker))
+        message_labels=[c for c in writing.call_args_list
+                        if len(c.args)>3 and 899<=c.args[3]<=950]
+        self.assertTrue(message_labels)
+        for call in message_labels:
+            font=app.fonts[call.args[1]]
+            self.assertLessEqual(call.args[3]+font.get_height(),sidebar.bottom)
+
+    def test_tutorial_highlights_never_cover_auction_inspection(self):
+        app=self.app
+        app.tutorial.active=True
+        app.tutorial_welcome_open=False
+        app.auction_inspect_index=0
+        with patch.object(app,'_tutorial_targets') as targeted:
+            with patch('game.ui.app.pygame.draw.rect',
+                       wraps=pygame.draw.rect) as border:
+                app._draw_tutorial_spotlights()
+        targeted.assert_not_called()
+        border.assert_not_called()
+        app.auction_inspect_index=None
+        with patch.object(app,'_tutorial_targets',return_value=[
+            pygame.Rect(70,70,90,110)]) as targeted:
+            app._draw_tutorial_spotlights()
+        targeted.assert_called_once()
+
     def test_combat_notice_expires_without_engine_changes(self):
         app=self.app
         game=app.game

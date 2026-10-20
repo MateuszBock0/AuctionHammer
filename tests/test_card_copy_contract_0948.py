@@ -7,7 +7,7 @@ import unittest
 
 from game.core.auction_catalog import live_variant,v23_variant
 from game.ui.card_summary import ability_summary
-from game.ui.card_infographics import card_cue
+from game.ui.card_infographics import card_cue,first_scalable_value,highlighted_numeric_ranges
 from game.ui.auction_copy import (identify_auction_variant,display_auction_copy,
                                   preview_auction_copy,full_preview_auction_copy)
 from game.ui.v23_help import v23_base_card_note,v23_base_card_short_note
@@ -16,7 +16,13 @@ ROOT=Path(__file__).resolve().parents[1]
 BASIC={x['id']:x for x in json.loads((ROOT/'data/cards_base_70.json').read_text(encoding='utf8'))}
 
 def base_card(card_id,level=0):
-    return SimpleNamespace(definition=SimpleNamespace(**BASIC[card_id]),ability_level=level)
+    raw=BASIC[card_id]
+    # The real CardDefinition uses flattened per-turn growth attributes;
+    # JSON fixture values are nested under hand_growth.
+    definition=SimpleNamespace(
+        **{**raw,'growth_atk':raw['hand_growth']['atk_per_hand_turn'],
+                 'growth_hp':raw['hand_growth']['hp_per_hand_turn']})
+    return SimpleNamespace(definition=definition,ability_level=level,hand_turns=0)
 
 def auc(archetype,rarity,ruleset='v23',mode='v22'):
     names={'podstawowa':'PODSTAWOWA','rzadka':'RZADKA','legendarna':'LEGENDARNA'}
@@ -67,6 +73,40 @@ class CardCopyContract0948(unittest.TestCase):
                 for value in fragments:
                     with self.subTest(id=cid,level=level,phrase=value):
                         self.assertIn(value,full)
+
+    def test_s15_numeric_infographic_matches_successful_stun_damage(self):
+        raw=BASIC['S15']
+        definition=SimpleNamespace(**raw)
+        self.assertEqual(first_scalable_value(definition),1)
+        spans=highlighted_numeric_ranges(definition)
+        self.assertEqual(len(spans),1)
+        self.assertEqual(raw['effect'][spans[0][0]:spans[0][1]],'1')
+        self.assertGreater(spans[0][0],raw['effect'].index('1 jej własną turę'))
+        for level,expected in ((0,1),(1,2),(3,4)):
+            with self.subTest(level=level):
+                card=base_card('S15',level)
+                card.hand_turns=0
+                cue=card_cue(card)
+                self.assertEqual(cue.effect_value,expected)
+                self.assertEqual(cue.base,f'0→{expected} OBR')
+                self.assertIn('Tylko gdy ogłuszenie zadziała',
+                              ability_summary(card).full)
+
+    def test_stun_conditional_ranges_never_claim_bonus_is_guaranteed(self):
+        for cid,baseline in (('S59',3),('S84',4),('S108',0),('S95',0)):
+            for level in (0,1,3):
+                with self.subTest(cid=cid,level=level):
+                    card=base_card(cid,level)
+                    card.hand_turns=0
+                    cue=card_cue(card)
+                    expected_success=(1+level if cid in ('S108','S95')
+                                      else baseline+level)
+                    self.assertEqual(cue.effect_value,expected_success)
+                    self.assertEqual(cue.base,
+                                     f'{baseline}→{expected_success} OBR')
+                    self.assertTrue(ability_summary(card).full)
+        self.assertIn('2 zwykłe obrażenia',v23_base_card_note('S95','v23'))
+        self.assertEqual(v23_base_card_note('S95','v22'),'')
 
     def test_conditional_v23_notes_never_leak_to_v22(self):
         for cid in ('S86','S87','S88','S32','S95'):

@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.48",
+  "mvp": "0.9.49",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -193,5 +193,13 @@
     "gameplay_ux": "combined tutor and HUD, exact append slot, FIFO combat notices, full auction offer description, contextual sidebar",
     "rules_unchanged": true,
     "manual_windows_visual_acceptance": "pending"
+  },
+  "ui_stage_0949": {
+    "source": "AuctionHammer_AUDYT_0.9.48_2026-10-20.zip",
+    "archive_sha256_manifest": "5 of 5 confirmed",
+    "corrected": "S15 numeric indicator, S59/S84/S108/S95 conditional damage cues, auction modal tutorial overlay, combat ticker bounds",
+    "engine_changes": false,
+    "manual_dpi_acceptance": "pending (requires physical Windows)",
+    "replay_compatibility": "same canonical CardDefinition.effect and engine data"
   }
 }

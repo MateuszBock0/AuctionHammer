@@ -71,7 +71,7 @@ def highlighted_numeric_ranges(definition) -> tuple[tuple[int,int],...]:
     if not nums:return ()
     if family=='Ogłuszenie':
         # Find the damage quantity, not the number of turns.
-        found=list(re.finditer(r'(\d+)\s+obraż',text,re.IGNORECASE))
+        found=list(re.finditer(r'(\d+)\s+(?:dodatkow\w*\s+)?obraż',text,re.IGNORECASE))
         return tuple(x.span(1) for x in found[-1:])  # zero base damage is implied
     if family in {'ATK ±','MAX HP ±'}:
         # The positive and negative branches have independently scaling sizes.
@@ -165,6 +165,13 @@ def card_cue(card, unit=None) -> CardCue:
         cue=f'{value}{suffix}'
     else:
         cue=FAMILY_SYMBOLS[family]
+    # Stun-dependent damage must never look like unconditional damage.
+    # Left: damage if stun did NOT apply; right: damage after success.
+    # Historical S95 v23 fallback (fixed 2 damage when no fresh target)
+    # remains labelled in the ruleset-specific sidebar/full description.
+    stun_fallback={'S15':0,'S59':3,'S84':4,'S108':0,'S95':0}
+    if d.id in stun_fallback and value is not None:
+        cue=f'{stun_fallback[d.id]}→{value} OBR'
     upgrade='STAŁE PARAMETRY' if d.id.startswith('AUC') else UPGRADES[family]
     if family=='Regeneracja' and d.id=='S109':upgrade='+1 CO TURĘ / 3T'
     if d.id.startswith('AUC'):
