@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.39",
+  "mvp": "0.9.41",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -86,7 +86,14 @@
   ],
   "audit_state_schema": "v23-schema2-ruleset-and-pending-vacant-income",
   "v23_ui_clarity": "prefix-conditional-auction-clauses-and-base-card-fallback-details",
-  "starting_compensation_new_matches": "unit_5_5_no_coins",
+  "starting_compensation_new_matches": "choice_2_5_or_coins",
+  "starting_compensation_choice_modes": ["unit_2_5", "coins"],
+  "starting_compensation_choice_audit_schema": 4,
+  "starting_compensation_bonus_card": "Chorąży, 2/5, Chorąży zawsze zdąży.",
+  "starting_compensation_archive_0939": "unit_5_5_guard_no_coins",
+  "starting_compensation_available_modes": ["coins", "unit_5_5", "unit_3_5"],
+  "starting_compensation_card_name": "Chorąży",
+  "starting_compensation_card_flavor": "Chorąży zawsze zdąży.",
   "starting_compensation_legacy_saves": "coins_plus3",
   "starting_compensation_audit_schema": 3,
   "ux_stage_0939": {

@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.39: guided state, safe confirm and guarded start."""
+"""AuctionHammer MVP 0.9.40: Chorazy 3/5 with versioned starter modes."""
 from __future__ import annotations
 import os
 import re
@@ -18,7 +18,7 @@ from game.core.engine import Match
 from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
-from game.ui.card_view import CardView, FACTION_COLORS
+from game.ui.card_view import CardView, FACTION_COLORS, ART
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note
@@ -76,7 +76,7 @@ class SoloApp:
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
         self.game=Match(audit_enabled=True,auctions_enabled=True,
-                        auction_catalog='v22',starting_compensation='unit_5_5')
+                        auction_catalog='v22',starting_compensation='choice_2_5_or_coins')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -85,7 +85,11 @@ class SoloApp:
         self.auction_slider_key=None
         self.auction_slider_dragging=False
         self.auction_status=''
-        self.ai.step(self.game)  # AI mulligan is committed, player's hand still hidden from it.
+        self.ai.step(self.game)  # One audited command per step, even during mulligan.
+        if self.game.phase=='mulligan' and 1 not in self.game.mulligan_done:
+            # AI was second and chose its compensation; now finish its own
+            # hidden mulligan without exposing or evaluating the human hand.
+            self.ai.step(self.game)
         self.selected=None
         self.hover=None
         self.scroll=0
@@ -96,6 +100,7 @@ class SoloApp:
         self.tooltip_open=False
         self.details_card=None
         self.details_scroll=0
+        self.details_image_zoom=False
         self.sidebar_card=None
         self._old_pending=None
         self._recent_feedback=[]
@@ -219,6 +224,7 @@ class SoloApp:
         if uid not in self.game.cards:return
         self.details_card=uid
         self.details_scroll=0
+        self.details_image_zoom=False
 
     def _create_background(self):
         return self.theme.background((cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT))
@@ -736,6 +742,41 @@ class SoloApp:
     def _needs_confirmation(self):
         return self.game.phase not in ('mulligan','finished')
 
+    def _bonus_selection_due(self):
+        g=self.game
+        return (g.phase=='mulligan' and g.first==1
+                and getattr(g,'starting_compensation',None)=='choice_2_5_or_coins'
+                and getattr(g,'starting_compensation_choice',None) is None)
+
+    def _choose_bonus(self,choice):
+        try:
+            self.game.choose_starting_compensation(0,choice)
+            self.last_error=''
+            self.visual_notice=('WYBRANO CHORĄŻEGO 2/5' if choice=='unit_2_5'
+                                else 'WYBRANO +3 MONETY')
+            self.visual_notice_tick=pygame.time.get_ticks()
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+
+    def _draw_bonus_selection(self):
+        if not self._bonus_selection_due():return
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((5,8,12,225))
+        self.screen.blit(shade,(0,0))
+        panel=pygame.Rect(340,282,800,390)
+        self._panel(panel,(32,46,53),cfg.GOLD,15)
+        self._text('TWÓJ WYBÓR NA START',28,740,322,cfg.GOLD,center=True)
+        self._text('Zaczynasz jako drugi. Wybierz dokładnie jedną rekompensatę.',
+                   16,740,381,cfg.TEXT,center=True)
+        self._button(pygame.Rect(438,443,604,67),'[1] CHORĄŻY 2 ATAK / 5 PŻ',
+                     accent=True)
+        self._button(pygame.Rect(438,537,604,67),'[2] +3 MONETY')
+        self._text('Chorąży: bez zdolności, nie atakuje w pierwszej własnej turze.',
+                   14,740,626,cfg.MUTED,center=True)
+        if self.last_error:
+            self._text(self.cards_view.clip(self.last_error,self.fonts[13],690),
+                       13,740,654,cfg.RED,center=True)
+
     def _request_restart(self):
         if self._needs_confirmation():
             self.confirm_action='restart'
@@ -870,10 +911,35 @@ class SoloApp:
         if self.details_card is not None:
             if event.type==pygame.KEYDOWN and event.key in (pygame.K_ESCAPE,pygame.K_i):
                 self.details_card=None
+            elif event.type==pygame.KEYDOWN and event.key==pygame.K_g:
+                self.details_image_zoom=not self.details_image_zoom
             elif event.type==pygame.MOUSEWHEEL:
                 self.details_scroll=max(0,min(getattr(self,'details_maxscroll',0),self.details_scroll-event.y*35))
             elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
-                self.details_card=None
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(194,806,255,40).collidepoint(pos):
+                    self.details_image_zoom=not self.details_image_zoom
+                else:
+                    self.details_card=None
+            return True
+        if self._bonus_selection_due():
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_1:self._choose_bonus('unit_2_5')
+                elif event.key==pygame.K_2:self._choose_bonus('coins')
+                elif event.key==pygame.K_h:
+                    self.history_open=True
+                    self.history_scroll=0
+                elif event.key==pygame.K_m:
+                    self.menu_open=True
+                    self.menu_page='main'
+                elif event.key==pygame.K_p and self.recorder.frames:
+                    self.replay_index=self.recorder.last_index
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(438,443,604,67).collidepoint(pos):
+                    self._choose_bonus('unit_2_5')
+                elif pygame.Rect(438,537,604,67).collidepoint(pos):
+                    self._choose_bonus('coins')
             return True
         if self.game.phase=='auction':
             if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
@@ -1183,15 +1249,35 @@ class SoloApp:
         if self.game.phase=='mulligan':
             n=len(self.game.players[0].mulligan_selected)
             first='TY' if self.game.first==0 else 'KOMPUTER'
-            # Below the details button (bottom=726), above mulligan count.
-            self._text(f'ZACZYNA: {first}  ·  DRUGI: STRAŻNIK 5/5',
+            # Read the actual loaded match, not the default for newly created
+            # games; older saves and archives keep their historical rules.
+            mode=getattr(self.game,'starting_compensation','coins')
+            if mode=='coins':
+                bonus='+3 MONETY'
+            elif mode=='choice_2_5_or_coins':
+                selected=getattr(self.game,'starting_compensation_choice',None)
+                guard=self.game.units.get('SUM_START_GUARD')
+                bonus=('+3 MONETY' if selected=='coins' else
+                       f'CHORĄŻY {guard.atk}/{guard.max_hp}' if guard else
+                       'WYBIERZ REKOMPENSATĘ' if self.game.first==1 else
+                       'WYBIERA KOMPUTER')
+            else:
+                guard=self.game.units.get('SUM_START_GUARD')
+                if guard and mode=='unit_3_5':
+                    bonus=f'CHORĄŻY {guard.atk}/{guard.max_hp}'
+                elif guard:
+                    bonus=f'STRAŻNIK {guard.atk}/{guard.max_hp}'
+                else:
+                    bonus='BRAK JEDNOSTKI STARTOWEJ'
+            self._text(f'ZACZYNA: {first}  ·  DRUGI: {bonus}',
                        11,1104,728,cfg.MUTED)
             self._text(f'WYBRANO DO WYMIANY: {n}/3',16,1104,743,cfg.GOLD)
             self._text('Kliknij do 3 kart z ręki albo pomiń [ENTER]',12,
                        1104,773,cfg.TEXT)
             self._button(pygame.Rect(1182,808,243,59),'ZATWIERDŹ WYMIANĘ',accent=True)
         elif self.game.phase=='finished':
-            self._button(pygame.Rect(1192,823,236,55),'NOWY MECZ',accent=True)
+            # The winning/losing overlay owns the only actionable new-game CTA.
+            pass
         else:
             self._text(f'RUNDA {self.game.round}',18,1104,743,cfg.GOLD)
             if self.game.active==0:
@@ -1425,18 +1511,42 @@ class SoloApp:
         pygame.draw.line(self.screen,(66,91,106),(489,160),(489,843),2)
         self._text('PODGLĄD KARTY',16,186,105,cfg.GOLD)
         details_attack=attack_display(self.game,uid) if u else None
-        self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
-                             unit=u,selected=True,
-                             statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
-                             ready=details_attack.ready if u else None,
-                             attacks_total=details_attack.limit if u else None,
-                             attacks_remaining=details_attack.remaining if u else None)
-        self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
-        self._text(f'Aktywacja: {d.trigger}',16,194,600)
-        self._text(f'Rodzina: {d.family}',16,194,629)
-        self._text(f'Poziom zdolności: {cue.ability_level}',18,194,660,cfg.GOLD)
-        self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
-                   14,194,689,cfg.MUTED)
+        if self.details_image_zoom:
+            # "Contain" is important here: see the ENTIRE existing image.
+            if d.id in ART or (d.id=='SUM_START_GUARD' and d.name=='Chorąży'):
+                file=ART.get(d.id,ART['S34'])
+                artwork=self.cards_view.images.get_card_image(
+                    file,(276,520),mode='contain')
+            else:
+                artwork=self.cards_view.art(d.id,d.faction,(276,520),d.family,d.name)
+            self.screen.blit(artwork,(184,164))
+            self._text('POWIĘKSZONA ORYGINALNA ILUSTRACJA',13,186,697,cfg.MUTED)
+        else:
+            self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
+                                 unit=u,selected=True,
+                                 statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
+                                 ready=details_attack.ready if u else None,
+                                 attacks_total=details_attack.limit if u else None,
+                                 attacks_remaining=details_attack.remaining if u else None)
+            self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
+            self._text(f'Aktywacja: {d.trigger}',16,194,600)
+            self._text(f'Rodzina: {d.family}',16,194,629)
+            label=(f'Poziom zdolności: {cue.ability_level}' if not d.id.startswith('SUM')
+                   else 'JEDNOSTKA BEZ ROZWOJU NA RĘCE')
+            self._text(self.cards_view.clip(label,self.fonts[16],276),16,194,659,cfg.GOLD)
+            self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
+                       14,194,685,cfg.MUTED)
+            # Archetype baseline and actual MAX HP are distinct from wounds.
+            current_atk=u.atk if u else card.attack
+            current_max=u.max_hp if u else card.max_hp
+            self._text(f'ATK  BAZA {d.atk} → TERAZ {current_atk}',14,194,717,cfg.TEXT)
+            self._text(f'MAX PŻ  BAZA {d.hp} → TERAZ {current_max}',14,194,741,cfg.TEXT)
+            if u:
+                self._text(f'BIEŻĄCE PŻ: {max(0,u.hp)}/{current_max}',
+                           14,194,765,cfg.MUTED)
+        self._button(pygame.Rect(194,806,255,40),
+                     '[G] KARTA' if self.details_image_zoom else '[G] ILUSTRACJA',
+                     small=True,accent=self.details_image_zoom)
 
         self._text(self.cards_view.clip(d.name,self.fonts[28],760),28,520,115,FACTION_COLORS[d.faction])
         self._infographic_box(pygame.Rect(520,159,228,70),'AKTUALNY EFEKT',cue.base,cue.color,
@@ -1761,6 +1871,10 @@ class SoloApp:
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
         if self.confirm_action:self._draw_confirmation()
+        if (self._bonus_selection_due() and not self.menu_open
+                and not self.history_open and self.replay_index is None
+                and self.details_card is None):
+            self._draw_bonus_selection()
         self._present()
 
     def run(self):

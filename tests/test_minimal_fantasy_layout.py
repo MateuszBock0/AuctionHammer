@@ -181,6 +181,8 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
         from test_engine import force_unit
         app=self.app
         game=app.game
+        if game.phase=='mulligan' and game.first==1 and getattr(game,'starting_compensation_choice',None) is None:
+            game.choose_starting_compensation(0,'coins')
         if game.phase=='mulligan':
             game.finish_mulligan(0,[])
         if game.phase!='turn':
@@ -216,6 +218,8 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
         self.assertEqual(len(game.events),previous[2]+2)
 
     def test_right_click_opens_details_and_left_click_only_selects(self):
+        if self.app._bonus_selection_due():
+            self.app._choose_bonus('coins')
         uid,rect=next(iter(self.app.hand_layout().items()))
         self.app.click(rect.center)
         self.assertEqual(self.app.selected,uid)

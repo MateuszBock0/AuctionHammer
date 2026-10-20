@@ -20,7 +20,7 @@ import gzip
 FORMAT="AuctionHammer.MatchAudit"
 SCHEMA=1
 FILENAME="AuctionHammer-OSTATNI-MECZ.json"
-ACTIONS=("mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
+ACTIONS=("choose_starting_compensation","mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
          "auction_bid","auction_pass","auction_pick")
 
 
@@ -195,6 +195,9 @@ def state_snapshot(game):
         if schema>=3:
             state['ruleset_state']['starting_compensation']=getattr(
                 game,'starting_compensation','coins')
+        if schema>=4:
+            state['ruleset_state']['starting_compensation_choice']=getattr(
+                game,'starting_compensation_choice',None)
     return state
 
 
@@ -549,14 +552,19 @@ def verify_replay(payload,match_factory):
     auction_enabled=bool(initial.get("auctions_enabled",False))
     catalog=initial.get("auction_catalog","placeholders")
     signed_rule=initial.get('ruleset_state')
-    compensation=('unit_5_5' if isinstance(signed_rule,dict)
-                  and signed_rule.get('audit_schema')==3
-                  and signed_rule.get('starting_compensation')=='unit_5_5'
-                  else 'coins')
+    if isinstance(signed_rule,dict) and signed_rule.get('audit_schema') in (3,4):
+        compensation=signed_rule.get('starting_compensation')
+        allowed=('choice_2_5_or_coins',) if signed_rule['audit_schema']==4 else ('unit_5_5','unit_3_5')
+        if compensation not in allowed:
+            raise ValueError("Nieznana rekompensata w podpisanym audycie")
+        if signed_rule['audit_schema']==4 and signed_rule.get('starting_compensation_choice') is not None:
+            raise ValueError("Wybór rekompensaty powinien rozpocząć się jako nierozstrzygnięty")
+    else:
+        compensation='coins'
     if auction_enabled:
         try:
             kwargs={'auctions_enabled':True,'auction_catalog':catalog}
-            if compensation=='unit_5_5':
+            if compensation in ('unit_5_5','unit_3_5','choice_2_5_or_coins'):
                 kwargs['starting_compensation']=compensation
             game=match_factory(payload["seed"],**kwargs)
         except TypeError as exc:
@@ -601,13 +609,17 @@ def verify_replay(payload,match_factory):
         if signed_schema is None:
             game.audit_state_schema=1
         elif (isinstance(signed_schema,dict)
-              and signed_schema.get('audit_schema') in (2,3)
+              and signed_schema.get('audit_schema') in (2,3,4)
               and signed_schema.get('version')=='v23'
               and signed_schema.get('pending_vacant_income') is None
               and signed_schema.get('vacant_income_enabled') is
                   getattr(game,'vacant_income_enabled',False)
               and (signed_schema.get('audit_schema')==2 or
-                   signed_schema.get('starting_compensation')=='unit_5_5')):
+                   signed_schema.get('audit_schema')==3 and
+                   signed_schema.get('starting_compensation') in ('unit_5_5','unit_3_5') or
+                   signed_schema.get('audit_schema')==4 and
+                   signed_schema.get('starting_compensation')=='choice_2_5_or_coins' and
+                   signed_schema.get('starting_compensation_choice') is None)):
             game.audit_state_schema=signed_schema['audit_schema']
         else:
             raise ValueError("Niezgodne metadane wersji zasad w migawce audytu")

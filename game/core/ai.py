@@ -97,6 +97,18 @@ class ComputerOpponent:
                 game.auction_pick(self.player,best.uid)
             return
         if game.phase=='mulligan':
+            if (getattr(game,'starting_compensation','')=='choice_2_5_or_coins'
+                    and self.player==1-game.first
+                    and game.starting_compensation_choice is None):
+                # A modest, deterministic policy based exclusively on the
+                # AI's own hand; it never peeks at the human player's cards.
+                own=game.players[self.player]
+                strong=max((game.cards[uid].attack for uid in own.hand),default=0)
+                # Base cards top out at 4 ATK: a threshold of 5 meant
+                # the AI always picked the guard, never the coins.
+                option='coins' if strong>=4 else 'unit_2_5'
+                game.choose_starting_compensation(self.player,option)
+                return  # Exactly one audited command per AI.step (replay invariant).
             if self.player not in game.mulligan_done:
                 game.finish_mulligan(self.player,[])
             return

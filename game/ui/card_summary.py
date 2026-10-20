@@ -325,6 +325,14 @@ def ability_summary(card, unit=None) -> AbilitySummary:
                                   'rzadkość rośnie co 3 ukończone rundy od zakupu.')
         # Noncanonical or legacy text must not be falsely certified as v4.
         return AbilitySummary('OPIS AUKCYJNY — SPRAWDŹ WERSJĘ',d.effect)
+    # Starter compensation tokens have no spell; their effect text is a
+    # flavor description, and must be rendered verbatim, not like A010 soldiers.
+    if d.id=='SUM_START_GUARD':
+        return AbilitySummary(
+            'BEZ ZDOLNOŚCI',
+            d.effect+' Jest to jednostka startowa bez zdolności specjalnych; '
+            'po opuszczeniu planszy nie wraca do talii.'
+        )
     # Summoned Queen soldiers are real board units but not among the 70
     # collectible basic cards. Looking them up in SPECS caused KeyError
     # 'SUM0000007' and crashed the packaged application during board render.

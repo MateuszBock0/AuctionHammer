@@ -66,6 +66,8 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
     def test_pending_and_enemy_turn_explain_current_actor(self):
         app=self.app
         app.menu_open=False
+        if app.game.first==1 and app.game.starting_compensation_choice is None:
+            app.game.choose_starting_compensation(0,'coins')
         app.game.finish_mulligan(0,[])
         g=app.game
         g.pending=Pending('S01',0,'play',[Choice('test',None,'test')])
@@ -77,6 +79,8 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
     def test_player_step_play_attack_end_instructions(self):
         app=self.app
         app.menu_open=False
+        if app.game.first==1 and app.game.starting_compensation_choice is None:
+            app.game.choose_starting_compensation(0,'coins')
         app.game.finish_mulligan(0,[])
         g=app.game
         g.phase='turn'
@@ -102,6 +106,8 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
     def test_no_false_play_prompt_after_all_five_board_units_attacked(self):
         app=self.app
         app.menu_open=False
+        if app.game.first==1 and app.game.starting_compensation_choice is None:
+            app.game.choose_starting_compensation(0,'coins')
         app.game.finish_mulligan(0,[])
         g=app.game
         g.phase='turn'
