@@ -9,6 +9,9 @@
 - **Poprzedni audyt UX**: podświetlenia samouczka nie przenikają przez okno pełnego podglądu aukcji; ticker mieści się w prawym panelu (zawijanie do dwóch wierszy, historia H zachowana).
 - **Regresje**: testy poziomów S15 0/1/3, opisów warunkowych, geometrii panelu i modalu aukcji.
 
+
+- **AH48-CATALOG-05 (P3)**: `python -m scripts.card_copy_matrix_0949` generuje raport CSV **70 kart + 51 wariantów aukcyjnych** z ID, poziomem/rarity, wersją zasad, modułem silnika i faktycznie obliczonymi opisami/infografiką. Test `tests/test_card_copy_matrix_0949.py` waliduje 121 rekordów przy każdym uruchomieniu CI. Jest to **indeks pokrycia prezentacji**, nie dowód zgodności semantycznej wszystkich gałęzi silnika.
+
 ## Zakres po walidacji
 
 Nie modyfikujemy katalogów `data/`, silnika `game/core/`, reguł, `CardDefinition.effect`, mechanizmu audytu czy historii zapisów. Poziomy i opisy są obliczane do wyświetlenia.
