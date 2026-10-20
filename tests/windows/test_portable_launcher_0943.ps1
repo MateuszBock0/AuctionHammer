@@ -73,6 +73,15 @@ try {
     Assert-True ((Get-FileHash -LiteralPath $legacy -Algorithm SHA256).Hash -eq $old) 'Legacy EXE was overwritten'
     Assert-True ((Test-Path -LiteralPath (Join-Path $install ".auctionhammer-versions/$($first.tag)/_internal"))) 'Missing bundled runtime'
 
+    # On FIRST migration a rollback to the original root EXE must also work.
+    $firstPrevious = (Get-Content -LiteralPath (Join-Path $install 'PREVIOUS_RELEASE.txt') -Raw).Trim()
+    Assert-True ($firstPrevious -eq 'legacy') 'Initial backup is not marked legacy'
+    $rollbackLog = Invoke-QA $install $null @('-Rollback')
+    Assert-True ((Read-Active $install) -eq 'legacy') 'First-install legacy rollback failed'
+    Assert-True ($rollbackLog.Contains('Original portable release selected.')) 'Legacy EXE was not launched'
+    Invoke-QA $install $null @('-Rollback') | Out-Null
+    Assert-True ((Read-Active $install) -eq $first.tag) 'Reactivation after legacy rollback failed'
+
     # A second verified version is deployed alongside the first.
     $secondLog = Invoke-QA $install $second
     Write-Host ('Second activation details: ' + $secondLog)
