@@ -1416,12 +1416,14 @@ class SoloApp:
 
     def update(self):
         g=self.game
+        if g.phase!='auction':
+            self.auction_inspect_index=None
         self._export_finished_audit_once()
         self._capture_visual_feedback()
         self.tutorial.observe(g)
         if (self.menu_open or self.history_open or self.help_open
-                or self.tutorial_welcome_open or self.replay_index is not None
-                or self.confirm_action is not None):
+                or self.tutorial_welcome_open or self.auction_inspect_index is not None
+                or self.replay_index is not None or self.confirm_action is not None):
             return
         if g.phase!='finished' and self.details_card is None:
             if self._old_pending is not g.pending:
@@ -2519,7 +2521,6 @@ class SoloApp:
             self._draw_hover_guidance()
             self._draw_gameover()
             self._draw_auction()
-            self._draw_auction_inspection()
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw(self.screen,pygame.time.get_ticks(),
                                          self.fonts_bold[16])
@@ -2534,6 +2535,7 @@ class SoloApp:
                 and not (self.menu_open or self.history_open or self.details_card
                          or self.confirm_action or self._bonus_selection_due())):
             self._button(self.exit_button_rect(), 'WYJDŹ', small=True)
+        if self.replay_index is None:self._draw_auction_inspection()
         if self.replay_index is not None:self._draw_replay_controls()
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
