@@ -140,6 +140,8 @@ class TutorialProgress:
                 return TutorialHint("SAMOUCZEK 4/5 · LICYTACJA", "Suwak / strzałki: kwota. [ENTER] oferta, [ESC] pas. Wygrywający płaci.",4)
             return TutorialHint("SAMOUCZEK 4/5 · WYBÓR", "Wybierz jedną kartę. Drugi gracz wybiera za darmo; trzecia oferta wraca do puli.",4)
         if getattr(game,"pending",None) is not None:
+            if game.pending.owner!=0:
+                return TutorialHint("SAMOUCZEK · RUCH KOMPUTERA", "Komputer rozstrzyga własną zdolność. Twoje akcje pozostają chwilowo zablokowane.",3)
             return TutorialHint("SAMOUCZEK · ZDOLNOŚĆ", "Wybierz legalny cel lub wariant w panelu po prawej. [I] pokazuje pełny opis.",3)
         if not self.play_seen:
             if game.active!=0:

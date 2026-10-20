@@ -66,6 +66,8 @@ class TutorialLogicTests(unittest.TestCase):
         g.phase="turn"
         g.pending=SimpleNamespace(owner=0)
         self.assertIn("ZDOLNOŚĆ",coach.hint(g).title)
+        g.pending.owner=1
+        self.assertIn("RUCH KOMPUTERA",coach.hint(g).title)
 
     def test_help_content_and_reason_explanations(self):
         self.assertEqual(len(HELP_PAGES),4)
@@ -106,6 +108,17 @@ class TutorialInterfaceTests(unittest.TestCase):
         self.assertFalse(app.menu_open)
         self.assertEqual(app.game.phase,"mulligan")
         self.assertIsNotNone(app.tutorial.hint(app.game))
+
+    def test_all_help_pages_are_renderable_and_read_only(self):
+        app=self.app
+        app.menu_open=False
+        before=digest(state_snapshot(app.game))
+        app.help_open=True
+        with patch.object(app,"_present"):
+            for index in range(len(HELP_PAGES)):
+                app.help_page=index
+                app.draw()
+        self.assertEqual(before,digest(state_snapshot(app.game)))
 
     def test_F1_help_is_modal_even_during_auction(self):
         app=self.app
