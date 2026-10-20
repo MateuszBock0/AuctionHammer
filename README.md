@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.47 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.48 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -39,6 +39,12 @@ Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga
 Szczegóły: [QA aktualizatora Windows 0.9.43](docs/QUALITY_RELEASE_0943.md).
 
 > To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
+
+## Gameplay UX Polish i audyt opisów kart (0.9.48)
+
+Wersja 0.9.48 domyka poprawki po 0.9.47. Wspólny pasek **samouczka i bieżącej tury** zawsze pokazuje możliwość wystawienia i liczbę gotowych jednostek. Złoto oznacza **faktyczne miejsce dodania jednostki** po prawej stronie planszy, a nie dowolny wolny slot. Wyniki walki wyświetlane są kolejno w czytelnym dzienniku zdarzeń: tarcza, obrażenia, śmierć itd. Pełne zdarzenia pozostają pod klawiszem H.
+
+Zweryfikowana, dostarczona przez autora paczka poprawia opisy **13 kart podstawowych**, **5 warunkowych zasad v23** i **7 aktywnych wariantów aukcyjnych**. Aukcja ma dodatkowy przycisk **PEŁNA ZDOLNOŚĆ**, działający bez przypadkowego zakupu karty. Stare definicje v22 i v4, zapisy, RNG i mechanika pozostały bez zmian. Więcej: [audyt 0.9.48](docs/GAMEPLAY_UX_POLISH_0948.md).
 
 ## Czytelność rozgrywki (0.9.47)
 

@@ -91,7 +91,8 @@ class GameplayCanvasTests(unittest.TestCase):
         app.selected=uid
         before=digest(state_snapshot(game))
         targets=app._play_target_rects()
-        self.assertEqual(len(targets),5-len(game.players[0].board))
+        self.assertEqual(len(targets),1)
+        self.assertEqual(targets[0],app.slot_rect(0,len(game.players[0].board)))
         app._draw_play_targets()
         self.assertEqual(before,digest(state_snapshot(game)))
         app.selected=None
@@ -144,15 +145,48 @@ class GameplayCanvasTests(unittest.TestCase):
                             for x in spy.call_args_list if x.args))
         self.assertEqual(before,digest(state_snapshot(game)))
 
+    def test_ordered_combat_notices_survive_one_engine_command(self):
+        app=self.app
+        app.animations_enabled=False
+        messages=('Tarcza blokuje 5 obrażeń.',
+                  'Wilk otrzymuje 3 obrażenia.',
+                  'Zgon Wilka.')
+        for i,line in enumerate(messages):
+            app.game.event_journal.append(
+                {'text':line,'seq':700+i,'round':1,'active':0})
+        with patch('game.ui.app.pygame.time.get_ticks',return_value=1000):
+            app._capture_visual_feedback()
+        self.assertEqual(app.combat_notice_active[1].label,'OBRONA / BLOKADA')
+        self.assertEqual(len(app.combat_notice_queue),2)
+        with patch('game.ui.app.pygame.time.get_ticks',return_value=3600):
+            app._capture_visual_feedback()
+        self.assertEqual(app.combat_notice_active[1].label,'OBRAŻENIA')
+        self.assertEqual(len(app.combat_notice_queue),1)
+        with patch('game.ui.app.pygame.time.get_ticks',return_value=6200):
+            app._capture_visual_feedback()
+        self.assertEqual(app.combat_notice_active[1].label,'JEDNOSTKA POLEGŁA')
+        self.assertEqual(len(app.combat_notice_queue),0)
+
+    def test_tutorial_and_hud_are_both_visible(self):
+        app=self.app
+        game=self._turn_fixture()
+        app.tutorial.start(game)
+        app.tutorial_welcome_open=False
+        with patch.object(app,'_text',wraps=app._text) as spy:
+            app._draw_phase_guidance()
+        labels=[str(x.args[0]) for x in spy.call_args_list if x.args]
+        self.assertIn('KARTA 0/1',labels)
+        self.assertTrue(any('SAMOUCZEK' in x for x in labels))
+
     def test_combat_notice_expires_without_engine_changes(self):
         app=self.app
         game=app.game
         app.combat_notice_active=(1000,combat_notice('Wilk zadaje 5 obrażeń.'))
         before=digest(state_snapshot(game))
-        with patch('game.ui.app.pygame.time.get_ticks',return_value=4399):
+        with patch('game.ui.app.pygame.time.get_ticks',return_value=3599):
             app._capture_visual_feedback()
             self.assertIsNotNone(app.combat_notice_active)
-        with patch('game.ui.app.pygame.time.get_ticks',return_value=4400):
+        with patch('game.ui.app.pygame.time.get_ticks',return_value=3600):
             app._capture_visual_feedback()
             self.assertIsNone(app.combat_notice_active)
         self.assertEqual(before,digest(state_snapshot(game)))
