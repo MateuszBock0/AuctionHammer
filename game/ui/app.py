@@ -85,6 +85,7 @@ class SoloApp:
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
         self.tutorial.active=False
+        self.tutorial_welcome_open=False
         self.help_open=False
         self.game=Match(audit_enabled=True,auctions_enabled=True,
                         auction_catalog='v22',starting_compensation='choice_2_5_or_coins')
@@ -965,6 +966,7 @@ class SoloApp:
             return self._request_restart()
         self.restart()
         self.tutorial.start(self.game)
+        self.tutorial_welcome_open=True
         self.menu_open=False
         return True
 
@@ -992,6 +994,7 @@ class SoloApp:
             self.restart()
             if guided:
                 self.tutorial.start(self.game)
+                self.tutorial_welcome_open=True
             self.menu_open=False
             return True
         return False  # confirmed application quit
@@ -1035,6 +1038,23 @@ class SoloApp:
                 height=max(min(360,max_height),min(int(event.h),max_height))
                 self.windowed_size=(width,height)
                 self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
+            return True
+        # The first tutorial screen must be unmissable and must absorb mouse /
+        # keyboard input instead of silently starting the ordinary mulligan.
+        if self.tutorial_welcome_open:
+            if event.type==pygame.KEYDOWN:
+                if event.key in (pygame.K_RETURN,pygame.K_SPACE):
+                    self.tutorial_welcome_open=False
+                elif event.key==pygame.K_ESCAPE:
+                    self.tutorial_welcome_open=False
+                    self.tutorial.active=False
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(421,764,377,55).collidepoint(pos):
+                    self.tutorial_welcome_open=False
+                elif pygame.Rect(829,764,218,55).collidepoint(pos):
+                    self.tutorial_welcome_open=False
+                    self.tutorial.active=False
             return True
         # The handbook is a modal even over auctions and the main menu.
         if event.type==pygame.KEYDOWN and event.key==pygame.K_F1 and self.confirm_action is None:
@@ -1318,7 +1338,8 @@ class SoloApp:
         self._capture_visual_feedback()
         self.tutorial.observe(g)
         if (self.menu_open or self.history_open or self.help_open
-                or self.replay_index is not None or self.confirm_action is not None):
+                or self.tutorial_welcome_open or self.replay_index is not None
+                or self.confirm_action is not None):
             return
         if g.phase!='finished' and self.details_card is None:
             if self._old_pending is not g.pending:
@@ -1615,22 +1636,35 @@ class SoloApp:
     def _draw_phase_guidance(self):
         # 54 px of dedicated space, strictly between the two board rows.
         # Two typographic levels are easier to scan than a single truncated log.
-        rect=pygame.Rect(96,373,952,54)
-        pygame.draw.rect(self.screen,TAVERN_PANEL_INNER,rect,border_radius=7)
-        pygame.draw.rect(self.screen,TAVERN_BRASS,rect,1,border_radius=7)
+        rect=pygame.Rect(96,372,952,56)
         hint=self.tutorial.hint(self.game)
         if hint is not None:
+            # Readable gold framed lesson, not an ordinary journal message.
+            pygame.draw.rect(self.screen,(47,38,25),rect,border_radius=9)
+            pygame.draw.rect(self.screen,(249,201,100),rect,3,border_radius=9)
+            pygame.draw.rect(self.screen,(249,201,100),
+                             pygame.Rect(rect.x+3,rect.y+4,6,rect.height-8),
+                             border_radius=3)
             title,detail=hint.title,hint.detail
-            self._text('[T] WYŁĄCZ',12,rect.right-120,rect.y+5,cfg.MUTED)
-            max_width=rect.width-164
-        else:
-            parts=self._phase_guidance().split('  ·  ')
-            title=parts[0]
-            detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
-            max_width=rect.width-28
-        self._text(self.cards_view.clip(title,self.fonts[14],max_width),
+            self._text(self.cards_view.clip(title,self.fonts[18],695),
+                       18,rect.x+18,rect.y+3,cfg.GOLD)
+            self._text(self.cards_view.clip(detail,self.fonts[14],780),
+                       14,rect.x+18,rect.y+31,cfg.TEXT)
+            for index in range(5):
+                dot=pygame.Rect(rect.right-160+index*22,rect.y+8,14,9)
+                pygame.draw.rect(self.screen,cfg.GOLD if index<hint.stage else (89,78,64),
+                                 dot,border_radius=3)
+            self._text('POMOC [F1]   WYŁĄCZ [T]',12,rect.right-235,
+                       rect.y+33,cfg.GOLD)
+            return
+        pygame.draw.rect(self.screen,TAVERN_PANEL_INNER,rect,border_radius=7)
+        pygame.draw.rect(self.screen,TAVERN_BRASS,rect,1,border_radius=7)
+        parts=self._phase_guidance().split('  ·  ')
+        title=parts[0]
+        detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
+        self._text(self.cards_view.clip(title,self.fonts[14],rect.width-28),
                    14,rect.x+12,rect.y+4,cfg.GOLD)
-        self._text(self.cards_view.clip(detail,self.fonts[13],max_width),
+        self._text(self.cards_view.clip(detail,self.fonts[13],rect.width-28),
                    13,rect.x+12,rect.y+29,cfg.TEXT)
 
     def _draw_header(self):
@@ -2171,6 +2205,112 @@ class SoloApp:
         self._button(pygame.Rect(1101,772,123,45),'ZAMKNIJ',small=True)
         self._text('F1 / ESC — zamknij · ← / → — zmień stronę',13,243,799,cfg.MUTED)
 
+    def _tutorial_targets(self):
+        """Canvas areas the player should try next; entirely read-only."""
+        if not self.tutorial.active or self.tutorial_welcome_open:
+            return []
+        g=self.game
+        if g.phase=='mulligan':
+            if self._bonus_selection_due():
+                return [pygame.Rect(438,443,604,67),pygame.Rect(438,537,604,67)]
+            if 0 in g.mulligan_done:
+                return []
+            return list(self.hand_layout().values())+[pygame.Rect(1182,808,243,59)]
+        if g.phase=='auction' and g.auction is not None:
+            a=g.auction
+            if a.turn!=0:
+                return []
+            if a.phase=='bidding':
+                minimum,coins=self.auction_slider_bounds()
+                if minimum>coins:
+                    return [self.auction_control_rect('pass')]
+                return [self.auction_slider_rect(),
+                        self.auction_control_rect('bid'),
+                        self.auction_control_rect('pass')]
+            return [self.auction_offer_rect(i) for i,off in enumerate(a.offers)
+                    if off.uid not in a.picks.values()]
+        if g.phase!='turn':
+            return []
+        if g.pending is not None:
+            return ([pygame.Rect(1099,160,326,650)] if g.pending.owner==0
+                    else [])
+        if g.active!=0:
+            return []
+        player=g.players[0]
+        if not self.tutorial.play_seen:
+            if player.played_this_turn:
+                return [pygame.Rect(1201,816,221,52)]
+            if self.selected in player.hand:
+                if len(player.board)<5:
+                    return [self.slot_rect(0,i) for i in range(len(player.board),5)]
+                return [self.slot_rect(0,i) for i,uid in enumerate(player.board)
+                        if g.can_play(0,self.selected,uid)]
+            return list(self.hand_layout().values())
+        if not self.tutorial.attack_seen:
+            if self.selected in player.board:
+                targets=g.legal_attacks(self.selected)
+                if targets:
+                    areas=[]
+                    for target in targets:
+                        if target=='hero:1':
+                            areas.append(self.hero_rect(1))
+                        elif target in g.players[1].board:
+                            areas.append(self.slot_rect(1,g.players[1].board.index(target)))
+                    return areas
+            ready=[uid for uid in player.board if g.legal_attacks(uid)]
+            if ready:
+                return [self.slot_rect(0,player.board.index(uid)) for uid in ready]
+            return [pygame.Rect(1201,816,221,52)]
+        return []
+
+    def _draw_tutorial_spotlights(self):
+        if (not self.tutorial.active or self.tutorial_welcome_open
+                or self.menu_open or self.history_open or self.help_open
+                or self.confirm_action is not None or self.details_card is not None
+                or self.replay_index is not None):
+            return
+        accent=(255,219,125) if pygame.time.get_ticks()//420%2==0 else (219,158,70)
+        for rect in self._tutorial_targets()[:8]:
+            outline=rect.inflate(9,9)
+            pygame.draw.rect(self.screen,accent,outline,4,border_radius=12)
+            pygame.draw.circle(self.screen,accent,
+                               (outline.right-9,outline.top+9),7)
+
+    def _draw_tutorial_welcome(self):
+        if not self.tutorial_welcome_open:
+            return
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((*TAVERN_SCRIM,235))
+        self.screen.blit(shade,(0,0))
+        panel=pygame.Rect(269,137,941,721)
+        self._panel(panel,TAVERN_PANEL_INNER,cfg.GOLD,18)
+        self.theme.carved_panel(self.screen,panel.inflate(-24,-22),opacity=64)
+        self._text('PIERWSZY MECZ · TRYB NAUKI',16,740,177,cfg.MUTED,center=True)
+        self._text('WITAJ W SAMOUCZKU',34,740,218,cfg.GOLD,center=True)
+        self._text('Zagraj normalną partię, a gra pokaże Ci kolejne kroki.',
+                   18,740,278,cfg.TEXT,center=True)
+        self._text('Podświetlone na złoto karty i pola to sugerowane akcje.',
+                   15,740,313,cfg.MUTED,center=True)
+        steps=(
+            ('01','PRZYGOTOWANIE','Wymień do 3 kart i wybierz rekompensatę.'),
+            ('02','WYSTAWIANIE','Wybierz kartę z ręki i wolne pole planszy.'),
+            ('03','ATAK','Wybierz jednostkę i podświetlony cel.'),
+            ('04','AUKCJA','Licytuj pierwszeństwo wyboru i zdobądź kartę.'),
+            ('05','GOTOWE','Samouczek podpowie, gdzie sprawdzić resztę zasad.'),
+        )
+        for i,(number,title,description) in enumerate(steps):
+            y=355+i*70
+            pygame.draw.rect(self.screen,(52,43,34),
+                             pygame.Rect(354,y-6,780,61),border_radius=10)
+            pygame.draw.rect(self.screen,TAVERN_BRASS,
+                             pygame.Rect(354,y-6,780,61),1,border_radius=10)
+            pygame.draw.circle(self.screen,(190,140,64),(396,y+24),19)
+            self._text(number,15,396,y+24,(29,27,25),center=True)
+            self._text(title,17,432,y,cfg.GOLD)
+            self._text(description,14,432,y+27,cfg.TEXT)
+        self._button(pygame.Rect(421,764,377,55),'ROZPOCZNIJ NAUKĘ  [ENTER]',accent=True)
+        self._button(pygame.Rect(829,764,218,55),'POMIŃ  [ESC]')
+
     def draw(self):
         # W powtórce renderujemy kopię, bez kierowania do niej jakichkolwiek
         # komend. Po każdej klatce przywracamy żywy Match.
@@ -2215,6 +2355,8 @@ class SoloApp:
                 and not self.history_open and self.replay_index is None
                 and self.details_card is None):
             self._draw_bonus_selection()
+        self._draw_tutorial_spotlights()
+        if self.tutorial_welcome_open:self._draw_tutorial_welcome()
         self._present()
 
     def run(self):

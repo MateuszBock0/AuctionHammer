@@ -136,6 +136,9 @@ class TutorialProgress:
             a=getattr(game,"auction",None)
             if a is None:
                 return TutorialHint("SAMOUCZEK 4/5 · AUKCJA", "Trzy karty: licytujesz prawo pierwszego wyboru.",4)
+            if a.turn!=0:
+                return TutorialHint("SAMOUCZEK 4/5 · RUCH KOMPUTERA",
+                                    "Komputer licytuje lub wybiera kartę. Wkrótce Twój ruch.",4)
             if a.phase=="bidding":
                 return TutorialHint("SAMOUCZEK 4/5 · LICYTACJA", "Suwak / strzałki: kwota. [ENTER] oferta, [ESC] pas. Wygrywający płaci.",4)
             return TutorialHint("SAMOUCZEK 4/5 · WYBÓR", "Wybierz jedną kartę. Drugi gracz wybiera za darmo; trzecia oferta wraca do puli.",4)

@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.46 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.46.1 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -126,7 +126,9 @@ W katalogu v22 znajdziesz również karty nastawione na przebijanie wysokiego P�
 
 Szczegółowe opisy każdej wersji znajdują się w [katalogu 17 kart aukcyjnych (JSON)](data/auction/KATALOG_AUKCYJNY_17_v22.json) i [dokumentacji aukcji v22](docs/auction/RELEASE_V22_0931.md).
 
-## Samouczek i podręczna pomoc (0.9.46)
+## Widoczny samouczek i podręczna pomoc (0.9.46.1)
+
+Nowość: samouczek najpierw wyświetla **duży ekran powitalny** z pięcioma etapami. **Enter / Rozpocznij naukę** uruchamia wskazówki; **Esc / Pomiń** zaczyna zwykłą grę. Podczas nauki środkowy pasek ma wyraźną złotą ramkę, licznik etapów i podświetla złotym obrysem karty oraz pola, w które warto teraz kliknąć. Możesz nadal zagrać dowolną legalną akcję. Nie zmienia się ani silnik, ani audyt.
 
 W **Menu → Samouczek** rozpoczniesz nowy, prowadzony mecz. Samouczek reaguje na rzeczywiste akcje: wymianę startową, zagranie karty, pierwszy atak i aukcję. Podpowiedzi są krótkie, nie blokują sterowania i nie wpływają na logikę ani losowanie. Przy rozpoczęciu samouczka podczas trwającej partii gra pyta, czy zapisać ją przed rozpoczęciem nowej.
 
