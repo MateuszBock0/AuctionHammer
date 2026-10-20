@@ -14,6 +14,7 @@ from functools import wraps
 from hashlib import sha256
 from pathlib import Path
 from .combat_analysis import build_combat_analysis
+from .combat_html import render_combat_html, FILENAME as COMBAT_HTML_FILENAME
 import json
 import os
 import gzip
@@ -538,6 +539,12 @@ def write_last_match(game,path=None):
     _archive_document(report,dest)
     _atomic_write(dest,(json.dumps(report,ensure_ascii=False,indent=2,
                                    allow_nan=False)+"\n").encode("utf-8"))
+    # Only the real application export generates a companion HTML automatically.
+    # Explicit-path programmatic audits remain one-file, preserving old test
+    # harnesses and users' output-directory contracts.
+    if path is None:
+        html_path=dest.with_name(COMBAT_HTML_FILENAME)
+        _atomic_write(html_path,render_combat_html(report["payload"]).encode("utf-8"))
     return dest
 
 
