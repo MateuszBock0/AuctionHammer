@@ -286,11 +286,20 @@ class CardView:
         self.theme.card_lustre(screen,rect,color)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
-        screen.blit(self.art(d.id,d.faction,art.size,d.family,d.name),art)
-        if dim:
+        artwork=self.art(d.id,d.faction,art.size,d.family,d.name)
+        if dim and board:
+            # Exhaustion/stun/new-unit lock: grayscale just the artwork.
+            # Never reduce legibility of ATK, HP or status labels.
+            screen.blit(pygame.transform.grayscale(artwork),art)
             shade=pygame.Surface(art.size,pygame.SRCALPHA)
-            shade.fill((6,10,17,130))
+            shade.fill((38,36,34,63))
             screen.blit(shade,art.topleft)
+        else:
+            screen.blit(artwork,art)
+            if dim:
+                shade=pygame.Surface(art.size,pygame.SRCALPHA)
+                shade.fill((6,10,17,130))
+                screen.blit(shade,art.topleft)
         pygame.draw.rect(screen,(88,107,114),art,1,border_radius=5)
         emblem=self.icons.get(d.faction,'factions',min(19,art.height-4))
         if emblem is not None:
@@ -468,4 +477,8 @@ class CardView:
         if selected:
             pygame.draw.rect(screen,cfg.GOLD,rect.inflate(5,5),3,border_radius=12)
         elif hover:
-            pygame.draw.rect(screen,cfg.HOVER,rect.inflate(3,3),1,border_radius=12)
+            # Soft candlelight rim, no opaque glow over card text/statuses.
+            pygame.draw.rect(screen,(123,101,72),rect.inflate(8,8),
+                             1,border_radius=14)
+            pygame.draw.rect(screen,(202,171,111),rect.inflate(3,3),
+                             2,border_radius=12)
