@@ -111,7 +111,7 @@ class TutorialInterfaceTests(unittest.TestCase):
         app=self.app
         app.menu_open=False
         app.game.phase="auction"
-        app.game.auction=SimpleNamespace(turn=0,phase="bidding")
+        # Help routing is safe even without a running auction overlay.
         before=digest(state_snapshot(app.game))
         self.assertTrue(app.handle(self.key(pygame.K_F1)))
         self.assertTrue(app.help_open)
