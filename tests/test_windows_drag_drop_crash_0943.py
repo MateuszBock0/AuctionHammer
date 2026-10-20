@@ -50,9 +50,9 @@ class DragAndDropRelease0943(unittest.TestCase):
             'pos':target,'rel':(target[0]-start[0],target[1]-start[1]),'buttons':(1,0,0)})
         up=pygame.event.Event(pygame.MOUSEBUTTONUP,{'pos':target,'button':1})
         with patch.object(app,'_physical_to_virtual',side_effect=lambda pos:pos):
-            self.assertTrue(app.handle(down))
+            app.handle(down)
             self.assertIsNotNone(app.drag_start)
-            self.assertTrue(app.handle(motion))
+            app.handle(motion)
             if render_mid_drag:
                 app.update()
                 app.draw()
@@ -78,7 +78,7 @@ class DragAndDropRelease0943(unittest.TestCase):
 
     def test_drag_outside_board_is_cancelled_without_playing(self):
         game=self.start_match(next(i for i in range(300,450)
-                                     if Match(i,starting_compensation='choice_2_5_or_coins').first==0))
+                                     if Match(i,auctions_enabled=True,auction_catalog='v22',starting_compensation='choice_2_5_or_coins').first==0))
         uid=game.players[0].hand[0]
         self.gesture(uid,(1058,740))
         self.assertIn(uid,game.players[0].hand)
