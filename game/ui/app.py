@@ -27,6 +27,7 @@ from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note
 from game.ui.attack_view import attack_display, inactive_card_reason
+from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
@@ -118,6 +119,7 @@ class SoloApp:
         self.sidebar_card=None
         self._old_pending=None
         self._recent_feedback=[]
+        self.combat_notice_active=None
         self.visual_notice=''
         self.visual_notice_tick=-10000
         self._last_logged_event=len(self.game.event_journal)
@@ -1320,17 +1322,24 @@ class SoloApp:
         events=[event['text'] for event in self.game.event_journal]
         if len(events)<self._last_logged_event:
             self._last_logged_event=0
+            self.combat_notice_active=None
         if len(events)>self._last_logged_event:
-            if self.animations_enabled:
-                timestamp=pygame.time.get_ticks()
-                for event in events[self._last_logged_event:]:
+            timestamp=pygame.time.get_ticks()
+            for event in events[self._last_logged_event:]:
+                notice=combat_notice(event)
+                # Ticker is useful even if optional animations are turned off.
+                if notice is not None:
+                    self.combat_notice_active=(timestamp,notice)
+                if self.animations_enabled:
                     color=self._feedback_color(event)
                     if color:
                         self._recent_feedback.append((timestamp,color))
-                self._recent_feedback=self._recent_feedback[-2:]
+            self._recent_feedback=self._recent_feedback[-2:]
             self._last_logged_event=len(events)
         now=pygame.time.get_ticks()
         self._recent_feedback=[e for e in self._recent_feedback if now-e[0]<620]
+        if self.combat_notice_active and now-self.combat_notice_active[0]>=3400:
+            self.combat_notice_active=None
 
     def update(self):
         g=self.game
@@ -1463,6 +1472,13 @@ class SoloApp:
         self._text('KARTA / AKCJE',22,1103,106,cfg.GOLD)
         card_id=self.selected or self.card_under(self.mouse_pos())
         self.sidebar_card=card_id if card_id in self.game.cards else None
+        if self.sidebar_card:
+            context=selected_card_readout(self.game,self.sidebar_card)
+            chip=pygame.Rect(1291,97,139,35)
+            pygame.draw.rect(self.screen,(44,40,33),chip,border_radius=8)
+            pygame.draw.rect(self.screen,context.color,chip,2,border_radius=8)
+            self._text(self.cards_view.clip(context.label,self.fonts[12],chip.width-16),
+                       12,chip.centerx,chip.centery,context.color,center=True)
         if card_id and card_id in self.game.cards:
             c=self.game.cards[card_id];d=c.definition;u=self.game.units.get(card_id)
             cue=card_cue(c,u)
@@ -1494,17 +1510,24 @@ class SoloApp:
                     self._text(detail,12,1126,yy+21,cfg.MUTED)
                 if len(statuses)>2:
                     self._text(f'+{len(statuses)-2} pozostałych efektów — [I]',12,1105,648,cfg.MUTED)
-                reason=inactive_card_reason(self.game,card_id) or attack_display(self.game,card_id).reason
-                self._text(self.cards_view.clip('MOŻLIWOŚĆ ATAKU: '+reason,
-                                               self.fonts[12],316),
-                           12,1105,667,cfg.GOLD if reason=='GOTOWA' else cfg.MUTED)
+                if u.owner==0:
+                    reason=inactive_card_reason(self.game,card_id) or attack_display(self.game,card_id).reason
+                    self._text(self.cards_view.clip('ATAK: '+reason,
+                                                   self.fonts[13],316),
+                               13,1105,667,cfg.GREEN if reason=='GOTOWA' else cfg.MUTED)
+                else:
+                    self._text('JEDNOSTKA RYWALA — MOŻLIWY CEL ATAKU',
+                               12,1105,667,cfg.RED)
             else:
                 grants=hand_grants(self.game,card_id)
                 if grants:
                     self._text('PRZYZNANE CECHY W RĘCE',14,1105,553,cfg.GOLD)
                     for j,st in enumerate(grants[:3]):
                         self._text(self.cards_view.clip(st.name,self.fonts[13],310),13,1105,577+j*25,st.color)
-                self._text(self.cards_view.clip(d.scaling,self.fonts[12],313),12,1105,658,cfg.MUTED)
+                context=selected_card_readout(self.game,card_id)
+                self._text(self.cards_view.clip(context.action or d.scaling,
+                                                self.fonts[12],313),
+                           12,1105,658,context.color)
         else:
             lines=['Kliknij kartę, aby zobaczyć jej opis.','Możesz zagrać JEDNĄ kartę na turę','i atakować gotowymi jednostkami','w dowolnej kolejności.','','FRAKCJE:',
                    'ELFY: efekt przy wystawieniu','BESTIE: efekt przy ataku','POTWORY: efekt przy śmierci',
@@ -1561,8 +1584,17 @@ class SoloApp:
             else:self._text('RUCH KOMPUTERA',15,1104,773,cfg.RED)
             if self.game.players[0].next_fast:
                 self._text('NASTĘPNA KARTA: SZYBKI ATAK',13,1104,796,STATUS_COLORS['quick'])
-            can=self.game.active==0 and not self.game.pending
-            self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ',active=can,accent=can)
+            else:
+                status=turn_readout(self.game)
+                if status.is_human_turn:
+                    action_msg=('MASZ JESZCZE LEGALNE AKCJE' if status.can_act
+                                else 'WSZYSTKIE AKCJE WYKORZYSTANE')
+                    self._text(action_msg,12,1104,797,
+                               cfg.GOLD if status.can_act else cfg.GREEN)
+            can=self.game.phase=='turn' and self.game.active==0 and not self.game.pending
+            status=turn_readout(self.game)
+            self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ  [SPACJA]',
+                         active=can,accent=can and not status.can_act,small=True)
         if self.game.phase!='finished':
             self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
 
@@ -1662,6 +1694,29 @@ class SoloApp:
         parts=self._phase_guidance().split('  ·  ')
         title=parts[0]
         detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
+        if self.game.phase=='turn':
+            hud=turn_readout(self.game)
+            heading=('TWOJA TURA' if hud.is_human_turn else
+                     'WYBÓR ZDOLNOŚCI' if self.game.pending and self.game.pending.owner==0
+                     else 'RUCH KOMPUTERA')
+            self._text(heading,18,rect.x+12,rect.y+3,
+                       cfg.GREEN if hud.is_human_turn else cfg.GOLD)
+            self._text(self.cards_view.clip(detail if len(parts)>1 else title,
+                                            self.fonts[13],525),
+                       13,rect.x+12,rect.y+31,cfg.TEXT)
+            for x,w,label,enabled in (
+                    (650,169,f'KARTA {hud.played_cards}/1',
+                     hud.is_human_turn and hud.can_play),
+                    (831,205,f'GOTOWE DO ATAKU: {hud.ready_units}',
+                     hud.is_human_turn and hud.ready_units>0)):
+                pill=pygame.Rect(x,rect.y+9,w,38)
+                color=cfg.GREEN if enabled else TAVERN_MUTED
+                pygame.draw.rect(self.screen,(49,43,32),pill,border_radius=7)
+                pygame.draw.rect(self.screen,color,pill,2 if enabled else 1,
+                                 border_radius=7)
+                self._text(self.cards_view.clip(label,self.fonts[13],w-16),
+                           13,pill.centerx,pill.centery,color,center=True)
+            return
         self._text(self.cards_view.clip(title,self.fonts[14],rect.width-28),
                    14,rect.x+12,rect.y+4,cfg.GOLD)
         self._text(self.cards_view.clip(detail,self.fonts[13],rect.width-28),
@@ -1686,22 +1741,30 @@ class SoloApp:
         self._button(self.exit_button_rect(),'WYJDŹ',small=True)
 
     def _draw_log(self):
-        """Last journal entry stays INSIDE the sidebar. H opens the full log."""
-        if self.animations_enabled and self._recent_feedback:
-            latest,color=self._recent_feedback[-1]
-            elapsed=pygame.time.get_ticks()-latest
-            alpha=max(0,int(72*(1-elapsed/620)))
-            shade=pygame.Surface((321,35),pygame.SRCALPHA)
-            shade.fill((*color,alpha))
-            self.screen.blit(shade,(1100,906))
+        """Readable latest committed combat event inside the existing sidebar."""
+        now=pygame.time.get_ticks()
         notice=(getattr(self,'visual_notice','')
-                if pygame.time.get_ticks()-getattr(self,'visual_notice_tick',-10000)<2400
+                if now-getattr(self,'visual_notice_tick',-10000)<2400
                 else '')
-        last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
-        self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
-                   1104,909,cfg.GOLD)
-        self._text(self.cards_view.clip(notice or last,self.fonts[12],319),
-                   12,1104,929,cfg.TEXT if notice else cfg.MUTED)
+        active=self.combat_notice_active
+        recent=active is not None and 0<=now-active[0]<3400
+        if recent:
+            cue=active[1]
+            rect=pygame.Rect(1099,903,330,46)
+            pygame.draw.rect(self.screen,(43,35,29),rect,border_radius=8)
+            pygame.draw.rect(self.screen,cue.color,rect,2,border_radius=8)
+            self._text(self.cards_view.clip(cue.label+'  ·  [H] HISTORIA',
+                                            self.fonts[13],306),
+                       13,1108,907,cue.color)
+            self._text(self.cards_view.clip(notice or cue.message,
+                                            self.fonts[13],307),
+                       13,1108,928,cfg.TEXT)
+        else:
+            last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
+            self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
+                       1104,909,cfg.GOLD)
+            self._text(self.cards_view.clip(notice or last,self.fonts[12],319),
+                       12,1104,929,cfg.TEXT if notice else cfg.MUTED)
         if self.last_error:
             self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),
                        13,280,954,cfg.RED)
@@ -1720,6 +1783,26 @@ class SoloApp:
             elif target in g.players[1].board:
                 result.append(self.slot_rect(1,g.players[1].board.index(target)))
         return result
+
+    def _play_target_rects(self):
+        """Golden areas for real legal placements and replacements."""
+        g=self.game
+        if (g.phase!='turn' or g.active!=0 or g.pending is not None
+                or self.selected not in g.players[0].hand):
+            return []
+        player=g.players[0]
+        if len(player.board)<5 and g.can_play(0,self.selected,None):
+            return [self.slot_rect(0,index) for index in range(len(player.board),5)]
+        if len(player.board)==5:
+            return [self.slot_rect(0,index) for index,uid in enumerate(player.board)
+                    if g.can_play(0,self.selected,uid)]
+        return []
+
+    def _draw_play_targets(self):
+        # Gold = play/replace, cyan = attack, violet = ability target.
+        for rect in self._play_target_rects():
+            pygame.draw.rect(self.screen,(238,187,83),rect.inflate(8,8),
+                             3,border_radius=13)
 
     def _draw_attack_targets(self):
         for rect in self._attack_target_rects():
@@ -2325,6 +2408,7 @@ class SoloApp:
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw_cards(
                     self.screen,self.game,self.cards_view,pygame.time.get_ticks())
+            self._draw_play_targets()
             self._draw_attack_targets()
             self._draw_sidebar()
             self._draw_log()
