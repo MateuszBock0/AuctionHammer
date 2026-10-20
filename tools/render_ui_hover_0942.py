@@ -59,6 +59,9 @@ app._hover_uid=None
 pos=(area.x+1,card_zones(area)['art'].y)
 capture(app,'03_wyjasnienie_statusu_i_zrodla.png',point=pos,time_ms=1500)
 
+# The synthetic app.game above bypasses SoloApp.restart's AI mulligan.
+# Make the computer's valid bonus decision explicit before finishing mulligan.
+app.game.choose_starting_compensation(1,'coins')
 app.game.finish_mulligan(0,[])
 app.game.finish_mulligan(1,[])
 capture(app,'04_legalne_akcje_karty_i_tura.png')
