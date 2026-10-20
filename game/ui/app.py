@@ -2078,6 +2078,7 @@ class SoloApp:
                         self.last_error=''
                         self._last_logged_event=len(game.event_journal)
                         self._recent_feedback=[]
+                        self.combat_notice_active=None
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
                         self.recorder=MatchRecorder()

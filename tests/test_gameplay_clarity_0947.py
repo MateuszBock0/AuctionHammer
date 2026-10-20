@@ -118,6 +118,16 @@ class GameplayCanvasTests(unittest.TestCase):
         self.assertIn('ZAGRAJ KARTĘ',labels)
         self.assertEqual(before,digest(state_snapshot(game)))
 
+    def test_complete_turn_screen_renders_without_state_changes(self):
+        app=self.app
+        game=self._turn_fixture()
+        uid=game.players[0].hand[0]
+        app.selected=uid
+        before=digest(state_snapshot(game))
+        with patch.object(app,'_present'):
+            app.draw()
+        self.assertEqual(before,digest(state_snapshot(game)))
+
     def test_ticker_reads_events_even_with_vfx_off(self):
         app=self.app
         app.animations_enabled=False
