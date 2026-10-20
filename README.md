@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.43 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.44 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -240,3 +240,9 @@ Nagrania pozostają materiałem podmiotów trzecich i **nie podlegają licencji 
 **Licencja:** autorski kod źródłowy i własna dokumentacja AuctionHammer — [MIT](LICENSE). Muzyka i inne materiały podmiotów trzecich mogą podlegać osobnym warunkom. Autor projektu: **Mateusz Boćko**. [Dokładne credits i zasady wykorzystania muzyki](docs/THIRD_PARTY_MUSIC.md).
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś błąd](https://github.com/MateuszBock0/AuctionHammer/issues)
+
+## Szczegółowy audyt walk — 0.9.44
+
+Po zakończeniu meczu gra automatycznie zapisuje **Księgę Starć** w `%LOCALAPPDATA%\\AuctionHammer\\AuctionHammer-KSIEGA-STARC.html` obok podpisanego JSON `AuctionHammer-OSTATNI-MECZ.json`. Na ekranie wyniku kliknij **KSIĘGA STARC [W]**, aby otworzyć raport w przeglądarce. Możesz filtrować po graczu, karcie, walce zakończonej zgonem; każdy atak pokazuje stan jednostek **PRZED / PO** (ATK, HP/MAX, pancerz, tarcza, statusy, licznik ataków), zapisane mikrooperacje oraz dziennik zdarzeń. W przypadku ataku z wyborem zdolności raport obejmuje również późniejszą komendę `choose`.
+
+Oryginalny audyt zawiera teraz `payload.combat_analysis.attacks` i `summary.combat_attacks`. Silnik, reguły, RNG i format replay nie ulegają zmianie. Starsze podpisane pliki audytów można przeanalizować bez modyfikowania ich zawartości poleceniem `python -m game.core.combat_html \"ścieżka-do-audytu.json\"` w repozytorium źródłowym.
