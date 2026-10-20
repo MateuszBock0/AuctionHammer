@@ -1011,12 +1011,11 @@ class SoloApp:
                 self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
             return True
         # Always-visible exit control during gameplay (the menu gets its own).
-        # Do not route clicks through obscuring modal layers or auctions.
+        # Modal overlays retain priority; auction and game-over exit stays active.
         if (event.type==pygame.MOUSEBUTTONUP and event.button==1
                 and not (self.confirm_action or self.menu_open or self.history_open
                          or self.replay_index is not None or self.details_card
-                         or self._bonus_selection_due()
-                         or self.game.phase in ('auction','finished'))
+                         or self._bonus_selection_due())
                 and self.exit_button_rect().collidepoint(
                     self._physical_to_virtual(event.pos))):
             return self._request_exit()
@@ -2091,6 +2090,13 @@ class SoloApp:
                 self._draw_details()
         finally:
             self.game=live
+        # The auction / game-over scrims dim the header. Redraw its real,
+        # clickable exit button ABOVE those overlays, but BELOW any modal.
+        if (self.game.phase in ('auction', 'finished')
+                and self.replay_index is None
+                and not (self.menu_open or self.history_open or self.details_card
+                         or self.confirm_action or self._bonus_selection_due())):
+            self._button(self.exit_button_rect(), 'WYJDŹ', small=True)
         if self.replay_index is not None:self._draw_replay_controls()
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()

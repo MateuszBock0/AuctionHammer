@@ -141,6 +141,39 @@ class ExitAndBoardDrawingTests(unittest.TestCase):
             self.assertTrue(app.handle(self.mouseup(app.menu_exit_rect().center)))
         self.assertEqual(app.confirm_action,'quit')
 
+    def test_header_exit_in_auction_and_after_match(self):
+        app=self.app
+        app.menu_open=False
+        with patch.object(app,'_physical_to_virtual',side_effect=lambda x:x):
+            app.game.phase='auction'
+            self.assertTrue(app.handle(self.mouseup(app.exit_button_rect().center)))
+            self.assertEqual(app.confirm_action,'quit')
+            app.handle(pygame.event.Event(pygame.KEYDOWN,{'key':pygame.K_ESCAPE}))
+            self.assertIsNone(app.confirm_action)
+            app.game.phase='finished'
+            app.game.winner=0
+            self.assertFalse(app.handle(self.mouseup(app.exit_button_rect().center)))
+            self.assertIsNone(app.confirm_action)
+
+    def test_exit_is_redrawn_above_auction_and_gameover_scrims(self):
+        app=self.app
+        app.menu_open=False
+        app.game.winner=0
+        for phase, overlay_name in (('auction','_draw_auction'),
+                                    ('finished','_draw_gameover')):
+            with self.subTest(phase=phase):
+                app.game.phase=phase
+                order=[]
+                def record_button(rect,label,*args,**kwargs):
+                    if label=='WYJDŹ':
+                        order.append('exit')
+                with patch.object(app,overlay_name,
+                                  side_effect=lambda:order.append('overlay')):
+                    with patch.object(app,'_button',side_effect=record_button):
+                        with patch.object(app,'_present'):
+                            app.draw()
+                self.assertEqual(order[-2:],['overlay','exit'])
+
     def test_board_uses_only_engine_reason_and_does_not_mutate_match(self):
         app=self.app
         app.menu_open=False

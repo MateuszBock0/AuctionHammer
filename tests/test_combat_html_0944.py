@@ -32,6 +32,43 @@ class CombatHtmlAcceptance(unittest.TestCase):
                 self.assertIn('PRZED',document)
                 self.assertIn('PO',document)
 
+    def test_fatal_hero_hp_is_visible_in_death_filter_and_summary(self):
+        # A killed hero is still present in state_snapshots. Death detection
+        # must not rely exclusively on participant.after == None.
+        for remaining_hp in (0, -4, 1):
+            with self.subTest(remaining_hp=remaining_hp):
+                initial_hero={"hp":4,"hero_armor":0,"hero_shield":0,
+                              "hero_effects":[]}
+                payload={
+                    "seed":9944,
+                    "initial_state":{
+                        "players":{"0":{"hp":100}, "1":initial_hero},
+                        "units":{"A":{"owner":0,"hp":5,"current_attack":5,
+                                      "current_max_hp":5,"current_armor":0,
+                                      "shield":0,"effects":[],"attacks":0}},
+                        "cards":{},"pending":None,"deferred_attack":None
+                    },
+                    "actions":[{
+                        "seq":1,"operation":"attack","args":["A","hero:1"],
+                        "result":"ok","actor_before":0,"round_before":1,
+                        "changes":{"players":{"1":{
+                            "before":initial_hero,
+                            "after":dict(initial_hero,hp=remaining_hp)
+                        }}}
+                    }],
+                    "internal_events":[],"event_journal":[]
+                }
+                rendered=render_combat_html(payload)
+                fatal=remaining_hp<=0
+                self.assertIn(f'data-death="{1 if fatal else 0}"',rendered)
+                self.assertIn(
+                    f'<strong>{1 if fatal else 0}</strong>ataków ze zgonem obrońcy',
+                    rendered)
+                if fatal:
+                    self.assertIn('<span class="tag dead">Zgon</span>',rendered)
+                else:
+                    self.assertNotIn('<span class="tag dead">Zgon</span>',rendered)
+
     def test_explicit_destination_only_writes_requested_json(self):
         with tempfile.TemporaryDirectory() as directory:
             file=Path(directory)/'latest.json'
