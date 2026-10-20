@@ -13,6 +13,7 @@ from dataclasses import fields, is_dataclass
 from functools import wraps
 from hashlib import sha256
 from pathlib import Path
+from .combat_analysis import build_combat_analysis
 import json
 import os
 import gzip
@@ -378,6 +379,17 @@ def make_report(game):
         initialize_audit(game,complete=False)
     initial=game.audit_initial
     final=state_snapshot(game)
+    names={uid:card.definition.name for uid,card in game.cards.items()}
+    names.update({'hero:0':game.players[0].name,
+                  'hero:1':game.players[1].name})
+    # Read-only derivation: never touches Match, random state or action hashes.
+    combat_payload={
+        'initial_state':initial,
+        'actions':game.audit_actions,
+        'internal_events':game.audit_internal,
+        'event_journal':game.event_journal
+    }
+    combat=build_combat_analysis(combat_payload,names)
     payload={
         "format":FORMAT,
         "schema":SCHEMA,
@@ -398,11 +410,19 @@ def make_report(game):
         "actions":game.audit_actions,
         "internal_events":game.audit_internal,
         "event_journal":list(game.event_journal),
+        "combat_analysis":{
+            "schema":1,
+            "source":"signed-action-state-diffs-and-traced-effects",
+            "note":("Stany uczestników przed atakiem i po pełnym rozstrzygnięciu, "
+                    "łącznie z wyborami zdolności. Brak jednostki po ataku = null."),
+            "attacks":combat
+        },
         "final_state":final,
         "summary":{
             "winner":game.winner,
             "rounds":game.round,
             "action_commands":len(game.audit_actions),
+            "combat_attacks":len(combat),
             "internal_operations":len(game.audit_internal),
             "events":len(game.event_journal),
             "failed_commands":sum(a["result"]=="error" for a in game.audit_actions),
