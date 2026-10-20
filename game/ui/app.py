@@ -27,6 +27,7 @@ from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note
 from game.ui.attack_view import attack_display, inactive_card_reason
+from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 
@@ -63,6 +64,10 @@ class SoloApp:
         self.ai=ComputerOpponent()
         self.bg=self._create_background()
         self.animations_enabled=True
+        self.tutorial=TutorialProgress()
+        self.help_open=False
+        self.help_page=0
+        self._start_tutorial_after_restart=False
         self.restart()
         self.confirm_action=None
         self.confirm_error=''
@@ -79,6 +84,8 @@ class SoloApp:
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
+        self.tutorial.active=False
+        self.help_open=False
         self.game=Match(audit_enabled=True,auctions_enabled=True,
                         auction_catalog='v22',starting_compensation='choice_2_5_or_coins')
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
@@ -243,7 +250,7 @@ class SoloApp:
         if now is None:
             now=pygame.time.get_ticks()
         if (self.menu_open or self.history_open or self.replay_index is not None
-                or self.details_card is not None or self.confirm_action
+                or self.details_card is not None or self.confirm_action or self.help_open
                 or self.game.phase in ('finished','auction')
                 or self._bonus_selection_due() or self.drag_start is not None
                 or self.game.pending is not None):
@@ -772,6 +779,11 @@ class SoloApp:
             elif selectable:
                 self._text('KLIKNIJ, ABY WYBRAĆ',14,rect.centerx,
                            rect.y+322,cfg.GOLD,center=True)
+        if self.tutorial.active:
+            hint=self.tutorial.hint(self.game)
+            if hint is not None:
+                self._text(self.cards_view.clip(hint.detail,self.fonts[13],934),
+                           13,741,608,cfg.GOLD,center=True)
         who=self.game.players[a.turn].name
         if a.phase=='bidding':
             minimum,coins=self.auction_slider_bounds()
@@ -946,6 +958,16 @@ class SoloApp:
             self.menu_open=False
         return True
 
+    def _start_guided_match(self):
+        """Launch a fresh, opt-in tutorial; never discard a live match silently."""
+        if self._needs_confirmation():
+            self._start_tutorial_after_restart=True
+            return self._request_restart()
+        self.restart()
+        self.tutorial.start(self.game)
+        self.menu_open=False
+        return True
+
     def _request_exit(self):
         if self._needs_confirmation():
             self.confirm_action='quit'
@@ -965,7 +987,11 @@ class SoloApp:
         self.confirm_action=None
         self.confirm_error=''
         if action=='restart':
+            guided=self._start_tutorial_after_restart
+            self._start_tutorial_after_restart=False
             self.restart()
+            if guided:
+                self.tutorial.start(self.game)
             self.menu_open=False
             return True
         return False  # confirmed application quit
@@ -1010,6 +1036,35 @@ class SoloApp:
                 self.windowed_size=(width,height)
                 self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
             return True
+        # The handbook is a modal even over auctions and the main menu.
+        if event.type==pygame.KEYDOWN and event.key==pygame.K_F1 and self.confirm_action is None:
+            self.help_open=not self.help_open
+            return True
+        if self.help_open:
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_ESCAPE:
+                    self.help_open=False
+                elif event.key==pygame.K_RIGHT:
+                    self.help_page=min(len(HELP_PAGES)-1,self.help_page+1)
+                elif event.key==pygame.K_LEFT:
+                    self.help_page=max(0,self.help_page-1)
+            elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                pos=self._physical_to_virtual(event.pos)
+                if pygame.Rect(1101,772,123,45).collidepoint(pos):
+                    self.help_open=False
+                elif pygame.Rect(840,772,120,45).collidepoint(pos):
+                    self.help_page=max(0,self.help_page-1)
+                elif pygame.Rect(969,772,120,45).collidepoint(pos):
+                    self.help_page=min(len(HELP_PAGES)-1,self.help_page+1)
+            return True
+        if (event.type==pygame.KEYDOWN and event.key==pygame.K_t
+                and not (self.menu_open or self.history_open or self.replay_index is not None
+                         or self.details_card is not None or self.confirm_action)):
+            if self.tutorial.active:
+                self.tutorial.active=False
+            else:
+                self.tutorial.start(self.game)
+            return True
         # Always-visible exit control during gameplay (the menu gets its own).
         # Modal overlays retain priority; auction and game-over exit stays active.
         if (event.type==pygame.MOUSEBUTTONUP and event.button==1
@@ -1024,6 +1079,7 @@ class SoloApp:
                 if event.key==pygame.K_ESCAPE:
                     self.confirm_action=None
                     self.confirm_error=''
+                    self._start_tutorial_after_restart=False
                 elif event.key==pygame.K_s:
                     return self._resolve_confirmation(save=True)
                 elif event.key==pygame.K_d:
@@ -1037,6 +1093,7 @@ class SoloApp:
                 if pygame.Rect(470,598,540,52).collidepoint(pos):
                     self.confirm_action=None
                     self.confirm_error=''
+                    self._start_tutorial_after_restart=False
             return True
         if event.type==pygame.KEYDOWN and event.key==pygame.K_q:
             return self._request_exit()
@@ -1259,7 +1316,8 @@ class SoloApp:
         g=self.game
         self._export_finished_audit_once()
         self._capture_visual_feedback()
-        if (self.menu_open or self.history_open
+        self.tutorial.observe(g)
+        if (self.menu_open or self.history_open or self.help_open
                 or self.replay_index is not None or self.confirm_action is not None):
             return
         if g.phase!='finished' and self.details_card is None:
@@ -1537,8 +1595,11 @@ class SoloApp:
                     return 'TWOJA TURA  ·  PEŁNA PLANSZA: BRAK JEDNOSTKI DO ZASTĄPIENIA  ·  [SPACJA]'
                 return 'TWOJA TURA  ·  PEŁNA PLANSZA: WSKAŻ JEDNOSTKĘ DO ZASTĄPIENIA'
             return 'TWOJA TURA  ·  WYBIERZ WOLNE POLE, ABY ZAGRAĆ KARTĘ'
-        if self.selected in player.board and g.legal_attacks(self.selected):
-            return 'TWOJA TURA  ·  ZAATAKUJ PODŚWIETLONY CEL (MOŻLIWY ATAK)'
+        if self.selected in player.board:
+            info=attack_display(g,self.selected)
+            if info.ready:
+                return 'TWOJA TURA  ·  ZAATAKUJ PODŚWIETLONY CEL (MOŻLIWY ATAK)'
+            return 'ATAK NIEDOSTĘPNY: '+info.reason+'  ·  '+attack_reason_help(info.reason)
         can_attack=any(g.legal_attacks(uid) for uid in player.board)
         can_play=(bool(player.hand) and not player.played_this_turn
                   and (len(player.board)<5 or
@@ -1557,12 +1618,19 @@ class SoloApp:
         rect=pygame.Rect(96,373,952,54)
         pygame.draw.rect(self.screen,TAVERN_PANEL_INNER,rect,border_radius=7)
         pygame.draw.rect(self.screen,TAVERN_BRASS,rect,1,border_radius=7)
-        parts=self._phase_guidance().split('  ·  ')
-        title=parts[0]
-        detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
-        self._text(self.cards_view.clip(title,self.fonts[14],rect.width-28),
+        hint=self.tutorial.hint(self.game)
+        if hint is not None:
+            title,detail=hint.title,hint.detail
+            self._text('[T] WYŁĄCZ',12,rect.right-120,rect.y+5,cfg.MUTED)
+            max_width=rect.width-164
+        else:
+            parts=self._phase_guidance().split('  ·  ')
+            title=parts[0]
+            detail='  ·  '.join(parts[1:]) if len(parts)>1 else 'Wykonaj legalną akcję wskazaną na planszy.'
+            max_width=rect.width-28
+        self._text(self.cards_view.clip(title,self.fonts[14],max_width),
                    14,rect.x+12,rect.y+4,cfg.GOLD)
-        self._text(self.cards_view.clip(detail,self.fonts[13],rect.width-28),
+        self._text(self.cards_view.clip(detail,self.fonts[13],max_width),
                    13,rect.x+12,rect.y+29,cfg.TEXT)
 
     def _draw_header(self):
@@ -1821,6 +1889,9 @@ class SoloApp:
     def _menu_click(self,pos):
         if self.menu_page=='main' and self.menu_exit_rect().collidepoint(pos):
             return self._request_exit()
+        if (self.menu_page=='main'
+                and pygame.Rect(430,282,180,34).collidepoint(pos)):
+            return self._start_guided_match()
         credits_button=pygame.Rect(875,282,160,34)
         if self.menu_page=='main' and credits_button.collidepoint(pos):
             self.menu_page='credits'
@@ -1880,6 +1951,7 @@ class SoloApp:
                         if recorded_difficulty in ('łatwy','normalny','trudny'):
                             self.ai.difficulty=recorded_difficulty
                         self.game=game
+                        self.tutorial.active=False
                         self._audit_saved_match=None
                         self._audit_notice=''
                         self.selected=None
@@ -1968,6 +2040,7 @@ class SoloApp:
         elif self.menu_page=='main':
             items=('NOWY MECZ','KONTYNUUJ','WCZYTAJ ZAPIS',
                    'USTAWIENIA','WRÓĆ DO GRY')
+            self._button(pygame.Rect(430,282,180,34),'SAMOUCZEK',small=True)
             self._button(pygame.Rect(625,282,240,34),'HISTORIA MECZÓW',small=True)
             self._button(pygame.Rect(875,282,160,34),'CREDITS',small=True)
             self._button(self.menu_exit_rect(),'WYJDŹ Z GRY  [Q]',small=True)
@@ -2062,6 +2135,42 @@ class SoloApp:
             self._text(self.cards_view.clip(notice,font,745),
                        13,738,770,cfg.GOLD,center=True)
 
+    def _draw_help_overlay(self):
+        """Four-page, opt-in local reference; no new UI engine state."""
+        if not self.help_open:
+            return
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
+        shade.fill((*TAVERN_SCRIM,235))
+        self.screen.blit(shade,(0,0))
+        panel=pygame.Rect(202,121,1080,739)
+        self._panel(panel,TAVERN_PANEL_INNER,TAVERN_GOLD,17)
+        page=HELP_PAGES[self.help_page]
+        self._text('PODRĘCZNA POMOC · AUCTIONHAMMER',15,240,155,cfg.MUTED)
+        self._text(page.title,28,240,195,cfg.GOLD)
+        self._text(f'{self.help_page+1} / {len(HELP_PAGES)}',16,1160,191,cfg.GOLD)
+        y=250
+        for line in self._wrap(page.intro,16,984):
+            self._text(line,16,246,y,cfg.TEXT)
+            y+=24
+        y+=20
+        for heading,description in page.sections:
+            self._text(heading,16,246,y,cfg.GOLD)
+            y+=27
+            for line in self._wrap(description,15,977):
+                if y>744:
+                    break
+                self._text(line,15,258,y,cfg.TEXT)
+                y+=21
+            y+=16
+            if y>744:
+                break
+        self._button(pygame.Rect(840,772,120,45),'← WSTECZ',
+                     active=self.help_page>0,small=True)
+        self._button(pygame.Rect(969,772,120,45),'DALEJ →',
+                     active=self.help_page<len(HELP_PAGES)-1,small=True)
+        self._button(pygame.Rect(1101,772,123,45),'ZAMKNIJ',small=True)
+        self._text('F1 / ESC — zamknij · ← / → — zmień stronę',13,243,799,cfg.MUTED)
+
     def draw(self):
         # W powtórce renderujemy kopię, bez kierowania do niej jakichkolwiek
         # komend. Po każdej klatce przywracamy żywy Match.
@@ -2101,7 +2210,8 @@ class SoloApp:
         if self.history_open:self._draw_history_overlay()
         if self.menu_open:self._draw_menu()
         if self.confirm_action:self._draw_confirmation()
-        if (self._bonus_selection_due() and not self.menu_open
+        if self.help_open:self._draw_help_overlay()
+        if (self._bonus_selection_due() and not self.menu_open and not self.help_open
                 and not self.history_open and self.replay_index is None
                 and self.details_card is None):
             self._draw_bonus_selection()

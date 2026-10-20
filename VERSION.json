@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.44",
+  "mvp": "0.9.46",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -159,5 +159,12 @@
     "visible_quit": "Always-visible WYJDŹ in battle header and main menu; existing save confirmation retained",
     "card_hover": "Restrained brass/gold outline on both hand and deployed cards",
     "inactive_cards": "Grayscale art only for stun, spent attacks or summoning restriction; double/quick preserved; stats and statuses unaffected"
+  },
+  "onboarding_0946": {
+    "scope": "read-only session tutorial, four-page F1 handbook, engine-sourced attack unavailability text",
+    "opt_in": "main menu SAMOUCZEK or T during match",
+    "guided_match": "starts fresh with save/discard/cancel confirmation for unfinished games",
+    "coach_progress": "successful human play and attack audited commands, completed auction history",
+    "safe": "no change to Match rules, RNG, cards, auctions, persistence or MatchAudit schema"
   }
 }
