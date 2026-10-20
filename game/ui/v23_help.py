@@ -5,7 +5,7 @@ Never attach these to older v22/v4 savegames. Game definitions are immutable.
 _V23_COPY={
     "S86": {
         "short": "Po śmierci: Prowokacja sojusznika / +3 pancerza bohatera",
-        "full": "Przy śmierci nadaj Prowokację innej własnej jednostce do opuszczenia planszy. Jeżeli nie ma innego sojusznika, bohater otrzymuje 3 pancerza."
+        "full": "Przy śmierci nadaj Prowokację innej własnej jednostce do opuszczenia planszy. Jeżeli nie ma innego sojusznika, bohater otrzymuje +3 pancerza."
     },
     "S87": {
         "short": "Po śmierci: oczyszczanie+pancerz / leczenie bohatera 4 PŻ",
@@ -13,7 +13,7 @@ _V23_COPY={
     },
     "S88": {
         "short": "Po śmierci: odporność sojusznika / Tarcza bohatera",
-        "full": "Przy śmierci nadaj innej własnej jednostce odporność na truciznę i ogłuszenie do jej opuszczenia planszy. Jeśli nie ma innego sojusznika, daj własnemu bohaterowi 1 Tarczę."
+        "full": "Przy śmierci nadaj innej własnej jednostce odporność na truciznę i ogłuszenie do jej opuszczenia planszy. Jeśli nie ma innego sojusznika, daj własnemu bohaterowi efekt Tarcza (1 ładunek)."
     },
     "S32": {
         "short": "Trucizna; jeśli wszyscy już zatruci: 2 obr. wrogowi z min. PŻ",
