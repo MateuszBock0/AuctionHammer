@@ -2,21 +2,25 @@
 setlocal
 cd /d "%~dp0"
 
-rem Allow bootstrap from source-only folder: updater downloads portable EXE on first run.
+rem AuctionHammer 0.9.43: verified side-by-side updater. Existing user saves stay untouched.
 if exist "%~dp0tools\portable_launcher.ps1" (
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\portable_launcher.ps1"
-  if not errorlevel 1 goto :done
-  echo [Aktualizator] Could not update or start the portable version.
+  if errorlevel 1 (
+    echo.
+    echo [AuctionHammer] Launcher returned an error. The old version has NOT been overwritten.
+    echo [Pomoc] https://github.com/MateuszBock0/AuctionHammer/releases/latest
+    pause
+    exit /b 1
+  )
+  exit /b 0
 )
 
+rem Legacy or source-only fallback for old folders without a PowerShell launcher.
 if exist "%~dp0AuctionHammer.exe" (
   start "" "%~dp0AuctionHammer.exe"
-  goto :done
+  exit /b 0
 )
-
-echo [Missing EXE] An Internet connection is required to download the first Windows release.
+echo [Brak EXE] Rozpakuj najnowszy Windows ZIP lub umiesc ten BAT obok katalogu tools.
 echo https://github.com/MateuszBock0/AuctionHammer/releases/latest
 pause
-
-:done
-endlocal
+exit /b 2
