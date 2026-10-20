@@ -69,8 +69,13 @@ function Atomic-WritePointer([string]$destination,[string]$tag) {
     try {
         [IO.File]::WriteAllText($temp,$tag,[Text.Encoding]::ASCII)
         if (Test-Path -LiteralPath $destination -PathType Leaf) {
-            # Windows NTFS File.Replace is atomic. Never delete the live pointer first.
-            [IO.File]::Replace($temp,$destination,$null)
+            # .NET Framework/Windows PowerShell 5.1 requires a valid backup path.
+            # Both files are on the same volume; Replace is atomic on NTFS.
+            $backup = Join-Path $project ('.auctionhammer-pointer-' + [Guid]::NewGuid().ToString('N') + '.bak')
+            [IO.File]::Replace($temp,$destination,$backup)
+            if (Test-Path -LiteralPath $backup) {
+                Remove-Item -LiteralPath $backup -Force -ErrorAction SilentlyContinue
+            }
         } else {
             [IO.File]::Move($temp,$destination)
         }
