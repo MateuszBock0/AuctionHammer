@@ -45,11 +45,14 @@ class TutorialLogicTests(unittest.TestCase):
         g.audit_actions.append({"result":"ok","command_owner":0,"operation":"attack"})
         coach.observe(g)
         self.assertEqual(coach.hint(g).stage,4)
-        g.auction=SimpleNamespace(phase="bidding")
+        g.auction=SimpleNamespace(phase="bidding",turn=0)
         g.phase="auction"
         self.assertIn("LICYTACJA",coach.hint(g).title)
         g.auction.phase="picking"
         self.assertIn("WYBÓR",coach.hint(g).title)
+        g.auction.turn=1
+        self.assertIn("RUCH KOMPUTERA",coach.hint(g).title)
+        g.auction.turn=0
         g.phase="turn"
         g.auction_history=[{"number":1}]
         coach.observe(g)
@@ -107,6 +110,7 @@ class TutorialInterfaceTests(unittest.TestCase):
         self.assertTrue(app.tutorial.active)
         self.assertFalse(app.menu_open)
         self.assertEqual(app.game.phase,"mulligan")
+        self.assertTrue(app.tutorial_welcome_open)
         self.assertIsNotNone(app.tutorial.hint(app.game))
 
     def test_all_help_pages_are_renderable_and_read_only(self):
@@ -119,6 +123,56 @@ class TutorialInterfaceTests(unittest.TestCase):
                 app.help_page=index
                 app.draw()
         self.assertEqual(before,digest(state_snapshot(app.game)))
+
+    def test_visible_welcome_is_modal_and_only_start_closes_it(self):
+        app=self.app
+        app.menu_open=True
+        with patch.object(app,"_physical_to_virtual",side_effect=lambda x:x):
+            app.handle(self.click((500,299)))
+        self.assertTrue(app.tutorial_welcome_open)
+        before=digest(state_snapshot(app.game))
+        with patch.object(app,"_button",wraps=app._button) as painted:
+            with patch.object(app,"_present"):
+                app.draw()
+        self.assertIn("ROZPOCZNIJ NAUKĘ  [ENTER]",
+                      [x.args[1] for x in painted.call_args_list if len(x.args)>1])
+        app.handle(self.key(pygame.K_SPACE))
+        self.assertFalse(app.tutorial_welcome_open)
+        self.assertTrue(app.tutorial.active)
+        self.assertEqual(before,digest(state_snapshot(app.game)))
+
+    def test_welcome_skip_disables_coach_without_executing_game_action(self):
+        app=self.app
+        app._start_guided_match()
+        before=digest(state_snapshot(app.game))
+        app.handle(self.key(pygame.K_ESCAPE))
+        self.assertFalse(app.tutorial_welcome_open)
+        self.assertFalse(app.tutorial.active)
+        self.assertEqual(before,digest(state_snapshot(app.game)))
+
+    def test_gold_targets_follow_game_state_and_keep_engine_unchanged(self):
+        app=self.app
+        app._start_guided_match()
+        app.handle(self.key(pygame.K_RETURN))
+        game=app.game
+        before=digest(state_snapshot(game))
+        if app._bonus_selection_due():
+            self.assertEqual(len(app._tutorial_targets()),2)
+        else:
+            self.assertTrue(app._tutorial_targets())
+        with patch.object(app,"_present"):
+            app.draw()
+        self.assertEqual(before,digest(state_snapshot(game)))
+        app.tutorial.active=False
+        self.assertEqual(app._tutorial_targets(),[])
+
+    def test_help_can_still_open_after_welcome(self):
+        app=self.app
+        app._start_guided_match()
+        app.handle(self.key(pygame.K_RETURN))
+        app.handle(self.key(pygame.K_F1))
+        self.assertTrue(app.help_open)
+        self.assertFalse(app.tutorial_welcome_open)
 
     def test_F1_help_is_modal_even_during_auction(self):
         app=self.app
@@ -181,6 +235,7 @@ class TutorialInterfaceTests(unittest.TestCase):
         # Discard path starts fresh guided match with the existing confirmation.
         self.assertTrue(app.handle(self.key(pygame.K_d)))
         self.assertTrue(app.tutorial.active)
+        self.assertTrue(app.tutorial_welcome_open)
         self.assertEqual(app.game.phase,"mulligan")
         self.assertFalse(app.menu_open)
 
