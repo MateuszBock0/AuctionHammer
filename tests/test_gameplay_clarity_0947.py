@@ -178,6 +178,30 @@ class GameplayCanvasTests(unittest.TestCase):
         self.assertIn('KARTA 0/1',labels)
         self.assertTrue(any('SAMOUCZEK' in x for x in labels))
 
+    def test_auction_inspect_button_never_bids_or_picks(self):
+        from types import SimpleNamespace
+        app=self.app
+        a=SimpleNamespace(turn=0,phase='picking',offers=[
+            SimpleNamespace(uid='offer-1',archetype='A014',
+                            rarity='rzadka',atk=7,hp=8)])
+        app.game.phase='auction'
+        app.game.auction=a
+        with patch.object(app,'_auction_do') as command:
+            app._auction_click(app.auction_inspection_rect(0).center)
+        self.assertEqual(app.auction_inspect_index,0)
+        command.assert_not_called()
+        with patch.object(app,'_text',wraps=app._text) as spy:
+            app._draw_auction_inspection()
+        shown=[str(c.args[0]) for c in spy.call_args_list if c.args]
+        self.assertTrue(any('Kapłan' in txt for txt in shown))
+        self.assertTrue(any('PEŁNY OPIS' in txt for txt in shown))
+        # A paused inspection cannot be treated as an engine turn.
+        with patch.object(app.ai,'step') as ai_move:
+            app.update()
+        ai_move.assert_not_called()
+        app.handle(pygame.event.Event(pygame.KEYDOWN,{'key':pygame.K_ESCAPE}))
+        self.assertIsNone(app.auction_inspect_index)
+
     def test_combat_notice_expires_without_engine_changes(self):
         app=self.app
         game=app.game
