@@ -28,6 +28,10 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -v
+      - name: Test verified SHA256 updater and atomic rollback on Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          & "$env:GITHUB_WORKSPACE/tests/windows/test_portable_launcher_0943.ps1"
       - name: Render Minimal Fantasy screenshots
         env:
           SDL_VIDEODRIVER: dummy
@@ -79,11 +83,26 @@ jobs:
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
           Set-Content -Path "$dest/BUILD_VERSION.txt" -Value $tag -NoNewline
           Compress-Archive -Path $dest -DestinationPath 'AuctionHammer-Windows.zip' -Force
+          $hash = (Get-FileHash -LiteralPath 'AuctionHammer-Windows.zip' -Algorithm SHA256).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText((Join-Path (Get-Location) 'AuctionHammer-Windows.zip.sha256'), ($hash + ' *AuctionHammer-Windows.zip'), [Text.Encoding]::ASCII)
+          Write-Host ('SHA256 ' + $hash)
+      - name: Verify archive and checksum on Windows
+        shell: powershell
+        run: |
+          $sum = ((Get-Content -Raw 'AuctionHammer-Windows.zip.sha256').Trim() -split '\s+')[0]
+          $actual = (Get-FileHash 'AuctionHammer-Windows.zip' -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sum -ne $actual) {throw 'Published checksum mismatch'}
+          $check = 'release/AuctionHammer'
+          foreach ($p in @('AuctionHammer.exe','_internal','BUILD_VERSION.txt','VERSION.json','tools/portable_launcher.ps1','URUCHOM_AUCTIONHAMMER.bat')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $check $p))) { throw ('Release missing: ' + $p) }
+          }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: AuctionHammer-Windows
-          path: AuctionHammer-Windows.zip
+          path: |
+            AuctionHammer-Windows.zip
+            AuctionHammer-Windows.zip.sha256
       - name: Publish stable latest-release download URL
         if: github.ref == 'refs/heads/main'
         shell: pwsh
@@ -91,4 +110,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
-          gh release create $tag 'AuctionHammer-Windows.zip' --title "AuctionHammer Portable $tag" --notes "Portable Windows release. Extract AuctionHammer and launch URUCHOM_AUCTIONHAMMER.bat. Python and pygame-ce are bundled." --latest --target '${{ github.sha }}'
+          gh release create $tag 'AuctionHammer-Windows.zip' 'AuctionHammer-Windows.zip.sha256' --title "AuctionHammer Portable $tag" --notes "AuctionHammer 0.9.43+ portable Windows release. Verified SHA-256 update, side-by-side versions and rollback. Extract the folder once and launch URUCHOM_AUCTIONHAMMER.bat. Old EXE and user saves remain intact during update." --latest --target '${{ github.sha }}'
