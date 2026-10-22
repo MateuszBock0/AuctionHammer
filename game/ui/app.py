@@ -547,6 +547,9 @@ class SoloApp:
                     self.selected=pending.uid
         except IllegalMove as exc:
             self.last_error = str(exc)
+        else:
+            if pending and pending.context == 'attack':
+                self._release_exhausted_attacker()
         self.choice_page = 0
 
     def _choose_target(self, target):
@@ -644,6 +647,7 @@ class SoloApp:
                 else:
                     try:g.attack(self.selected,target);self.last_error=''
                     except IllegalMove as e:self.last_error=str(e)
+                    else:self._release_exhausted_attacker()
                 if self.selected not in g.units:self.selected=None
                 return
             if target in g.players[0].board:
@@ -991,6 +995,17 @@ class SoloApp:
         if p.played_this_turn or len(p.board)!=5:
             return []
         return [uid for uid in p.board if g.can_play(0,self.selected,uid)]
+
+    def _release_exhausted_attacker(self):
+        """Avoid leaving an attacker selected once its final attack is spent.
+
+        Keep the selection while an attack ability is unresolved, and keep it
+        when the unit genuinely has another legal attack (e.g. double attack).
+        """
+        uid=self.selected
+        if (uid in self.game.players[0].board and self.game.pending is None
+                and not self.game.legal_attacks(uid)):
+            self.selected=None
 
     def _attack_issue(self,uid,target):
         """Explain illegal targets before they become failed audit commands."""
