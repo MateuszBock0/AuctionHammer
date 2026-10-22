@@ -8,6 +8,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
+STATUS_NAMES = {
+    "poison": "Trucizna", "stun": "Ogłuszenie",
+    "silence": "Wyciszenie", "regen": "Regeneracja",
+    "taunt": "Prowokacja", "quick": "Szybki atak",
+    "double": "Podwójny atak",
+    "immune_poison": "Odporność na truciznę",
+    "immune_stun": "Odporność na ogłuszenie",
+}
+
+
 @dataclass(frozen=True)
 class AttackOutcome:
     """One latest completed attack, not a FIFO of stale combat log entries."""
@@ -61,12 +71,18 @@ def committed_attack_outcome(game, prior: dict, current: dict,
         fragments = []
         if new_hp != old_hp:
             fragments.append(f"PŻ {old_hp}→{new_hp}")
-        if new_shield != old_shield:
-            fragments.append(f"tarcza {old_shield}→{new_shield}")
-        if new_armor != old_armor:
-            fragments.append(f"pancerz {old_armor}→{new_armor}")
-        if new_status - old_status:
-            fragments.append("nowe efekty: " + ", ".join(sorted(new_status - old_status)))
+        # A dead unit leaves the board. Its missing defenses are not proof
+        # they were *consumed by this hit*. Only compare protection for
+        # surviving combatants; death is reported as its own consequence.
+        if new is not None:
+            if new_shield != old_shield:
+                fragments.append(f"tarcza {old_shield}→{new_shield}")
+            if new_armor != old_armor:
+                fragments.append(f"pancerz {old_armor}→{new_armor}")
+            if new_status - old_status:
+                translated=(STATUS_NAMES.get(kind,kind)
+                            for kind in sorted(new_status - old_status))
+                fragments.append("nowe efekty: " + ", ".join(translated))
         if uid in confirmed_deaths:
             fragments.append("ZGON")
         if not fragments:
