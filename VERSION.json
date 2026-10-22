@@ -255,7 +255,7 @@
     "manual_windows_dpi_100_125_150": "pending"
   },
   "gameplay_clarity_0956": {
-    "scope": "read-only armor/shield/status attack explanation, hover expanded recap, S34/S108 positional targets, current empty-slot income and auction countdown, clearer UI captions",
+    "scope": "read-only armor/shield/status attack explanation, hover expanded recap, S34/S108 positional targets, current empty-slot income and auction countdown, clearer UI captions, F8 selection of three AI presentation speeds",
     "combat_rules_changed": false,
     "ai_policy_changed": false,
     "test_file": "tests/test_gameplay_clarity_0956.py",
