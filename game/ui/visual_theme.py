@@ -215,6 +215,51 @@ class VisualTheme:
                 pygame.draw.line(screen,BRASS,(sx,sy),(sx+dx*9,sy),1)
                 pygame.draw.line(screen,BRASS,(sx,sy),(sx,sy+dy*9),1)
 
+    def rarity_frame(self,screen,rect,tier,animate=True):
+        """Edge-only rarity: subtle bronze, silver-blue, ornate gold.
+
+        The unit's selection/attack/readiness outline is drawn separately,
+        after this frame. Never fill over opaque name/ATK/PŻ panels.
+        """
+        from game.ui.rarity_view import rarity_color
+        shade=rarity_color(tier)
+        if tier=='podstawowa':
+            pygame.draw.rect(screen,shade,rect,2,border_radius=11)
+            return
+        if tier=='rzadka':
+            pygame.draw.rect(screen,(56,77,118),rect.inflate(2,2),
+                             3,border_radius=12)
+            pygame.draw.rect(screen,shade,rect,2,border_radius=11)
+            for corner in ((rect.left+8,rect.top+8),(rect.right-9,rect.top+8),
+                           (rect.left+8,rect.bottom-9),(rect.right-9,rect.bottom-9)):
+                pygame.draw.circle(screen,(205,223,251),corner,2)
+            return
+        if tier!='legendarna':return
+        pygame.draw.rect(screen,(139,90,26),rect.inflate(6,6),
+                         5,border_radius=14)
+        pygame.draw.rect(screen,shade,rect.inflate(3,3),
+                         3,border_radius=12)
+        pygame.draw.rect(screen,(255,226,135),rect.inflate(-3,-3),
+                         1,border_radius=10)
+        # Four corner engravings + an animated gemstone on the external edge.
+        for x,direction in ((rect.left,-1),(rect.right,1)):
+            for y,vertical in ((rect.top,-1),(rect.bottom,1)):
+                pts=[(x+direction*5,y+vertical*5),
+                     (x-direction*8,y+vertical*5),
+                     (x+direction*5,y-vertical*8)]
+                pygame.draw.lines(screen,(255,225,133),False,pts,2)
+        center=(rect.centerx,rect.top-3)
+        color=(255,238,161)
+        if animate:
+            glow=.5+.5*math.sin(pygame.time.get_ticks()/1050)
+            color=tuple(min(255,int(a+glow*(255-a))) for a in shade)
+        pygame.draw.polygon(screen,(140,93,33),
+                            [(center[0],center[1]-6),(center[0]+8,center[1]),
+                             (center[0],center[1]+6),(center[0]-8,center[1])])
+        pygame.draw.polygon(screen,color,
+                            [(center[0],center[1]-4),(center[0]+5,center[1]),
+                             (center[0],center[1]+4),(center[0]-5,center[1])])
+
     def card_lustre(self,screen,rect,faction):
         """Rim-only accents: rendered behind data fields, no text overlays."""
         pygame.draw.rect(screen,(8,15,22),rect.move(0,3),border_radius=11)

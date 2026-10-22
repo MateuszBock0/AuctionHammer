@@ -27,6 +27,7 @@ from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
 from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
+from game.ui.rarity_view import rarity_color
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
@@ -357,7 +358,9 @@ class SoloApp:
         self._text('KARTA NA RĘCE · PODGLĄD',13,box.x+13,box.y+11,TAVERN_GOLD)
         card=self.game.cards[uid]
         self.cards_view.draw(self.screen,card,pygame.Rect(box.x+15,box.y+34,255,380),
-                             statuses=hand_grants(self.game,uid))
+                             statuses=hand_grants(self.game,uid),
+                             rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                             animate_rarity=self.animations_enabled)
         self._text('PRAWY KLIK / [I] — PEŁNY OPIS',12,
                    box.x+13,box.bottom-20,TAVERN_MUTED)
 
@@ -809,8 +812,13 @@ class SoloApp:
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
             selectable=a.phase=='picking' and a.turn==0 and not claimed
+            tier_accent=rarity_color(off.rarity)
             self._panel(rect,(52,37,26) if not claimed else (38,34,29),
-                        cfg.GOLD if selectable else cfg.PANEL_BORDER,14)
+                        tier_accent if not claimed else cfg.PANEL_BORDER,14)
+            # Rarity is more prominent than the generic "selectable" gold.
+            pygame.draw.rect(self.screen,tier_accent,rect.inflate(-3,-3),
+                             4 if off.rarity=='legendarna' else
+                             2 if off.rarity=='rzadka' else 1,border_radius=13)
             self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
             adef=catalog_for(self.game.auction_catalog).get(off.archetype)
             self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
@@ -820,8 +828,8 @@ class SoloApp:
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
             self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
-            self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
-                       rect.centerx,rect.y+155,cfg.GOLD,center=True)
+            self._text(f'{off.rarity.upper()} · POZIOM {off.level}',14,
+                       rect.centerx,rect.y+155,tier_accent,center=True)
             description=(v23_variant(self.game.auction_catalog,off.archetype,
                                       off.rarity,getattr(self.game,'ruleset_version','v22'))
                          if adef and self.game.auction_catalog in ('v4','v22') else
@@ -1490,6 +1498,8 @@ class SoloApp:
                 self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
                      selected=selected,hover=rect.collidepoint(self.mouse_pos()),
                      dim=bool(inactive_card_reason(self.game,uid)),
+                     rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                     animate_rarity=self.animations_enabled,
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
                      attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit,
                      hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
@@ -1530,6 +1540,8 @@ class SoloApp:
                                  selected=(uid==self.selected or marked),
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
                                  hover=rect.collidepoint(self.mouse_pos()),
+                                 rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                                 animate_rarity=self.animations_enabled,
                                  statuses=hand_grants(self.game,uid))
             if (self.game.phase=='turn' and self.game.active==0
                     and not self.game.pending and not p0.played_this_turn):
