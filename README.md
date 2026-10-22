@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.49 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.50 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -39,6 +39,14 @@ Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga
 Szczegóły: [QA aktualizatora Windows 0.9.43](docs/QUALITY_RELEASE_0943.md).
 
 > To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
+
+## Domknięcie automatycznej części audytu ZIP (0.9.50)
+
+Wersja 0.9.50 dodaje **testy rzeczywistego silnika** dla S15, S59, S84, S95 i S108 na poziomach 0/1/3 — zarówno przy skutecznym ogłuszeniu, jak i odporności celu. Weryfikowany jest wariant S95 z v23 (stałe 2 obrażenia bez nowego celu), który nie występuje w v22. Testy zapisów A010 w historycznych trybach v4/v22 obejmują SHA stanu i niezmienność opisów.
+
+Na każdym PR workflow publikuje tabelę CSV **70+51** faktycznie renderowanych opisów jako artefakt `AuctionHammer-Card-Copy-Coverage-121`.
+
+Nie zmieniono mechaniki ani statystyk. Pozostają otwarte ręczny test DPI na rzeczywistym Windows i odtwarzanie oryginalnych historycznych archiwów niedostarczonych w ZIP. [Raport 0.9.50](docs/AUDIT_CLOSURE_0950.md).
 
 ## Audyt Gameplay UX i poprawki wartości kart (0.9.49)
 

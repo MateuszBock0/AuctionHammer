@@ -23,6 +23,18 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python tools/render_minimal_fantasy_preview.py
+      - name: Generuj indeks opisów 70 kart i 51 wariantów
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          mkdir -p reports
+          python -m scripts.card_copy_matrix_0949 > reports/card-copy-coverage-121.csv
+          python -c "import csv; x=list(csv.DictReader(open('reports/card-copy-coverage-121.csv',encoding='utf-8'))); assert len(x)==121, len(x)"
+      - name: Udostępnij audyt opisów na każdym PR
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-Card-Copy-Coverage-121
+          path: reports/card-copy-coverage-121.csv
       - name: Artefakty podglądów na PR
         uses: actions/upload-artifact@v4
         with:
