@@ -48,10 +48,19 @@ class LegendaryVisualIdentity(unittest.TestCase):
                 legendary=self._render('legendarna',rect)
                 zones=card_zones(rect)
                 # Actual opaque information cells, not a synthetic blank card.
-                for key in ('name','trigger','info','stats'):
+                for key in ('name','trigger','info'):
                     point=zones[key].center
                     self.assertEqual(rare.get_at(point),legendary.get_at(point),
                                      (size,key,point))
+                # The zone center is the gap between ATK and HP boxes.
+                # Compare centers of the two opaque value cells instead.
+                stats=zones['stats']
+                for label,point in (
+                    ('ATK',(stats.left+stats.width//4,stats.centery)),
+                    ('PZ',(stats.left+3*stats.width//4,stats.centery)),
+                ):
+                    self.assertEqual(rare.get_at(point),legendary.get_at(point),
+                                     (size,label,point))
                 # The illustration and outside edge visibly differ.
                 self.assertNotEqual(
                     rare.get_at(zones['art'].center),
