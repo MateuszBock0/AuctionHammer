@@ -69,6 +69,8 @@ class CombatVisuals:
         self.combat_cards: dict[str,CombatCard] = {}
         self.fallen_cards: list[CombatCard] = []
         self.last_attack_outcome = None
+        self._attack_start_state = None
+        self._attack_start_event = 0
 
     @staticmethod
     def _anchor(rect: pygame.Rect) -> tuple[int,int]:
@@ -111,15 +113,33 @@ class CombatVisuals:
         prior=self.last_state
         self.last_state=current
         journal=getattr(game,'event_journal',[])
-        fresh=journal[self.read_events:]
+        start_event=self.read_events
+        fresh=journal[start_event:]
         self.read_events=len(journal)
         if prior is None:
             self.last_active=game.active
             return
-        # The recap is generated only from a recorded attack and two committed
-        # snapshots; this does not rerun combat or mutate the Match.
-        self.last_attack_outcome = committed_attack_outcome(
-            game,prior,current,fresh,len(journal))
+        # The engine may suspend an attack until a mandatory ability/death
+        # choice is resolved. An "atakuje" journal line is NOT evidence that
+        # its damage or retaliation is final.
+        if any(' atakuje: ' in evt['text'] for evt in fresh):
+            if self._attack_start_state is None:
+                self._attack_start_state=prior
+                self._attack_start_event=start_event
+        attack_events=[]
+        committed_attack_start=None
+        unresolved=(getattr(game,'pending',None) is not None
+                    or getattr(game,'deferred_attack',None) is not None
+                    or bool(getattr(game,'trigger_queue',()))
+                    or bool(getattr(game,'death_waves',()))
+                    or getattr(game,'active_death_wave',None) is not None)
+        self.last_attack_outcome=None
+        if self._attack_start_state is not None and not unresolved:
+            committed_attack_start=self._attack_start_state
+            attack_events=journal[self._attack_start_event:]
+            self.last_attack_outcome=committed_attack_outcome(
+                game,committed_attack_start,current,attack_events,len(journal))
+            self._attack_start_state=None
         attack_confirmed = self.last_attack_outcome is not None
         impact_delay = 165 if attack_confirmed else 0
         # Auras/entrances operate on confirmed board occupancy only.
@@ -140,24 +160,25 @@ class CombatVisuals:
                    for evt in fresh):
                 confirmed_deaths.add(uid)
         # Przy walce oba końce są znane nawet wtedy, gdy atakujący już zginął.
-        for evt in fresh:
+        for evt in attack_events:
             message=evt['text']
             if ' atakuje: ' in message:
                 actor,target=message.split(' atakuje: ',1)
                 target=target.rstrip('.')
-                src=next((cid for cid in prior if cid in game.cards
+                before=committed_attack_start or prior
+                src=next((cid for cid in before if cid in game.cards
                           and game.cards[cid].definition.name==actor),None)
                 dst=next((cid for cid in current if cid in game.cards
                           and game.cards[cid].definition.name==target),None)
                 if dst is None:
-                    dst=next((cid for cid in prior if cid in game.cards
+                    dst=next((cid for cid in before if cid in game.cards
                               and game.cards[cid].definition.name==target),None)
                 if target.startswith('Bohater'):
                     dst=next((f'hero:{i}' for i,p in enumerate(game.players)
                               if p.name in target),None)
                 if src and dst:
-                    start=(prior.get(src) or current.get(src) or {}).get('at')
-                    end=(current.get(dst) or prior.get(dst) or {}).get('at')
+                    start=(before.get(src) or current.get(src) or {}).get('at')
+                    end=(current.get(dst) or before.get(dst) or {}).get('at')
                     if start and end:
                         self._push('attack',end,now,origin=start)
                         fighting.update((src,dst))
