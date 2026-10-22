@@ -56,7 +56,7 @@ Celem jest zmniejszenie PŻ bohatera komputera z **100 do 0**, zanim on zrobi to
 
 **Czytelność walki (0.9.55):** legalny cel ataku reaguje na najechanie kursorem; po ataku panel **SKUTKI ATAKU** pokazuje rzeczywistą zmianę PŻ i tarczy, a pełny dziennik jest pod **H**. Ruchy AI są szybsze, animacje trafień krótsze. Ataki z wyborem zdolności pokazują wynik dopiero po rozstrzygnięciu wyboru.
 
-**Czytelność decyzji (0.9.56):** panel ostatniego ataku pokazuje PŻ, tarczę, pancerz i nowe statusy, a po najechaniu na jego miejsce rozwija pełniejszy raport. Po zaznaczeniu S34 lub S108 gra wskazuje faktyczny obszar działania na stałych polach; nie gwarantuje aktywacji statusu. W prawej kolumnie zobaczysz szacowany przychód za obecnie wolne pola oraz rundy do najbliższej aukcji, o ile są dostępne oferty. Prognoza nie uwzględnia przyszłych efektów końca tury.\n\n## 3. Aukcje w skrócie
+**Czytelność decyzji (0.9.56):** Trzy tempa AI zmienisz klawiszem **F8** (spokojne / standardowe / szybkie; bez zmiany decyzji komputera).  panel ostatniego ataku pokazuje PŻ, tarczę, pancerz i nowe statusy, a po najechaniu na jego miejsce rozwija pełniejszy raport. Po zaznaczeniu S34 lub S108 gra wskazuje faktyczny obszar działania na stałych polach; nie gwarantuje aktywacji statusu. W prawej kolumnie zobaczysz szacowany przychód za obecnie wolne pola oraz rundy do najbliższej aukcji, o ile są dostępne oferty. Prognoza nie uwzględnia przyszłych efektów końca tury.\n\n## 3. Aukcje w skrócie
 
 Co trzy ukończone rundy może rozpocząć się aukcja. System losuje **trzy oferty** z dostępnych archetypów; gracze licytują **prawo pierwszego wyboru**, a nie cały zestaw. Każdy może otrzymać po jednej karcie aukcyjnej. Takie karty nie należą do podstawowej puli dobierania.
 
