@@ -47,6 +47,31 @@ class CombatOutcomeTests(unittest.TestCase):
         visuals.sync(game, self.slot, self.hero, 120)
         self.assertIsNone(visuals.last_attack_outcome)
 
+    def test_attack_waits_for_real_s68_ability_choice_before_reporting(self):
+        game = setup_game(955102)
+        attacker = force_unit(game, "S68", 0)
+        force_unit(game, "S01", 1)
+        attacker.played_turn = 0
+        visuals = CombatVisuals()
+        visuals.sync(game, self.slot, self.hero, 0)
+        game.attack("S68", "S01")
+        self.assertIsNotNone(game.pending)
+        self.assertIsNotNone(game.deferred_attack)
+        before = digest(state_snapshot(game))
+        visuals.sync(game, self.slot, self.hero, 100)
+        self.assertIsNone(visuals.last_attack_outcome)
+        self.assertEqual(digest(state_snapshot(game)), before)
+        self.assertFalse(any(pulse.kind == "attack" for pulse in visuals.pulses))
+        game.choose(0)
+        self.assertIsNone(game.pending)
+        self.assertIsNone(game.deferred_attack)
+        after = digest(state_snapshot(game))
+        visuals.sync(game, self.slot, self.hero, 200)
+        self.assertIsNotNone(visuals.last_attack_outcome)
+        self.assertTrue(any("PŻ" in line for line in visuals.last_attack_outcome.lines))
+        self.assertTrue(any(pulse.kind == "attack" for pulse in visuals.pulses))
+        self.assertEqual(digest(state_snapshot(game)), after)
+
     def test_shield_absorbs_attack_without_fake_hp_damage(self):
         game = SimpleNamespace(
             players=[SimpleNamespace(name="Gracz"), SimpleNamespace(name="Komputer")],
@@ -130,6 +155,22 @@ class ResponsiveCanvasTests(unittest.TestCase):
         with patch("game.ui.app.pygame.time.get_ticks", return_value=3400):
             app._capture_visual_feedback()
         self.assertIsNone(app.attack_outcome_active)
+
+    def test_attack_finishes_without_new_journal_line_and_still_reports(self):
+        app = self.app
+        original_count = len(app.game.event_journal)
+        app._last_logged_event = original_count
+        outcome = AttackOutcome(original_count, ("Wilk: PŻ 4→1",))
+        app.combat_visuals.last_attack_outcome = outcome
+        with patch("game.ui.app.pygame.time.get_ticks", return_value=1500):
+            app._capture_visual_feedback()
+        self.assertIsNotNone(app.attack_outcome_active)
+        self.assertIs(app.attack_outcome_active[1], outcome)
+        self.assertEqual(len(app.game.event_journal), original_count)
+        # Re-reading the same outcome may not restart the duration.
+        with patch("game.ui.app.pygame.time.get_ticks", return_value=1600):
+            app._capture_visual_feedback()
+        self.assertEqual(app.attack_outcome_active[0], 1500)
 
     def test_hovered_legal_attack_target_is_more_distinct(self):
         app = self.app
