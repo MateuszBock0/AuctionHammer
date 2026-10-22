@@ -85,9 +85,9 @@ class LegendaryVisualIdentity(unittest.TestCase):
 
     def test_auction_artwork_badges_do_not_overlap_or_claim_hand_scaling(self):
         hand_rect=pygame.Rect(65,70,125,195)
-        with patch.object(self.view,'_pill',wraps=self.view._pill) as pill:
+        with patch.object(self.view,'_center',wraps=self.view._center) as labels:
             self._render('legendarna',hand_rect)
-        captions=[str(c.args[2]) for c in pill.call_args_list]
+        captions=[str(c.args[1]) for c in labels.call_args_list]
         self.assertIn('LEG.',captions)
         self.assertFalse(any('0/3' in value for value in captions),captions)
 
@@ -95,11 +95,11 @@ class LegendaryVisualIdentity(unittest.TestCase):
                   self.card.max_hp,0,0)
         board_rect=pygame.Rect(65,70,148,220)
         surface=pygame.Surface((430,500),pygame.SRCALPHA)
-        with patch.object(self.view,'_pill',wraps=self.view._pill) as pill:
+        with patch.object(self.view,'_center',wraps=self.view._center) as labels:
             self.view.draw(surface,self.card,board_rect,unit=unit,
                            rarity='legendarna',attacks_remaining=1,
                            attacks_total=1,ready=True,animate_rarity=False)
-        captions=[str(c.args[2]) for c in pill.call_args_list]
+        captions=[str(c.args[1]) for c in labels.call_args_list]
         self.assertIn('ATAKI 1/1',captions)
         self.assertNotIn('LEG.',captions)
 
