@@ -2008,7 +2008,10 @@ class SoloApp:
             if hovered:
                 label=self.fonts_bold[13].render('ATAKUJ',True,(170,250,255))
                 tx=rect.centerx-label.get_width()//2
-                ty=rect.y-25 if rect.y>=40 else rect.bottom+4
+                # Enemy unit cards begin just below the opponent hero bar.
+                # Put their cue underneath, not ON TOP of the hero's HP/coins.
+                # A hero target instead uses the strip above its health bar.
+                ty=(rect.bottom+5 if rect.height>=100 else rect.y-24)
                 self.screen.blit(label,(tx,ty))
 
     def _draw_choices(self):
