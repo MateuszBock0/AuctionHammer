@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.42: tavern card and action readability without engine changes."""
+"""AuctionHammer MVP 0.9.52: fixed-slot drag/drop and card readability."""
 from __future__ import annotations
 import os
 import re
@@ -1368,9 +1368,16 @@ class SoloApp:
                 down,card=self.drag_start;self.drag_start=None
                 if not self.game.pending and card in self.game.players[0].hand and (pos[0]-down[0])**2+(pos[1]-down[1])**2>100:
                     if self.OWN_Y-12<=pos[1]<=self.OWN_Y+self.SLOT_H+12 and self.game.phase=='turn' and self.game.active==0:
-                        target=self.target_under(pos)
-                        replace=target if target in self.game.players[0].board and len(self.game.players[0].board)==5 else None
-                        self._try_play(card,replace,self.slot_under(0,pos))
+                        # Gaps and side margins must never cause the engine
+                        # to silently choose its default free slot.
+                        target_slot=self.slot_under(0,pos)
+                        if target_slot is None:
+                            self.last_error='Upuść kartę na jednym z pięciu pól własnej planszy.'
+                        else:
+                            target=self.target_under(pos)
+                            replace=(target if target in self.game.players[0].board
+                                     and len(self.game.players[0].board)==5 else None)
+                            self._try_play(card,replace,target_slot)
                     # An event handled by the UI MUST return True.
                     # SoloApp.run() treats False/None as a request to quit;
                     # previously every successful drag shut down the window.
@@ -1917,16 +1924,20 @@ class SoloApp:
     def _play_target_rects(self):
         """Golden areas for real legal placements and replacements."""
         g=self.game
-        if (g.phase!='turn' or g.active!=0 or g.pending is not None
-                or self.selected not in g.players[0].hand):
+        if g.phase!='turn' or g.active!=0 or g.pending is not None:
             return []
         player=g.players[0]
-        if len(player.board)<5 and g.can_play(0,self.selected,None):
-            # All genuinely free physical slots are selectable.
+        # Show actual legal destinations while dragging a card, even if the
+        # card was not previously selected by clicking it.
+        dragged=self.drag_start[1] if self.drag_start is not None else None
+        candidate=dragged if dragged in player.hand else self.selected
+        if candidate not in player.hand:
+            return []
+        if len(player.board)<5 and g.can_play(0,candidate,None):
             return [self.slot_rect(0,i) for i in g.available_slots(0)]
         if len(player.board)==5:
             return [self.slot_rect(0,g.slot_of(uid)) for uid in player.board
-                    if g.can_play(0,self.selected,uid)]
+                    if g.can_play(0,candidate,uid)]
         return []
 
     def _draw_play_targets(self):

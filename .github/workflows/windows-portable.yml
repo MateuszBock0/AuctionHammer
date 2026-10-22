@@ -126,4 +126,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
-          gh release create $tag 'AuctionHammer-Windows.zip' 'AuctionHammer-Windows.zip.sha256' --title "AuctionHammer Portable $tag" --notes "AuctionHammer 0.9.43+ portable Windows release. Verified SHA-256 update, side-by-side versions and rollback. Extract the folder once and launch URUCHOM_AUCTIONHAMMER.bat. Old EXE and user saves remain intact during update." --latest --target '${{ github.sha }}'
+          # Read the actual version from the exact packaged commit. Do not
+          # leave an obsolete hard-coded 0.9.43 in future release notes.
+          $version = (Get-Content -LiteralPath 'VERSION.json' -Raw | ConvertFrom-Json).mvp
+          if ([string]::IsNullOrWhiteSpace([string]$version)) {
+            throw 'Invalid app version in VERSION.json'
+          }
+          $notes = "AuctionHammer $version portable Windows release. Verified SHA-256 update, side-by-side versions and rollback. Extract the folder once and launch URUCHOM_AUCTIONHAMMER.bat. Old EXE and user saves remain intact during update."
+          gh release create $tag 'AuctionHammer-Windows.zip' 'AuctionHammer-Windows.zip.sha256' --title "AuctionHammer $version Portable $tag" --notes $notes --latest --target '${{ github.sha }}'
