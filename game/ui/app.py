@@ -69,6 +69,7 @@ class SoloApp:
         self.ai=ComputerOpponent()
         self.bg=self._create_background()
         self.animations_enabled=True
+        self.ai_speed_index=1  # 0: calm, 1: normal, 2: fast; cosmetic pacing only
         self.tutorial=TutorialProgress()
         self.help_open=False
         self.help_page=0
@@ -517,6 +518,7 @@ class SoloApp:
     CHOICE_FIRST_Y = 467
     CHOICE_ROW_HEIGHT = 54
     AI_ACTION_DELAY_MS = 480
+    AI_SPEED_LEVELS = (('SPOKOJNE',750), ('STANDARD',480), ('SZYBKIE',280))
 
     def choice_bounds(self):
         """Choice buttons belong to the sidebar, never above the game board."""
@@ -1136,6 +1138,11 @@ class SoloApp:
         if event.type==pygame.KEYDOWN and event.key==pygame.K_a:
             self._toggle_animations()
             return True
+        if event.type==pygame.KEYDOWN and event.key==pygame.K_F8:
+            self.ai_speed_index=(self.ai_speed_index+1)%len(self.AI_SPEED_LEVELS)
+            self.visual_notice='TEMPO AI: '+self.AI_SPEED_LEVELS[self.ai_speed_index][0]
+            self.visual_notice_tick=pygame.time.get_ticks()
+            return True
         # Window-system events must precede modal overlays (including menu).
         if event.type==pygame.VIDEORESIZE:
             if not self.window.get_flags() & pygame.FULLSCREEN:
@@ -1518,7 +1525,7 @@ class SoloApp:
                 self.choice_page=0
                 self._old_pending=g.pending
             t=pygame.time.get_ticks()
-            if t-self.last_ai_ms>self.AI_ACTION_DELAY_MS:
+            if t-self.last_ai_ms>self.AI_SPEED_LEVELS[self.ai_speed_index][1]:
                 if (g.phase=='auction' and g.auction and g.auction.turn==1) or (g.phase=='turn' and
                     (g.active==1 or (g.pending and g.pending.owner==1))):
                     try:self.ai.step(g)
@@ -1952,8 +1959,8 @@ class SoloApp:
         self._text('HAMMER',34,300,22,cfg.TEXT)
         self._text(f'SOLO  ·  70 KART + AUKCJE {self.game.auction_catalog.upper()}  ·  BALANS v21',14,
                    mode.x+8,33,cfg.MUTED)
-        help_text=(f'[A] ANIM {"WŁ." if self.animations_enabled else "WYŁ."}  '
-                   '[F11] EKRAN  [M] MENU')
+        speed=self.AI_SPEED_LEVELS[self.ai_speed_index][0]
+        help_text=(f'AI {speed} [F8]  ·  ANIM [A]  ·  EKRAN [F11]')
         font=self.fonts[13]
         # Reserve a dedicated, clearly clickable exit button on the right.
         help_text=self.cards_view.clip(help_text,font,
