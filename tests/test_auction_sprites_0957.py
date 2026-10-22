@@ -58,7 +58,10 @@ class AuctionSpriteTests(unittest.TestCase):
             for tier,color in zip(RARITIES,colors):
                 item=loader.get_auction_image("A001",tier,(64,64))
                 self.assertIsNotNone(item)
-                self.assertEqual(item.get_at((32,32))[:3],color)
+                # SDL smoothscale may round channel values while downsampling.
+                actual=item.get_at((32,32))[:3]
+                self.assertTrue(all(abs(a-b)<=5 for a,b in zip(actual,color)),
+                                (tier,actual,color))
                 self.assertIs(item,loader.get_auction_image("A001",tier,(64,64)))
             self.assertIsNone(loader.get_auction_image("A017","legendarna",(64,64)))
             self.assertIsNone(loader.get_auction_image("A001","mythic",(64,64)))
