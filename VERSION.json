@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.53",
+  "mvp": "0.9.54",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -236,5 +236,14 @@
     "qa_matrix": "70 basic cards and 51 auction variants at 3 card sizes",
     "manual_windows_100_125_150": "PENDING",
     "chatgpt_project_overlay": "docs/CHATGPT_PROJECT_CONTEXT_0953.md"
+  },
+  "legendary_visual_0954": {
+    "scope": "amethyst/velvet legendary gutters, warm art overlay, gilded offer and inspection ornament",
+    "enabled_only_for_legendary": true,
+    "name_ability_ATK_HP_panels_unchanged": true,
+    "animation_switch_respected": true,
+    "engine_auction_card_data_changed": false,
+    "tests": "tests/test_legendary_visual_0954.py",
+    "manual_windows_dpi_100_125_150": "pending"
   }
 }
