@@ -78,7 +78,7 @@ class AuctionSpriteTests(unittest.TestCase):
                 self.assertIs(
                     card_view.art("A018","Ludzie",(60,50),"Pancerz","Test",rarity=tier),
                     expected)
-                lookup.assert_called_once_with("A018",tier,(60,50))
+                lookup.assert_called_once_with("A018",tier,(60,50),mode="contain")
         with patch.object(card_view.images,"get_auction_image") as lookup:
             card_view.art("S01","Elfy",(60,50),"Obrażenia","Mag",rarity="rzadka")
             lookup.assert_not_called()
