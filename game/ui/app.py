@@ -548,7 +548,8 @@ class SoloApp:
         except IllegalMove as exc:
             self.last_error = str(exc)
         else:
-            self._release_exhausted_attacker()
+            if pending and pending.context == 'attack':
+                self._release_exhausted_attacker()
         self.choice_page = 0
 
     def _choose_target(self, target):
