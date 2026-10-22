@@ -44,10 +44,12 @@ def choose_actor(game):
 
 
 def simulate_one(seed,levels=("normalny","normalny"),max_steps=3000,
-                 starting_compensation="coins",forced_starting_choice=None):
+                 starting_compensation="coins",forced_starting_choice=None,
+                 fixed_board_slots=False):
     """Play an entire seeded v22 match; check integrity after EVERY action."""
     game=Match(seed,audit_enabled=True,auctions_enabled=True,auction_catalog=CATALOG,
-               starting_compensation=starting_compensation)
+               starting_compensation=starting_compensation,
+               fixed_board_slots=fixed_board_slots)
     if forced_starting_choice is not None:
         if starting_compensation!='choice_2_5_or_coins':
             raise ValueError("Force-choice requires the explicit-choice mode")

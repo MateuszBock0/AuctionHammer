@@ -26,3 +26,7 @@
 ## Walidacja
 - Testy śmierci, zajmowania slotów, podmiany, przejęcia, wygnania i kopii; S34/S108, replay, save/load i rzadkość w trzech formatach.
 - Windows EXE oraz CI i 100 pełnych audytowanych rozgrywek.
+
+## Ostateczna walidacja produkcyjnego trybu pól
+
+Workflow `AuctionHammer - testy` wykonuje dodatkowo `python -m tools.check_fixed_board_0951 --games 20`: 20 pełnych partii AI na stałych polach z rekompensatą startową zgodną z aplikacją, kontrolą integralności po każdej komendzie, osobnym zapisem każdego zakończonego audytu i pełnym podpisanym odtworzeniem. Test UI sprawdza kliknięcie pola nr 5. Legacy testy pozostają oddzielne i nie zastępują tego sprawdzianu.

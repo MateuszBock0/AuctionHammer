@@ -141,6 +141,30 @@ class StablePhysicalBoard(unittest.TestCase):
                                      Match(seed,audit_enabled=True,**kwargs)))
 
 
+class FixedBoardCanvas(unittest.TestCase):
+    def test_click_selected_empty_slot_plays_card_at_that_slot(self):
+        import pygame
+        from unittest.mock import patch
+        from game.ui.app import SoloApp
+        with patch.object(SoloApp,'_desktop_resolution',return_value=(1536,864)):
+            app=SoloApp(start_in_menu=True)
+        try:
+            app.menu_open=False
+            g=app.game
+            g.phase='turn';g.active=0;g.pending=None
+            g.players[0].turn_count=max(1,g.players[0].turn_count)
+            g.players[0].played_this_turn=False
+            uid=g.players[0].hand[0]
+            app.selected=uid
+            app.click(app.slot_rect(0,4).center)
+            self.assertEqual(g.slot_of(uid),4)
+            self.assertEqual(g.unit_at(0,4),uid)
+            self.assertIsNone(g.unit_at(0,0))
+            g.assert_integrity()
+        finally:
+            pygame.quit()
+
+
 class RarityIdentity(unittest.TestCase):
     def test_three_distinct_tiers_and_only_auction_cards(self):
         self.assertEqual(len({rarity_color(r) for r in
