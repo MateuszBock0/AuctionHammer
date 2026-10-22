@@ -78,6 +78,21 @@ class DecisionClarityTests(unittest.TestCase):
         game.fixed_board_slots = False
         self.assertFalse(positional_cues(game, "S108"))
 
+    def test_disabled_s34_or_s108_never_highlights_a_false_effect(self):
+        from game.core.models import Effect
+        game = setup_game(956104)
+        game.fixed_board_slots = True
+        source = force_unit(game, "S34", 0, slot=2)
+        force_unit(game, "S02", 0, slot=3)
+        source.aura_mode = "ally"
+        self.assertTrue(positional_cues(game, "S34"))
+        source.effects.append(Effect("silence"))
+        self.assertFalse(positional_cues(game, "S34"))
+        horn = force_unit(game, "S108", 1, slot=0)
+        self.assertTrue(positional_cues(game, "S108"))
+        horn.effects.append(Effect("stun"))
+        self.assertFalse(positional_cues(game, "S108"))
+
     def test_attack_summary_includes_actual_armor_and_status_delta(self):
         game = SimpleNamespace(players=[], cards={
             "a": SimpleNamespace(definition=SimpleNamespace(name="Rycerz")),
