@@ -115,17 +115,22 @@ class LegendaryVisualIdentity(unittest.TestCase):
         self.assertNotEqual(
             tuple(surface.get_at((rect.left+15,rect.top+15))),before_corner)
 
-    def test_basic_and_rare_appearances_unchanged_by_legendary_pass(self):
+    def test_basic_and_rare_have_distinct_art_without_legendary_overlay(self):
+        # 0.9.57 assigns a separate, SHA-verified sprite to EVERY tier.
+        # The 0.9.54 invariant concerns the legendary overlay, not identical
+        # illustration pixels for basic and rare.
         rect=pygame.Rect(65,70,148,220)
-        basic=self._render('podstawowa',rect)
-        rare=self._render('rzadka',rect)
+        with patch.object(self.view.theme,'legendary_artwork',
+                          side_effect=AssertionError('legendary effect on nonlegendary art')):
+            basic=self._render('podstawowa',rect)
+            rare=self._render('rzadka',rect)
         legendary=self._render('legendarna',rect)
-        self.assertEqual(
-            tuple(basic.get_at(card_zones(rect)['art'].center)),
-            tuple(rare.get_at(card_zones(rect)['art'].center)))
-        self.assertNotEqual(
-            tuple(basic.get_at(card_zones(rect)['art'].center)),
-            tuple(legendary.get_at(card_zones(rect)['art'].center)))
+        sample=card_zones(rect)['art'].center
+        pixels=(tuple(basic.get_at(sample)),tuple(rare.get_at(sample)),
+                tuple(legendary.get_at(sample)))
+        self.assertEqual(len(set(pixels)),3,pixels)
+        # Actual opaque card content remains unaffected by rarity; tested in
+        # test_all_three_card_sizes_keep_name_rules_and_stats_unchanged.
 
 
 if __name__=='__main__':
