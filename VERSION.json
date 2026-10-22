@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.51",
+  "mvp": "0.9.52",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -219,5 +219,13 @@
     "positional_effects": "S34 and S108 use physical coordinates",
     "rarity": "bronze, rare silver-blue, legendary gold with optional animated gemstone",
     "manual_windows_acceptance": "pending"
+  },
+  "ux_stage_0952": {
+    "scope": "fixed-slot drag/drop correctness, legal hover targets and Pygame interaction acceptance",
+    "engine_changed": false,
+    "gap_drop": "rejected, no implicit engine auto-slot",
+    "rarity": "pixel tests for distinct tiers and unobscured card center",
+    "manual_windows_dpi_100_125_150": "pending",
+    "qa_document": "docs/UX_ACCEPTANCE_0952.md"
   }
 }
