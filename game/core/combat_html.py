@@ -42,8 +42,17 @@ def _stats(state):
         '<span class="metric"><b>{}</b> {}</span>'.format(_e(label), _e(value if value is not None else "—"))
         for label, value in bits
     )
-    return '<div class="metrics">{}</div><p><b>Statusy:</b> {}</p>'.format(
-        details, _statuses(state.get("effects", [])))
+    effects = state.get("effects", [])
+    status_html = _statuses(effects)
+    # Audits store General grants outside Unit.effects; the combat analysis
+    # reads signed general_targets/general_grants and adds source-linked text.
+    bonuses = state.get("combat_bonuses", [])
+    if bonuses:
+        bonus_html = " ".join('<span class="status">{}</span>'.format(_e(x))
+                              for x in bonuses)
+        status_html = (status_html + " " if effects else "") + bonus_html
+    return '<div class="metrics">{}</div><p><b>Statusy i premie:</b> {}</p>'.format(
+        details, status_html)
 
 
 def _participant(role, participant):
@@ -139,7 +148,7 @@ ol li{margin:6px 0}li details summary{cursor:pointer;color:#e8ce9b}pre{white-spa
 <div class="counts"><div class="count"><strong>__COUNT__</strong>ataków</div>
 <div class="count"><strong>__CHOICES__</strong>ataków z wyborem zdolności</div>
 <div class="count"><strong>__DEATHS__</strong>ataków ze zgonem obrońcy</div></div>
-<p class="note">PRZED oznacza stan przed komendą attack, PO oznacza stan po pełnym rozstrzygnięciu, także po późniejszym choose. Brak jednostki nie jest zerowym HP. Każda mikrooperacja zawiera rzeczywiste dane silnika przed/po; rozróżniamy żądane obrażenia i wynik w punktach życia. Raport nie symuluje walk.</p>
+<p class="note">PRZED oznacza stan przed komendą attack, PO oznacza stan po pełnym rozstrzygnięciu, także po późniejszym choose. Brak jednostki nie jest zerowym HP. Każda mikrooperacja zawiera rzeczywiste dane silnika przed/po; rozróżniamy żądane obrażenia i wynik w punktach życia. Raport nie symuluje walk. Premie Generała pochodzą ze stanu zapisanych powiązań i nie zmieniają odnotowanych statystyk ATK.</p>
 <div class="toolbar"><input id="search" placeholder="Szukaj kart, ID lub zdarzeń..." type="search">
 <select id="owner"><option value="all">Wszyscy atakujący</option><option value="0">Gracz</option>
 <option value="1">Komputer</option><option value="death">Zgon</option></select>
