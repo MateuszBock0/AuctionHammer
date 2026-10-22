@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.52",
+  "mvp": "0.9.53",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -227,5 +227,14 @@
     "rarity": "pixel tests for distinct tiers and unobscured card center",
     "manual_windows_dpi_100_125_150": "pending",
     "qa_document": "docs/UX_ACCEPTANCE_0952.md"
+  },
+  "ui_text_stage_0953": {
+    "scope": "pixel-measured text wrapping, card containment, auction modal scrolling, README and project context",
+    "core_engine_changed": false,
+    "card_definitions_changed": false,
+    "readme_reorganized": true,
+    "qa_matrix": "70 basic cards and 51 auction variants at 3 card sizes",
+    "manual_windows_100_125_150": "PENDING",
+    "chatgpt_project_overlay": "docs/CHATGPT_PROJECT_CONTEXT_0953.md"
   }
 }
