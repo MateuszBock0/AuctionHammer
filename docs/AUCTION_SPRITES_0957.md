@@ -40,13 +40,17 @@ są pakowane do runtime.
 Ponowna weryfikacja:
 `python tools/install_auction_sprites_0957.py --check-installed`.
 
-## Warunek ukończenia i scalenia
+## Status integracji z GitHubem
 
-**Nie scalać samego kodu bez 51 binarnych plików PNG i manifestu!**
-GitHubowe API użyte do aktualizacji tekstu nie przenosi automatycznie
-binariów z załącznika rozmowy. PR pozostaje draft, aż binaria zostaną
-dodane do tej samej gałęzi i CI potwierdzi zestaw oraz Windows ZIP.
-Do chwili potwierdzenia runtime w repo ma tylko fallback, a wersja
-`VERSION.json` pozostaje 0.9.56.
+Użytkownik dodał komplet 51 PNG i manifest bezpośrednio do `main`
+w commicie `84000951`. Gałąź `feature/0957-auction-card-sprites`
+została następnie połączona z tym commitem bez nadpisywania binariów.
 
-Odbiór ręczny Windows 100/125/150% DPI nadal wymaga testu na komputerze.
+`VERSION.json` i klient Pygame-ce zostały podniesione do 0.9.57.
+Brak nowej mechaniki i zmian do katalogów definicji 70/17 kart.
+Warunkiem scalenia są zielone testy Pygame, walidacja 51 SHA-256,
+minimum 20 pełnych meczów/replayów i regresje Windows. Po scaleniu
+osobny workflow publikuje przenośny ZIP Windows.
+
+Ręczny odbiór wizualny na fizycznym Windows (DPI 100%, 125%, 150%)
+pozostaje wymaganym dodatkowym testem po automatycznym CI.
