@@ -159,9 +159,3 @@ class HoverAndTavernAcceptance(unittest.TestCase):
         self.assertIn('choice_2_5_or_coins',data['starting_compensation_available_modes'])
 
 if __name__=='__main__':unittest.main()
-)
-        self.assertIn(data['mvp'],config.WINDOW_TITLE)
-        self.assertEqual(data['starting_compensation_audit_schema'],4)
-        self.assertIn('choice_2_5_or_coins',data['starting_compensation_available_modes'])
-
-if __name__=='__main__':unittest.main()
