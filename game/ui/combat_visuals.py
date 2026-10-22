@@ -264,7 +264,11 @@ class CombatVisuals:
         alive=[]
         for pulse in self.pulses:
             age=now-pulse.born
-            if age<0 or age>=pulse.lifetime:
+            if age<0:
+                # A delayed impact must survive earlier animation frames.
+                alive.append(pulse)
+                continue
+            if age>=pulse.lifetime:
                 continue
             alive.append(pulse)
             t=age/pulse.lifetime
