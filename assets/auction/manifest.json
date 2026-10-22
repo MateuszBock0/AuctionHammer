@@ -1,0 +1,1072 @@
+{
+  "title": "AuctionHammer — 17 archetypów aukcyjnych, 51 ilustracji",
+  "source_of_truth": "KATALOG_AUKCYJNY_17_v22.json, repozytorium MateuszBock0/AuctionHammer",
+  "total_cards": 17,
+  "rarities": [
+    "podstawowa",
+    "rzadka",
+    "legendarna"
+  ],
+  "total_images": 51,
+  "card_ids": [
+    "A001",
+    "A002",
+    "A003",
+    "A004",
+    "A005",
+    "A006",
+    "A007",
+    "A008",
+    "A009",
+    "A010",
+    "A011",
+    "A012",
+    "A013",
+    "A014",
+    "A015",
+    "A016",
+    "A018"
+  ],
+  "missing_card_id_A017": "A017 nie występuje w aktywnym katalogu v22",
+  "all_game_sprites_px": [
+    96,
+    96
+  ],
+  "source_formats": "A001–A003 i A010–A018: oryginały wysokiej rozdzielczości 1254×1254; A004–A009: nowe triptychy 2172×724 rozcięte na warianty 724×724",
+  "manual_review_required": true,
+  "readme_warning": "A004–A009 zostały zaktualizowane na bardziej spójny, bogatszy styl. Poza zipem nie zmieniono kodu gry.",
+  "asset_reassignments": {
+    "A010": "Zamieniono miejscami poziomy, aby królowa zyskiwała coraz bogatsze maski/koronę.",
+    "A012": "Zamieniono podstawową z rzadką dla wyraźniejszej ewolucji mocy.",
+    "A013 i A015": "Wymieniono błędnie przypisane grafiki rzadkie: wojownik z młotem trafił do A013, czarodziej do A015."
+  },
+  "assets": [
+    {
+      "id": "A001",
+      "name": "Władca Dusz",
+      "rarity": "podstawowa",
+      "filename": "A001_podstawowa.png",
+      "target_path": "assets/auction/A001_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "crowned_necromancer_with_spectral_soul_chains.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "f72e6869ea17b2ddcaaa5e4faff0f659278a9ed9846da9fea81463e57d29c9bb",
+      "output_sha256": "1ebe049b683e3dbb7051b97e305aa021d8e6f0b51324a6a8e506f5df205b9bfd",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A001",
+      "name": "Władca Dusz",
+      "rarity": "rzadka",
+      "filename": "A001_rzadka.png",
+      "target_path": "assets/auction/A001_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "spectral_necromancer_of_the_void.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "f7c5df3e3193df47ca41aeecfab08dd532325062d2c2e4e38e413fad0c986d51",
+      "output_sha256": "23d98e0f1a9692c2a081d191dc7f6657d0b4d3b8b3be432f80baf0182bbdb2a1",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A001",
+      "name": "Władca Dusz",
+      "rarity": "legendarna",
+      "filename": "A001_legendarna.png",
+      "target_path": "assets/auction/A001_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "soul_emperor_of_the_astral_void.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "4f961f54aa6286479ca70392f7fbf65fccceb33fb9705f8e687cbebe8276a769",
+      "output_sha256": "e33808d043ca7c6f54ab08141a35f8c313c1c311efe17d13036a273468e82e72",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A002",
+      "name": "Generał Oddziału Natarcia",
+      "rarity": "podstawowa",
+      "filename": "A002_podstawowa.png",
+      "target_path": "assets/auction/A002_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "crimson_warlord_of_the_standard.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "3661175406082ca5cc3f38ead14abb71ca63d00a86c20bd15264b3a6d1f810e6",
+      "output_sha256": "7fd039d0ecee303607e343503270fa1ad14d0e301d1814722a7eb736209dccda",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A002",
+      "name": "Generał Oddziału Natarcia",
+      "rarity": "rzadka",
+      "filename": "A002_rzadka.png",
+      "target_path": "assets/auction/A002_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "crimson_paladin_with_radiant_banners.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "46cf0b78b5574e7c4f9727453cb7c93fb12272cda1c58b1b88b737ae55a89fee",
+      "output_sha256": "84a739d1812720af4c2e3380dd37cc6b72df3eba026aa6930f4207dbfb4936fb",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A002",
+      "name": "Generał Oddziału Natarcia",
+      "rarity": "legendarna",
+      "filename": "A002_legendarna.png",
+      "target_path": "assets/auction/A002_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "crimson_banner_knight_of_the_starfire.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "bf2b294057fd27a512f496d3e0fb6cb2f6bedae446a54c0cec917463708daffc",
+      "output_sha256": "bf8f7d10675418f82a63426c257e1be52b585711f2e48031ec03b18b75928480",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A003",
+      "name": "Matka Kości",
+      "rarity": "podstawowa",
+      "filename": "A003_podstawowa.png",
+      "target_path": "assets/auction/A003_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "gothic_necromancer_queen_with_purple_magic.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "0a2f45b2a29f0e541aad0dc92c44a4a2b704f30e1f8c4a2b4ceb74a7514fa4b6",
+      "output_sha256": "45a5524dbb6c52638e0f8a467f9cd0814b61e739849c6d7ebc7da8eb7a06469b",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A003",
+      "name": "Matka Kości",
+      "rarity": "rzadka",
+      "filename": "A003_rzadka.png",
+      "target_path": "assets/auction/A003_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "bone_queen_and_purple_soul_magic.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "758a4c8a25988d43a67ea77e185acc3d7e8224b93bfcd401cb1744ca6febffa0",
+      "output_sha256": "2ff699c4a55f30bb7931e885bfd0563cdb018e20a985bdeb2fcf9f944932e255",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A003",
+      "name": "Matka Kości",
+      "rarity": "legendarna",
+      "filename": "A003_legendarna.png",
+      "target_path": "assets/auction/A003_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "necromantic_bone_queen_in_cyan_magic.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "396a9c843c156d160f6911e7754dba7db13ba11cc267022c6e4f0e0c7091f645",
+      "output_sha256": "0687c5d571cde5c66d1f5f34f6017d7f4310dec91c35384888607c58db879aad",
+      "processing": "oryginał RGBA 1254×1254, sprite 96×96 Lanczos (mniejsze straty detali)"
+    },
+    {
+      "id": "A004",
+      "name": "Regent Krzywych Zwierciadeł",
+      "rarity": "podstawowa",
+      "filename": "A004_podstawowa.png",
+      "target_path": "assets/auction/A004_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "mirror_regent_threefold_ascension.png [podstawowa]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "051854eae8dad312e4d98ab7d9e6670e9bedfb53cc6029a6a0d7a52baccaaecb",
+      "output_sha256": "d78633fff2cf37a574709a35b629883603a6e9290ae72922f4003c1db4e2b4c4",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A004",
+      "name": "Regent Krzywych Zwierciadeł",
+      "rarity": "rzadka",
+      "filename": "A004_rzadka.png",
+      "target_path": "assets/auction/A004_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "mirror_regent_threefold_ascension.png [rzadka]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "7c42da4f1d9ec385b63906f63c3b046f0c29a0605b66df3bbe5f51090929b8c5",
+      "output_sha256": "a877b60df4cb212ca59ca66005e75308af65cc6737c878ddf5a09d7e8e55c52e",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A004",
+      "name": "Regent Krzywych Zwierciadeł",
+      "rarity": "legendarna",
+      "filename": "A004_legendarna.png",
+      "target_path": "assets/auction/A004_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "mirror_regent_threefold_ascension.png [legendarna]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "a11f1fbff1d9d6a0ae0a36a836bf8060aa9083d9b8f6035ce233e2a8227b44dd",
+      "output_sha256": "3348c2f159b3f7813c3d9a7301522b5ceea339c368c2195f9475a78d84b50782",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A005",
+      "name": "Bankier Widm",
+      "rarity": "podstawowa",
+      "filename": "A005_podstawowa.png",
+      "target_path": "assets/auction/A005_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "spectral_banker_s_rise_through_three_vaults.png [podstawowa]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "a0acd82da2deb1974d2e90cf05cd2d7bfa13a23152e1c3e5d9525c7d39904021",
+      "output_sha256": "e1db78ed9643d3338906e307375ba159de36b1839771d6e38cb1df7d4f3ac4bf",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A005",
+      "name": "Bankier Widm",
+      "rarity": "rzadka",
+      "filename": "A005_rzadka.png",
+      "target_path": "assets/auction/A005_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "spectral_banker_s_rise_through_three_vaults.png [rzadka]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "f4b717dcd2ebf1a70a9873fd5499b5f12f7e5c74e8a65ebed90a2201ad60b07d",
+      "output_sha256": "9adbc42b2a38f41caa3feeadef394295d39d4abe07caf31c8fe8cd77c08b0a10",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A005",
+      "name": "Bankier Widm",
+      "rarity": "legendarna",
+      "filename": "A005_legendarna.png",
+      "target_path": "assets/auction/A005_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "spectral_banker_s_rise_through_three_vaults.png [legendarna]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "ae0126e7d5e550854f82802f5fa805126a3211abcdd9170582820525905197a7",
+      "output_sha256": "bc7989b25be8ee92ac4f42602369dadedb1d56b4e37ec4626ed6cb81640a77a3",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A006",
+      "name": "Królowa Zakazanych Słów",
+      "rarity": "podstawowa",
+      "filename": "A006_podstawowa.png",
+      "target_path": "assets/auction/A006_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "forbidden_texts_queen_s_ascension.png [podstawowa]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "42d58d438f21c6f789472cf3039b0ab069941a2d72df66e35a95044419af5c8e",
+      "output_sha256": "f0cff26db82d11144b0105000094a458edf35b3854cefc2cd8cd9936e7b93cf6",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A006",
+      "name": "Królowa Zakazanych Słów",
+      "rarity": "rzadka",
+      "filename": "A006_rzadka.png",
+      "target_path": "assets/auction/A006_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "forbidden_texts_queen_s_ascension.png [rzadka]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "1787ebcaa395c43f472670eb0e03883205df506938924c031bbf20c45c6ba58d",
+      "output_sha256": "34f4cfc887726738b0bd07680c2e72d1f96dec6576a9533d8a336ecc3023c298",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A006",
+      "name": "Królowa Zakazanych Słów",
+      "rarity": "legendarna",
+      "filename": "A006_legendarna.png",
+      "target_path": "assets/auction/A006_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "forbidden_texts_queen_s_ascension.png [legendarna]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "1f6a9691da3c93035f7ec444c3e8c640f68fa30c90807b6995ae7117931de325",
+      "output_sha256": "13e6b81f1881a3a6927f94e742649fed5629092b0c71cb3238c4f7536bbb493d",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A007",
+      "name": "Strażnik Ostatniego Tchnienia",
+      "rarity": "podstawowa",
+      "filename": "A007_podstawowa.png",
+      "target_path": "assets/auction/A007_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "ascended_guardians_of_the_cathedral_of_souls.png [podstawowa]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "aab1014bb079c0582e294855501748cb71c8be907ea1f6eda5574e6fb07f3b2c",
+      "output_sha256": "80a10cc63e92f0915501b35332a00b3584b0d759c9e07cd969eefc5927cedd91",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A007",
+      "name": "Strażnik Ostatniego Tchnienia",
+      "rarity": "rzadka",
+      "filename": "A007_rzadka.png",
+      "target_path": "assets/auction/A007_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "ascended_guardians_of_the_cathedral_of_souls.png [rzadka]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "524181cf9a684225b0d69d6d1fb1c084a297d6ffe3b3b62f471a90e2e457ff65",
+      "output_sha256": "e065a858163e09f1de40b66401b2cf2e6ceaaf353cc578fbec97297cf6caa5da",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A007",
+      "name": "Strażnik Ostatniego Tchnienia",
+      "rarity": "legendarna",
+      "filename": "A007_legendarna.png",
+      "target_path": "assets/auction/A007_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "ascended_guardians_of_the_cathedral_of_souls.png [legendarna]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "40225b5e4c325e2cec5d63af5accde23817c5347a668b854af1418d1dc668bcb",
+      "output_sha256": "f1efd6677b1214bdcbb3d5510f4a22821737d642abb05c896acb74c863f6cc51",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A008",
+      "name": "Architekt Pustki",
+      "rarity": "podstawowa",
+      "filename": "A008_podstawowa.png",
+      "target_path": "assets/auction/A008_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "ascended_void_architect_triptych.png [podstawowa]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "2ae9f2f799b2a1df50eed62513c905a89f1c53e2ec131575243d21b9b42d90f9",
+      "output_sha256": "a7ac276fe57a0f532d86e9b66ab384199788890018b0a5aadfbde1e1f1c08c62",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A008",
+      "name": "Architekt Pustki",
+      "rarity": "rzadka",
+      "filename": "A008_rzadka.png",
+      "target_path": "assets/auction/A008_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "ascended_void_architect_triptych.png [rzadka]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "0278e00360abffbe758b6c6dfe3ec3bf0e27e9131592670e554f2a56bbffab93",
+      "output_sha256": "f38196e467b0e724eb8b4f38de79733f221150c592daf0b78b9d91491eeab3ac",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A008",
+      "name": "Architekt Pustki",
+      "rarity": "legendarna",
+      "filename": "A008_legendarna.png",
+      "target_path": "assets/auction/A008_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "ascended_void_architect_triptych.png [legendarna]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "8c67f25c7564513e6fcdaaac776c17d09875e52dd4dce069ac2a0a1a7e6cf2ff",
+      "output_sha256": "760c1c8bfda30de324835aa8adda0007ebbcc51767b6fe2dfded7217ee589e88",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A009",
+      "name": "Złodziej Wspomnień",
+      "rarity": "podstawowa",
+      "filename": "A009_podstawowa.png",
+      "target_path": "assets/auction/A009_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "gothic_memory_thief_three_ascensions.png [podstawowa]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "a9394387257d23d91a86f195c0811135e9d0ad94b1acde5a016bc96ed8b78adf",
+      "output_sha256": "d5f0361a4026a81c224cd1cfda863a8511055f3c0a26a08b3dd066ac35b0c5b3",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A009",
+      "name": "Złodziej Wspomnień",
+      "rarity": "rzadka",
+      "filename": "A009_rzadka.png",
+      "target_path": "assets/auction/A009_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "gothic_memory_thief_three_ascensions.png [rzadka]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "6c7490d6511b637cc24a9a3b4df13803dc09c1773c41f03244a2dbaf0164c477",
+      "output_sha256": "220449979189eea6fc7a71622967eb8b6185d3983a63d7dc88f507cfb12005fb",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A009",
+      "name": "Złodziej Wspomnień",
+      "rarity": "legendarna",
+      "filename": "A009_legendarna.png",
+      "target_path": "assets/auction/A009_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "gothic_memory_thief_three_ascensions.png [legendarna]",
+      "source_size": [
+        724,
+        724
+      ],
+      "source_sha256": "17c48cb3036908249ebe29a19378a72badef1c92f74ffec1d279c9a8669580da",
+      "output_sha256": "4a35fcafaf032cadda75a111ce9e1bd5c895366c6f72d26a5db26a665eaf529c",
+      "processing": "źródło z poziomego triptychu 2172×724, wariant wycięty do 724×724; sprite 96×96 Lanczos, preview 384×384 nearest"
+    },
+    {
+      "id": "A010",
+      "name": "Królowa Tysiąca Twarzy",
+      "rarity": "podstawowa",
+      "filename": "A010_podstawowa.png",
+      "target_path": "assets/auction/A010_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A010_legendarna.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "b5af87616812a3b01088e3cc5f3c8878035031bf4854d94d37bea54f5789f42b",
+      "output_sha256": "7f8fba62ce54b5876e10531347f8f5e16e343ccdc023415b0941dff76944e343",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A010",
+      "name": "Królowa Tysiąca Twarzy",
+      "rarity": "rzadka",
+      "filename": "A010_rzadka.png",
+      "target_path": "assets/auction/A010_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A010_podstawowa.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "65ab4d60df358948b71f9bbfa530edc61bea1707b5431316670c6accdb8b2691",
+      "output_sha256": "718b5250b8261b700c84cebef097ec05d598b0f2eb27b649a0404c2d27c056bd",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A010",
+      "name": "Królowa Tysiąca Twarzy",
+      "rarity": "legendarna",
+      "filename": "A010_legendarna.png",
+      "target_path": "assets/auction/A010_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A010_rzadka.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "ff4223c4cfabddf85b6855016504f415ff8f8937ccede4db0713ae8ba551557a",
+      "output_sha256": "4c6536946672c174046bd33488253eb33dce2a2ebaffb3414736d55263074d74",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A011",
+      "name": "Jeździec Czarnej Komety",
+      "rarity": "podstawowa",
+      "filename": "A011_podstawowa.png",
+      "target_path": "assets/auction/A011_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A011_podstawowa.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "d330bca4d2df8363ca4199d39b9960da56c08f03314cb5a47d578a182bef4470",
+      "output_sha256": "a51936ee6354597ba061b44e85776dd15520b0ea4f1ee5d361d1fc2d08002d86",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A011",
+      "name": "Jeździec Czarnej Komety",
+      "rarity": "rzadka",
+      "filename": "A011_rzadka.png",
+      "target_path": "assets/auction/A011_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A011_rzadka.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "0946a2bb7ba667df96441a5cc34fff8a6189f8ed56b6baa7e059ac19adbeacee",
+      "output_sha256": "b3cc73e1dd4440f7201da7135bb5180950f1105dc5aab1d931f1a3b55784d16f",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A011",
+      "name": "Jeździec Czarnej Komety",
+      "rarity": "legendarna",
+      "filename": "A011_legendarna.png",
+      "target_path": "assets/auction/A011_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A011_legendarna.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "42b25ad0239448aa47356cc85a31fd7f215623894b3dc5d9bd3cfc7865e857f1",
+      "output_sha256": "262a5f19ea168ece24ecfefa6eb8cadc48f62132c1f44a49802fafdfb1052057",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A012",
+      "name": "Tkaczka Drugiego Losu",
+      "rarity": "podstawowa",
+      "filename": "A012_podstawowa.png",
+      "target_path": "assets/auction/A012_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A012_rzadka.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "955fe731603b8c8e75270b104ab9ab2a83b6dc256d625376198d29676bc6acd5",
+      "output_sha256": "ecac049ec458946692a6a23afb844140a854e9246b9c81d176223d487fdfca31",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A012",
+      "name": "Tkaczka Drugiego Losu",
+      "rarity": "rzadka",
+      "filename": "A012_rzadka.png",
+      "target_path": "assets/auction/A012_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A012_podstawowa.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "b1eea1728babba02f630e79ee63c4f5d0acb2c64ac48a000d2e0ed5af3141261",
+      "output_sha256": "f2a0d2317232279bf747c01ee6b4ce33ef038aee4ce6db0e1c79816b15aa28e5",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A012",
+      "name": "Tkaczka Drugiego Losu",
+      "rarity": "legendarna",
+      "filename": "A012_legendarna.png",
+      "target_path": "assets/auction/A012_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A012_legendarna.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "4ed981e6c4b9aef445f8106e1c9b3ac16301ed775853bfbaf8d33795362f8e39",
+      "output_sha256": "db405f66943d602265246221b8510591f32b0b02a999ae1e165be2a253bd9ded",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A013",
+      "name": "Łamacz Bastionów",
+      "rarity": "podstawowa",
+      "filename": "A013_podstawowa.png",
+      "target_path": "assets/auction/A013_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A013_podstawowa.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "7a42c41797151b0b74b9c56b7ab136aba9528c4e524401898674821bffc78750",
+      "output_sha256": "3f082ad7dacf8643be88ee67de680c957b6128478f726c05779ba62c32662682",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A013",
+      "name": "Łamacz Bastionów",
+      "rarity": "rzadka",
+      "filename": "A013_rzadka.png",
+      "target_path": "assets/auction/A013_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A015_rzadka.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "3c768e8d2f2980d0a2fb834409f601b590907773761045ac99736559740d098b",
+      "output_sha256": "76b1004b0e17d09bf2d566f355c23eaae916c3b298818f094688dd763717f239",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A013",
+      "name": "Łamacz Bastionów",
+      "rarity": "legendarna",
+      "filename": "A013_legendarna.png",
+      "target_path": "assets/auction/A013_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A013_legendarna.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "2ca776c23bee985b63447e5e9961dc4f7e97e25eafe1f2c6a1536c8634b57e51",
+      "output_sha256": "888438224ed2870809351b3f7ffe272f1ad0bf8cd061ce51683b29e8e8fbf4d7",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A014",
+      "name": "Kapłan Odwróconej Łaski",
+      "rarity": "podstawowa",
+      "filename": "A014_podstawowa.png",
+      "target_path": "assets/auction/A014_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A014_podstawowa.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "4697b5597a5b6a879332160f3bff9109f6e96692a59cc79c4424034e2688f35c",
+      "output_sha256": "af9e83915c110e1fe72807402c348c832bb5d35b105e5e6d78e7c832436e92e5",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A014",
+      "name": "Kapłan Odwróconej Łaski",
+      "rarity": "rzadka",
+      "filename": "A014_rzadka.png",
+      "target_path": "assets/auction/A014_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A014_rzadka.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "efeb2bfe913bdc46e00541272be0388c5e2454524efc4ab495cce4e037a75406",
+      "output_sha256": "5aedf671ea677c93cf9681922421bbf990319e5cedd879c6f6c133cf845cefa5",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A014",
+      "name": "Kapłan Odwróconej Łaski",
+      "rarity": "legendarna",
+      "filename": "A014_legendarna.png",
+      "target_path": "assets/auction/A014_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A014_legendarna.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "e413e8d9fea24461a7eb33c1b11c44c3f36e949922fed0a670a74aa11a16f2a4",
+      "output_sha256": "659f7782fe2fd33204427d3d12c9c97e226f870a6aa84be5c875d06f6e19f2e6",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A015",
+      "name": "Wieszczka Zerwanych Zaklęć",
+      "rarity": "podstawowa",
+      "filename": "A015_podstawowa.png",
+      "target_path": "assets/auction/A015_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A015_podstawowa.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "07c03b30f89887cde5f4848ffd01b8e7e4d339c1c562e45010a1331ac1d00c97",
+      "output_sha256": "53508eecdb33599bcd12843e8be7ec1beb5f9b905fb7ae814af28cead81d46a1",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A015",
+      "name": "Wieszczka Zerwanych Zaklęć",
+      "rarity": "rzadka",
+      "filename": "A015_rzadka.png",
+      "target_path": "assets/auction/A015_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A013_rzadka.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "eaea7ab6bc0a39445846d744ba088b5599329e52950e74e52274ea2f440a6eb5",
+      "output_sha256": "ffdf279a404d049d1d11014a84adefac24f80d937d05f86e3ad3886e9cc40e52",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A015",
+      "name": "Wieszczka Zerwanych Zaklęć",
+      "rarity": "legendarna",
+      "filename": "A015_legendarna.png",
+      "target_path": "assets/auction/A015_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "A015_legendarna.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "be1cc99faa731e6d867294020da2704755a27b72b2955dfea986dab6f46109fc",
+      "output_sha256": "60a1b5a03ea3577dd5157f5213baa106274305955fff5e6490132ab3937bfd26",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A016",
+      "name": "Kartograf Utraconych Ścieżek",
+      "rarity": "podstawowa",
+      "filename": "A016_podstawowa.png",
+      "target_path": "assets/auction/A016_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "arcane_cartographer_of_the_violet_ruins.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "c108fbd63072a26344183560ca46245383e4053c6b03906fd813f115c27f0f30",
+      "output_sha256": "5e50dc8f55b8c1c053c085e1a389d4bb94f5b0d7c1d8e46eeb65df6b2e43cfbd",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A016",
+      "name": "Kartograf Utraconych Ścieżek",
+      "rarity": "rzadka",
+      "filename": "A016_rzadka.png",
+      "target_path": "assets/auction/A016_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "void_cartographer_s_arcane_atlas.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "c76d7044da3c9260204f564c788d0221935ec5bb9c04700e2481fdea8ad70b00",
+      "output_sha256": "2670287017766de34c095ebe449c04de382bd9ea9bb4e49031de98180f4b45fe",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A016",
+      "name": "Kartograf Utraconych Ścieżek",
+      "rarity": "legendarna",
+      "filename": "A016_legendarna.png",
+      "target_path": "assets/auction/A016_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "cosmic_cartographer_of_the_astral_realms.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "309bfae88d0d1eb7fec5ccd82bdb362cb0b1582c8f93539617471cccb3d5f7b6",
+      "output_sha256": "651ee93bbb665c05752f34ffa63c3690802837b852b981e7fa1a606d9c92e47e",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A018",
+      "name": "Licytator Złamanego Paktu",
+      "rarity": "podstawowa",
+      "filename": "A018_podstawowa.png",
+      "target_path": "assets/auction/A018_podstawowa.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "purple_warlock_of_broken_contracts.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "0a41e348c4a389d6cd1f9b74362793019312aa7c5d5dc618cf54b59a10c4850a",
+      "output_sha256": "418059e44810f55a025ef67199a5397572b3cd43650cd17380485c64ea1e42e0",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A018",
+      "name": "Licytator Złamanego Paktu",
+      "rarity": "rzadka",
+      "filename": "A018_rzadka.png",
+      "target_path": "assets/auction/A018_rzadka.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "enchanted_hooded_auctioneer_warlock.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "fcaf6b3c586ae772c647130458bd8cbd9c5a0250ddcb8f62df3da8744222c62f",
+      "output_sha256": "f5819aebad58b3bd828cf9854619e3d6446b6c28551a41dcaa790c0787a813c0",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    },
+    {
+      "id": "A018",
+      "name": "Licytator Złamanego Paktu",
+      "rarity": "legendarna",
+      "filename": "A018_legendarna.png",
+      "target_path": "assets/auction/A018_legendarna.png",
+      "target_size": [
+        96,
+        96
+      ],
+      "source_filename": "legendary_void_auctioneer.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_sha256": "ca8651ff75d9d52afae3a270954289fe1addbfcd7a43e0a968cb36727b22af01",
+      "output_sha256": "059949a44bba9599d044cf14af36363c207bcbba03608299c4702e42b59027c7",
+      "processing": "zmniejszenie źródła do 96x96 (LANCZOS, bez generowania)"
+    }
+  ],
+  "revision": "A001–A003 high-resolution art replacement; 2026-10-22",
+  "high_resolution_originals": 33,
+  "triptych_sources": [
+    {
+      "id": "A004",
+      "filename": "mirror_regent_threefold_ascension.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "eb210a0344aba36ae64d3f8f4d494044806b22bbbc8fc543d77951b8d317d709"
+    },
+    {
+      "id": "A005",
+      "filename": "spectral_banker_s_rise_through_three_vaults.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "d9fb1ad8aa30695da3744d61436fdf138ae62311bb4a12ead9d4944737d63018"
+    },
+    {
+      "id": "A006",
+      "filename": "forbidden_texts_queen_s_ascension.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "2875b03dae9e1f3705e397271d0147793341efe891e73d58b574c2bcc8062e81"
+    },
+    {
+      "id": "A007",
+      "filename": "ascended_guardians_of_the_cathedral_of_souls.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "31c3d6b74947665e213883d3382f22b781c93c3f57f3acef2f40b9f46e9c2aec"
+    },
+    {
+      "id": "A008",
+      "filename": "ascended_void_architect_triptych.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "1ddab3b118f5486f261f4b7975428f703e9195558091aca1a06aa69865518d09"
+    },
+    {
+      "id": "A009",
+      "filename": "gothic_memory_thief_three_ascensions.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "debb621a1e2c4560012a2842331157592d449a5685a8b4df2612b447060c9596"
+    }
+  ]
+}
