@@ -10,6 +10,7 @@ Legendarna karta aukcyjna ma być **natychmiast rozpoznawalna** bez zasłaniania
 - `VisualTheme.legendary_artwork`: delikatna złoto-fioletowa warstwa i promienie **wewnątrz ilustracji**. Nie zmienia oryginalnego pliku graficznego. Efekt statyczny działa również bez animacji.
 - `VisualTheme.legendary_offer_ornament`: narożne motywy i pełna złota ramka na legendarnej ofercie aukcyjnej oraz w jej szczegółowym podglądzie.
 - `CardView.draw`: poziom rzadkości odczytywany przed renderowaniem i używany również do wyboru podkładu/wykończenia ilustracji.
+- Na małych kartach aukcyjnych skrócono etykietę rzadkości do `POD.`, `RZ.`, `LEG.`, usunięto mylący pasek postępu `0/3` właściwy wyłącznie kartom podstawowym, a na planszy etykieta nie koliduje z informacją o liczbie ataków.
 - `SoloApp._draw_details`: rzadkość przekazywana jawnie z aktywnych metadanych zakupionej karty; awans rzadkości odzwierciedla się w podglądzie.
 - `self.animations_enabled` kontroluje wyłącznie pulsowanie, **nie rozpoznawalność koloru i dekoracji**.
 
@@ -24,6 +25,7 @@ Karty podstawowe i rzadkie zachowują dotychczasowe oprawy. Nie zmieniamy nazwy,
 3. Tryb animacji OFF renderuje obraz identyczny przy powtórzeniu, bez odwołań do zegara Pygame.
 4. Ornamentalny panel aukcyjny zmienia narożniki, ale zachowuje centrum obszaru opisu.
 5. Warianty podstawowe/rzadkie mają identyczny obszar ilustracji; tylko wariant legendarny otrzymuje nowe wykończenie.
+6. Mała karta aukcyjna pokazuje krótką etykietę rzadkości bez nieprawdziwego `0/3`; na planszy ma pierwszeństwo licznik ataków.
 
 Obowiązują również pełne testy silnika i interfejsu, audyty fixed-board, rendering screenshotów i pipeline Windows Release. Wszystkie testy należy ocenić na **końcowym commicie**, nie na poprzednich nieudanych próbach.
 
