@@ -10,7 +10,7 @@ os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 from game.core.audit import digest, state_snapshot
 from game.core.engine import Match
 from game.ui.app import SoloApp
-from test_engine import setup_game
+from test_engine import setup_game, force_unit
 
 
 def minimal_app(game):
@@ -70,6 +70,54 @@ class HandCardDeselectionTests(unittest.TestCase):
         self.assertIsNone(app.selected)
         self.assertNotIn(uid,game.players[0].mulligan_selected)
         self.assertIn(uid,game.players[0].hand)
+
+    def test_selected_hand_card_does_not_block_selecting_a_ready_attacker(self):
+        game=setup_game(95805)
+        game.fixed_board_slots=True
+        unit=force_unit(game,'S09',0,slot=0)
+        game.players[0].played_this_turn=True
+        app=minimal_app(game)
+        hand_card=game.players[0].hand[0]
+        app.click(app.hand_layout()[hand_card].center)
+        self.assertEqual(app.selected,hand_card)
+
+        app.click(app.slot_rect(0,0).center)
+        self.assertEqual(app.selected,'S09')
+        self.assertEqual(app.last_error,'')
+        self.assertIn(hand_card,game.players[0].hand)
+        app.click(app.hero_rect(1).center)
+        self.assertEqual(unit.attacks,1)
+
+    def test_occupied_slot_selects_ally_when_board_has_room(self):
+        game=setup_game(95806)
+        game.fixed_board_slots=True
+        force_unit(game,'S09',0,slot=0)
+        app=minimal_app(game)
+        hand_card=game.players[0].hand[0]
+        app.click(app.hand_layout()[hand_card].center)
+        app.click(app.slot_rect(0,0).center)
+
+        self.assertEqual(app.selected,'S09')
+        self.assertIn(hand_card,game.players[0].hand)
+        self.assertFalse(game.players[0].played_this_turn)
+
+    def test_full_board_legal_replacement_still_works(self):
+        from test_engine import force_unit
+        game=setup_game(95807)
+        game.fixed_board_slots=True
+        for slot,uid in enumerate(('S01','S02','S03','S04','S05')):
+            force_unit(game,uid,0,slot=slot)
+        app=minimal_app(game)
+        hand_card=game.players[0].hand[0]
+        self.assertTrue(game.can_play(0,hand_card,'S01',0))
+        app.click(app.hand_layout()[hand_card].center)
+        app.click(app.slot_rect(0,0).center)
+
+        self.assertIn(hand_card,game.players[0].board)
+        self.assertEqual(game.slot_of(hand_card),0)
+        self.assertNotIn(hand_card,game.players[0].hand)
+        self.assertTrue(game.players[0].played_this_turn)
+        self.assertEqual(app.last_error,'')
 
     def test_valid_board_placement_is_unchanged(self):
         game=setup_game(95804)
