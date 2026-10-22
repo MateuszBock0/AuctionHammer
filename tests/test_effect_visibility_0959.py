@@ -64,7 +64,7 @@ class GeneralEffectVisibilityTests(unittest.TestCase):
         self.assertEqual(game.units['S02'].aura_atk, 0)
         statuses = [s for s in active_statuses(game, 'S01') if s.name == 'Aura ATK']
         self.assertEqual(len(statuses), 1)
-        self.assertIn('Tkacz', statuses[0].source)
+        self.assertIn('Chorąży Królewskiej Kompanii', statuses[0].source)
 
     def test_forensic_book_reports_recorded_general_bonus_without_changing_audit(self):
         initial = {
