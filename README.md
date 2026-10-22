@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.54** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.55** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -53,6 +53,8 @@ Celem jest zmniejszenie PŻ bohatera komputera z **100 do 0**, zanim on zrobi to
 - **Ludzie** — zdolności pasywne.
 
 **Ważne rozróżnienie kart:** **S34** (Chorąży Królewskiej Kompanii) to karta podstawowa, wzmacniająca sąsiada lub osłabiająca wroga naprzeciwko; **A002** (Generał Oddziału Natarcia) jest wyłącznie kartą aukcyjną z inną zdolnością.\n\nKarty podstawowe zyskują statystyki podczas kolejnych tur spędzonych na ręce, a ich zdolności rozwijają się co trzy takie tury. Szczegóły konkretnej karty otworzysz przyciskiem **I**.
+
+**Czytelność walki (0.9.55):** legalny cel ataku reaguje na najechanie kursorem; po ataku panel **SKUTKI ATAKU** pokazuje rzeczywistą zmianę PŻ i tarczy, a pełny dziennik jest pod **H**. Ruchy AI są szybsze, animacje trafień krótsze. Ataki z wyborem zdolności pokazują wynik dopiero po rozstrzygnięciu wyboru.
 
 ## 3. Aukcje w skrócie
 
