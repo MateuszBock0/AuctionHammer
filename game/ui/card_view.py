@@ -295,7 +295,9 @@ class CardView:
             screen.blit(emblem,(art.x+2,art.y+2))
         # ALL INFORMATION PANELS are opaque and above artwork/dimming.
         name_rect=zone['name']
-        if d.id.startswith('A0'):
+        if d.id.startswith('A0') and not (board and attacks_total is not None):
+            # The attack-readiness pill owns the upper-right art corner on board.
+            # Rarity remains identified by its ornamented frame.
             # The draft ability is NOT executable yet. Tier/name are genuine
             # but the card must not masquerade as fully implemented.
             parts=d.scaling.split(' · ')
