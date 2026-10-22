@@ -113,9 +113,27 @@ class DecisionClarityTests(unittest.TestCase):
         self.assertEqual(result.target, "Strażnik")
         detail = result.details[0]
         for fragment in ("PŻ 8→5", "tarcza 1→0", "pancerz 3→1",
-                         "nowe efekty: poison"):
+                         "nowe efekty: Trucizna"):
             self.assertIn(fragment, detail)
         self.assertNotIn("ZGON", detail)
+
+    def test_dead_card_does_not_claim_armor_was_absorbed(self):
+        game = SimpleNamespace(players=[], cards={
+            "a": SimpleNamespace(definition=SimpleNamespace(name="Rycerz")),
+            "b": SimpleNamespace(definition=SimpleNamespace(name="Strażnik")),
+        })
+        prior = {
+            "a": {"hp": 8, "shield": 0, "armor": 0, "status": ()},
+            "b": {"hp": 2, "shield": 1, "armor": 4, "status": ()},
+        }
+        result = committed_attack_outcome(
+            game, prior, {"a": prior["a"]},
+            [{"text": "Rycerz atakuje: Strażnik."},
+             {"text": "Zgon Strażnik. Przeciwnik otrzymuje 1 monetę."}], 2)
+        detail = result.details[0]
+        self.assertIn("ZGON", detail)
+        self.assertNotIn("pancerz 4→0", detail)
+        self.assertNotIn("tarcza 1→0", detail)
 
 
 class DrawReadOnlyTests(unittest.TestCase):
