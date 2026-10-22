@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.55",
+  "mvp": "0.9.56",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -253,5 +253,12 @@
     "tests": "tests/test_combat_feedback_0955.py",
     "signed_replays_checked": 100,
     "manual_windows_dpi_100_125_150": "pending"
+  },
+  "gameplay_clarity_0956": {
+    "scope": "read-only armor/shield/status attack explanation, hover expanded recap, S34/S108 positional targets, current empty-slot income and auction countdown, clearer UI captions",
+    "combat_rules_changed": false,
+    "ai_policy_changed": false,
+    "test_file": "tests/test_gameplay_clarity_0956.py",
+    "manual_windows_1366_and_dpi": "pending"
   }
 }
