@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "project": "AuctionHammer",
+  "context_updated": "2026-10-22",
+  "planned_mvp": "0.9.53",
+  "base_released_mvp": "0.9.52",
+  "github": "https://github.com/MateuszBock0/AuctionHammer",
+  "runtime": {
+    "language": "Python 3.12",
+    "ui": "pygame-ce",
+    "platform": "Windows",
+    "offline": true,
+    "mode": "single-player-vs-AI",
+    "multiplayer_mvp": false
+  },
+  "cards": {
+    "base_archetypes": 70,
+    "copies_per_base_archetype": 1,
+    "base_play_cost_coins": 0,
+    "auction_archetypes": 17,
+    "auction_rarities": 3,
+    "auction_variants": 51,
+    "active_auction_catalog": "v22"
+  },
+  "board": {
+    "physical_slots_per_side": 5,
+    "fixed_slots_new_matches": true,
+    "death_causes_compaction": false,
+    "s34_true_neighbour": true,
+    "s108_opposing_slot": true
+  },
+  "heroes": {
+    "starting_hp": 100
+  },
+  "opening": {
+    "hand": 5,
+    "deck": 5,
+    "max_mulligan": 3,
+    "second_player_compensation_options": [
+      "unit_2_atk_5_hp",
+      "3_coins"
+    ]
+  },
+  "economy": {
+    "coins_per_full_round_each": 1,
+    "v22_empty_slot_income": true
+  },
+  "features": [
+    "auction_every_three_full_rounds",
+    "ai_three_difficulties",
+    "save_load",
+    "signed_replays",
+    "combat_history",
+    "offline_portable_installer",
+    "ui_tutorial"
+  ],
+  "qa": {
+    "manual_windows_dpi": [
+      "100% PENDING",
+      "125% PENDING",
+      "150% PENDING"
+    ],
+    "scope_0953": [
+      "pixel_bound_text",
+      "121_card_variants_3_sizes",
+      "scrollable_auction_inspection",
+      "README_cleanup"
+    ],
+    "engine_rules_changed_in_0953": false
+  },
+  "canonical_files": [
+    "VERSION.json",
+    "game/core/",
+    "game/ui/app.py",
+    "data/cards_base_70.json",
+    "data/auction/KATALOG_AUKCYJNY_17_v22.json",
+    "docs/GAME_MASTER_v23_ADDENDUM.md",
+    "docs/BOARD_CARD_IDENTITY_0951.md"
+  ],
+  "historical_chatgpt_attachments": [
+    "GAME_MASTER.md v14",
+    "GAME_MASTER.json v14",
+    "karty_startowe_macierz_efektow_v14.xlsx"
+  ],
+  "source_priority": "live main engine & data > active versioned rule addenda > historical v14 design sources",
+  "project_attachment_update": "requires explicit user upload, GitHub changes do not rewrite ChatGPT Project files"
+}
