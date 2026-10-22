@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.55: responsive combat feedback and legendary art."""
+"""AuctionHammer MVP 0.9.56: legible combat and decision feedback."""
 from __future__ import annotations
 import os
 import re
