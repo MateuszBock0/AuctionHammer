@@ -1,10 +1,12 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.38  
+**Wersja gry:** MVP 0.9.53 (bieżąca wersja z `VERSION.json`; oryginalna baza mechanik v19)  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
-**Aktualny tryb:** jeden gracz przeciwko komputerowi, bez dostępu do internetu podczas gry.  
+**Aktualny tryb:** jeden gracz przeciwko komputerowi, offline. Multiplayer nie należy do zakresu MVP.  
 **Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
 **Język interfejsu:** polski.
+
+> **Uzupełnienie do wersji 0.9.53:** nadrzędne dla nowych partii są aktywny kod silnika, `VERSION.json`, `docs/GAME_MASTER_v23_ADDENDUM.md`, `docs/BOARD_CARD_IDENTITY_0951.md` i `docs/CHATGPT_PROJECT_CONTEXT_0953.md`. Pięć pól jest stałych, a drugi gracz wybiera Chorążego 2/5 lub +3 monety. Starsze opisy monet, przesuwania planszy lub kolejnych etapów PvP dokumentują historię i nie obowiązują w nowych meczach. Ręczny odbiór Windows DPI pozostaje otwarty.
 
 ## Stabilizacja silnika 0.9.38
 
@@ -44,7 +46,7 @@ Po rozpakowaniu gotowej wersji Windows kliknij `URUCHOM_AUCTIONHAMMER.bat`, aby 
 - Efekty śmierci i wzmocnienia S20, S82, S90, S91, S105 i S109 uwzględniają zatwierdzone zmiany.
 - Co zakończoną własną turę na ręce karta otrzymuje przyrost statystyk; co trzy takie tury zwiększa się poziom jej zdolności.
 - Wszystkie etykiety interfejsu, informacje o efektach, komunikaty o wyborach oraz paski rozwoju zdolności mają być wyświetlane po polsku.
-- Rozgrywka obecnie przebiega przeciwko komputerowi z **aktywnymi aukcjami v22**. Gra sieciowa jest planowana w kolejnym etapie.
+- Rozgrywka przebiega wyłącznie przeciwko komputerowi z **aktywnymi aukcjami v22**. Gra sieciowa nie jest planowana w zakresie aktualnego MVP.
 - **Nowe mecze v22 w 0.9.34:** na koniec własnej tury (gracz i komputer) dodatkowy dochód to **5 − liczba własnych jednostek** monet. Od 5 przy pustej planszy do 0 przy pełnych 5 miejscach. Dodatek nie zastępuje +1 monety dla obu po pełnej rundzie, +3 monet gracza drugiego na starcie ani innych nagród. Starsze zapisy zachowują ekonomię dotychczasową.
 - **0.9.37:** poprawka wyłącznie audytów i prezentacji: schema-2 podpisuje `ruleset_version` i oczekującą wypłatę, odtwarzanie starszych plików schema-1 pozostaje zgodne; wyjątki A014/A015/A018 są widoczne od początku opisu, dodatkowe warunki pięciu kart bazowych wymieniono w szczegółach UI.\n- **0.9.36 / v23:** nowe mecze mają jawny `ruleset_version=v23`, starym zapisom nie zmienia się semantyki. Suwak licytacji, wyrównane opisy skalowania, wypłata za wolne pola dopiero po wspólnych falach śmierci, Wieszczka A015 działa wyłącznie przeciw przeciwnikowi, A018 dostaje efekt awaryjny po wyczerpaniu przyszłych aukcji, S86/S87/S88/S32/S95 mają opisane alternatywy przy braku celu. Dodatek: `docs/GAME_MASTER_v23_ADDENDUM.md`; kod muzyki i credits bez zmian zasad.\n- **0.9.35:** wygląd kart z aktywną **Tarczą/Ochroną** ma delikatny żółto-złoty filtr, z **Prowokacją** delikatny srebrnoszary, a z **Podwójnym atakiem** delikatny czerwony. Inne, w szczególności chwilowe statusy, nie nakładają pełnego filtra. W razie wielu cech priorytet Tarcza > Prowokacja > Podwójny atak, a wszystkie cechy nadal są opisane w statusach.
 - **0.9.35:** po rzeczywistym ataku obie uczestniczące karty są przez chwilę wyróżnione, widoczne PŻ spada płynnie, a karta faktycznie zabita po krótkim wyszarzeniu zanika. Usunięcie przez zamianę lub wygnanie nie uruchamia animacji śmierci. Zmiany dotyczą tylko renderowania, nie przebiegu tury ani silnika.
