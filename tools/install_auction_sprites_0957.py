@@ -13,9 +13,12 @@ import os
 from pathlib import Path
 import shutil
 import struct
+import sys
 import tempfile
 import zipfile
 
+# Also work when invoked as `python tools/install_auction_sprites_0957.py`.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from game.core.auction_catalog import V22_CARDS, RARITIES
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
