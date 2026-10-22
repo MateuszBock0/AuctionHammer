@@ -110,6 +110,18 @@ class AuctionSpriteTests(unittest.TestCase):
                 self.fail("Cannot release 0.9.57 without all 51 PNG and manifest")
             self.skipTest("Binary PNG/manifest not yet committed; release gate pending")
         self.assertEqual(len(validate_installed(root)),51)
+        # Decode every actually committed PNG with pygame, not just IHDR.
+        # All three rarities must be loadable under the actual runtime path.
+        with patch("game.ui.assets.ROOT_DIR",root):
+            loader=ImageAssets()
+            for cid in V22_CARDS:
+                items=[]
+                for tier in RARITIES:
+                    sprite=loader.get_auction_image(cid,tier,(96,96))
+                    self.assertIsNotNone(sprite,(cid,tier))
+                    self.assertEqual(sprite.get_size(),(96,96))
+                    items.append(sprite)
+                self.assertEqual(len(set(id(item) for item in items)),3)
 
 
 if __name__=="__main__":
