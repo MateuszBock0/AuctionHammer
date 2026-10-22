@@ -31,7 +31,8 @@ class GeneralEffectVisibilityTests(unittest.TestCase):
         self.assertIn('Generał Oddziału Natarcia', statuses[0].source)
         self.assertEqual(game.units[recipient].atk, game.cards[recipient].attack)
 
-        game._add_effect(general, 'stun', source='S59', positive=False)
+        game._add_effect(general, 'stun', source='S59', positive=False,
+                         expires=game.players[0].turn_count + 1)
         self.assertFalse(boosted_attack(game, recipient))
         self.assertEqual(general_statuses(game, recipient), [])
         game._clean(general, negative=True)
@@ -118,7 +119,8 @@ class GeneralEffectVisibilityTests(unittest.TestCase):
         recipient = place_basic(game, 'S35', owner=0)
         general = award(game, 'A002', tier=1, zone='board')
         game.auction_general_targets[general] = recipient
-        game._add_effect(general, 'stun', source='S59', positive=False)
+        game._add_effect(general, 'stun', source='S59', positive=False,
+                         expires=game.players[0].turn_count + 1)
         from game.core.audit import state_snapshot
         state = state_snapshot(game)
         state['players'] = {str(p): row for p, row in enumerate(state['players'])} if isinstance(state['players'], list) else state['players']
