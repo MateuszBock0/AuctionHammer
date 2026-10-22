@@ -62,9 +62,13 @@ class LegendaryVisualIdentity(unittest.TestCase):
                     self.assertEqual(rare.get_at(point),legendary.get_at(point),
                                      (size,label,point))
                 # The illustration and outside edge visibly differ.
+                # On hand-sized cards the level/progress badge occupies
+                # the artwork's center. Sample the uncovered left third.
+                art=zones['art']
+                art_sample=(art.x+art.width//3,art.centery)
                 self.assertNotEqual(
-                    rare.get_at(zones['art'].center),
-                    legendary.get_at(zones['art'].center),size)
+                    rare.get_at(art_sample),
+                    legendary.get_at(art_sample),size)
                 self.assertNotEqual(
                     pygame.image.tostring(rare,'RGBA'),
                     pygame.image.tostring(legendary,'RGBA'))
