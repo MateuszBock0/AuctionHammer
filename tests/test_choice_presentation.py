@@ -119,7 +119,9 @@ class SelectionLayoutTests(unittest.TestCase):
         self.assertEqual(self.app.CHOICES_PER_PAGE,6)
         self.assertGreater(self.app.CHOICE_FIRST_Y,459)
         self.assertTrue(all(467<=r.top and r.bottom<=786 for _,r in self.app.choice_bounds()))
-        self.assertGreaterEqual(self.app.AI_ACTION_DELAY_MS,700)
+        # UX responsiveness: AI remains readable without the old 850 ms stall.
+        self.assertGreaterEqual(self.app.AI_ACTION_DELAY_MS,350)
+        self.assertLessEqual(self.app.AI_ACTION_DELAY_MS,550)
 
     def test_mulligan_selection_is_highlighted(self):
         self.app.restart()

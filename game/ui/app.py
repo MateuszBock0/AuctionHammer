@@ -127,6 +127,8 @@ class SoloApp:
         self._recent_feedback=[]
         self.combat_notice_active=None
         self.combat_notice_queue=[]
+        self.attack_outcome_active=None
+        self._last_handled_attack_outcome=None
         self.visual_notice=''
         self.visual_notice_tick=-10000
         self._last_logged_event=len(self.game.event_journal)
@@ -493,7 +495,7 @@ class SoloApp:
     CHOICES_PER_PAGE = 6
     CHOICE_FIRST_Y = 467
     CHOICE_ROW_HEIGHT = 54
-    AI_ACTION_DELAY_MS = 850
+    AI_ACTION_DELAY_MS = 480
 
     def choice_bounds(self):
         """Choice buttons belong to the sidebar, never above the game board."""
@@ -1441,14 +1443,24 @@ class SoloApp:
             self.combat_notice_active=None
             self.combat_notice_queue=[]
         now=pygame.time.get_ticks()
+        outcome=self.combat_visuals.last_attack_outcome
+        attack_batch=(outcome is not None
+                      and outcome is not self._last_handled_attack_outcome)
+        if attack_batch:
+            # Choices can finish an attack without adding journal lines.
+            # Track the resolved outcome itself, not event count alone.
+            self._last_handled_attack_outcome=outcome
+            # A new committed attack supersedes an obsolete event backlog.
+            # The full authoritative chronology remains available under H.
+            self.attack_outcome_active=(now,outcome)
+            self.combat_notice_active=None
+            self.combat_notice_queue.clear()
         for event in events[self._last_logged_event:]:
-            notice=combat_notice(event)
+            notice=None if attack_batch else combat_notice(event)
             if notice is not None:
                 if self.combat_notice_active is None:
                     self.combat_notice_active=(now,notice)
                 else:
-                    # A bounded visual queue; the authoritative H history keeps
-                    # every event without any truncation or reconstruction.
                     self.combat_notice_queue.append(notice)
                     self.combat_notice_queue=self.combat_notice_queue[-24:]
             if self.animations_enabled:
@@ -1458,6 +1470,8 @@ class SoloApp:
         self._last_logged_event=len(events)
         self._recent_feedback=self._recent_feedback[-2:]
         self._recent_feedback=[e for e in self._recent_feedback if now-e[0]<620]
+        if self.attack_outcome_active and now-self.attack_outcome_active[0]>=2400:
+            self.attack_outcome_active=None
         if self.combat_notice_active and now-self.combat_notice_active[0]>=2600:
             self.combat_notice_active=(
                 (now,self.combat_notice_queue.pop(0))
@@ -1468,6 +1482,9 @@ class SoloApp:
         if g.phase!='auction':
             self.auction_inspect_index=None
         self._export_finished_audit_once()
+        # Synchronize committed snapshots BEFORE classifying their journal.
+        # The newest attack recap must appear on the very next rendered frame.
+        self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
         self._capture_visual_feedback()
         self.tutorial.observe(g)
         if (self.menu_open or self.history_open or self.help_open
@@ -1488,7 +1505,6 @@ class SoloApp:
             if self.selected in g.cards and self.selected not in g.players[0].hand and self.selected not in g.units:
                 self.selected=None
         now=pygame.time.get_ticks()
-        self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,now)
         self.recorder.capture(g)
 
     def _draw_hero(self,idx):
@@ -1893,11 +1909,29 @@ class SoloApp:
         self._button(self.exit_button_rect(),'WYJDŹ',small=True)
 
     def _draw_log(self):
-        """Two-line read-only combat ticker with an ordered event backlog."""
+        """Latest attack outcome takes priority over the older event ticker."""
         now=pygame.time.get_ticks()
         notice=(getattr(self,'visual_notice','')
                 if now-getattr(self,'visual_notice_tick',-10000)<2400
                 else '')
+        recap=self.attack_outcome_active
+        if recap is not None and 0<=now-recap[0]<2400:
+            outcome=recap[1]
+            rect=pygame.Rect(1099,899,330,49)
+            pygame.draw.rect(self.screen,(34,53,59),rect,border_radius=8)
+            pygame.draw.rect(self.screen,(115,223,238),rect,2,border_radius=8)
+            heading='SKUTKI ATAKU  ·  [H] HISTORIA'
+            self._text(self.cards_view.clip(heading,self.fonts[12],304),
+                       12,1108,900,(115,223,238))
+            for index,line in enumerate(outcome.lines[:2]):
+                self._text(self.cards_view.clip(line,self.fonts[11],306),
+                           11,1108,918+index*16,cfg.TEXT)
+            # A new invalid input must still surface its error immediately;
+            # combat feedback may not hide interaction feedback for 2.4 s.
+            if self.last_error:
+                self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),
+                           13,280,954,cfg.RED)
+            return
         active=self.combat_notice_active
         if active is not None and 0<=now-active[0]<2600:
             cue=active[1]
@@ -1969,11 +2003,26 @@ class SoloApp:
                              3,border_radius=13)
 
     def _draw_attack_targets(self):
+        pointer=self.mouse_pos()
         for rect in self._attack_target_rects():
-            # Cyan means legal ATTACK, distinct from the gold selected card,
-            # purple ability target and red numbered mulligan badge.
-            pygame.draw.rect(self.screen,(115,223,238),rect.inflate(7,7),
-                             3,border_radius=14)
+            # Immediate pointer response on engine-confirmed legal targets.
+            # The hover style is cosmetic: clicking still uses legal_attacks.
+            hovered=rect.collidepoint(pointer)
+            area=rect.inflate(9 if hovered else 7,9 if hovered else 7)
+            pygame.draw.rect(self.screen,
+                             (170,250,255) if hovered else (115,223,238),
+                             area,4 if hovered else 3,border_radius=14)
+            if hovered:
+                label=self.fonts_bold[13].render('ATAKUJ',True,(170,250,255))
+                tx=rect.centerx-label.get_width()//2
+                # Keep the cue inside an enemy card's artwork: above its
+                # effect/stat zones, below the opponent hero bar, and clear of
+                # the phase HUD between both board rows.
+                ty=(rect.y+53 if rect.height>=100 else rect.y-24)
+                backdrop=pygame.Rect(tx-5,ty-2,label.get_width()+10,
+                                     label.get_height()+4)
+                pygame.draw.rect(self.screen,(20,34,45),backdrop,border_radius=5)
+                self.screen.blit(label,(tx,ty))
 
     def _draw_choices(self):
         """Highlight legal ability targets without covering information."""
@@ -2247,6 +2296,8 @@ class SoloApp:
                         self._recent_feedback=[]
                         self.combat_notice_active=None
                         self.combat_notice_queue=[]
+                        self.attack_outcome_active=None
+                        self._last_handled_attack_outcome=None
                         self.auction_inspect_index=None
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())

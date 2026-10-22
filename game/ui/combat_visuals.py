@@ -13,6 +13,7 @@ import re
 import pygame
 
 from game.core.status_view import active_statuses
+from game.ui.combat_outcome import committed_attack_outcome
 
 KINDS = {
     'damage':((255,121,125),'-'),
@@ -67,6 +68,9 @@ class CombatVisuals:
         self.pulses: list[Pulse] = []
         self.combat_cards: dict[str,CombatCard] = {}
         self.fallen_cards: list[CombatCard] = []
+        self.last_attack_outcome = None
+        self._attack_start_state = None
+        self._attack_start_event = 0
 
     @staticmethod
     def _anchor(rect: pygame.Rect) -> tuple[int,int]:
@@ -98,8 +102,8 @@ class CombatVisuals:
                 }
         return state
 
-    def _push(self,kind,at,now,label='',origin=None):
-        self.pulses.append(Pulse(kind,at,int(now),str(label),origin))
+    def _push(self,kind,at,now,label='',origin=None,delay_ms=0):
+        self.pulses.append(Pulse(kind,at,int(now)+delay_ms,str(label),origin))
         if len(self.pulses)>self.max_pulses:
             del self.pulses[:-self.max_pulses]
 
@@ -109,11 +113,35 @@ class CombatVisuals:
         prior=self.last_state
         self.last_state=current
         journal=getattr(game,'event_journal',[])
-        fresh=journal[self.read_events:]
+        start_event=self.read_events
+        fresh=journal[start_event:]
         self.read_events=len(journal)
         if prior is None:
             self.last_active=game.active
             return
+        # The engine may suspend an attack until a mandatory ability/death
+        # choice is resolved. An "atakuje" journal line is NOT evidence that
+        # its damage or retaliation is final.
+        if any(' atakuje: ' in evt['text'] for evt in fresh):
+            if self._attack_start_state is None:
+                self._attack_start_state=prior
+                self._attack_start_event=start_event
+        attack_events=[]
+        committed_attack_start=None
+        unresolved=(getattr(game,'pending',None) is not None
+                    or getattr(game,'deferred_attack',None) is not None
+                    or bool(getattr(game,'trigger_queue',()))
+                    or bool(getattr(game,'death_waves',()))
+                    or getattr(game,'active_death_wave',None) is not None)
+        self.last_attack_outcome=None
+        if self._attack_start_state is not None and not unresolved:
+            committed_attack_start=self._attack_start_state
+            attack_events=journal[self._attack_start_event:]
+            self.last_attack_outcome=committed_attack_outcome(
+                game,committed_attack_start,current,attack_events,len(journal))
+            self._attack_start_state=None
+        attack_confirmed = self.last_attack_outcome is not None
+        impact_delay = 165 if attack_confirmed else 0
         # Auras/entrances operate on confirmed board occupancy only.
         for uid,data in current.items():
             if uid not in prior and not uid.startswith('hero:'):
@@ -132,24 +160,25 @@ class CombatVisuals:
                    for evt in fresh):
                 confirmed_deaths.add(uid)
         # Przy walce oba końce są znane nawet wtedy, gdy atakujący już zginął.
-        for evt in fresh:
+        for evt in attack_events:
             message=evt['text']
             if ' atakuje: ' in message:
                 actor,target=message.split(' atakuje: ',1)
                 target=target.rstrip('.')
-                src=next((cid for cid in prior if cid in game.cards
+                before=committed_attack_start or prior
+                src=next((cid for cid in before if cid in game.cards
                           and game.cards[cid].definition.name==actor),None)
                 dst=next((cid for cid in current if cid in game.cards
                           and game.cards[cid].definition.name==target),None)
                 if dst is None:
-                    dst=next((cid for cid in prior if cid in game.cards
+                    dst=next((cid for cid in before if cid in game.cards
                               and game.cards[cid].definition.name==target),None)
                 if target.startswith('Bohater'):
                     dst=next((f'hero:{i}' for i,p in enumerate(game.players)
                               if p.name in target),None)
                 if src and dst:
-                    start=(prior.get(src) or current.get(src) or {}).get('at')
-                    end=(current.get(dst) or prior.get(dst) or {}).get('at')
+                    start=(before.get(src) or current.get(src) or {}).get('at')
+                    end=(current.get(dst) or before.get(dst) or {}).get('at')
                     if start and end:
                         self._push('attack',end,now,origin=start)
                         fighting.update((src,dst))
@@ -172,12 +201,18 @@ class CombatVisuals:
         for uid,old in prior.items():
             if uid not in current:
                 if uid in confirmed_deaths:
-                    self._push('death',old['at'],now,'ZGON')
+                    self._push('death',old['at'],now,'ZGON',delay_ms=impact_delay)
                 continue
             new=current[uid]
             delta=new['hp']-old['hp']
-            if delta<0:self._push('damage',new['at'],now,str(delta))
-            if delta>0:self._push('heal',new['at'],now,f'+{delta}')
+            if delta<0:self._push('damage',new['at'],now,str(delta),delay_ms=impact_delay)
+            if delta>0:self._push('heal',new['at'],now,f'+{delta}',delay_ms=impact_delay)
+            if new['shield']<old['shield']:
+                # A blocked hit may deal zero HP damage. Show the actual
+                # consumed protection instead of falsely reporting a wound.
+                self._push('shield',new['at'],now,
+                           f'TARCZA -{old["shield"]-new["shield"]}',
+                           delay_ms=impact_delay)
             if new['shield']>old['shield']:
                 self._push('shield',new['at'],now,'TARCZA')
             if new['armor']>old['armor']:
@@ -196,7 +231,7 @@ class CombatVisuals:
     def interpolated_hp(card: CombatCard,now: int):
         """HP decreases first; only afterwards does the losing card grey out."""
         age=max(0,now-card.born)
-        t=min(1.0,max(0.0,(age-55)/185.0))
+        t=min(1.0,max(0.0,(age-120)/115.0))
         return max(0,round(card.old_hp+(card.new_hp-card.old_hp)*t))
 
     def hp_display(self,uid,now):
@@ -250,7 +285,11 @@ class CombatVisuals:
         alive=[]
         for pulse in self.pulses:
             age=now-pulse.born
-            if age<0 or age>=pulse.lifetime:
+            if age<0:
+                # A delayed impact must survive earlier animation frames.
+                alive.append(pulse)
+                continue
+            if age>=pulse.lifetime:
                 continue
             alive.append(pulse)
             t=age/pulse.lifetime
@@ -258,7 +297,7 @@ class CombatVisuals:
             alpha=max(0,int(230*(1-t)**1.2))
             x,y=pulse.at
             if pulse.kind=='attack' and pulse.origin is not None:
-                travel=min(1.,t*3.05)
+                travel=min(1.,t*4.8)
                 eased=1-(1-travel)**3
                 x=pulse.origin[0]+(pulse.at[0]-pulse.origin[0])*eased
                 y=pulse.origin[1]+(pulse.at[1]-pulse.origin[1])*eased
