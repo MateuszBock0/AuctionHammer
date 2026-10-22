@@ -58,6 +58,35 @@ class ImageAssets:
             self._scaled[key]=self.fit_art(self._original[filename],size,mode,focus)
         return self._scaled[key]
 
+    def get_auction_image(self, archetype: str, rarity: str,
+                          size: tuple[int, int],
+                          mode: str = 'cover') -> pygame.Surface | None:
+        """Use exact 96px auction sprite for the current, actual rarity.
+
+        Auction artwork is optional for old source checkouts, but once the
+        0.9.57 asset bundle is installed its files are cached on first use.
+        Never show a different rarity when one asset is missing.
+        """
+        from game.core.auction_catalog import V22_CARDS, RARITIES
+        if archetype not in V22_CARDS or rarity not in RARITIES:
+            return None
+        filename = f'{archetype}_{rarity}.png'
+        key = ('auction', filename, tuple(size), mode)
+        if key in self._scaled:
+            return self._scaled[key]
+        original_key = 'auction/' + filename
+        if original_key not in self._original:
+            path = ROOT_DIR / 'assets' / 'auction' / filename
+            if not path.is_file():
+                return None
+            try:
+                self._original[original_key] = pygame.image.load(str(path)).convert_alpha()
+            except (OSError, pygame.error):
+                return None
+        scaled = self.fit_art(self._original[original_key], size, mode)
+        self._scaled[key] = scaled
+        return scaled
+
     @staticmethod
     def _fallback() -> pygame.Surface:
         img=pygame.Surface((300,200),pygame.SRCALPHA)
