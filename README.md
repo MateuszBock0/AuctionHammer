@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.57** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.58** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -66,7 +66,7 @@ Co trzy ukończone rundy może rozpocząć się aukcja. System losuje **trzy ofe
 | Rzadka | 30% | Srebrno-błękitna |
 | Legendarna | 10% | Złota, z ornamentami i świetlistą ilustracją |
 
-**Ilustracje kart aukcyjnych (0.9.57):** Wszystkie 17 archetypów posiada 3 osobne ilustracje (podstawowa, rzadka, legendarna): łącznie 51 plików PNG 96×96. Grafika zmienia się wraz z aktualną rzadkością karty i jest widoczna podczas aukcji, na planszy, w ręce oraz w podglądzie. Integralność każdej grafiki sprawdza `assets/auction/manifest.json` (SHA-256). [Szczegóły i weryfikacja](docs/AUCTION_SPRITES_0957.md).\n\n**Wygląd legendarnych kart (0.9.54):** ciemnoametystowe tło, ciepły złoty blask w obrębie ilustracji, rzeźbione narożniki i klejnot z subtelną animacją. Ten sam motyw zdobi legendarne oferty aukcyjne. Wyłączenie animacji klawiszem **A** usuwa pulsowanie, ale zachowuje ozdoby. Wszystkie nazwy, opisy, statusy oraz ATK/PŻ pozostają na nieprzezroczystych, czytelnych panelach.
+**Tło ilustracji aukcyjnych (0.9.58):** Kolor przestrzeni wokół grafiki wynika automatycznie z dominującego odcienia jej bieżącego wariantu PNG. Tło dopasowuje się do rzadkości karty i nie wymaga ręcznego ustawiania palety. Zachowujemy proporcje ilustracji, czytelność podpisów oraz dotychczasowy wygląd kart podstawowych.\n\n**Ilustracje kart aukcyjnych (0.9.57):** Wszystkie 17 archetypów posiada 3 osobne ilustracje (podstawowa, rzadka, legendarna): łącznie 51 plików PNG 96×96. Grafika zmienia się wraz z aktualną rzadkością karty i jest widoczna podczas aukcji, na planszy, w ręce oraz w podglądzie. Integralność każdej grafiki sprawdza `assets/auction/manifest.json` (SHA-256). [Szczegóły i weryfikacja](docs/AUCTION_SPRITES_0957.md).\n\n**Wygląd legendarnych kart (0.9.54):** ciemnoametystowe tło, ciepły złoty blask w obrębie ilustracji, rzeźbione narożniki i klejnot z subtelną animacją. Ten sam motyw zdobi legendarne oferty aukcyjne. Wyłączenie animacji klawiszem **A** usuwa pulsowanie, ale zachowuje ozdoby. Wszystkie nazwy, opisy, statusy oraz ATK/PŻ pozostają na nieprzezroczystych, czytelnych panelach.
 
 Karta aukcyjna awansuje na kolejny stopień rzadkości co trzy pełne rundy od zakupu (maksymalnie do legendarnej). Zmienia się wariant jej zdolności, **nie** bazowe ATK i PŻ ustalone podczas zakupu. Katalog zawiera 17 archetypów i 51 wariantów zdolności.
 

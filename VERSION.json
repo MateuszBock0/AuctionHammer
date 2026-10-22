@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.57",
+  "mvp": "0.9.58",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -273,5 +273,13 @@
     "visual": "all original tier portraits; card, auction offers, ability details and zoom",
     "mechanics_changed": false,
     "qa": "automated tests plus pending physical Windows DPI acceptance"
+  },
+  "auction_dominant_background_0958": {
+    "scope": "auction sprite letterbox and portrait backplates",
+    "color": "largest quantized RGB cluster of opaque PNG pixels; independently cached for all 51 rarity variants",
+    "starter_art_unchanged": true,
+    "gameplay_rules_unchanged": true,
+    "tests": "tests/test_auction_dominant_background_0958.py",
+    "manual_windows_dpi": "pending"
   }
 }

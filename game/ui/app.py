@@ -816,6 +816,11 @@ class SoloApp:
                    16,296,282,rarity_accent)
         if sprite is not None:
             portrait=pygame.Rect(1075,216,106,106)
+            dominant=self.cards_view.images.get_auction_color(
+                offer.archetype,offer.rarity)
+            if dominant is not None:
+                pygame.draw.rect(self.screen,dominant,
+                                 portrait.inflate(12,12),border_radius=10)
             self.screen.blit(sprite,portrait)
             pygame.draw.rect(self.screen,rarity_accent,portrait,2,border_radius=7)
         self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
@@ -873,6 +878,11 @@ class SoloApp:
                 off.archetype,off.rarity,(90,90))
             if portrait is not None:
                 artbox=pygame.Rect(rect.x+14,rect.y+82,90,90)
+                dominant=self.cards_view.images.get_auction_color(
+                    off.archetype,off.rarity)
+                if dominant is not None:
+                    pygame.draw.rect(self.screen,dominant,
+                                     artbox.inflate(12,12),border_radius=10)
                 self.screen.blit(portrait,artbox)
                 pygame.draw.rect(self.screen,tier_accent,artbox,2,border_radius=7)
                 text_x=rect.x+112
