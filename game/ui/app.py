@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.54: distinctive legendary cards and auction offers."""
+"""AuctionHammer MVP 0.9.55: responsive combat feedback and legendary art."""
 from __future__ import annotations
 import os
 import re
