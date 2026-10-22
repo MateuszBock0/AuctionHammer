@@ -13,11 +13,13 @@ class ImageAssets:
     def __init__(self) -> None:
         self._original: dict[str, pygame.Surface] = {}
         self._scaled: dict[tuple, pygame.Surface] = {}
+        self._auction_colors: dict[str, tuple[int, int, int]] = {}
 
     @staticmethod
     def fit_art(image: pygame.Surface, size: tuple[int,int],
-                mode: str='cover', focus: tuple[float,float]=(0.5,0.5)) -> pygame.Surface:
-        """One uniform scale, then centered/focus crop; never stretch source art."""
+                mode: str='cover', focus: tuple[float,float]=(0.5,0.5),
+                background: tuple[int, int, int] | None = None) -> pygame.Surface:
+        """One uniform scale; optional background fills containment margins."""
         import math
         w,h=map(int,size)
         if min(w,h)<=0:raise ValueError('Nonpositive image size')
@@ -29,7 +31,7 @@ class ImageAssets:
         sw,sh=max(1,math.ceil(iw*ratio)),max(1,math.ceil(ih*ratio))
         fitted=pygame.transform.smoothscale(image,(sw,sh))
         surface=pygame.Surface((w,h),pygame.SRCALPHA)
-        surface.fill(cfg.PANEL)
+        surface.fill(cfg.PANEL if background is None else background)
         if mode=='cover':
             ox=round((sw-w)*focus[0])
             oy=round((sh-h)*focus[1])
@@ -58,34 +60,68 @@ class ImageAssets:
             self._scaled[key]=self.fit_art(self._original[filename],size,mode,focus)
         return self._scaled[key]
 
-    def get_auction_image(self, archetype: str, rarity: str,
-                          size: tuple[int, int],
-                          mode: str = 'cover') -> pygame.Surface | None:
-        """Use exact 96px auction sprite for the current, actual rarity.
+    @staticmethod
+    def dominant_color(image: pygame.Surface) -> tuple[int, int, int]:
+        """Most populated 32-step RGB color cluster among opaque pixels.
 
-        Auction artwork is optional for old source checkouts, but once the
-        0.9.57 asset bundle is installed its files are cached on first use.
-        Never show a different rarity when one asset is missing.
+        Quantization groups neighboring shades in painted illustrations; the
+        output is the actual mean RGB of the largest cluster, not an invented
+        faction/rarity color. Sampled once on load, not each animation frame.
+        Transparent pixels never bias the result toward black.
         """
+        samples: dict[tuple[int,int,int], list[int]] = {}
+        raw = pygame.image.tobytes(image, "RGBA")
+        for index in range(0, len(raw), 16):  # every fourth pixel
+            r, g, b, a = raw[index:index + 4]
+            if a < 192:
+                continue
+            group = (r >> 5, g >> 5, b >> 5)
+            values = samples.setdefault(group, [0, 0, 0, 0])
+            values[0] += 1
+            values[1] += r
+            values[2] += g
+            values[3] += b
+        if not samples:
+            return cfg.PANEL
+        count, red, green, blue = max(samples.values(), key=lambda x:x[0])
+        return red // count, green // count, blue // count
+
+    def _auction_base(self, archetype: str, rarity: str) -> str | None:
         from game.core.auction_catalog import V22_CARDS, RARITIES
         if archetype not in V22_CARDS or rarity not in RARITIES:
             return None
         filename = f'{archetype}_{rarity}.png'
-        key = ('auction', filename, tuple(size), mode)
-        if key in self._scaled:
-            return self._scaled[key]
-        original_key = 'auction/' + filename
-        if original_key not in self._original:
+        key = 'auction/' + filename
+        if key not in self._original:
             path = ROOT_DIR / 'assets' / 'auction' / filename
             if not path.is_file():
                 return None
             try:
-                self._original[original_key] = pygame.image.load(str(path)).convert_alpha()
+                self._original[key] = pygame.image.load(str(path)).convert_alpha()
             except (OSError, pygame.error):
                 return None
-        scaled = self.fit_art(self._original[original_key], size, mode)
-        self._scaled[key] = scaled
-        return scaled
+            self._auction_colors[key] = self.dominant_color(self._original[key])
+        return key
+
+    def get_auction_color(self, archetype: str,
+                          rarity: str) -> tuple[int,int,int] | None:
+        """Cached dominant hue of the CURRENT sprite; None for missing art."""
+        key = self._auction_base(archetype, rarity)
+        return self._auction_colors[key] if key is not None else None
+
+    def get_auction_image(self, archetype: str, rarity: str,
+                          size: tuple[int, int],
+                          mode: str = 'cover') -> pygame.Surface | None:
+        """Current rarity sprite on a matching-color backdrop (cached)."""
+        original_key = self._auction_base(archetype, rarity)
+        if original_key is None:
+            return None
+        cache_key = ('auction', original_key, tuple(size), mode)
+        if cache_key not in self._scaled:
+            self._scaled[cache_key] = self.fit_art(
+                self._original[original_key], size, mode,
+                background=self._auction_colors[original_key])
+        return self._scaled[cache_key]
 
     @staticmethod
     def _fallback() -> pygame.Surface:
