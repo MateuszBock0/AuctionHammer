@@ -1916,7 +1916,11 @@ class SoloApp:
             for index,line in enumerate(outcome.lines[:2]):
                 self._text(self.cards_view.clip(line,self.fonts[11],306),
                            11,1108,918+index*16,cfg.TEXT)
-            # On-screen summary only; there is no invented replay timeline.
+            # A new invalid input must still surface its error immediately;
+            # combat feedback may not hide interaction feedback for 2.4 s.
+            if self.last_error:
+                self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),
+                           13,280,954,cfg.RED)
             return
         active=self.combat_notice_active
         if active is not None and 0<=now-active[0]<2600:
