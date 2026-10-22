@@ -9,8 +9,37 @@ from collections import defaultdict
 from copy import deepcopy
 
 
-def _participant(state, uid):
-    """A compact signed-state view including pre/post HP, ATK, shield and effects."""
+def _general_sources(state, uid, owner):
+    """Resolve A002 grants from the *recorded* state, never by simulation."""
+    if state.get("auction_catalog") not in ("v4", "v22"):
+        return []
+    data = state.get("auction_v4") or {}
+    awards = state.get("auction_awards") or {}
+    units = state.get("units") or {}
+    found = []
+    for src, target in (data.get("general_targets") or {}).items():
+        leader = units.get(src)
+        if (target == uid and leader is not None and
+                leader.get("owner") == owner and
+                awards.get(src, {}).get("archetype") == "A002" and
+                awards[src].get("rarity") == "rzadka" and
+                not any(e.get("kind") in ("stun", "silence")
+                        for e in leader.get("effects", []))):
+            found.append(src)
+    for src, recipients in (data.get("general_grants") or {}).items():
+        leader = units.get(src)
+        if (uid in recipients and leader is not None and
+                leader.get("owner") == owner and
+                awards.get(src, {}).get("archetype") == "A002" and
+                awards[src].get("rarity") == "legendarna" and
+                not any(e.get("kind") in ("stun", "silence")
+                        for e in leader.get("effects", []))):
+            found.append(src)
+    return list(dict.fromkeys(found))
+
+
+def _participant(state, uid, names=None):
+    """Compact signed-state view, including separately stored General grants."""
     if not isinstance(uid, str):
         return None
     if uid.startswith("hero:"):
@@ -39,7 +68,12 @@ def _participant(state, uid):
         "shield": unit.get("shield", 0),
         "effects": deepcopy(unit.get("effects", [])),
         "attacks_used": unit.get("attacks"),
-        "level": unit.get("ability_level")
+        "level": unit.get("ability_level"),
+        "combat_bonuses": [
+            (names or {}).get(src, "Generał Oddziału Natarcia") +
+            " (" + src + "): do 2 ataków w turze, obrażenia standardowego ataku ×2"
+            for src in _general_sources(state, uid, unit.get("owner"))
+        ]
     }
 
 
@@ -52,7 +86,8 @@ def _apply_changes(state, changes):
                 state[key].pop(uid, None)
             else:
                 state[key][uid] = value
-    for key in ("pending", "deferred_attack"):
+    for key in ("pending", "deferred_attack", "auction_v4",
+                "auction_awards", "auction_catalog"):
         if key in changes:
             state[key] = changes[key]["after"]
 
@@ -69,7 +104,8 @@ def build_combat_analysis(payload, names=None):
     names = names or {}
     initial = payload["initial_state"]
     state = {key: deepcopy(initial.get(key, {}))
-             for key in ("players", "units", "cards")}
+             for key in ("players", "units", "cards", "auction_v4",
+                         "auction_awards", "auction_catalog")}
     state["pending"] = deepcopy(initial.get("pending"))
     state["deferred_attack"] = deepcopy(initial.get("deferred_attack"))
     operations = defaultdict(list)
@@ -95,10 +131,10 @@ def build_combat_analysis(payload, names=None):
                 "active_player": action["actor_before"],
                 "attacker": {
                     "uid": attacker, "name": names.get(attacker, attacker),
-                    "before": _participant(state, attacker), "after": None},
+                    "before": _participant(state, attacker, names), "after": None},
                 "defender": {
                     "uid": target, "name": names.get(target, target),
-                    "before": _participant(state, target), "after": None},
+                    "before": _participant(state, target, names), "after": None},
                 "actions": [], "steps": [], "events": [],
                 "resolution": "completed"
             }
@@ -133,7 +169,7 @@ def build_combat_analysis(payload, names=None):
         if open_battle is not None:
             for role in ("attacker", "defender"):
                 entry = open_battle[role]
-                entry["after"] = _participant(state, entry["uid"])
+                entry["after"] = _participant(state, entry["uid"], names)
             if state["deferred_attack"] is None:
                 open_battle["resolution"] = "completed"
                 open_battle = None
