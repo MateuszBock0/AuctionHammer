@@ -20,7 +20,8 @@ class Match:
                  auctions_enabled: bool = False,
                  auction_catalog: str = "v3",
                  vacant_income_enabled: bool | None = None,
-                 starting_compensation: str = "coins"):
+                 starting_compensation: str = "coins",
+                 fixed_board_slots: bool = False):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -51,6 +52,9 @@ class Match:
         self.auction=None
         self.auction_history=[]
         self.auction_awards={}
+        # 0.9.51: physical slots. Historical modes remain compact by default.
+        self.fixed_board_slots=bool(fixed_board_slots)
+        self.board_slots: dict[str,int]={}
         # Separate finite archetype supply: 3 offered, 2 bought, third
         # returned to the auction bag ONLY, never to the 70-card bank.
         self.auction_bag=list(catalog_for(auction_catalog)) if auction_catalog in ('v4','v22') else []
@@ -148,7 +152,7 @@ class Match:
             self.cards[uid]=Card(uid,definition,owner=second,zone="board")
             # No Quick Attack: played_turn=1 prevents attacks on owner's first turn.
             self.units[uid]=Unit(uid,second,attack,5,5,0,1)
-            self.players[second].board.append(uid)
+            self._place_on_board(uid,second)
             self.ephemeral_ids.add(uid)
         self._log('Rozdano po 5 kart na rękę i do talii. Po jednym egzemplarzu na typ.')
         if self.starting_compensation=="unit_5_5":
@@ -209,7 +213,7 @@ class Match:
                 'Brak wzrostu; po śmierci nie wraca do talii.',0,0)
             self.cards[uid]=Card(uid,definition,owner=player_idx,zone='board')
             self.units[uid]=Unit(uid,player_idx,2,5,5,0,1)
-            self.players[player_idx].board.append(uid)
+            self._place_on_board(uid,player_idx)
             self.ephemeral_ids.add(uid)
             self._log(f'{self.players[player_idx].name}: wybrano Chorążego 2/5 na start.')
         self.assert_integrity()
@@ -313,16 +317,21 @@ class Match:
             p.hero_effects=[e for e in p.hero_effects if e.kind!='poison' or e.remaining>0]
         if fallen:self._kill_batch(fallen)
 
-    def can_play(self,player,uid,replace=None):
+    def can_play(self,player,uid,replace=None,slot=None):
         p=self.players[player]
         if self.phase!='turn' or self.pending or self.active!=player or p.played_this_turn or uid not in p.hand:return False
-        if len(p.board)<5:return replace is None
-        return replace in p.board and self.units[replace].attacks==0
+        if len(p.board)<5:
+            if replace is not None:return False
+            return slot is None or (type(slot) is int and slot in self.available_slots(player))
+        if replace not in p.board or self.units[replace].attacks!=0:return False
+        return slot is None or (type(slot) is int and slot==self.slot_of(replace))
 
     @audit_action('play')
-    def play(self,uid,replace=None):
+    def play(self,uid,replace=None,slot=None):
         p=self._player()
-        self._check(self.can_play(self.active,uid,replace),'Nie można zagrać tej karty (1 na turę; pełna plansza wymaga zastąpienia niewykorzystanej jednostki)')
+        self._check(self.can_play(self.active,uid,replace,slot),'Nie można zagrać tej karty (1 na turę; wybierz wolne pole lub zastąp niewykorzystaną jednostkę)')
+        if self.fixed_board_slots and replace is not None:
+            slot=self.slot_of(replace)
         if replace is not None:
             self._remove_unit(replace,death=False)
             self._log(f'{p.name}: zastąpiono {self.label(replace)} (bez śmierci).')
@@ -330,7 +339,7 @@ class Match:
         p.hand.remove(uid)
         card.zone='board'
         u=Unit(uid,p.idx,card.attack,card.max_hp,card.max_hp,card.ability_level,p.turn_count)
-        self.units[uid]=u;p.board.append(uid)
+        self.units[uid]=u;self._place_on_board(uid,p.idx,slot)
         p.played_this_turn=True
         if p.next_fast or card.quick_next_turn==p.turn_count or card.quick_on_first_summon:
             self._add_effect(uid,'quick',source='S66' if card.quick_on_first_summon else 'temporary',expires=p.turn_count)
@@ -465,7 +474,7 @@ class Match:
         card.zone='board'
         u=Unit(uid,owner,card.attack,card.max_hp,card.max_hp,card.ability_level,p.turn_count)
         self.units[uid]=u
-        p.board.append(uid)
+        self._place_on_board(uid,p.idx)
         u.fallback_double_pending=card.double_on_first_eligible
         card.double_on_first_eligible=False
         if p.next_fast or card.quick_next_turn==p.turn_count or card.quick_on_first_summon:
@@ -950,12 +959,47 @@ class Match:
             return amount
         return 0
 
+    def slot_of(self,uid):
+        """Physical board index of a living unit."""
+        if self.fixed_board_slots:
+            return self.board_slots[uid]
+        return self.players[self.units[uid].owner].board.index(uid)
+
+    def unit_at(self,owner,slot):
+        """Living UID at the given physical slot or None."""
+        if not 0<=slot<5:return None
+        p=self.players[owner]
+        if not self.fixed_board_slots:
+            return p.board[slot] if slot<len(p.board) else None
+        return next((uid for uid in p.board if self.board_slots[uid]==slot),None)
+
+    def available_slots(self,owner):
+        if not self.fixed_board_slots:
+            return list(range(len(self.players[owner].board),5))
+        occupied={self.board_slots[uid] for uid in self.players[owner].board}
+        return [i for i in range(5) if i not in occupied]
+
+    def _place_on_board(self,uid,owner,slot=None):
+        p=self.players[owner]
+        if self.fixed_board_slots:
+            available=self.available_slots(owner)
+            if slot is None:
+                if not available:raise ValueError('Brak wolnego pola')
+                slot=available[0]
+            if type(slot) is not int or slot not in available:
+                raise ValueError('Pole jest zajęte lub nieprawidłowe')
+            self.board_slots[uid]=slot
+            p.board.append(uid)
+            p.board.sort(key=lambda x:self.board_slots[x])
+        else:
+            p.board.append(uid)
+
     def _ordered_deaths(self,fallen):
         """Porządek v19: najpierw aktywny gracz od lewej, potem drugi."""
         positions={}
         for pid in (self.active,1-self.active):
-            for pos,uid in enumerate(self.players[pid].board):
-                positions[uid]=(0 if pid==self.active else 1,pos,uid)
+            for uid in self.players[pid].board:
+                positions[uid]=(0 if pid==self.active else 1,self.slot_of(uid),uid)
         return sorted({uid for uid in fallen if uid in self.units},
                       key=lambda uid:positions.get(uid,(2,999,uid)))
 
@@ -1117,6 +1161,7 @@ class Match:
         if death:
             self.death_counts[u.owner]+=1
         self.players[u.owner].board.remove(uid)
+        self.board_slots.pop(uid,None)
         card=self.cards[uid];card.hand_turns=0;card.quick_next_turn=None
         card.quick_on_first_summon=False;card.double_on_first_eligible=False
         if self.auction_catalog in ('v4','v22') and uid in self.ephemeral_ids:
@@ -1128,7 +1173,7 @@ class Match:
             card.zone='grave';self.players[u.owner].grave.append(uid)
 
     def _update_auras(self,defer_reactive=False):
-        # Dynamic auras S34 / S35 / S105. Unit order is always compacted left.
+        # Dynamic auras S34 / S35 / S105: physical positions when enabled.
         if not self.units:return
         desired_atk={x:0 for x in self.units};desired_hp={x:0 for x in self.units};armor_sources={x:set() for x in self.units}
         for uid,u in list(self.units.items()):
@@ -1138,13 +1183,19 @@ class Match:
             if self.auction_catalog in ('v4','v22') and cid=='A002' and auction_ability_rules.rarity(self,uid)==0:
                 for target in desired_atk:desired_atk[target]+=1
             if cid=='S34':
-                position=friend.index(uid)
+                position=self.slot_of(uid)
                 value=1+u.ability_level
                 if u.aura_mode=='ally':
-                    if len(friend)>1:
+                    if self.fixed_board_slots:
+                        neighbor=(self.unit_at(u.owner,position+1) or
+                                  self.unit_at(u.owner,position-1))
+                        if neighbor is not None:desired_atk[neighbor]+=value
+                    elif len(friend)>1:
                         t=friend[position+1] if position+1<len(friend) else friend[position-1]
                         desired_atk[t]+=value
-                elif position<len(enemy):desired_atk[enemy[position]]-=value
+                else:
+                    target=self.unit_at(1-u.owner,position)
+                    if target is not None:desired_atk[target]-=value
             elif cid=='S35':
                 value=1+u.ability_level
                 for x in (friend if u.aura_mode=='ally' else enemy):
@@ -1188,9 +1239,10 @@ class Match:
         for uid,u in list(self.units.items()):
             if self.cards[uid].definition.id!='S108' or self._disabled(u):continue
             own=self.players[u.owner].board;enemy=self.players[1-u.owner].board
-            i=own.index(uid)
-            if i<len(enemy) and enemy[i] not in u.seen_opponents:
-                opp=enemy[i];u.seen_opponents.add(opp)
+            i=self.slot_of(uid)
+            opp=self.unit_at(1-u.owner,i)
+            if opp is not None and opp not in u.seen_opponents:
+                u.seen_opponents.add(opp)
                 applied=self._add_effect(opp,'stun',expires=self._expiry(self.units[opp].owner),source=uid,positive=False)
                 if applied and opp in self.units:
                     self._damage(opp,1+u.ability_level)
@@ -1295,6 +1347,11 @@ class Match:
         for p in self.players:
             assert len(p.board)<=5 and all(self.cards[x].owner==p.idx for x in p.hand+p.deck+p.grave+p.board)
         assert set(self.units)==set(self.players[0].board+self.players[1].board)
+        if self.fixed_board_slots:
+            assert set(self.board_slots)==set(self.units),'Physical mapping mismatch'
+            for p in self.players:
+                positions=[self.board_slots[x] for x in p.board]
+                assert positions==sorted(set(positions)) and all(type(x) is int and 0<=x<5 for x in positions),'Invalid physical board slots'
         assert all(self.cards[x].zone=='excluded' and self.cards[x].owner is None for x in self.excluded)
 
     @trace_effect('_execute')
