@@ -2008,10 +2008,13 @@ class SoloApp:
             if hovered:
                 label=self.fonts_bold[13].render('ATAKUJ',True,(170,250,255))
                 tx=rect.centerx-label.get_width()//2
-                # Enemy unit cards begin just below the opponent hero bar.
-                # Put their cue underneath, not ON TOP of the hero's HP/coins.
-                # A hero target instead uses the strip above its health bar.
-                ty=(rect.bottom+5 if rect.height>=100 else rect.y-24)
+                # Keep the cue inside an enemy card's artwork: above its
+                # effect/stat zones, below the opponent hero bar, and clear of
+                # the phase HUD between both board rows.
+                ty=(rect.y+53 if rect.height>=100 else rect.y-24)
+                backdrop=pygame.Rect(tx-5,ty-2,label.get_width()+10,
+                                     label.get_height()+4)
+                pygame.draw.rect(self.screen,(20,34,45),backdrop,border_radius=5)
                 self.screen.blit(label,(tx,ty))
 
     def _draw_choices(self):
