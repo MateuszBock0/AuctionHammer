@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 22 października 2026  
-**Wersja gałęzi:** MVP 0.9.53 (wydanie zależne od przejścia CI)  
+**Wersja gałęzi:** MVP 0.9.54 (wydanie zależne od przejścia CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Nowy etap — 0.9.54
+
+- Legendarnym kartom aukcyjnym dodano ciemnoametystową głębię wokół obrazu, ciepłą złotą poświatę na samej ilustracji, ornamentowane narożniki i zachowany pulsujący klejnot.
+- Oferta aukcyjna i pełny podgląd oferty legendarnej otrzymują spójny złoto-ornamentowany motyw oraz oznaczenie rzadkości.
+- Przełącznik animacji wyłącza efekty czasowe, nie usuwa identyfikacji rzadkości; teksty, wartości i statusy pozostają na kryjących panelach.
+- **Bez zmian w regułach, katalogu kart, balansie, AI, RNG, zapisach i audytach.** Testy: `tests/test_legendary_visual_0954.py`.
+- Ręczny odbiór UI na fizycznym Windows DPI 100/125/150 nadal **PENDING**.
 
 ### Najnowszy etap — 0.9.53
 
