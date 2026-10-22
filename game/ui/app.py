@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.56: legible combat and decision feedback."""
+"""AuctionHammer MVP 0.9.57: 51 auction art variants and gameplay clarity."""
 from __future__ import annotations
 import os
 import re
