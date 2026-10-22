@@ -263,11 +263,14 @@ class CardView:
         summary=ability_summary(card,unit)
         color=FACTION_COLORS[d.faction]
         zone=card_zones(rect)
+        tier=card_rarity(card,rarity)
         large=rect.height>=320
         board=unit is not None
         pad=11 if large else 6
         # BACKGROUND + FRAME
         self.theme.card_lustre(screen,rect,color)
+        if tier=='legendarna':
+            self.theme.legendary_underlay(screen,rect)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
         artwork=self.art(d.id,d.faction,art.size,d.family,d.name)
@@ -284,18 +287,28 @@ class CardView:
                 shade=pygame.Surface(art.size,pygame.SRCALPHA)
                 shade.fill((6,10,17,130))
                 screen.blit(shade,art.topleft)
+        if tier=='legendarna':
+            self.theme.legendary_artwork(screen,art,animate=animate_rarity)
         pygame.draw.rect(screen,(88,107,114),art,1,border_radius=5)
         emblem=self.icons.get(d.faction,'factions',min(19,art.height-4))
         if emblem is not None:
             screen.blit(emblem,(art.x+2,art.y+2))
         # ALL INFORMATION PANELS are opaque and above artwork/dimming.
         name_rect=zone['name']
-        if d.id.startswith('A0'):
+        if d.id.startswith('A0') and not (board and attacks_total is not None):
+            # The attack-readiness pill owns the upper-right art corner on board.
+            # Rarity remains identified by its ornamented frame.
             # The draft ability is NOT executable yet. Tier/name are genuine
             # but the card must not masquerade as fully implemented.
             parts=d.scaling.split(' · ')
             tag=('P'+parts[0].replace('POZIOM ','')+' '+
                  (parts[1] if len(parts)>1 else 'PODSTAWOWA'))
+            # Hand/board art is only 22/38 px tall. A long tier badge
+            # previously obscured the whole image and overlapped 0/3.
+            # Legendary identity is carried by the frame and a short tag.
+            if not large:
+                tag={'podstawowa':'POD.','rzadka':'RZ.',
+                     'legendarna':'LEG.'}.get(tier,'AUK.')
             badge_font=self.font(9,True)
             badge_w=min(art.width-10,max(24,badge_font.size(tag)[0]+7))
             badge=pygame.Rect(art.right-badge_w-3,art.y+3,badge_w,14)
@@ -411,7 +424,9 @@ class CardView:
                 self._pill(screen,pygame.Rect(art.right-29,y,26,14),f'+{rest}',
                            (61,78,92),self.font(9,True))
         # Progress on hand; never shown on deployed units.
-        if not board:
+        if not board and not d.id.startswith('A0'):
+            # Only basic cards level through hand turns. Auction cards
+            # evolve their rarity by completed rounds, not by 0/3 on hand.
             label=f'{card.hand_turns%3}/3 · POZ. {card.ability_level}'
             sf=self.font(10,True)
             pw=min(art.width-6,sf.size(label)[0]+9)
@@ -459,7 +474,6 @@ class CardView:
                 screen.blit(overlay,rect.topleft)
         # The exact evolving auction rarity has its own edge-only visual
         # treatment. No overlay may cover values, names or card ability text.
-        tier=card_rarity(card,rarity)
         if tier is not None:
             self.theme.rarity_frame(screen,rect,tier,animate=animate_rarity)
         # Selection overlays stay on the edge and are visually distinct.

@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.53** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.54** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -62,7 +62,9 @@ Co trzy ukończone rundy może rozpocząć się aukcja. System losuje **trzy ofe
 |---|---:|---|
 | Podstawowa | 60% | Brązowa |
 | Rzadka | 30% | Srebrno-błękitna |
-| Legendarna | 10% | Złota |
+| Legendarna | 10% | Złota, z ornamentami i świetlistą ilustracją |
+
+**Wygląd legendarnych kart (0.9.54):** ciemnoametystowe tło, ciepły złoty blask w obrębie ilustracji, rzeźbione narożniki i klejnot z subtelną animacją. Ten sam motyw zdobi legendarne oferty aukcyjne. Wyłączenie animacji klawiszem **A** usuwa pulsowanie, ale zachowuje ozdoby. Wszystkie nazwy, opisy, statusy oraz ATK/PŻ pozostają na nieprzezroczystych, czytelnych panelach.
 
 Karta aukcyjna awansuje na kolejny stopień rzadkości co trzy pełne rundy od zakupu (maksymalnie do legendarnej). Zmienia się wariant jej zdolności, **nie** bazowe ATK i PŻ ustalone podczas zakupu. Katalog zawiera 17 archetypów i 51 wariantów zdolności.
 
@@ -130,6 +132,7 @@ python -m tools.check_fixed_board_0951 --games 20
 - [Dokument główny](AUCTIONHAMMER_MASTER.md) i [aneks reguł v23](docs/GAME_MASTER_v23_ADDENDUM.md) — opis działania mechanik.
 - [Aukcje v22](docs/auction/RELEASE_V22_0931.md) — katalog i reguły licytacji.
 - [Stałe pola i rzadkości](docs/BOARD_CARD_IDENTITY_0951.md) — taktyka planszy.
+- [Wygląd legendarnych kart 0.9.54](docs/LEGENDARY_VISUAL_0954.md) — zmiany wyłącznie wizualne i testy.
 - [Czytelność opisów 0.9.53](docs/UI_TEXT_ACCEPTANCE_0953.md) — ograniczenia paneli, testy oraz checklista Windows.
 - [Historyczne dokumenty](docs/README_HISTORIA_DO_0932.md) — wcześniejsze etapy projektu.
 

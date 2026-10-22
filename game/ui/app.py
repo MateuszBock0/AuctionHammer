@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.53: pixel-safe cards and inspection UX."""
+"""AuctionHammer MVP 0.9.54: distinctive legendary cards and auction offers."""
 from __future__ import annotations
 import os
 import re
@@ -774,12 +774,16 @@ class SoloApp:
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((*TAVERN_SCRIM,240));self.screen.blit(shade,(0,0))
         rect=pygame.Rect(255,190,972,593)
-        self._panel(rect,TAVERN_PANEL_INNER,cfg.GOLD,18)
+        rarity_accent=rarity_color(offer.rarity)
+        self._panel(rect,TAVERN_PANEL_INNER,rarity_accent,18)
+        if offer.rarity=='legendarna':
+            self.theme.legendary_offer_ornament(
+                self.screen,rect,animate=self.animations_enabled)
         name=definition.name if definition is not None else offer.archetype
         self._text(self.cards_view.clip(name,self.fonts[28],890),
                    28,294,226,cfg.GOLD)
         self._text(f'OFERTA {index+1}  ·  {offer.rarity.upper()}  ·  '
-                   f'{offer.atk} ATK / {offer.hp} PŻ',16,296,282,cfg.TEXT)
+                   f'{offer.atk} ATK / {offer.hp} PŻ',16,296,282,rarity_accent)
         self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
         lines=self._wrap(description,18,853)
         visible=12
@@ -820,6 +824,9 @@ class SoloApp:
                              4 if off.rarity=='legendarna' else
                              2 if off.rarity=='rzadka' else 1,border_radius=13)
             self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
+            if off.rarity=='legendarna':
+                self.theme.legendary_offer_ornament(
+                    self.screen,rect,animate=self.animations_enabled)
             adef=catalog_for(self.game.auction_catalog).get(off.archetype)
             self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
                        rect.centerx,rect.y+17,cfg.GOLD,center=True)
@@ -2074,6 +2081,8 @@ class SoloApp:
         else:
             self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
                                  unit=u,selected=True,
+                                 rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                                 animate_rarity=self.animations_enabled,
                                  statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
                                  ready=details_attack.ready if u else None,
                                  attacks_total=details_attack.limit if u else None,
