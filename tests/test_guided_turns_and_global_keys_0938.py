@@ -117,6 +117,10 @@ class GuidanceAndGlobalShortcuts(unittest.TestCase):
         g.active=0
         for uid in list(g.bank)[:max(0,5-len(g.players[0].board))]:
             place_basic(g,uid,0)
+        # Historical force_unit helper bypasses _place_on_board.
+        for player in g.players:
+            for slot,uid in enumerate(player.board):
+                g.board_slots.setdefault(uid,slot)
         # The second-player starting guard may already occupy one of 5 slots.
         # Every existing unit must have spent both possible attacks.
         for uid in g.players[0].board:

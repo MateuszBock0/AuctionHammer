@@ -91,8 +91,8 @@ class GameplayCanvasTests(unittest.TestCase):
         app.selected=uid
         before=digest(state_snapshot(game))
         targets=app._play_target_rects()
-        self.assertEqual(len(targets),1)
-        self.assertEqual(targets[0],app.slot_rect(0,len(game.players[0].board)))
+        self.assertEqual(len(targets),len(game.available_slots(0)))
+        self.assertEqual(targets,[app.slot_rect(0,i) for i in game.available_slots(0)])
         app._draw_play_targets()
         self.assertEqual(before,digest(state_snapshot(game)))
         app.selected=None
