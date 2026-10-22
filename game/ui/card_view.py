@@ -156,7 +156,15 @@ class CardView:
             'lines':lines,'boxes':boxes,'show_value':show_value,
         }
 
-    def art(self,cid,faction,size,family='',card_name=''):
+    def art(self,cid,faction,size,family='',card_name='',rarity=None):
+        # Exact archetype and CURRENT rarity: the same rendering path serves
+        # hand, board, detail preview, and historical/replay views.
+        if rarity is not None and cid.startswith('A0'):
+            # Portraits are square: show the entire tier artwork inside the
+            # horizontal card-art strip instead of cropping its center.
+            sprite=self.images.get_auction_image(cid,rarity,size,mode='contain')
+            if sprite is not None:
+                return sprite
         if cid=='SUM_START_GUARD' and card_name=='Chorąży':
             # Reuse the project's existing artwork, not a new/generated asset.
             # The historical 5/5 Guard keeps its procedural illustration.
@@ -273,7 +281,7 @@ class CardView:
             self.theme.legendary_underlay(screen,rect)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
-        artwork=self.art(d.id,d.faction,art.size,d.family,d.name)
+        artwork=self.art(d.id,d.faction,art.size,d.family,d.name,rarity=tier)
         if dim and board:
             # Exhaustion/stun/new-unit lock: grayscale just the artwork.
             # Never reduce legibility of ATK, HP or status labels.

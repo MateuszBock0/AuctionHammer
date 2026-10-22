@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.56",
+  "mvp": "0.9.57",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -260,5 +260,18 @@
     "ai_policy_changed": false,
     "test_file": "tests/test_gameplay_clarity_0956.py",
     "manual_windows_1366_and_dpi": "pending"
+  },
+  "auction_art_0957": {
+    "source": "assets/auction/manifest.json",
+    "archetypes": 17,
+    "rarity_variants": 51,
+    "png_size": [
+      96,
+      96
+    ],
+    "sha256_manifest_required": true,
+    "visual": "all original tier portraits; card, auction offers, ability details and zoom",
+    "mechanics_changed": false,
+    "qa": "automated tests plus pending physical Windows DPI acceptance"
   }
 }

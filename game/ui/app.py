@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.56: legible combat and decision feedback."""
+"""AuctionHammer MVP 0.9.57: 51 auction art variants and gameplay clarity."""
 from __future__ import annotations
 import os
 import re
@@ -27,7 +27,7 @@ from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
 from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
-from game.ui.rarity_view import rarity_color
+from game.ui.rarity_view import rarity_color, card_rarity
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.decision_clarity import economy_cue, positional_cues
@@ -805,10 +805,19 @@ class SoloApp:
             self.theme.legendary_offer_ornament(
                 self.screen,rect,animate=self.animations_enabled)
         name=definition.name if definition is not None else offer.archetype
-        self._text(self.cards_view.clip(name,self.fonts[28],890),
+        sprite=self.cards_view.images.get_auction_image(
+            offer.archetype,offer.rarity,(106,106),mode='contain')
+        name_width=742 if sprite is not None else 890
+        self._text(self.cards_view.clip(name,self.fonts[28],name_width),
                    28,294,226,cfg.GOLD)
-        self._text(f'OFERTA {index+1}  ·  {offer.rarity.upper()}  ·  '
-                   f'{offer.atk} ATK / {offer.hp} PŻ',16,296,282,rarity_accent)
+        self._text(self.cards_view.clip(
+                   f'OFERTA {index+1}  ·  {offer.rarity.upper()}  ·  '
+                   f'{offer.atk} ATK / {offer.hp} PŻ',self.fonts[16],name_width),
+                   16,296,282,rarity_accent)
+        if sprite is not None:
+            portrait=pygame.Rect(1075,216,106,106)
+            self.screen.blit(sprite,portrait)
+            pygame.draw.rect(self.screen,rarity_accent,portrait,2,border_radius=7)
         self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
         lines=self._wrap(description,18,853)
         visible=12
@@ -858,10 +867,30 @@ class SoloApp:
             name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
             self._text(self.cards_view.clip(name,self.fonts[16],rect.width-20),16,
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
-            self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
-                       rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
-            self._text(f'{off.rarity.upper()} · POZIOM {off.level}',14,
-                       rect.centerx,rect.y+155,tier_accent,center=True)
+            # A visible auction portrait must not cover offer text or the
+            # ability/selection controls. The left column is reserved for art.
+            portrait=self.cards_view.images.get_auction_image(
+                off.archetype,off.rarity,(90,90))
+            if portrait is not None:
+                artbox=pygame.Rect(rect.x+14,rect.y+82,90,90)
+                self.screen.blit(portrait,artbox)
+                pygame.draw.rect(self.screen,tier_accent,artbox,2,border_radius=7)
+                text_x=rect.x+112
+                self._text(f'ATAK {off.atk}',18,text_x,
+                           rect.y+99,cfg.GREEN if not claimed else cfg.MUTED)
+                self._text(f'PŻ {off.hp}',18,text_x,
+                           rect.y+131,cfg.GREEN if not claimed else cfg.MUTED)
+                tier_text=f'{off.rarity.upper()} · P{off.level}'
+                self._text(self.cards_view.clip(
+                           tier_text,self.fonts[12],rect.width-116),
+                           12,text_x,rect.y+159,tier_accent)
+            else:
+                # Old asset-free source checkouts keep the existing layout.
+                self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
+                           rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,
+                           center=True)
+                self._text(f'{off.rarity.upper()} · POZIOM {off.level}',14,
+                           rect.centerx,rect.y+155,tier_accent,center=True)
             description=(v23_variant(self.game.auction_catalog,off.archetype,
                                       off.rarity,getattr(self.game,'ruleset_version','v22'))
                          if adef and self.game.auction_catalog in ('v4','v22') else
@@ -2189,7 +2218,15 @@ class SoloApp:
                 artwork=self.cards_view.images.get_card_image(
                     file,(276,520),mode='contain')
             else:
-                artwork=self.cards_view.art(d.id,d.faction,(276,520),d.family,d.name)
+                current_rarity=card_rarity(
+                    card,self.game.auction_awards.get(uid,{}).get('rarity'))
+                artwork=(self.cards_view.images.get_auction_image(
+                    d.id,current_rarity,(276,520),mode='contain')
+                    if current_rarity is not None else None)
+                if artwork is None:
+                    artwork=self.cards_view.art(
+                        d.id,d.faction,(276,520),d.family,d.name,
+                        rarity=current_rarity)
             self.screen.blit(artwork,(184,164))
             self._text('POWIĘKSZONA ORYGINALNA ILUSTRACJA',13,186,697,cfg.MUTED)
         else:
