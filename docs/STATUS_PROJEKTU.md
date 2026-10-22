@@ -1,8 +1,28 @@
 # AuctionHammer — status projektu
 
-**Ostatnia aktualizacja dokumentacji:** 19 października 2026  
-**Wersja aplikacji:** 0.9.43  
-**Stan:** działające demo offline na Windows, tryb solo przeciw AI. Rozwój trwa.
+**Data aktualizacji:** 22 października 2026  
+**Wersja gałęzi:** MVP 0.9.53 (wydanie zależne od przejścia CI)  
+**Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
+
+**Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Najnowszy etap — 0.9.53
+
+- Opisy kart i okien aukcyjnych są zawijane według rzeczywistej szerokości fontu; długie ciągi bez spacji nie wychodzą poza ramkę.
+- Podgląd oferty pokazuje maksymalnie cztery linie, a pominięcie tekstu sygnalizuje wielokropkiem; pełny opis aukcji można przewijać.
+- Nowy test mierzy ramki i szerokości opisów 70 kart podstawowych oraz 51 wariantów aukcyjnych w trzech rozmiarach.
+- Uproszczono README pod kątem użytkownika Windows i przygotowano aktualną notatkę kontekstową dla projektu ChatGPT.
+- Ręczna weryfikacja na fizycznym Windows (DPI 100/125/150%, audio, mysz, polskie znaki) pozostaje **PENDING**.
+- **Bez zmian w silniku, statystykach, aukcjach, algorytmie RNG i istniejących audytach.**
+
+### Obowiązujące zasady aktualnych nowych meczów
+
+- 70 niepowtarzalnych kart podstawowych, bez opłaty za wystawienie; 17 archetypów i 51 wariantów aktywnych kart aukcyjnych.
+- 5 stałych fizycznych pól na stronę; śmierć i wygnanie nie przesuwają sąsiadów.
+- Drugi gracz wybiera na początku Chorążego 2/5 lub +3 monety.
+- Dochód: +1 dla obu po pełnej rundzie oraz bonus za wolne pola w aktywnym wariancie v22.
+- Co trzy pełne rundy może odbyć się aukcja; szczegółowy katalog v22 i mechanika v23.
+- Historia i stare podpisane audyty zachowują dawne wersje reguł.
 
 ## Zaimplementowane
 
@@ -23,7 +43,7 @@ Dodana macierz 121 przypadków aktywacji (70 bazowych + 51 aukcyjnych), silniejs
 
 W wydaniu 0.9.37 przeprowadzono 492 testy oraz dwie serie po 100 meczów (w tym kontrolę 100/100 pełnych replayów). Nie gwarantuje to bezbłędności każdej kombinacji efektów. Brak fizycznej walidacji odtwarzania audio i UI na wszystkich konfiguracjach Windows.
 
-**Jeszcze niezaimplementowane:** tryb multiplayer online. Dodatkowe strategie licytacji AI wymagają odrębnej decyzji i testu A/B; nie są częścią obecnego stanu produkcyjnego.
+**Poza zakresem MVP:** multiplayer online, lobby i serwer. Ulepszenia AI oraz testy A/B strategii licytacji są możliwymi kolejnymi etapami, bez automatycznej zmiany balansu produkcyjnego.
 
 ## Dokumentacja i prawa
 
