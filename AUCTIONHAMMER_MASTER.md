@@ -1,12 +1,14 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.53 (bieżąca wersja z `VERSION.json`; oryginalna baza mechanik v19)  
+**Wersja gry:** MVP 0.9.54 (bieżąca wersja z `VERSION.json`; oryginalna baza mechanik v19)  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, offline. Multiplayer nie należy do zakresu MVP.  
 **Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
 **Język interfejsu:** polski.
 
 > **Uzupełnienie do wersji 0.9.53:** nadrzędne dla nowych partii są aktywny kod silnika, `VERSION.json`, `docs/GAME_MASTER_v23_ADDENDUM.md`, `docs/BOARD_CARD_IDENTITY_0951.md` i `docs/CHATGPT_PROJECT_CONTEXT_0953.md`. Pięć pól jest stałych, a drugi gracz wybiera Chorążego 2/5 lub +3 monety. Starsze opisy monet, przesuwania planszy lub kolejnych etapów PvP dokumentują historię i nie obowiązują w nowych meczach. Ręczny odbiór Windows DPI pozostaje otwarty.
+
+> **Etap 0.9.54:** wyłącznie dekoracyjna oprawa legendarnych kart i ofert aukcyjnych (ciemnoametystowe marginesy, złoto-fioletowe wykończenie ilustracji, narożniki i istniejący animowany klejnot). Źródło: `docs/LEGENDARY_VISUAL_0954.md`. Zasady, dane kart, obrażenia i RNG bez zmian. Automatyczne testy nie zastępują ręcznego odbioru fizycznego Windows.
 
 ## Stabilizacja silnika 0.9.38
 
