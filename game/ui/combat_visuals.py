@@ -13,6 +13,7 @@ import re
 import pygame
 
 from game.core.status_view import active_statuses
+from game.ui.combat_outcome import committed_attack_outcome
 
 KINDS = {
     'damage':((255,121,125),'-'),
@@ -67,6 +68,7 @@ class CombatVisuals:
         self.pulses: list[Pulse] = []
         self.combat_cards: dict[str,CombatCard] = {}
         self.fallen_cards: list[CombatCard] = []
+        self.last_attack_outcome = None
 
     @staticmethod
     def _anchor(rect: pygame.Rect) -> tuple[int,int]:
@@ -98,8 +100,8 @@ class CombatVisuals:
                 }
         return state
 
-    def _push(self,kind,at,now,label='',origin=None):
-        self.pulses.append(Pulse(kind,at,int(now),str(label),origin))
+    def _push(self,kind,at,now,label='',origin=None,delay_ms=0):
+        self.pulses.append(Pulse(kind,at,int(now)+delay_ms,str(label),origin))
         if len(self.pulses)>self.max_pulses:
             del self.pulses[:-self.max_pulses]
 
@@ -114,6 +116,12 @@ class CombatVisuals:
         if prior is None:
             self.last_active=game.active
             return
+        # The recap is generated only from a recorded attack and two committed
+        # snapshots; this does not rerun combat or mutate the Match.
+        self.last_attack_outcome = committed_attack_outcome(
+            game,prior,current,fresh,len(journal))
+        attack_confirmed = self.last_attack_outcome is not None
+        impact_delay = 165 if attack_confirmed else 0
         # Auras/entrances operate on confirmed board occupancy only.
         for uid,data in current.items():
             if uid not in prior and not uid.startswith('hero:'):
@@ -172,12 +180,18 @@ class CombatVisuals:
         for uid,old in prior.items():
             if uid not in current:
                 if uid in confirmed_deaths:
-                    self._push('death',old['at'],now,'ZGON')
+                    self._push('death',old['at'],now,'ZGON',delay_ms=impact_delay)
                 continue
             new=current[uid]
             delta=new['hp']-old['hp']
-            if delta<0:self._push('damage',new['at'],now,str(delta))
-            if delta>0:self._push('heal',new['at'],now,f'+{delta}')
+            if delta<0:self._push('damage',new['at'],now,str(delta),delay_ms=impact_delay)
+            if delta>0:self._push('heal',new['at'],now,f'+{delta}',delay_ms=impact_delay)
+            if new['shield']<old['shield']:
+                # A blocked hit may deal zero HP damage. Show the actual
+                # consumed protection instead of falsely reporting a wound.
+                self._push('shield',new['at'],now,
+                           f'TARCZA -{old["shield"]-new["shield"]}',
+                           delay_ms=impact_delay)
             if new['shield']>old['shield']:
                 self._push('shield',new['at'],now,'TARCZA')
             if new['armor']>old['armor']:
@@ -196,7 +210,7 @@ class CombatVisuals:
     def interpolated_hp(card: CombatCard,now: int):
         """HP decreases first; only afterwards does the losing card grey out."""
         age=max(0,now-card.born)
-        t=min(1.0,max(0.0,(age-55)/185.0))
+        t=min(1.0,max(0.0,(age-120)/115.0))
         return max(0,round(card.old_hp+(card.new_hp-card.old_hp)*t))
 
     def hp_display(self,uid,now):
@@ -258,7 +272,7 @@ class CombatVisuals:
             alpha=max(0,int(230*(1-t)**1.2))
             x,y=pulse.at
             if pulse.kind=='attack' and pulse.origin is not None:
-                travel=min(1.,t*3.05)
+                travel=min(1.,t*4.8)
                 eased=1-(1-travel)**3
                 x=pulse.origin[0]+(pulse.at[0]-pulse.origin[0])*eased
                 y=pulse.origin[1]+(pulse.at[1]-pulse.origin[1])*eased
