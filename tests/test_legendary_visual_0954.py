@@ -9,7 +9,7 @@ os.environ.setdefault('SDL_AUDIODRIVER','dummy')
 import pygame
 
 from game.core.auction_catalog import CATALOG_V22,TRIGGER,stats_v22,live_variant
-from game.core.models import Card,CardDefinition
+from game.core.models import Card,CardDefinition,Unit
 from game.ui.card_view import CardView,card_zones
 from game.ui.visual_theme import VisualTheme
 
@@ -82,6 +82,26 @@ class LegendaryVisualIdentity(unittest.TestCase):
             self.assertEqual(
                 pygame.image.tostring(a,'RGBA'),
                 pygame.image.tostring(b,'RGBA'))
+
+    def test_auction_artwork_badges_do_not_overlap_or_claim_hand_scaling(self):
+        hand_rect=pygame.Rect(65,70,125,195)
+        with patch.object(self.view,'_pill',wraps=self.view._pill) as pill:
+            self._render('legendarna',hand_rect)
+        captions=[str(c.args[2]) for c in pill.call_args_list]
+        self.assertIn('LEG.',captions)
+        self.assertFalse(any('0/3' in value for value in captions),captions)
+
+        unit=Unit(self.card.uid,0,self.card.attack,self.card.max_hp,
+                  self.card.max_hp,0,0)
+        board_rect=pygame.Rect(65,70,148,220)
+        surface=pygame.Surface((430,500),pygame.SRCALPHA)
+        with patch.object(self.view,'_pill',wraps=self.view._pill) as pill:
+            self.view.draw(surface,self.card,board_rect,unit=unit,
+                           rarity='legendarna',attacks_remaining=1,
+                           attacks_total=1,ready=True,animate_rarity=False)
+        captions=[str(c.args[2]) for c in pill.call_args_list]
+        self.assertIn('ATAKI 1/1',captions)
+        self.assertNotIn('LEG.',captions)
 
     def test_legendary_offer_ornament_decorates_corners_not_description(self):
         theme=VisualTheme()
