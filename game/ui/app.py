@@ -30,6 +30,7 @@ from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
 from game.ui.rarity_view import rarity_color
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
+from game.ui.decision_clarity import economy_cue, positional_cues
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
@@ -128,6 +129,7 @@ class SoloApp:
         self.combat_notice_active=None
         self.combat_notice_queue=[]
         self.attack_outcome_active=None
+        self.attack_outcome_latest=None
         self._last_handled_attack_outcome=None
         self.visual_notice=''
         self.visual_notice_tick=-10000
@@ -319,6 +321,25 @@ class SoloApp:
                 or self.game.pending is not None):
             return
         pos=self.mouse_pos()
+        # Optional larger combat reading area, accessible even after the
+        # transient two-line ticker expires. Entirely read-only.
+        last=getattr(self,'attack_outcome_latest',None)
+        if (last is not None and
+                pygame.Rect(1099,899,330,49).collidepoint(pos)):
+            lines=[f'{last.attacker} → {last.target}' if last.attacker
+                   else 'OSTATNIO ROZSTRZYGNIĘTY ATAK']
+            for item in (last.details or last.lines):
+                lines.extend(self._wrap(item,15,389))
+            lines=lines[:9]
+            panel=pygame.Rect(668,590,416,56+len(lines)*23)
+            panel.bottom=min(panel.bottom,942)
+            self._panel(panel,TAVERN_TOOLTIP_BG,(115,223,238),10)
+            self._text('PEŁNE SKUTKI OSTATNIEGO ATAKU',15,
+                       panel.x+12,panel.y+10,(115,223,238))
+            for i,line in enumerate(lines):
+                self._text(self.cards_view.clip(line,self.fonts[15],392),
+                           15,panel.x+12,panel.y+39+i*23,cfg.TEXT)
+            return
         hit=self._hovered_status(pos)
         if hit is not None:
             status,remaining=hit
@@ -1453,6 +1474,7 @@ class SoloApp:
             # A new committed attack supersedes an obsolete event backlog.
             # The full authoritative chronology remains available under H.
             self.attack_outcome_active=(now,outcome)
+            self.attack_outcome_latest=outcome
             self.combat_notice_active=None
             self.combat_notice_queue.clear()
         for event in events[self._last_logged_event:]:
@@ -1522,6 +1544,26 @@ class SoloApp:
         self._text(f'{hp}/100',14,x+173,rect.y+14,(255,255,255))
         self._text(f'MONETY  {p.coins}',16,rect.right-172,rect.y+11,cfg.GOLD)
 
+    def _draw_positional_cues(self):
+        """Highlight actual S34 aura recipient / S108 reaction lane."""
+        if (self.game.phase!='turn' or self.selected not in self.game.units
+                or self.game.pending or self.replay_index is not None):
+            return
+        for cue in positional_cues(self.game,self.selected):
+            rect=self.slot_rect(cue.owner,cue.slot)
+            color=((112,214,156) if cue.label=='AURA +ATK'
+                   else (243,176,105) if cue.label=='AURA -ATK'
+                   else (189,143,240))
+            pygame.draw.rect(self.screen,color,rect.inflate(8,8),
+                             3,border_radius=14)
+            label=self.cards_view.clip(cue.label,self.fonts_bold[13],
+                                       rect.width-12)
+            stamp=self.fonts_bold[13].render(label,True,color)
+            marker=pygame.Rect(rect.x+4,rect.y+51,rect.w-8,24)
+            pygame.draw.rect(self.screen,(22,35,46),marker,border_radius=5)
+            self.screen.blit(stamp,(marker.centerx-stamp.get_width()//2,
+                                    marker.centery-stamp.get_height()//2))
+
     def _draw_board(self):
         self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
         self._text('TWOJA STREFA',15,107,412,cfg.MUTED)
@@ -1555,6 +1597,7 @@ class SoloApp:
                 if owner==0 and attack_info.ready and not selected:
                     pygame.draw.rect(self.screen,(121,196,160),rect.inflate(6,6),
                                      2,border_radius=13)
+        self._draw_positional_cues()
         note=('STAŁE POZYCJE  ·  WYBIERZ WOLNE POLE  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI'
               if self.game.fixed_board_slots else
               'WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI')
@@ -1736,9 +1779,19 @@ class SoloApp:
             # The winning/losing overlay owns the only actionable new-game CTA.
             pass
         else:
-            self._text(f'RUNDA {self.game.round}',18,1104,743,cfg.GOLD)
+            economy=economy_cue(self.game)
+            auction=(f'  ·  AUKCJA ZA {economy.rounds_to_auction} R.'
+                     if economy.rounds_to_auction is not None
+                     else '')
+            title=f'RUNDA {self.game.round}'+auction
+            self._text(self.cards_view.clip(title,self.fonts[15],315),
+                       15,1104,743,cfg.GOLD)
             if self.game.active==0:
-                self._text('TWOJA TURA',15,1104,773,cfg.GREEN)
+                income=(f'  ·  TERAZ +{economy.vacant_income} MONET ZA POLA'
+                        if economy.vacant_income is not None else '')
+                status='TWOJA TURA'+income
+                self._text(self.cards_view.clip(status,self.fonts[12],319),
+                           12,1104,773,cfg.GREEN)
             else:self._text('RUCH KOMPUTERA',15,1104,773,cfg.RED)
             if self.game.players[0].next_fast:
                 self._text('NASTĘPNA KARTA: SZYBKI ATAK',13,1104,796,STATUS_COLORS['quick'])
@@ -1924,8 +1977,8 @@ class SoloApp:
             self._text(self.cards_view.clip(heading,self.fonts[12],304),
                        12,1108,900,(115,223,238))
             for index,line in enumerate(outcome.lines[:2]):
-                self._text(self.cards_view.clip(line,self.fonts[11],306),
-                           11,1108,918+index*16,cfg.TEXT)
+                self._text(self.cards_view.clip(line,self.fonts[13],306),
+                           13,1108,917+index*16,cfg.TEXT)
             # A new invalid input must still surface its error immediately;
             # combat feedback may not hide interaction feedback for 2.4 s.
             if self.last_error:
@@ -1953,11 +2006,16 @@ class SoloApp:
                     self._text(self.cards_view.clip(last,self.fonts[11],306),
                                11,1108,934,cfg.TEXT)
         else:
-            last=self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.'
-            self._text('OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA',12,
-                       1104,909,cfg.GOLD)
-            self._text(self.cards_view.clip(notice or last,self.fonts[12],319),
-                       12,1104,929,cfg.TEXT if notice else cfg.MUTED)
+            recent=getattr(self,'attack_outcome_latest',None)
+            last=(recent.lines[0] if recent is not None else
+                  self.game.events[-1] if self.game.events else 'Nie ma jeszcze zdarzeń.')
+            heading=('OSTATNI ATAK · NAJEDŹ, ABY ROZWINĄĆ'
+                     if recent is not None else
+                     'OSTATNIE ZDARZENIE  ·  [H] PEŁNA HISTORIA')
+            self._text(self.cards_view.clip(heading,self.fonts[12],319),
+                       12,1104,909,cfg.GOLD)
+            self._text(self.cards_view.clip(notice or last,self.fonts[13],319),
+                       13,1104,928,cfg.TEXT if notice or recent else cfg.MUTED)
         if self.last_error:
             self._text(self.cards_view.clip(self.last_error,self.fonts[13],750),
                        13,280,954,cfg.RED)
