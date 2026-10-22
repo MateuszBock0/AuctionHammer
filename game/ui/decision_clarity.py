@@ -52,6 +52,12 @@ def positional_cues(game, uid: str | None) -> tuple[PositionCue, ...]:
     unit = game.units[uid]
     if card.definition.id not in ("S34", "S108"):
         return ()
+    # Stun and silence disable both effects; never paint an inactive source
+    # as if it currently granted an aura or could trigger a reaction.
+    if game._disabled(unit):
+        return ()
+    if card.definition.id == "S34" and unit.aura_mode not in ("ally", "enemy"):
+        return ()
     owner, slot = unit.owner, game.slot_of(uid)
     if card.definition.id == "S108":
         return (PositionCue(1 - owner, slot, "NAPRZECIW / REAKCJA", 
