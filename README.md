@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**MVP 0.9.53** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.53** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -39,7 +39,7 @@ Celem jest zmniejszenie PŻ bohatera komputera z **100 do 0**, zanim on zrobi to
 | Jednostki | Mają ATK, PŻ, frakcję, aktywację zdolności i postęp rozwoju na ręce |
 | Atak | Kliknij swoją gotową jednostkę, potem legalny cel; Prowokacja i statusy mogą ograniczać wybór |
 | Monety | Służą przede wszystkim do aukcji, **nie do zagrywania zwykłych kart** |
-| Rekom­pensata za drugi ruch | Drugi gracz wybiera **Chorążego 2 ATK / 5 PŻ** albo **+3 monety** |
+| Rekompensata za drugi ruch | Drugi gracz wybiera **Chorążego 2 ATK / 5 PŻ** albo **+3 monety** |
 | Ekonomia dodatkowa | +1 moneta dla obu po pełnej rundzie; w aktualnym wariancie v22 dochód za własne puste pola na koniec tury |
 
 **Ważne:** Chorąży nie atakuje w swojej pierwszej turze. Zapisane mecze ze starszych wersji zachowują swoje historyczne reguły.
@@ -52,7 +52,7 @@ Celem jest zmniejszenie PŻ bohatera komputera z **100 do 0**, zanim on zrobi to
 - **Krasnoludy** — zdolność na koniec tury.
 - **Ludzie** — zdolności pasywne.
 
-Karty podstawowe zyskują statystyki podczas kolejnych tur spędzonych na ręce, a ich zdolności rozwijają się co trzy takie tury. Szczegóły konkretnej karty otworzysz przyciskiem **I**.
+**Ważne rozróżnienie kart:** **S34** (Chorąży Królewskiej Kompanii) to karta podstawowa, wzmacniająca sąsiada lub osłabiająca wroga naprzeciwko; **A002** (Generał Oddziału Natarcia) jest wyłącznie kartą aukcyjną z inną zdolnością.\n\nKarty podstawowe zyskują statystyki podczas kolejnych tur spędzonych na ręce, a ich zdolności rozwijają się co trzy takie tury. Szczegóły konkretnej karty otworzysz przyciskiem **I**.
 
 ## 3. Aukcje w skrócie
 
@@ -137,7 +137,7 @@ MVP jest aktywnie rozwijane. Zielone testy automatyczne potwierdzają badane sce
 
 ## 8. Muzyka, prawa i autorstwo
 
-W grze wykorzystano muzykę **Fantasy Tavern Music / Fantasy Tavern Album** (2021, 13 utworów), skomponowaną przez **Aleka Kaczana** i wydaną przez **PGN Music (Paradox Gaming Network)**. [Album](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album) · [Pełne credits i zasady wykorzystania](docs/THIRD_PARTY_MUSIC.md).
+W grze wykorzystano muzykę **Fantasy Tavern Music / Fantasy Tavern Album** (2021, 13 utworów), skomponowaną przez **Aleka Kaczana (Alek Kaczan)** i wydaną przez **PGN Music (Paradox Gaming Network)**. [Album](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album) · [Pełne credits i zasady wykorzystania](docs/THIRD_PARTY_MUSIC.md).
 
 Kod autorski i własna dokumentacja są udostępniane na licencji [MIT](LICENSE). Muzyka i inne materiały podmiotów trzecich **nie** stają się objęte MIT. Autor projektu: **Mateusz Boćko**.
 
