@@ -44,6 +44,7 @@ class DecisionClarityTests(unittest.TestCase):
 
     def test_s34_real_neighbour_priority_and_enemy_mode(self):
         game = setup_game(956102)
+        game.fixed_board_slots = True
         source = force_unit(game, "S34", 0, slot=2)
         left = force_unit(game, "S01", 0, slot=1)
         right = force_unit(game, "S02", 0, slot=3)
@@ -65,6 +66,7 @@ class DecisionClarityTests(unittest.TestCase):
 
     def test_s108_marks_opposing_lane_even_when_empty_not_guaranteed_stun(self):
         game = setup_game(956103)
+        game.fixed_board_slots = True
         force_unit(game, "S108", 0, slot=4)
         before = digest(state_snapshot(game))
         cue = positional_cues(game, "S108")
