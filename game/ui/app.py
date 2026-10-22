@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.52: fixed-slot drag/drop and card readability."""
+"""AuctionHammer MVP 0.9.53: pixel-safe cards and inspection UX."""
 from __future__ import annotations
 import os
 import re
@@ -33,6 +33,7 @@ from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
+from game.ui.text_fit import wrap_pixels
 
 class SoloApp:
     SIDEBAR_X=1082
@@ -102,6 +103,7 @@ class SoloApp:
         self.auction_slider_dragging=False
         self.auction_status=''
         self.auction_inspect_index=None
+        self.auction_inspect_scroll=0
         self.ai.step(self.game)  # One audited command per step, even during mulligan.
         if self.game.phase=='mulligan' and 1 not in self.game.mulligan_done:
             # AI was second and chose its compensation; now finish its own
@@ -392,17 +394,8 @@ class SoloApp:
         return sf.get_rect(topleft=pos) if not center else sf.get_rect(center=(x,y))
 
     def _wrap(self,text,size,maxwidth):
-        font=self.fonts[size]
-        result=[]
-        for para in text.split('\n'):
-            line=''
-            for word in para.split():
-                candidate=(line+' '+word).strip()
-                if font.size(candidate)[0]>maxwidth and line:
-                    result.append(line);line=word
-                else:line=candidate
-            result.append(line)
-        return result
+        """Measured wrapping: long unbroken terms never leave their panel."""
+        return list(wrap_pixels(text,self.fonts[size],maxwidth))
 
     def _infographic_box(self,rect,title,value,color,subtitle=''):
         self._panel(rect,TAVERN_PANEL_INNER,color,9)
@@ -745,6 +738,7 @@ class SoloApp:
         for i in range(len(a.offers)):
             if self.auction_inspection_rect(i).collidepoint(pos):
                 self.auction_inspect_index=i
+                self.auction_inspect_scroll=0
                 return
         if a.turn!=0:return
         if a.phase=='picking':
@@ -788,11 +782,17 @@ class SoloApp:
                    f'{offer.atk} ATK / {offer.hp} PŻ',16,296,282,cfg.TEXT)
         self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
         lines=self._wrap(description,18,853)
-        for i,line in enumerate(lines[:13]):
+        visible=12
+        maximum=max(0,len(lines)-visible)
+        self.auction_inspect_scroll=max(0,min(
+            getattr(self,'auction_inspect_scroll',0),maximum))
+        start=self.auction_inspect_scroll
+        for i,line in enumerate(lines[start:start+visible]):
             self._text(line,18,296,378+i*25,cfg.TEXT)
-        if len(lines)>13:
-            self._text('DALSZY TEKST: [I] / ORYGINALNY OPIS KARTY',13,
-                       296,708,cfg.MUTED)
+        if maximum:
+            self._text(f'OPIS: LINIE {start+1}–{min(len(lines),start+visible)}'
+                       f'/{len(lines)}  ·  PRZEWIJAJ KÓŁKIEM MYSZY',
+                       13,296,688,cfg.MUTED)
         self._button(pygame.Rect(934,710,239,49),'ZAMKNIJ  [ESC]',small=True)
 
     def _draw_auction(self):
@@ -839,8 +839,9 @@ class SoloApp:
             if adef is not None and self.game.auction_catalog=='v22':
                 description=preview_auction_copy(off.archetype,off.rarity,rules,
                                                  description)
-            lines=self._wrap(description,13,rect.width-36)
-            for j,line in enumerate(lines[:4]):
+            lines=wrap_pixels(description,self.fonts[13],
+                              rect.width-36,max_lines=4)
+            for j,line in enumerate(lines):
                 self._text(line,13,rect.centerx,rect.y+190+23*j,
                            cfg.TEXT,center=True)
             inspect=self.auction_inspection_rect(i)
@@ -1271,13 +1272,27 @@ class SoloApp:
                 if event.type==pygame.KEYDOWN and event.key in (
                         pygame.K_ESCAPE,pygame.K_i,pygame.K_RETURN):
                     self.auction_inspect_index=None
+                    self.auction_inspect_scroll=0
+                elif event.type==pygame.KEYDOWN and event.key in (
+                        pygame.K_DOWN,pygame.K_PAGEDOWN):
+                    self.auction_inspect_scroll+=3 if event.key==pygame.K_PAGEDOWN else 1
+                elif event.type==pygame.KEYDOWN and event.key in (
+                        pygame.K_UP,pygame.K_PAGEUP):
+                    self.auction_inspect_scroll=max(
+                        0,self.auction_inspect_scroll-
+                        (3 if event.key==pygame.K_PAGEUP else 1))
+                elif event.type==pygame.MOUSEWHEEL:
+                    self.auction_inspect_scroll=max(
+                        0,self.auction_inspect_scroll-event.y*3)
                 elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
                     self.auction_inspect_index=None
+                    self.auction_inspect_scroll=0
                 return True
             if event.type==pygame.KEYDOWN and event.key in (
                     pygame.K_1,pygame.K_2,pygame.K_3):
                 if self.game.auction.phase=='bidding':
                     self.auction_inspect_index=event.key-pygame.K_1
+                    self.auction_inspect_scroll=0
                     return True
             if event.type==pygame.KEYDOWN and event.key==pygame.K_m:
                 self.menu_page='main'

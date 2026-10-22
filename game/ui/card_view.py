@@ -19,6 +19,7 @@ from game.ui.card_summary import ability_summary
 from game.ui.game_icons import GameIcons,status_icon_key
 from game.ui.visual_theme import VisualTheme
 from game.ui.rarity_view import card_rarity
+from game.ui.text_fit import clip_pixels, wrap_pixels
 
 FACTION_COLORS = {
     'Elfy': (101,194,150), 'Dzikie bestie': (220,164,89),
@@ -103,11 +104,7 @@ class CardView:
 
     @staticmethod
     def clip(text,font,width):
-        text=str(text)
-        if font.size(text)[0]<=width:return text
-        while text and font.size(text+'…')[0]>width:
-            text=text[:-1]
-        return text+'…' if text else ''
+        return clip_pixels(text,font,width)
 
     def _fit_font(self,text,width,sizes=(14,13,12,11,10,9),bold=True):
         for size in sizes:
@@ -117,27 +114,12 @@ class CardView:
 
     @staticmethod
     def wrap_ability(text,font,width,max_lines):
-        """Zawijaj na granicach słów; jeśli trzeba skracać, ZAWSZE zaznacz ….
+        """Measured wrapping within the card's ability panel.
 
-        Nigdy nie ukrywaj ostatniej linii po cichu. Pełny tekst dostępny
-        pozostaje w panelu i widoku [I].
+        If an effect cannot fit, show an ellipsis instead of overpainting the
+        progress bar or stats. The complete description remains under [I].
         """
-        if max_lines<=0:return ()
-        lines=[]
-        current=''
-        for word in text.split():
-            candidate=(current+' '+word).strip()
-            if current and font.size(candidate)[0]>width:
-                lines.append(current)
-                current=word
-            else:
-                current=candidate
-        if current:lines.append(current)
-        if not lines:return ()
-        if len(lines)>max_lines:
-            lines=lines[:max_lines]
-            lines[-1]=CardView.clip(lines[-1]+'…',font,width)
-        return tuple(CardView.clip(line,font,width) for line in lines)
+        return wrap_pixels(text,font,width,max_lines=max_lines)
 
     def summary_layout(self,card,rect,unit=None):
         """Wyznacza faktyczne strefy tekstu, także do testowania kolizji."""
