@@ -215,6 +215,90 @@ class VisualTheme:
                 pygame.draw.line(screen,BRASS,(sx,sy),(sx+dx*9,sy),1)
                 pygame.draw.line(screen,BRASS,(sx,sy),(sx,sy+dy*9),1)
 
+    def legendary_underlay(self,screen,rect):
+        """Dark amethyst velvet below artwork and opaque text/stat panels.
+
+        Only the card gutters remain visible. This never changes cached art,
+        labels, faction colors or gameplay state.
+        """
+        key=('legendary_underlay',rect.size)
+        if key not in self._textures:
+            w,h=rect.size
+            tile=pygame.Surface((w,h),pygame.SRCALPHA)
+            pygame.draw.rect(tile,(51,27,48,246),
+                             pygame.Rect(2,2,w-4,h-4),border_radius=10)
+            # Two fine side rails stay outside the card's content zones.
+            for x in (3,w-4):
+                pygame.draw.line(tile,(168,100,62,170),
+                                 (x,13),(x,h-14),1)
+            pygame.draw.rect(tile,(232,172,79,113),
+                             pygame.Rect(4,4,w-8,h-8),1,border_radius=9)
+            self._textures[key]=tile
+        screen.blit(self._textures[key],rect.topleft)
+
+    def legendary_artwork(self,screen,rect,animate=True):
+        """A warm amethyst/gold art treatment, limited to the illustration.
+
+        The image itself is not replaced. Family emblems, statuses, card name,
+        ability panel, progression and opaque ATK/HP plates are drawn later.
+        """
+        key=('legendary_art',rect.size)
+        if key not in self._textures:
+            w,h=rect.size
+            overlay=pygame.Surface((w,h),pygame.SRCALPHA)
+            for y in range(h):
+                depth=y/max(1,h-1)
+                color=(78+int(depth*39),34+int(depth*23),
+                       73-int(depth*29),15+int(depth*15))
+                pygame.draw.line(overlay,color,(0,y),(w-1,y),1)
+            # Rays and a restrained brass mandorla mark the art as legendary.
+            for x in (int(w*.12),int(w*.88)):
+                pygame.draw.line(overlay,(242,191,95,39),
+                                 (x,2),(w//2,max(5,h-3)),1)
+            if w>=95 and h>=33:
+                pygame.draw.arc(overlay,(250,205,110,80),
+                                pygame.Rect(8,3,w-16,max(7,h-6)),
+                                .22,2.92,1)
+            pygame.draw.rect(overlay,(247,199,93,85),
+                             pygame.Rect(0,0,w,h),1,border_radius=4)
+            self._textures[key]=overlay
+        screen.blit(self._textures[key],rect.topleft)
+        if animate and rect.width>=80 and rect.height>=35:
+            # Barely perceptible light, always within the artwork area.
+            strength=.5+.5*math.sin(pygame.time.get_ticks()/1320)
+            shine=pygame.Surface((rect.width,rect.height),pygame.SRCALPHA)
+            pygame.draw.line(shine,(255,221,138,round(15+strength*24)),
+                             (7,2),(rect.width-8,2),2)
+            screen.blit(shine,rect.topleft)
+
+    def legendary_offer_ornament(self,screen,rect,animate=True):
+        """A recognizable auction-card motif behind, never above, the copy."""
+        key=('legendary_offer',rect.size)
+        if key not in self._textures:
+            w,h=rect.size
+            tile=pygame.Surface((w,h),pygame.SRCALPHA)
+            corner=min(63,w//4,h//4)
+            # Velvet-and-gold corners, with a clear center for all labels.
+            for left in (True,False):
+                edge=0 if left else w-1
+                sign=1 if left else -1
+                pygame.draw.polygon(tile,(88,37,63,112),
+                                    [(edge,0),(edge+sign*corner,0),
+                                     (edge,corner)])
+                pygame.draw.lines(tile,(250,201,111,132),False,
+                                  [(edge+sign*7,corner//2),
+                                   (edge+sign*7,7),
+                                   (edge+sign*corner//2,7)],2)
+                pygame.draw.circle(tile,(254,220,143,179),
+                                   (edge+sign*15,15),3,1)
+                pygame.draw.line(tile,(215,143,64,70),
+                                 (edge+sign*8,h-42),(edge+sign*8,h-10),1)
+            pygame.draw.line(tile,(243,193,99,123),
+                             (w//2-29,h-8),(w//2+29,h-8),2)
+            self._textures[key]=tile
+        screen.blit(self._textures[key],rect.topleft)
+        self.rarity_frame(screen,rect,'legendarna',animate=animate)
+
     def rarity_frame(self,screen,rect,tier,animate=True):
         """Edge-only rarity: subtle bronze, silver-blue, ornate gold.
 
