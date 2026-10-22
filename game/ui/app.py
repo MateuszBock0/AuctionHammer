@@ -634,6 +634,16 @@ class SoloApp:
                 target_slot=self.slot_under(0,pos)
                 if target_slot is not None:
                     replace=target if target in g.players[0].board and len(g.players[0].board)==5 else None
+                    chosen_slot=target_slot if g.fixed_board_slots else None
+                    if (target in g.players[0].board and
+                            (len(g.players[0].board)<5 or
+                             not g.can_play(0,self.selected,replace,chosen_slot))):
+                        # A hand-card preview must not prevent selecting an ally
+                        # when placing/replacing it here is not a legal move.
+                        self.selected=target
+                        self.tooltip_open=True
+                        self.last_error=''
+                        return
                     self._try_play(self.selected,replace,target_slot)
                     return
                 if target is None:
