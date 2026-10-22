@@ -80,7 +80,7 @@ class DescriptionBounds(unittest.TestCase):
 
     def test_auction_inspection_can_show_full_unbroken_text_without_loss(self):
         f=self.view.font(18)
-        sample=('BardzoDługaZdolnośćBezSpacji'*38)+' końcowa reguła.'
+        sample=('BardzoDługaZdolnośćBezSpacji'*60)+' końcowa reguła.'
         lines=wrap_pixels(sample,f,853)
         self.assertGreater(len(lines),12)
         self.assertTrue(all(f.size(line)[0]<=853 for line in lines))
