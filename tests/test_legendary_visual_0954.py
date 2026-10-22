@@ -1,0 +1,99 @@
+"""0.9.54: legendary cards are recognizable without obscuring game data."""
+from __future__ import annotations
+import os
+import unittest
+from unittest.mock import patch
+
+os.environ.setdefault('SDL_VIDEODRIVER','dummy')
+os.environ.setdefault('SDL_AUDIODRIVER','dummy')
+import pygame
+
+from game.core.auction_catalog import CATALOG_V22,TRIGGER,stats_v22,live_variant
+from game.core.models import Card,CardDefinition
+from game.ui.card_view import CardView,card_zones
+from game.ui.visual_theme import VisualTheme
+
+
+class LegendaryVisualIdentity(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+        pygame.display.set_mode((1,1))
+        cls.view=CardView()
+        archetype=CATALOG_V22['A014']
+        atk,hp=stats_v22('A014',3)
+        definition=CardDefinition(
+            'A014',archetype.name,'Ludzie',archetype.family,
+            TRIGGER[archetype.trigger],atk,hp,
+            live_variant('v22','A014','legendarna'),
+            'v22',0,0)
+        cls.card=Card('AUC-LEGENDARY-TEST',definition,owner=0,zone='hand')
+
+    @classmethod
+    def tearDownClass(cls):
+        pygame.quit()
+
+    def _render(self,tier,rect,animated=False):
+        surface=pygame.Surface((430,500),pygame.SRCALPHA)
+        surface.fill((19,31,37,255))
+        self.view.draw(surface,self.card,rect,rarity=tier,
+                       animate_rarity=animated)
+        return surface
+
+    def test_all_three_card_sizes_keep_name_rules_and_stats_unchanged(self):
+        for size in ((125,195),(148,220),(255,380)):
+            with self.subTest(size=size):
+                rect=pygame.Rect(65,70,*size)
+                rare=self._render('rzadka',rect)
+                legendary=self._render('legendarna',rect)
+                zones=card_zones(rect)
+                # Actual opaque information cells, not a synthetic blank card.
+                for key in ('name','trigger','info','stats'):
+                    point=zones[key].center
+                    self.assertEqual(rare.get_at(point),legendary.get_at(point),
+                                     (size,key,point))
+                # The illustration and outside edge visibly differ.
+                self.assertNotEqual(
+                    rare.get_at(zones['art'].center),
+                    legendary.get_at(zones['art'].center),size)
+                self.assertNotEqual(
+                    pygame.image.tostring(rare,'RGBA'),
+                    pygame.image.tostring(legendary,'RGBA'))
+
+    def test_static_legendary_render_is_deterministic_and_no_clock_needed(self):
+        rect=pygame.Rect(65,70,148,220)
+        with patch.object(pygame.time,'get_ticks',
+                          side_effect=AssertionError('clock used with animations disabled')):
+            a=self._render('legendarna',rect)
+            b=self._render('legendarna',rect)
+            self.assertEqual(
+                pygame.image.tostring(a,'RGBA'),
+                pygame.image.tostring(b,'RGBA'))
+
+    def test_legendary_offer_ornament_decorates_corners_not_description(self):
+        theme=VisualTheme()
+        surface=pygame.Surface((430,500),pygame.SRCALPHA)
+        surface.fill((47,35,29,255))
+        rect=pygame.Rect(55,60,278,364)
+        middle=tuple(surface.get_at(rect.center))
+        before_corner=tuple(surface.get_at((rect.left+15,rect.top+15)))
+        theme.legendary_offer_ornament(surface,rect,animate=False)
+        self.assertEqual(tuple(surface.get_at(rect.center)),middle)
+        self.assertNotEqual(
+            tuple(surface.get_at((rect.left+15,rect.top+15))),before_corner)
+
+    def test_basic_and_rare_appearances_unchanged_by_legendary_pass(self):
+        rect=pygame.Rect(65,70,148,220)
+        basic=self._render('podstawowa',rect)
+        rare=self._render('rzadka',rect)
+        legendary=self._render('legendarna',rect)
+        self.assertEqual(
+            tuple(basic.get_at(card_zones(rect)['art'].center)),
+            tuple(rare.get_at(card_zones(rect)['art'].center)))
+        self.assertNotEqual(
+            tuple(basic.get_at(card_zones(rect)['art'].center)),
+            tuple(legendary.get_at(card_zones(rect)['art'].center)))
+
+
+if __name__=='__main__':
+    unittest.main()
