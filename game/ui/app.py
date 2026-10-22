@@ -603,7 +603,7 @@ class SoloApp:
                 if rect.collidepoint(pos):
                     try:
                         g.mulligan_toggle(uid)
-                        self.selected=uid
+                        self.selected=uid if uid in g.players[0].mulligan_selected else None
                         self.last_error=''
                     except IllegalMove as e:self.last_error=str(e)
                     return
@@ -627,7 +627,7 @@ class SoloApp:
         hand_card=next((uid for uid,r in self.hand_layout().items() if r.collidepoint(pos)),None)
         if hand_card and g.active==0:
             self.selected=hand_card if self.selected!=hand_card else None
-            self.tooltip_open=True;return
+            self.tooltip_open=self.selected is not None;return
         target=self.target_under(pos)
         if g.active==0:
             if self.selected in g.players[0].hand:
@@ -636,7 +636,10 @@ class SoloApp:
                     replace=target if target in g.players[0].board and len(g.players[0].board)==5 else None
                     self._try_play(self.selected,replace,target_slot)
                     return
-                if target is None:return
+                if target is None:
+                    self.selected=None
+                    self.tooltip_open=False
+                    return
             if self.selected in g.players[0].board and target is not None and (target in g.players[1].board or target=='hero:1'):
                 issue=self._attack_issue(self.selected,target)
                 if issue:
