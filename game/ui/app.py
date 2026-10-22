@@ -2220,9 +2220,13 @@ class SoloApp:
             else:
                 current_rarity=card_rarity(
                     card,self.game.auction_awards.get(uid,{}).get('rarity'))
-                artwork=self.cards_view.art(
-                    d.id,d.faction,(276,520),d.family,d.name,
-                    rarity=current_rarity)
+                artwork=(self.cards_view.images.get_auction_image(
+                    d.id,current_rarity,(276,520),mode='contain')
+                    if current_rarity is not None else None)
+                if artwork is None:
+                    artwork=self.cards_view.art(
+                        d.id,d.faction,(276,520),d.family,d.name,
+                        rarity=current_rarity)
             self.screen.blit(artwork,(184,164))
             self._text('POWIĘKSZONA ORYGINALNA ILUSTRACJA',13,186,697,cfg.MUTED)
         else:
