@@ -263,11 +263,14 @@ class CardView:
         summary=ability_summary(card,unit)
         color=FACTION_COLORS[d.faction]
         zone=card_zones(rect)
+        tier=card_rarity(card,rarity)
         large=rect.height>=320
         board=unit is not None
         pad=11 if large else 6
         # BACKGROUND + FRAME
         self.theme.card_lustre(screen,rect,color)
+        if tier=='legendarna':
+            self.theme.legendary_underlay(screen,rect)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
         artwork=self.art(d.id,d.faction,art.size,d.family,d.name)
@@ -284,6 +287,8 @@ class CardView:
                 shade=pygame.Surface(art.size,pygame.SRCALPHA)
                 shade.fill((6,10,17,130))
                 screen.blit(shade,art.topleft)
+        if tier=='legendarna':
+            self.theme.legendary_artwork(screen,art,animate=animate_rarity)
         pygame.draw.rect(screen,(88,107,114),art,1,border_radius=5)
         emblem=self.icons.get(d.faction,'factions',min(19,art.height-4))
         if emblem is not None:
@@ -459,7 +464,6 @@ class CardView:
                 screen.blit(overlay,rect.topleft)
         # The exact evolving auction rarity has its own edge-only visual
         # treatment. No overlay may cover values, names or card ability text.
-        tier=card_rarity(card,rarity)
         if tier is not None:
             self.theme.rarity_frame(screen,rect,tier,animate=animate_rarity)
         # Selection overlays stay on the edge and are visually distinct.
