@@ -301,6 +301,12 @@ class CardView:
             parts=d.scaling.split(' · ')
             tag=('P'+parts[0].replace('POZIOM ','')+' '+
                  (parts[1] if len(parts)>1 else 'PODSTAWOWA'))
+            # Hand/board art is only 22/38 px tall. A long tier badge
+            # previously obscured the whole image and overlapped 0/3.
+            # Legendary identity is carried by the frame and a short tag.
+            if not large:
+                tag={'podstawowa':'POD.','rzadka':'RZ.',
+                     'legendarna':'LEG.'}.get(tier,'AUK.')
             badge_font=self.font(9,True)
             badge_w=min(art.width-10,max(24,badge_font.size(tag)[0]+7))
             badge=pygame.Rect(art.right-badge_w-3,art.y+3,badge_w,14)
@@ -416,7 +422,9 @@ class CardView:
                 self._pill(screen,pygame.Rect(art.right-29,y,26,14),f'+{rest}',
                            (61,78,92),self.font(9,True))
         # Progress on hand; never shown on deployed units.
-        if not board:
+        if not board and not d.id.startswith('A0'):
+            # Only basic cards level through hand turns. Auction cards
+            # evolve their rarity by completed rounds, not by 0/3 on hand.
             label=f'{card.hand_turns%3}/3 · POZ. {card.ability_level}'
             sf=self.font(10,True)
             pw=min(art.width-6,sf.size(label)[0]+9)
