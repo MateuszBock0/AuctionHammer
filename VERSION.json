@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.50",
+  "mvp": "0.9.51",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -211,5 +211,13 @@
     "rules_changed": false,
     "manual_windows_dpi_100_125_150": "pending",
     "original_external_signed_archives": "not supplied"
+  },
+  "board_identity_0951": {
+    "new_games": "five fixed physical slots, persistent after death",
+    "play": "human selects free slot, replacement preserves slot",
+    "legacy": "old saves and signed replays retain compact semantics",
+    "positional_effects": "S34 and S108 use physical coordinates",
+    "rarity": "bronze, rare silver-blue, legendary gold with optional animated gemstone",
+    "manual_windows_acceptance": "pending"
   }
 }

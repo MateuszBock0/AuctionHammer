@@ -193,11 +193,16 @@ class MinimalFantasyAppIntegration(unittest.TestCase):
         unit.played_turn=0
         defender=force_unit(game,'S33',1)  # provoke must force legal choice
         defender.played_turn=0
+        # The direct force_unit fixture predates physical slot allocation:
+        # register the exact original position of each manually added UID.
+        for player in game.players:
+            for physical,uid in enumerate(player.board):
+                game.board_slots.setdefault(uid,physical)
         app.selected='S01'
         legal=game.legal_attacks('S01')
         self.assertEqual(legal,['S33'])
         boxes=app._attack_target_rects()
-        self.assertEqual(boxes,[app.slot_rect(1,game.players[1].board.index('S33'))])
+        self.assertEqual(boxes,[app.slot_rect(1,game.slot_of('S33'))])
         self.assertNotIn(app.hero_rect(1),boxes)
 
     def test_event_animation_is_optional_and_read_only(self):

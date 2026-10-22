@@ -23,6 +23,12 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python tools/render_minimal_fantasy_preview.py
+      - name: Test 20 pełnych partii na stałych polach i podpisanych audytów
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+          PYTHONUTF8: '1'
+        run: python -m tools.check_fixed_board_0951 --games 20
       - name: Generuj indeks opisów 70 kart i 51 wariantów
         env:
           PYTHONIOENCODING: utf-8

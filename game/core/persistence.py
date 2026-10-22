@@ -185,6 +185,20 @@ def load_match(path: Path | None = None) -> Match:
         data.setdefault('auction_discarded',[])
         data.setdefault('auction_used',[])
         data.setdefault('auction_supply_version',0)
+    # Preserve old savegames exactly: only 0.9.51 sessions carry physical
+    # slots. New saves validate the signed slot map before constructing Match.
+    data.setdefault('fixed_board_slots',False)
+    data.setdefault('board_slots',{})
+    if data['fixed_board_slots']:
+        positions=data['board_slots']
+        if (not isinstance(positions,dict) or
+                set(positions)!={uid for p in data['players'] for uid in p.board}):
+            raise ValueError('Nieprawidłowy układ pól w zapisie')
+        for player in data['players']:
+            used=[positions[uid] for uid in player.board]
+            if (any(type(i) is not int or i<0 or i>=5 for i in used)
+                    or len(set(used))!=len(used) or used!=sorted(used)):
+                raise ValueError('Nieprawidłowe lub zajęte pole w zapisie')
     # Loading a pre-0.9.34 save must never silently change the rules
     # halfway through a match. Fresh v22 games enable the bonus by default.
     data.setdefault('vacant_income_enabled',False)

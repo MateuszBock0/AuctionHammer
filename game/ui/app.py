@@ -27,6 +27,7 @@ from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
 from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
+from game.ui.rarity_view import rarity_color
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
@@ -90,7 +91,8 @@ class SoloApp:
         self.tutorial_welcome_open=False
         self.help_open=False
         self.game=Match(audit_enabled=True,auctions_enabled=True,
-                        auction_catalog='v22',starting_compensation='choice_2_5_or_coins')
+                        auction_catalog='v22',starting_compensation='choice_2_5_or_coins',
+                        fixed_board_slots=True)
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -289,7 +291,7 @@ class SoloApp:
             return None
         if uid in self.game.units:
             unit=self.game.units[uid]
-            rect=self.slot_rect(unit.owner,self.game.players[unit.owner].board.index(uid))
+            rect=self.slot_rect(unit.owner,self.game.slot_of(uid))
             statuses=active_statuses(self.game,uid)
             board=True
         else:
@@ -356,7 +358,9 @@ class SoloApp:
         self._text('KARTA NA RĘCE · PODGLĄD',13,box.x+13,box.y+11,TAVERN_GOLD)
         card=self.game.cards[uid]
         self.cards_view.draw(self.screen,card,pygame.Rect(box.x+15,box.y+34,255,380),
-                             statuses=hand_grants(self.game,uid))
+                             statuses=hand_grants(self.game,uid),
+                             rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                             animate_rarity=self.animations_enabled)
         self._text('PRAWY KLIK / [I] — PEŁNY OPIS',12,
                    box.x+13,box.bottom-20,TAVERN_MUTED)
 
@@ -459,6 +463,12 @@ class SoloApp:
     def slot_rect(self,owner,index):
         return pygame.Rect(self.FIRST_X+index*(self.SLOT_W+self.SLOT_GAP),self.OWN_Y if owner==0 else self.OPP_Y,self.SLOT_W,self.SLOT_H)
 
+    def slot_under(self,owner,pos):
+        for index in range(5):
+            if self.slot_rect(owner,index).collidepoint(pos):
+                return index
+        return None
+
     def hand_layout(self):
         hand=self.game.players[0].hand
         visible=6
@@ -475,15 +485,15 @@ class SoloApp:
         for uid,rect in self.hand_layout().items():
             if rect.collidepoint(pos):return uid
         for idx,p in enumerate(self.game.players):
-            for j,uid in enumerate(p.board):
-                if self.slot_rect(idx,j).collidepoint(pos):return uid
+            for uid in p.board:
+                if self.slot_rect(idx,self.game.slot_of(uid)).collidepoint(pos):return uid
         return None
 
     def target_under(self,pos):
         for idx in (0,1):
             if self.hero_rect(idx).collidepoint(pos):return f'hero:{idx}'
-            for j,uid in enumerate(self.game.players[idx].board):
-                if self.slot_rect(idx,j).collidepoint(pos):return uid
+            for uid in self.game.players[idx].board:
+                if self.slot_rect(idx,self.game.slot_of(uid)).collidepoint(pos):return uid
         return None
 
     # Choice controls are confined to their own panel below the skill description.
@@ -603,9 +613,10 @@ class SoloApp:
         target=self.target_under(pos)
         if g.active==0:
             if self.selected in g.players[0].hand:
-                if (target in g.players[0].board) or (self.OWN_Y-12<=pos[1]<=self.OWN_Y+self.SLOT_H+12):
+                target_slot=self.slot_under(0,pos)
+                if target_slot is not None:
                     replace=target if target in g.players[0].board and len(g.players[0].board)==5 else None
-                    self._try_play(self.selected,replace)
+                    self._try_play(self.selected,replace,target_slot)
                     return
                 if target is None:return
             if self.selected in g.players[0].board and target is not None and (target in g.players[1].board or target=='hero:1'):
@@ -801,8 +812,13 @@ class SoloApp:
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
             selectable=a.phase=='picking' and a.turn==0 and not claimed
+            tier_accent=rarity_color(off.rarity)
             self._panel(rect,(52,37,26) if not claimed else (38,34,29),
-                        cfg.GOLD if selectable else cfg.PANEL_BORDER,14)
+                        tier_accent if not claimed else cfg.PANEL_BORDER,14)
+            # Rarity is more prominent than the generic "selectable" gold.
+            pygame.draw.rect(self.screen,tier_accent,rect.inflate(-3,-3),
+                             4 if off.rarity=='legendarna' else
+                             2 if off.rarity=='rzadka' else 1,border_radius=13)
             self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
             adef=catalog_for(self.game.auction_catalog).get(off.archetype)
             self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
@@ -812,8 +828,8 @@ class SoloApp:
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
             self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
                        rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,center=True)
-            self._text(f'{off.rarity.upper()} · POZIOM {off.level}',13,
-                       rect.centerx,rect.y+155,cfg.GOLD,center=True)
+            self._text(f'{off.rarity.upper()} · POZIOM {off.level}',14,
+                       rect.centerx,rect.y+155,tier_accent,center=True)
             description=(v23_variant(self.game.auction_catalog,off.archetype,
                                       off.rarity,getattr(self.game,'ruleset_version','v22'))
                          if adef and self.game.auction_catalog in ('v4','v22') else
@@ -916,9 +932,10 @@ class SoloApp:
             return 'PROWOKACJA: najpierw zaatakuj turkusowo podświetlonego obrońcę.'
         return 'Nielegalny cel. Dozwolone cele są podświetlone turkusową ramką.'
 
-    def _try_play(self,uid,replace=None):
+    def _try_play(self,uid,replace=None,slot=None):
         g=self.game
-        if not g.can_play(0,uid,replace):
+        chosen_slot=slot if g.fixed_board_slots else None
+        if not g.can_play(0,uid,replace,chosen_slot):
             p=g.players[0]
             if g.phase!='turn' or g.active!=0 or g.pending:
                 self.last_error='Wystawianie jest teraz niedostępne.'
@@ -932,7 +949,10 @@ class SoloApp:
                 self.last_error='Wskaż wolne pole własnej planszy.'
             return False
         try:
-            g.play(uid,replace)
+            if chosen_slot is None:
+                g.play(uid,replace)
+            else:
+                g.play(uid,replace,slot=chosen_slot)
             self.selected=uid if g.legal_attacks(uid) else None
             self.last_error=''
             return True
@@ -1350,7 +1370,7 @@ class SoloApp:
                     if self.OWN_Y-12<=pos[1]<=self.OWN_Y+self.SLOT_H+12 and self.game.phase=='turn' and self.game.active==0:
                         target=self.target_under(pos)
                         replace=target if target in self.game.players[0].board and len(self.game.players[0].board)==5 else None
-                        self._try_play(card,replace)
+                        self._try_play(card,replace,self.slot_under(0,pos))
                     # An event handled by the UI MUST return True.
                     # SoloApp.run() treats False/None as a request to quit;
                     # previously every successful drag shut down the window.
@@ -1466,11 +1486,11 @@ class SoloApp:
             for i in range(5):
                 rect=self.slot_rect(owner,i)
                 self.theme.slot(self.screen,rect,owner)
-                if i>=len(p.board):
+                uid=self.game.unit_at(owner,i)
+                if uid is None:
                     self._text('+',34,rect.centerx,rect.centery-8,(64,85,100),center=True)
                     self._text(f'POLE {i+1}',12,rect.centerx,rect.bottom-21,cfg.MUTED,center=True)
                     continue
-                uid=p.board[i]
                 if uid not in self.game.units:continue
                 selected=self.selected==uid
                 u=self.game.units[uid]
@@ -1478,6 +1498,8 @@ class SoloApp:
                 self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
                      selected=selected,hover=rect.collidepoint(self.mouse_pos()),
                      dim=bool(inactive_card_reason(self.game,uid)),
+                     rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                     animate_rarity=self.animations_enabled,
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
                      attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit,
                      hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
@@ -1488,9 +1510,12 @@ class SoloApp:
                 if owner==0 and attack_info.ready and not selected:
                     pygame.draw.rect(self.screen,(121,196,160),rect.inflate(6,6),
                                      2,border_radius=13)
-        self._text('WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI',12,620,413,cfg.GOLD,center=True)
+        note=('STAŁE POZYCJE  ·  WYBIERZ WOLNE POLE  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI'
+              if self.game.fixed_board_slots else
+              'WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI')
+        self._text(note,12,620,413,cfg.GOLD,center=True)
         for uid in self._play_replacement_targets():
-            rect=self.slot_rect(0,self.game.players[0].board.index(uid))
+            rect=self.slot_rect(0,self.game.slot_of(uid))
             pygame.draw.rect(self.screen,cfg.GREEN,rect.inflate(8,8),
                              4,border_radius=13)
         p0=self.game.players[0]
@@ -1515,6 +1540,8 @@ class SoloApp:
                                  selected=(uid==self.selected or marked),
                                  dim=(self.game.phase=='turn' and self.game.active!=0),
                                  hover=rect.collidepoint(self.mouse_pos()),
+                                 rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+                                 animate_rarity=self.animations_enabled,
                                  statuses=hand_grants(self.game,uid))
             if (self.game.phase=='turn' and self.game.active==0
                     and not self.game.pending and not p0.played_this_turn):
@@ -1884,7 +1911,7 @@ class SoloApp:
             if target.startswith('hero:'):
                 result.append(self.hero_rect(int(target.split(':')[1])))
             elif target in g.players[1].board:
-                result.append(self.slot_rect(1,g.players[1].board.index(target)))
+                result.append(self.slot_rect(1,g.slot_of(target)))
         return result
 
     def _play_target_rects(self):
@@ -1895,11 +1922,10 @@ class SoloApp:
             return []
         player=g.players[0]
         if len(player.board)<5 and g.can_play(0,self.selected,None):
-            # Match.play appends the new unit at len(board), regardless of
-            # clicked empty position. Highlight ONLY that actual destination.
-            return [self.slot_rect(0,len(player.board))]
+            # All genuinely free physical slots are selectable.
+            return [self.slot_rect(0,i) for i in g.available_slots(0)]
         if len(player.board)==5:
-            return [self.slot_rect(0,index) for index,uid in enumerate(player.board)
+            return [self.slot_rect(0,g.slot_of(uid)) for uid in player.board
                     if g.can_play(0,self.selected,uid)]
         return []
 
@@ -1932,7 +1958,7 @@ class SoloApp:
             else:
                 for player in self.game.players:
                     if target in player.board:
-                        rect = self.slot_rect(player.idx, player.board.index(target))
+                        rect = self.slot_rect(player.idx, self.game.slot_of(target))
                         break
                 if target in self.game.players[0].hand:
                     rect = self.hand_layout().get(target)
@@ -2434,8 +2460,8 @@ class SoloApp:
                 return [pygame.Rect(1201,816,221,52)]
             if self.selected in player.hand:
                 if len(player.board)<5:
-                    return [self.slot_rect(0,len(player.board))]
-                return [self.slot_rect(0,i) for i,uid in enumerate(player.board)
+                    return [self.slot_rect(0,i) for i in g.available_slots(0)]
+                return [self.slot_rect(0,g.slot_of(uid)) for uid in player.board
                         if g.can_play(0,self.selected,uid)]
             return list(self.hand_layout().values())
         if not self.tutorial.attack_seen:
@@ -2447,11 +2473,11 @@ class SoloApp:
                         if target=='hero:1':
                             areas.append(self.hero_rect(1))
                         elif target in g.players[1].board:
-                            areas.append(self.slot_rect(1,g.players[1].board.index(target)))
+                            areas.append(self.slot_rect(1,g.slot_of(target)))
                     return areas
             ready=[uid for uid in player.board if g.legal_attacks(uid)]
             if ready:
-                return [self.slot_rect(0,player.board.index(uid)) for uid in ready]
+                return [self.slot_rect(0,g.slot_of(uid)) for uid in ready]
             return [pygame.Rect(1201,816,221,52)]
         return []
 

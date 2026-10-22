@@ -263,7 +263,7 @@ def block_trigger(game,uid,context,attacked=None,choice=None):
                        and not any(x in words for x in ('własnego bohatera','własne jednostki')))
     if not aimed:
         return False
-    chosen=min(wardens,key=lambda a:(a[1],game.players[a[1]].board.index(a[0])))[0]
+    chosen=min(wardens,key=lambda a:(a[1],game.slot_of(a[0])))[0]
     game.auction_blocked_play.add(chosen)
     game._log(f'Wieszczka {game.label(chosen)}: anulowano pierwszą '
               f'wrogą zdolność przy wystawieniu {game.label(uid)}.')
@@ -293,7 +293,7 @@ def _revive(game,owner,uid,full=False):
     card.zone='board'
     unit=Unit(uid,owner,card.attack,card.max_hp,
               card.max_hp if full else 1,card.ability_level,p.turn_count)
-    p.board.append(uid);game.units[uid]=unit
+    game.units[uid]=unit;game._place_on_board(uid,owner)
     game._log(f'{game.label(uid)} powraca na planszę '
               f'({unit.hp} PŻ; bez Przy wystawieniu).')
     return True
@@ -307,12 +307,13 @@ def _capture(game,uid,target,chain=False):
     old=unit.owner
     if old==owner:return False
     game.players[old].board.remove(target)
+    game.board_slots.pop(target,None)
     # A captured ally must not continue benefiting from their old general.
     forget_general_links(game,target)
     unit.owner=owner
     unit.played_turn=game.players[owner].turn_count
     unit.attacks=0
-    game.players[owner].board.append(target)
+    game._place_on_board(target,owner)
     game.cards[target].owner=owner
     if chain:game.auction_death_grants.add(target)
     game._log(f'{game.label(uid)} przejmuje {game.label(target)}.')
@@ -333,6 +334,7 @@ def _exile(game,uid,target):
         forget_general_links(game,target,include_source=True)
         unit=game.units.pop(target)
         game.players[unit.owner].board.remove(target)
+        game.board_slots.pop(target,None)
     elif target in game.cards and game.cards[target].zone=='hand':
         owner=game.cards[target].owner
         if target not in game.players[owner].hand:return False
@@ -395,7 +397,7 @@ def _copy(game,uid,target,legendary=False,ephemeral_silent=False):
         clone.temporary_armor=deepcopy(original.temporary_armor)
         clone.armor_perm_grants=deepcopy(original.armor_perm_grants)
         clone.aura_hp=0;clone.aura_atk=0
-    p.board.append(new_uid);game.units[new_uid]=clone
+    game.units[new_uid]=clone;game._place_on_board(new_uid,owner)
     game._log(f'{game.label(uid)} tworzy efemeryczną kopię {game.label(target)}.')
     game._update_auras(defer_reactive=True)
     # A004 copies count as extra PLAY with source's on-play triggers; A010
@@ -418,7 +420,7 @@ def _spawn(game,uid,atk,hp,taunt=False):
     game.cards[cid]=Card(cid,d,owner=owner,zone='board')
     game.defs[cid]=d
     unit=Unit(cid,owner,atk,hp,hp,0,p.turn_count)
-    game.units[cid]=unit;game.ephemeral_ids.add(cid);p.board.append(cid)
+    game.units[cid]=unit;game.ephemeral_ids.add(cid);game._place_on_board(cid,owner)
     if taunt:
         game._add_effect(cid,'taunt',source=uid,positive=True)
     game._log(f'{game.label(uid)} przywołuje Żołnierza {atk}/{hp}.')
@@ -662,7 +664,7 @@ def execute(game,uid,context,choice,attacked=None):
                 allies=[x for x in own.board if x!=uid and x in game.units]
                 if allies:
                     strongest=max(allies,key=lambda x:(game.units[x].atk+
-                                    game.units[x].max_hp,-own.board.index(x)))
+                                    game.units[x].max_hp,-game.slot_of(x)))
                     source=game.units[strongest]
                     for _ in range(2):
                         _spawn(game,uid,source.atk,source.max_hp)
@@ -673,7 +675,7 @@ def execute(game,uid,context,choice,attacked=None):
                 allies=[x for x in own.board if x!=uid and x in game.units]
                 if not allies:return
                 strongest=max(allies,key=lambda x:(game.units[x].atk+
-                                game.units[x].max_hp,-own.board.index(x)))
+                                game.units[x].max_hp,-game.slot_of(x)))
                 bonus_atk=game.units[strongest].atk
                 bonus_hp=game.units[strongest].max_hp
             else:

@@ -82,7 +82,8 @@ class CombatVisuals:
                 'armor':player.hero_armor,'status':frozenset(),
                 'at':(rect.centerx,rect.centery),'attacks':0,
             }
-            for slot,uid in enumerate(player.board):
+            for uid in player.board:
+                slot=game.slot_of(uid)
                 if uid not in game.units:
                     continue
                 unit=game.units[uid]

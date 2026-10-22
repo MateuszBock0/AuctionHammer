@@ -4,7 +4,7 @@
 
 **AuctionHammer** to darmowa, lokalna gra karciana dla jednego gracza przeciwko komputerowi. Budujesz armię, rozwijasz jednostki, zarządzasz monetami i co kilka rund rywalizujesz o potężne karty na aukcjach. Czasem warto wygrać licytację. Czasem lepiej oszczędzić monety, przeżyć kolejną rundę i poczekać na właściwą kartę.
 
-**Aktualna wersja: 0.9.50 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
+**Aktualna wersja: 0.9.51 — grywalne demo na Windows** · **70 kart podstawowych** · **17 archetypów aukcyjnych** · **51 wariantów zdolności aukcyjnych** · **rozgrywka offline**
 
 > **English:** AuctionHammer is a free, single-player fantasy card-game demo with tactical battles, cards that grow while held in your hand, and recurring auctions for powerful units. The interface is in Polish. No account, server connection or Python installation is needed for the Windows release.
 
@@ -39,6 +39,14 @@ Nie musisz instalować Pythona, dodatkowych bibliotek ani Gita. **Gra nie wymaga
 Szczegóły: [QA aktualizatora Windows 0.9.43](docs/QUALITY_RELEASE_0943.md).
 
 > To rozwijane demo, nie ukończona komercyjna produkcja. Automatyczne testy i wydania Windows są publikowane na GitHubie, ale w grze nadal mogą wystąpić błędy.
+
+## Stała plansza i rozpoznawalne rzadkości (0.9.51)
+
+W **nowych partiach** każda strona ma pięć nieprzesuwających się pól. Śmierć, przejęcie lub wygnanie jednostki pozostawia puste miejsce; następna karta może zostać wystawiona na dowolnym wolnym slocie, kliknięciem lub przeciągnięciem. Zastępowanie na pełnej planszy zachowuje fizyczne pole. Efekty „sąsiad” i „naprzeciw” (S34/S108) liczą teraz prawdziwe pozycje.
+
+Karty aukcyjne mają trzy oprawy rzadkości: **podstawowe brązowe**, **rzadkie srebrno-błękitne**, **legendarne złote z ornamentem i dyskretną animacją**. Rzadkość zmienia się wraz z awansem wariantu, niezależnie od poziomu karty. Wyłączenie animacji wyłącza pulsowanie ozdoby.
+
+**Zgodność:** stare zapisy i audyty zachowują zwięzłą planszę z poprzednich wydań. Nowe audyty zawierają podpisane mapowanie pól. To zmiana zasad tylko dla nowo rozpoczętych rozgrywek. [Szczegóły](docs/BOARD_CARD_IDENTITY_0951.md).
 
 ## Domknięcie automatycznej części audytu ZIP (0.9.50)
 

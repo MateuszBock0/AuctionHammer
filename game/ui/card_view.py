@@ -18,6 +18,7 @@ from game.ui.card_infographics import card_cue, FAMILY_COLORS
 from game.ui.card_summary import ability_summary
 from game.ui.game_icons import GameIcons,status_icon_key
 from game.ui.visual_theme import VisualTheme
+from game.ui.rarity_view import card_rarity
 
 FACTION_COLORS = {
     'Elfy': (101,194,150), 'Dzikie bestie': (220,164,89),
@@ -273,7 +274,8 @@ class CardView:
 
     def draw(self,screen,card,rect,unit=None,selected=False,dim=False,
              hover=False,statuses=(),ready=None,attacks_remaining=None,
-             attacks_total=None,hp_override=None):
+             attacks_total=None,hp_override=None,rarity=None,
+             animate_rarity=True):
         d=card.definition
         cue=card_cue(card,unit)
         summary=ability_summary(card,unit)
@@ -473,6 +475,11 @@ class CardView:
                 overlay=pygame.Surface(rect.size,pygame.SRCALPHA)
                 overlay.fill(tint)
                 screen.blit(overlay,rect.topleft)
+        # The exact evolving auction rarity has its own edge-only visual
+        # treatment. No overlay may cover values, names or card ability text.
+        tier=card_rarity(card,rarity)
+        if tier is not None:
+            self.theme.rarity_frame(screen,rect,tier,animate=animate_rarity)
         # Selection overlays stay on the edge and are visually distinct.
         if selected:
             pygame.draw.rect(screen,cfg.GOLD,rect.inflate(5,5),3,border_radius=12)

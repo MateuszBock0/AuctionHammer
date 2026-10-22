@@ -15,7 +15,7 @@ def setup_game(seed=3):
     return m
 
 
-def force_unit(m,uid,player=0):
+def force_unit(m,uid,player=0,slot=None):
     card=m.cards[uid]
     if uid in m.bank:m.bank.remove(uid)
     for p in m.players:
@@ -25,9 +25,9 @@ def force_unit(m,uid,player=0):
     card.owner=player;card.zone='board'
     p=m.players[player]
     if not p.turn_count:p.turn_count=1
-    p.board.append(uid)
     u=Unit(uid,player,card.attack,card.max_hp,card.max_hp,card.ability_level,0)
     m.units[uid]=u
+    m._place_on_board(uid,player,slot)
     return u
 
 

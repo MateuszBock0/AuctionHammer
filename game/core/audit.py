@@ -157,6 +157,11 @@ def state_snapshot(game):
         "auction_history":_plain(getattr(game,"auction_history",[])),
         "auction_awards":_plain(getattr(game,"auction_awards",{}))
     }
+    # Fixed physical positions are signed ONLY for the new 0.9.51 rule.
+    # All historical pre-0.9.51 audit hashes remain byte-identical.
+    if getattr(game,'fixed_board_slots',False):
+        state['board_layout']={
+            'fixed':True,'slots':_plain(game.board_slots)}
     # Legacy v3 snapshots retain byte-identical fields for old replay files.
     if getattr(game,'auction_catalog',None) in ('v4','v22'):
         state['auction_v4']={
@@ -604,6 +609,21 @@ def verify_replay(payload,match_factory):
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
         game=match_factory(payload["seed"])
+    # Signed physical layout is an explicit new rule, not an inferred UI
+    # property. Historical signed matches have no board_layout field.
+    layout=initial.get('board_layout')
+    if layout is not None:
+        if (not isinstance(layout,dict) or layout.get('fixed') is not True
+                or not isinstance(layout.get('slots'),dict)):
+            raise ValueError('Nieprawidłowy podpisany układ pól')
+        game.fixed_board_slots=True
+        game.board_slots=dict(layout['slots'])
+        initialize_audit(game,complete=True)
+        if state_snapshot(game).get('board_layout')!=layout:
+            raise ValueError('Początkowy układ pól nie odpowiada zapisowi')
+    else:
+        game.fixed_board_slots=False
+        game.board_slots={}
     # v0.9.34 introduced optional vacant-slot income for NEW v22 matches.
     # A pre-0.9.34 archived match (or a resumed old save) used the old
     # economy. Infer it from signed audit metadata, not today's defaults.

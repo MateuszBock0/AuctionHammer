@@ -112,8 +112,18 @@ app.history_open=True
 app.draw()
 pygame.image.save(app.screen,DEST/'GAME_EXPERIENCE_HISTORIA_0914.png')
 app.history_open=False
-app.game.players[0].board.append('S115')
+# Use the same engine placement method as real gameplay; test fixtures must
+# not bypass the physical slot registry introduced in 0.9.51.
 app.game.units['S115']=Unit('S115',0,3,8,8,1,0,attacks=1,shield=1)
+app.game.cards['S115'].owner=0
+app.game.cards['S115'].zone='board'
+for player in app.game.players:
+    for container in (player.hand,player.deck,player.grave,player.board):
+        if 'S115' in container:
+            container.remove('S115')
+if 'S115' in app.game.bank:
+    app.game.bank.remove('S115')
+app.game._place_on_board('S115',0,slot=3)
 app.combat_visuals.sync(app.game,app.slot_rect,app.hero_rect,1000)
 app.game.units['S115'].hp=5
 app.game.units['S115'].shield=0
