@@ -7,6 +7,8 @@ live auras) rather than inferred from the card's effect description.
 from __future__ import annotations
 from dataclasses import dataclass
 
+from . import auction_abilities as auction_ability_rules
+
 # Solid contrasting palette: one colour per type of effect.
 STATUS_COLORS = {
     'taunt': (184, 192, 205),
@@ -118,12 +120,20 @@ def active_statuses(game, uid: str) -> list[VisibleStatus]:
             if game.cards[src].definition.id!=card_id or game._disabled(p):continue
             friend=game.players[p.owner].board
             enemy=game.players[1-p.owner].board
-            position=friend.index(src)
+            position=game.slot_of(src)
             if card_id=='S34':
                 affected=[]
-                if p.aura_mode=='ally' and len(friend)>1:
-                    affected=[friend[position+1] if position+1<len(friend) else friend[position-1]]
-                elif p.aura_mode=='enemy' and position<len(enemy):
+                if p.aura_mode=='ally':
+                    if game.fixed_board_slots:
+                        neighbor=(game.unit_at(p.owner,position+1) or
+                                  game.unit_at(p.owner,position-1))
+                        if neighbor is not None:affected=[neighbor]
+                    elif len(friend)>1:
+                        affected=[friend[position+1] if position+1<len(friend) else friend[position-1]]
+                elif game.fixed_board_slots:
+                    target=game.unit_at(1-p.owner,position)
+                    if target is not None:affected=[target]
+                elif position<len(enemy):
                     affected=[enemy[position]]
             else:
                 affected=[x for x in (friend if p.aura_mode=='ally' else enemy) if x!=src]
@@ -133,6 +143,28 @@ def active_statuses(game, uid: str) -> list[VisibleStatus]:
         add('atk_up' if u.aura_atk>0 else 'atk_down',f'ATK{u.aura_atk:+}', 'Aura ATK', f'{u.aura_atk:+} ATK, efekt dynamiczny', ', '.join(aura_sources('S34')))
     if u.aura_hp:
         add('hp_up' if u.aura_hp>0 else 'hp_down',f'HP{u.aura_hp:+}', 'Aura MAX HP', f'{u.aura_hp:+} MAX HP, efekt dynamiczny', ', '.join(aura_sources('S35')))
+
+    # General A002 stores its grants outside Unit.effects. Keep this display
+    # derived from exactly the same live predicate used by engine combat.
+    if (game.auction_catalog in ('v4','v22') and
+            auction_ability_rules.boosted_attack(game,uid)):
+        generals=[]
+        for src,target in game.auction_general_targets.items():
+            leader=game.units.get(src)
+            if (target==uid and leader is not None and leader.owner==u.owner
+                    and auction_ability_rules.rarity(game,src)==1
+                    and not game._disabled(leader)):
+                generals.append(src)
+        for src,recipients in game.auction_general_grants.items():
+            leader=game.units.get(src)
+            if (uid in recipients and leader is not None and leader.owner==u.owner
+                    and auction_ability_rules.rarity(game,src)==2
+                    and not game._disabled(leader)):
+                generals.append(src)
+        add('double','2× OBRAŻ','Premia Generała Oddziału Natarcia',
+            'Maksymalnie 2 ataki w turze, a standardowe obrażenia ataku ×2; '
+            'wartość ATK na karcie nie jest podwajana; premia znika po utracie Generała',
+            ', '.join(generals))
 
     if u.fallback_double_pending and (u.played_turn != player.turn_count or game._fast(u)) and not game._has(u,'stun'):
         add('double','2×','Podwójny atak — awaryjny (S91)','Pierwsza własna tura, w której możliwy jest legalny atak; maksymalnie dwa ataki', 'S91')
