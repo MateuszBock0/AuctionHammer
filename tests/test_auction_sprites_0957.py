@@ -105,6 +105,9 @@ class AuctionSpriteTests(unittest.TestCase):
         root=Path(__file__).resolve().parents[1]
         manifest=root/"assets"/"auction"/"manifest.json"
         if not manifest.exists():
+            version=json.loads((root/"VERSION.json").read_text(encoding="utf-8"))["mvp"]
+            if version == "0.9.57":
+                self.fail("Cannot release 0.9.57 without all 51 PNG and manifest")
             self.skipTest("Binary PNG/manifest not yet committed; release gate pending")
         self.assertEqual(len(validate_installed(root)),51)
 
