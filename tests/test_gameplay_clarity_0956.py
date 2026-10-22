@@ -135,6 +135,19 @@ class DrawReadOnlyTests(unittest.TestCase):
         self.assertTrue(any("pancerz" in s for s in captured))
         self.assertEqual(digest(state_snapshot(game)), before)
 
+    def test_f8_changes_only_ui_ai_pacing_not_the_match(self):
+        app = self.app
+        state = digest(state_snapshot(app.game))
+        self.assertEqual(app.AI_SPEED_LEVELS[app.ai_speed_index][1], 480)
+        app.handle(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_F8))
+        self.assertEqual(app.AI_SPEED_LEVELS[app.ai_speed_index][1], 280)
+        self.assertIn('SZYBKIE', app.visual_notice)
+        app.handle(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_F8))
+        self.assertEqual(app.AI_SPEED_LEVELS[app.ai_speed_index][1], 750)
+        app.handle(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_F8))
+        self.assertEqual(app.AI_SPEED_LEVELS[app.ai_speed_index][1], 480)
+        self.assertEqual(digest(state_snapshot(app.game)), state)
+
     def test_positional_highlight_uses_real_selected_source_and_preserves_match(self):
         app = self.app
         app.game.phase = "turn"
