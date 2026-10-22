@@ -128,6 +128,7 @@ class SoloApp:
         self.combat_notice_active=None
         self.combat_notice_queue=[]
         self.attack_outcome_active=None
+        self._last_handled_attack_outcome=None
         self.visual_notice=''
         self.visual_notice_tick=-10000
         self._last_logged_event=len(self.game.event_journal)
@@ -1437,9 +1438,11 @@ class SoloApp:
         now=pygame.time.get_ticks()
         outcome=self.combat_visuals.last_attack_outcome
         attack_batch=(outcome is not None
-                      and outcome.journal_length==len(events)
-                      and outcome.journal_length>self._last_logged_event)
+                      and outcome is not self._last_handled_attack_outcome)
         if attack_batch:
+            # Choices can finish an attack without adding journal lines.
+            # Track the resolved outcome itself, not event count alone.
+            self._last_handled_attack_outcome=outcome
             # A new committed attack supersedes an obsolete event backlog.
             # The full authoritative chronology remains available under H.
             self.attack_outcome_active=(now,outcome)
@@ -2278,6 +2281,8 @@ class SoloApp:
                         self._recent_feedback=[]
                         self.combat_notice_active=None
                         self.combat_notice_queue=[]
+                        self.attack_outcome_active=None
+                        self._last_handled_attack_outcome=None
                         self.auction_inspect_index=None
                         self.combat_visuals=CombatVisuals()
                         self.combat_visuals.sync(game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
