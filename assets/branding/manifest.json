@@ -1,0 +1,46 @@
+{
+  "title": "AuctionHammer — Chorąży Zawsze Zdąży: ilustracje i ikony",
+  "released_for": "MVP 0.9.61",
+  "card_id": "S34",
+  "card_name_in_rules": "Chorąży Królewskiej Kompanii",
+  "artist_note": "Chorąży Zawsze Zdąży is the visual series name; game card name and mechanics unchanged",
+  "selection": "card.ability_level: 0 -> podstawowa; 1 -> rzadka; >=2 -> legendarna",
+  "source": "Three user-approved AI-generated transparent RGBA fantasy illustrations, cropped for card readability and resized with Lanczos; standalone game icon uses user-approved generated portrait",
+  "files": [
+    {
+      "path": "assets/cards/chorazy.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "98ad819ddcf246a8bc3682470628761e3ee58ac53b29414adee98d3641726e82",
+      "stage": "poziom 0"
+    },
+    {
+      "path": "assets/cards/chorazy_rzadka.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "842d5ed8357e3f20c3972343880c09937c69b98dc05f9292547e01949701d0bf",
+      "stage": "poziom 1"
+    },
+    {
+      "path": "assets/cards/chorazy_legendarna.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "4b82b2185c15bbeb4b45a598d70c720ee389b780e8d5885551c669faa65bfd69",
+      "stage": "poziom 2+"
+    },
+    {
+      "path": "assets/branding/chorazy_zawsze_zdazy_icon.png",
+      "width": 128,
+      "height": 128,
+      "sha256": "525b062eb2c20323d64f1bad5b533b9e2f3d657b545cfa1342a4f058764f9d52",
+      "stage": "ikona okna"
+    },
+    {
+      "path": "assets/branding/chorazy_zawsze_zdazy.ico",
+      "width": 256,
+      "height": 256,
+      "sha256": "6be1d14c2ce776e5b1764de0d589c655dbbe1d5d01236f6bf8fd331947135de6",
+      "stage": "ikona Windows"
+    }
+  ]
+}
