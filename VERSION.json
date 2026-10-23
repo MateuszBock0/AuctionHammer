@@ -1,11 +1,12 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.65",
+  "mvp": "0.9.66",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
   "card_costs": false,
   "starter_cards": 70,
+  "combat_damage_readout": "General A002 normal attack damage x2 visible separately from ATK",
   "pixel_art_base_70": {"portraits": 70, "banners": 70, "sprite_format": "295x209 + 295x78 PNG", "pixel_filter": "nearest-neighbor", "manifest": "assets/cards/pixel_art/manifest.json", "preserve_start_guard_art": true},
   "copies_per_archetype": 1,
   "github_remote": "https://github.com/MateuszBock0/AuctionHammer",

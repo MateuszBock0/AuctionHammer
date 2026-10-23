@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.65 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.66 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.66 (A002 — podwojone obrażenia w UI)
+
+- Gracz widzi bezpośrednio na karcie `ATK→OBR. 9→18` przy aktywnej premii Generała; panel boczny i szczegóły pokazują `9 ×2 = 18`.
+- Wartość 18 to surowe obrażenia standardowego ataku przed obroną. Statystyka ATK nadal wynosi 9; silnik, losowość, audyty i balans bez zmian.
+- Status pochodzi wyłącznie z aktywnego `Premia Generała Oddziału Natarcia`, więc zwykły podwójny atak nie jest mylony z podwójnymi obrażeniami.
+- Test regresyjny: `tests/test_general_damage_readout_0966.py`.
 
 ### Etap — 0.9.65 (70 bazowych kart z ilustracjami pixel art)
 
