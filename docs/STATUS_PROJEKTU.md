@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 22 października 2026  
-**Wersja gałęzi:** MVP 0.9.59 (hotfix w walidacji CI)  
+**Wersja gałęzi:** MVP 0.9.60 (zmiana UX w walidacji CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.60 (UX wybierania zdolności)
+
+- Królowa Tysiąca Twarzy A010: kliknięcie Królowej wybiera `grow`, a kliknięcie wolnego własnego pola wybiera `summon`, tylko gdy istnieją odpowiednie legalne opcje w `pending.choices`; inne wybory i sterowanie klawiaturą pozostają bez zmian.
+- Karta ogłuszona pokazuje stan „OGŁUSZONY” zamiast dostępnego, lecz nielegalnego w danej chwili ataku „ATAKI 1/1”, również przy równoległym Szybkim Ataku.
+- Zmiany w interfejsie, bez wpływu na `Match.choose`, przywołanie jednostek, balans, audyty, RNG i zapisy. Ręczne sprawdzenie DPI na fizycznym Windows nadal potrzebne.
 
 ### Etap — 0.9.59 (hotfix zgodności)
 

@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.59",
+  "mvp": "0.9.60",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -288,6 +288,11 @@
     "verbose_general_0958_replay": "known committed 0.9.58 release and PR head only",
     "rebuild_book_from_signed_actions": true,
     "card_rules_damage_and_rng_unchanged": true,
+    "manual_windows_dpi_acceptance": "pending"
+  },
+  "ux_queen_stun_0960": {
+    "scope": "A010 end-of-turn grow by clicking Queen / summon by clicking vacant own slot; show OGŁUSZONY on stunned board units",
+    "gameplay_rules_changed": false,
     "manual_windows_dpi_acceptance": "pending"
   }
 }

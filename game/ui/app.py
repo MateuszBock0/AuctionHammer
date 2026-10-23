@@ -565,6 +565,29 @@ class SoloApp:
             self.choice_page = matches[0] // self.CHOICES_PER_PAGE
             self.last_error = 'Wybierz wariant zdolności w panelu po prawej.'
 
+    def _queen_board_choice(self,pos):
+        """Map an A010 end-turn decision to the intuitive live-board click.
+
+        Clicking the Queen means growth; clicking an empty friendly slot
+        means summoning. These select existing engine choices only: the
+        simulation remains responsible for legal choices and spawn slots.
+        """
+        pending=self.game.pending
+        if (pending is None or pending.owner!=0 or pending.context!='end'
+                or pending.uid not in self.game.players[0].board
+                or self.game.auction_awards.get(pending.uid,{}).get('archetype')!='A010'):
+            return None
+        if self.target_under(pos)==pending.uid:
+            mode='grow'
+        else:
+            slot=self.slot_under(0,pos)
+            if (slot is None or self.game.unit_at(0,slot) is not None
+                    or len(self.game.players[0].board)>=5):
+                return None
+            mode='summon'
+        matches=[i for i,ch in enumerate(pending.choices) if ch.mode==mode]
+        return matches[0] if len(matches)==1 else None
+
     def click(self,pos,button=1):
         g=self.game
         if self.details_card is not None:
@@ -594,6 +617,10 @@ class SoloApp:
                 return
             if pygame.Rect(1274,814,150,38).collidepoint(pos):
                 self.choice_page = min(self._choice_last_page(), self.choice_page + 1)
+                return
+            queen_choice=self._queen_board_choice(pos)
+            if queen_choice is not None:
+                self._choose(queen_choice)
                 return
             self._choose_target(self.target_under(pos) or self.card_under(pos))
             return
@@ -2162,6 +2189,24 @@ class SoloApp:
         pending = self.game.pending
         if pending is None or pending.owner != 0:
             return
+        # A010's grow/summon modes have target=None, so regular choice
+        # highlights do not show them. Give each legal mode its board target.
+        if (pending.context=='end' and pending.uid in self.game.players[0].board
+                and self.game.auction_awards.get(pending.uid,{}).get('archetype')=='A010'):
+            modes={ch.mode for ch in pending.choices}
+            if 'grow' in modes:
+                rect=self.slot_rect(0,self.game.slot_of(pending.uid))
+                pygame.draw.rect(self.screen,(194,150,246),rect.inflate(8,8),
+                                 4,border_radius=13)
+            if 'summon' in modes:
+                for slot in range(5):
+                    if self.game.unit_at(0,slot) is not None:
+                        continue
+                    rect=self.slot_rect(0,slot)
+                    pygame.draw.rect(self.screen,(194,150,246),
+                                     rect.inflate(8,8),3,border_radius=13)
+                    self._text('PRZYWOŁAJ',13,rect.centerx,rect.centery+25,
+                               (225,196,253),center=True)
         counts = {}
         for ch in pending.choices:
             if ch.target is not None:
@@ -2205,7 +2250,14 @@ class SoloApp:
         self._panel(pane,TAVERN_PANEL_BG,TAVERN_GOLD,12)
         self._text(f'WYBIERZ CEL / WARIANT ({len(pending.choices)})',
                    14,1107,410,cfg.GOLD)
-        self._text('Wybierz cel lub sposób działania.',13,1107,437,cfg.TEXT)
+        queen_modes=(pending.context=='end'
+                     and self.game.auction_awards.get(pending.uid,{}).get('archetype')=='A010'
+                     and pending.uid in self.game.players[0].board)
+        if queen_modes:
+            self._text('Królowa = WZMOCNIJ · wolne pole = PRZYWOŁAJ',
+                       12,1107,437,cfg.TEXT)
+        else:
+            self._text('Wybierz cel lub sposób działania.',13,1107,437,cfg.TEXT)
         pygame.draw.line(self.screen,TAVERN_BRASS,(1107,458),(1421,458),1)
         for index,rect in self.choice_bounds():
             choice=pending.choices[index]
