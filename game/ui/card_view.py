@@ -44,6 +44,8 @@ ART = {
 CHORAZY_ART_LEVELS = (
     'chorazy.png', 'chorazy_rzadka.png', 'chorazy_legendarna.png'
 )
+# AUCTIONHAMMER_PIXEL_ART_70_v1
+PIXEL_ART_IDS = frozenset(('S103', 'S104', 'S34', 'S35', 'S105', 'S106', 'S107', 'S108', 'S109', 'S33', 'S111', 'S39', 'S114', 'S115', 'S01', 'S02', 'S04', 'S08', 'S03', 'S05', 'S58', 'S59', 'S60', 'S61', 'S07', 'S64', 'S66', 'S67', 'S27', 'S25', 'S28', 'S93', 'S26', 'S94', 'S32', 'S95', 'S31', 'S96', 'S97', 'S99', 'S101', 'S102', 'S09', 'S10', 'S68', 'S69', 'S12', 'S70', 'S11', 'S15', 'S71', 'S72', 'S74', 'S76', 'S78', 'S79', 'S21', 'S17', 'S23', 'S81', 'S82', 'S20', 'S83', 'S84', 'S85', 'S86', 'S87', 'S88', 'S90', 'S91'))
 PRIORITY = ('stun','taunt','poison','shield','armor','double','quick','regen',
             'immune','atk_down','hp_down','atk_up','hp_up','heal_aura','cleanse','other')
 def status_display_priority(status):
@@ -185,9 +187,14 @@ class CardView:
             # Old 0.9.61 saves deliberately retain their original portrait.
             # New opted-in matches use the real signed kill counter.
             portrait=(CHORAZY_ART_LEVELS[max(0,min(2,int(guard_kills)))]
-                      if guard_kills is not None else ART['S34'])
+                      if guard_kills is not None else 'chorazy_krolewskiej_kompanii.png')
             return self.images.get_card_image(
                 portrait,size,mode='cover',focus=(0.5,0.32))
+        if cid in PIXEL_ART_IDS:
+            art_type = 'banner' if size[1] <= 45 else 'portrait'
+            return self.images.get_card_image(
+                f'pixel_art/{cid}_{art_type}.png',size,mode='cover',
+                focus=(0.5,0.35),pixelated=True)
         if cid in ART:
             return self.images.get_card_image(ART[cid],size)
         key=(cid,size,family)

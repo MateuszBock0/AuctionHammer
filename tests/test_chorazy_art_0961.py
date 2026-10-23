@@ -68,7 +68,7 @@ class ChorazyArt0961(unittest.TestCase):
         img=pygame.image.load(str(file)).convert_alpha()
         self.assertGreater(min(img.get_size()),0)
 
-    def test_exact_three_starter_portraits_by_kills_and_s34_remains_constant(self):
+    def test_exact_three_starter_portraits_and_separate_s34_pixel_art(self):
         self.assertEqual(CHORAZY_ART_LEVELS,
             ("chorazy.png","chorazy_rzadka.png","chorazy_legendarna.png"))
         view=CardView()
@@ -95,7 +95,7 @@ class ChorazyArt0961(unittest.TestCase):
                 view.draw(pygame.Surface((215,265),pygame.SRCALPHA),
                           card,pygame.Rect(12,15,148,220))
                 self.assertEqual(loader.call_args.args[0],
-                                 "chorazy_krolewskiej_kompanii.png")
+                                 "pixel_art/S34_banner.png")
 
     def test_historical_guard_and_other_guard_still_use_the_original(self):
         game=setup_game(96102)

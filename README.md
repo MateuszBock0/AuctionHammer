@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.64** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.65** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,10 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.65 — komplet 70 kart podstawowych w pixel arcie
+
+Każda z **70 zwykłych kart** ma własną ilustrację w pixel arcie (140 plików PNG: po jednym portrecie i poziomej miniaturce dla każdej karty). W ręce, na planszy i w podglądzie [G] gra używa nowych ilustracji bez rozmywania pikseli (nearest-neighbor). Portrety i ich sumy SHA-256: [manifest](assets/cards/pixel_art/manifest.json). Wykonane bez zewnętrznego API, abonamentów i generowania po stronie gracza. **S34 jest zwykłą kartą podstawową**, natomiast specjalny token `SUM_START_GUARD` zachowuje trzy osobne portrety awansu. Silnik, AI, aukcje, statusy, zapisy i balans bez zmian. [Testy i dokumentacja artu](docs/PIXEL_ART_70.md).
 
 ## Nowość 0.9.64 — zawsze ustalona kolejność pierwszych meczów
 
