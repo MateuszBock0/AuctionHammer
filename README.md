@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.66** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.67** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,14 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.67 — zielone/czerwone statystyki, srebrny pancerz i ATK Generała
+
+- **ATK na karcie jest wartością bojową.** Jeśli jednostka ma 9 ATK, a Generał Oddziału Natarcia podwaja obrażenia zwykłych ataków, pokazuje się **18 na zielono**, zamiast dawnego `9→18`. Gdy Generał zniknie, karta pokazuje 9. Nie występuje drugi mnożnik obrażeń.
+- **Zielony ATK** oznacza wzmocnienie, **czerwony ATK** osłabienie; normalna wartość jest złota. Wykorzystujemy faktyczne statystyki i aktywną premię, nie szacowanie na podstawie treści karty.
+- **PŻ** pokazuje bieżące życie oraz `/MAX`; gdy MAX PŻ jest podniesione/obniżone, **koloruje się część `/MAX`** na zielono/czerwono. Same rany nie są mylone z debuffem MAX PŻ.
+- **Pancerz** jednostki widoczny jest jako mały **srebrny medalion z liczbą** przy prawym górnym brzegu statystyki PŻ.
+- Balans, zapisy, replay i reguła walki nie zostały zmienione: Generał już wcześniej podwajał obrażenia standardowego ataku. Zmiana dotyczy *widocznego ATK bojowego*; inne efekty zależne od zwykłej statystyki ATK nie zostały wzmocnione.
 
 ## Nowość 0.9.66 — czytelne obrażenia po premii Generała
 

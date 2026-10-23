@@ -49,6 +49,25 @@ PIXEL_ART_IDS = frozenset(('S103', 'S104', 'S34', 'S35', 'S105', 'S106', 'S107',
 PRIORITY = ('stun','taunt','poison','shield','armor','double','quick','regen',
             'immune','atk_down','hp_down','atk_up','hp_up','heal_aura','cleanse','other')
 GENERAL_DAMAGE_STATUS = 'Premia Generała Oddziału Natarcia'
+STAT_UP_COLOR = (129, 236, 158)
+STAT_DOWN_COLOR = (255, 126, 134)
+ARMOR_SILVER = (215, 230, 239)
+
+def stat_tint(value: int, baseline: int, neutral: tuple[int,int,int]) -> tuple[int,int,int]:
+    """Colour buffs, debuffs and unmodified stats without confusing HP wounds."""
+    if value > baseline:
+        return STAT_UP_COLOR
+    if value < baseline:
+        return STAT_DOWN_COLOR
+    return neutral
+
+
+def armor_medallion_rect(health_box: pygame.Rect, large: bool) -> pygame.Rect:
+    """A small circle on the right edge of the HP plate, outside the HP value."""
+    radius = 12 if large else 9
+    center = (health_box.right - 2, health_box.top + radius - 1)
+    return pygame.Rect(center[0]-radius, center[1]-radius, radius*2, radius*2)
+
 
 def standard_hit_damage(attack: int, statuses=()) -> tuple[int, bool]:
     """Read-only preview: raw normal-hit damage before armor/shield.
@@ -503,37 +522,53 @@ class CardView:
             self._pill(screen,tag,count,tone,sf)
         # ATK + PŻ last: large, opaque, never dimmed or overlapped.
         attack=unit.atk if board else card.attack
-        raw_damage, general_boost = standard_hit_damage(
+        # The General's x2 standard-hit bonus is the visible combat ATK.
+        # Do not apply it to Unit.atk or the combat engine would double twice.
+        combat_atk, general_boost = standard_hit_damage(
             attack, statuses if board else ())
+        baseline_atk=unit.base_attack if board else d.atk
+        baseline_maxhp=unit.base_max_hp if board else d.hp
         hp=(max(0,int(hp_override)) if board and hp_override is not None
             else max(0,unit.hp) if board else card.max_hp)
         max_hp=unit.max_hp if board else card.max_hp
         label_font=self.font(10 if large else 9,True)
         value_font=self.font(25 if large else (22 if rect.height>=210 else 20),True)
         max_font=self.font(13 if large else 10)
-        for r,t in ((attack_box,'ATK→OBR.' if general_boost else 'ATAK'),
-                    (health_box,'PŻ')):
+        for r,t in ((attack_box,'ATAK'),(health_box,'PŻ')):
             label=label_font.render(t,True,(213,210,201))
             screen.blit(label,(r.x+4,r.y+2))
-        # General doubles normal-hit DAMAGE, not ATK. Show both numbers:
-        # e.g. 9→18; prevent the old misleading single "9" on the board.
-        attack_text=(f'{attack}→{raw_damage}' if general_boost else str(attack))
-        attack_font=(self._fit_font(attack_text,attack_box.width-6,
-                     (23,21,19,17,15,13) if large else (20,18,16,14,12))
-                     if general_boost else value_font)
-        aa=attack_font.render(attack_text,True,(255,215,132))
+        # Buffed/debuffed values are green/red; neutral values use the classic
+        # gold and pale pink. Hand growth is compared to the printed card base.
+        atk_color=stat_tint(combat_atk,baseline_atk,(255,215,132))
+        attack_text=str(combat_atk)
+        attack_font=self._fit_font(attack_text,attack_box.width-6,
+                                  (25,23,21,19,17,15) if large
+                                  else (22,20,18,16,14,12))
+        aa=attack_font.render(attack_text,True,atk_color)
         screen.blit(aa,aa.get_rect(centerx=attack_box.centerx,bottom=attack_box.bottom-2))
         hh=value_font.render(str(hp),True,(255,153,157))
-        mm=max_font.render('/'+str(max_hp),True,(223,196,198))
+        # Actual wounds change current HP, not the max-HP buff indicator.
+        hp_max_color=stat_tint(max_hp,baseline_maxhp,(223,196,198))
+        mm=max_font.render('/'+str(max_hp),True,hp_max_color)
         total=hh.get_width()+mm.get_width()
         if total>health_box.width-4:
             small=self.font(17,True)
             hh=small.render(str(hp),True,(255,153,157))
-            mm=self.font(9).render('/'+str(max_hp),True,(223,196,198))
+            mm=self.font(9).render('/'+str(max_hp),True,hp_max_color)
             total=hh.get_width()+mm.get_width()
         xx=health_box.centerx-total//2
         screen.blit(hh,(xx,health_box.bottom-hh.get_height()-2))
         screen.blit(mm,(xx+hh.get_width(),health_box.bottom-mm.get_height()-4))
+        # Silver armor medallion is visually separate from red/pink HP, and
+        # only exists for deployed units with current positive total armor.
+        if board and unit.armor>0:
+            badge=armor_medallion_rect(health_box,large)
+            pygame.draw.circle(screen,(67,78,88),badge.center,badge.width//2)
+            pygame.draw.circle(screen,ARMOR_SILVER,badge.center,badge.width//2,2)
+            caption=str(unit.armor)
+            bf=self._fit_font(caption,badge.width-5,
+                              (12,11,10,9,8) if large else (10,9,8))
+            self._center(screen,caption,badge,bf,(250,252,255))
         # Board-level signature traits use exactly ONE restrained whole-card
         # tint. Existing status labels explain additional simultaneous traits.
         # Poison/stun/regen, etc. never colour the whole card.
