@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.61** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.62** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -66,7 +66,9 @@ Co trzy ukończone rundy może rozpocząć się aukcja. System losuje **trzy ofe
 | Rzadka | 30% | Srebrno-błękitna |
 | Legendarna | 10% | Złota, z ornamentami i świetlistą ilustracją |
 
-**Nowa oprawa graficzna (0.9.61):** Trzy zatwierdzone obrazy **Chorążego** (S34, Chorąży Królewskiej Kompanii) pod nazwą artystyczną „Chorąży Zawsze Zdąży” są automatycznie wybierane na podstawie **istniejącego poziomu zdolności**: 0 — podstawowy, 1 — rzadszy wygląd, 2+ — legendarny wygląd. Zmiany dotyczą tylko ilustracji, bez nowej rzadkości ani zmian zasad i balansu. Dodano ikonę okna i pliku `AuctionHammer.exe` z tym samym portretem. [Grafiki i manifest SHA-256](docs/CHORAZY_ART_0961.md).
+**Easter egg Chorążego „Zawsze zdąży” (0.9.62):** Jeżeli drugi gracz wybierze na starcie **Chorążego 2 ATK / 5 PŻ** (`SUM_START_GUARD`), każdy pokonany jego własnym standardowym atakiem przeciwnik daje **+1 ATK, +2 MAX PŻ i +2 bieżące PŻ**. Premia nalicza się najwyżej **3 razy**: po 0/1/2+ zabójstwach Chorąży pokazuje grafikę podstawową/rzadką/legendarną. Kontratak, efekt pośredni i obustronna śmierć nie liczą się. **S34 Chorąży Królewskiej Kompanii odzyskał swoją oryginalną, niezmienną grafikę.** Stare zapisane mecze i audyty pozostają zgodne ze swoimi historycznymi regułami.
+
+**Oprawa graficzna wydania 0.9.61 (przypisanie poprawione w 0.9.62):** Trzy zatwierdzone obrazy **Chorążego** (S34, Chorąży Królewskiej Kompanii) pod nazwą artystyczną „Chorąży Zawsze Zdąży” są automatycznie wybierane na podstawie **istniejącego poziomu zdolności**: 0 — podstawowy, 1 — rzadszy wygląd, 2+ — legendarny wygląd. Zmiany dotyczą tylko ilustracji, bez nowej rzadkości ani zmian zasad i balansu. Dodano ikonę okna i pliku `AuctionHammer.exe` z tym samym portretem. [Grafiki i manifest SHA-256](docs/CHORAZY_ART_0961.md).
 
 <img src="assets/branding/chorazy_zawsze_zdazy_icon.png" alt="Chorąży — ikona fantasy z królewskim sztandarem" width="112">
 
