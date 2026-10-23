@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.67 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.68 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.68 (podgląd jednostek / karty aukcyjne)
+
+- Podgląd hover 420 ms działa na ręce oraz na obu stronach planszy. Rozwinięta karta prezentuje żywą jednostkę z aktualnymi ATK, PŻ, pancerzem, statusami i liczbą pozostałych ataków.
+- Okno unika zasłaniania źródłowej jednostki, a pełne podpowiedzi statusów mają pierwszeństwo. Bez ingerencji w kliknięcia i legalne cele.
+- Ilustracje wszystkich rzadkości kart aukcyjnych wypełniają poziome pole karty bez deformacji dzięki `cover`; duży podgląd oryginalnej grafiki [G] nadal używa `contain`.
+- Testy: `tests/test_ui_hover_polish_0942.py`, `tests/test_board_hover_auction_art_0968.py`, `tests/test_auction_sprites_0957.py`. Logika gry, AI, statystyki, zasady, aukcje i RNG bez zmian.
 
 ### Etap — 0.9.67 (kolory statystyk / pancerz / ATK bojowy)
 

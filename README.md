@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.67** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.68** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,14 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.68 — podgląd jednostek na planszy i pełne grafiki aukcyjne
+
+- Najechanie na **dowolną wystawioną jednostkę**, swoją lub przeciwnika, przez ok. **420 ms** pokazuje dużą kartę tak jak dla ręki, z bieżącym ATK bojowym, PŻ, pancerzem, statusami i licznikiem ataków. Podgląd nie zmienia wyboru jednostki ani zasad gry.
+- Okno podglądu umieszczamy poza jednostką pod kursorem. Wyjaśnienia statusów nadal mają pierwszeństwo, a podczas modalnych decyzji/aukcji podgląd się nie pojawia.
+- **Karty aukcyjne** na planszy i w ręce skalowane są proporcjonalnie w trybie `cover`, wypełniając całe pole grafiki, tak jak podstawowe karty, zamiast pozostawać małą kwadratową miniaturą.
+- W widoku powiększonej oryginalnej ilustracji [G] zachowujemy `contain`, aby było widać całą grafikę.
+- Test regresyjny: `tests/test_board_hover_auction_art_0968.py`.
 
 ## Nowość 0.9.67 — zielone/czerwone statystyki, srebrny pancerz i ATK Generała
 
