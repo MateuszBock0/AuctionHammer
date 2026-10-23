@@ -58,47 +58,44 @@ class ChorazyArt0961(unittest.TestCase):
                 self.assertEqual(data[:4],b"\x00\x00\x01\x00")
                 self.assertGreaterEqual(struct.unpack("<H",data[4:6])[0],4)
 
-    def test_exact_three_distinct_s34_portraits_by_existing_ability_level(self):
+    def test_exact_three_starter_portraits_by_kills_and_s34_remains_constant(self):
         self.assertEqual(CHORAZY_ART_LEVELS,
             ("chorazy.png","chorazy_rzadka.png","chorazy_legendarna.png"))
-        game=setup_game(96100)
-        card=game.cards["S34"]
         view=CardView()
-        filenames=("chorazy.png","chorazy_rzadka.png",
-                   "chorazy_legendarna.png","chorazy_legendarna.png")
         samples=[]
-        for hand_turns,name in zip((0,3,6,12),filenames):
-            with self.subTest(hand_turns=hand_turns):
-                card.hand_turns=hand_turns
+        for kills,name in ((0,"chorazy.png"),(1,"chorazy_rzadka.png"),
+                           (2,"chorazy_legendarna.png"),(3,"chorazy_legendarna.png")):
+            with self.subTest(kills=kills):
                 with patch.object(view.images,"get_card_image",
                                   wraps=view.images.get_card_image) as loader:
-                    view.draw(pygame.Surface((215,265),pygame.SRCALPHA),
-                              card,pygame.Rect(12,15,148,220))
+                    portrait=view.art("SUM_START_GUARD","Ludzie",(96,96),
+                                      card_name="Chorąży",guard_kills=kills)
                     self.assertEqual(loader.call_args.args[0],name)
-                    self.assertEqual(loader.call_args.kwargs["mode"],"cover")
-                art=view.art("S34","Ludzie",(96,96),rarity="podstawowa",
-                             level=card.ability_level)
-                self.assertEqual(art.get_size(),(96,96))
-                samples.append(pygame.image.tobytes(art,"RGBA"))
+                    self.assertEqual(portrait.get_size(),(96,96))
+                    samples.append(pygame.image.tobytes(portrait,"RGBA"))
         self.assertEqual(len(set(samples[:3])),3)
         self.assertEqual(samples[2],samples[3])
 
-    def test_on_board_and_in_hand_use_identical_level_and_no_mutation(self):
         game=setup_game(96101)
         card=game.cards["S34"]
-        card.hand_turns=6
-        card.owner=0
-        unit=Unit("S34",0,card.attack,card.max_hp,card.max_hp,
-                  card.ability_level,played_turn=1)
-        original=(card.hand_turns,card.attack,card.max_hp,unit.atk,unit.hp)
+        for hand_turns in (0,3,6,12):
+            card.hand_turns=hand_turns
+            with patch.object(view.images,"get_card_image",
+                              wraps=view.images.get_card_image) as loader:
+                view.draw(pygame.Surface((215,265),pygame.SRCALPHA),
+                          card,pygame.Rect(12,15,148,220))
+                self.assertEqual(loader.call_args.args[0],
+                                 "chorazy_krolewskiej_kompanii.png")
+
+    def test_historical_guard_and_other_guard_still_use_the_original(self):
+        game=setup_game(96102)
         view=CardView()
-        surface=pygame.Surface((260,300),pygame.SRCALPHA)
-        with patch.object(view.images,"get_card_image",
-                          wraps=view.images.get_card_image) as loader:
-            view.draw(surface,card,pygame.Rect(20,20,148,220),
-                      unit,ready=False,attacks_remaining=0,attacks_total=1)
-            self.assertEqual(loader.call_args.args[0],"chorazy_legendarna.png")
-        self.assertEqual((card.hand_turns,card.attack,card.max_hp,unit.atk,unit.hp),original)
+        portrait=view.art("SUM_START_GUARD","Ludzie",(96,96),
+                          card_name="Chorąży",guard_kills=None)
+        from game.ui.card_view import ART
+        self.assertEqual(ART["S34"],"chorazy_krolewskiej_kompanii.png")
+        self.assertIsNotNone(portrait)
+        self.assertEqual(portrait.get_size(),(96,96))
 
     def test_real_window_icon_is_decodable_by_pygame(self):
         image=pygame.image.load(str(ROOT/"assets/branding/chorazy_zawsze_zdazy_icon.png"))
