@@ -303,7 +303,7 @@ class SoloApp:
     HOVER_PREVIEW_DELAY_MS=420
 
     def _update_hover_target(self,pos,now=None):
-        """Track pointer dwell on the visible hand; no Match action or RNG."""
+        """Track pointer dwell on hand and deployed cards; no Match action/RNG."""
         if now is None:
             now=pygame.time.get_ticks()
         if (self.menu_open or self.history_open or self.replay_index is not None
@@ -313,8 +313,7 @@ class SoloApp:
                 or self.game.pending is not None):
             uid=None
         else:
-            uid=next((uid for uid,area in self.hand_layout().items()
-                      if area.collidepoint(pos)),None)
+            uid=self.card_under(pos)
         if uid!=self._hover_uid:
             self._hover_uid=uid
             self._hover_start_ms=now
@@ -323,15 +322,32 @@ class SoloApp:
         if now is None:
             now=pygame.time.get_ticks()
         uid=self._hover_uid
-        return (uid is not None
-                and uid in self.game.players[0].hand
-                and uid in self.hand_layout()
+        if uid in self.game.players[0].hand:
+            visible=uid in self.hand_layout()
+        elif uid in self.game.units:
+            unit=self.game.units[uid]
+            visible=uid in self.game.players[unit.owner].board
+        else:
+            visible=False
+        return (visible and uid in self.game.cards
                 and now-self._hover_start_ms>=self.HOVER_PREVIEW_DELAY_MS
                 and not (self.menu_open or self.history_open or self.confirm_action
-                         or self.replay_index is not None or self.details_card is not None
-                         or self.drag_start is not None or self._bonus_selection_due()
-                         or self.game.pending is not None
+                         or self.help_open or self.replay_index is not None
+                         or self.details_card is not None or self.drag_start is not None
+                         or self._bonus_selection_due() or self.game.pending is not None
                          or self.game.phase in ('auction','finished')))
+
+    def _hover_preview_rect(self,uid):
+        """Read-only hover panel outside its source unit's board rectangle."""
+        if uid in self.game.players[0].hand:
+            source=self.hand_layout()[uid]
+            left=max(82,min(772,source.centerx-143))
+            return pygame.Rect(left,289,286,439)
+        unit=self.game.units[uid]
+        source=self.slot_rect(unit.owner,self.game.slot_of(uid))
+        left=source.right+18 if source.centerx<500 else source.left-304
+        left=max(82,min(772,left))
+        return pygame.Rect(left,398 if unit.owner==1 else 87,286,439)
 
     def _hovered_status(self,pos):
         """Find a drawn status badge, never infer undisplayed effects."""
@@ -415,21 +431,36 @@ class SoloApp:
         if not self._hover_preview_ready():
             return
         uid=self._hover_uid
-        # A full-size, truthful card. Overlay is above the battlefield but
-        # leaves the hand and its clicks untouched; it disappears on movement.
-        hand_rect=self.hand_layout()[uid]
-        left=max(82,min(772,hand_rect.centerx-143))
-        box=pygame.Rect(left,289,286,439)
+        # Same full-size preview as the hand, but deployed cards use live
+        # unit stats, statuses, readiness and exact auction rarity.
+        box=self._hover_preview_rect(uid)
         self._panel(box,TAVERN_PANEL_BG,TAVERN_GOLD,11)
         pygame.draw.rect(self.screen,TAVERN_BRASS,box.inflate(-9,-9),
                          1,border_radius=8)
-        self._text('KARTA NA RĘCE · PODGLĄD',13,box.x+13,box.y+11,TAVERN_GOLD)
+        unit=self.game.units.get(uid)
+        if unit is None:
+            title='KARTA NA RĘCE · PODGLĄD'
+            statuses=hand_grants(self.game,uid)
+        else:
+            title=('TWOJA JEDNOSTKA · PODGLĄD' if unit.owner==0
+                   else 'JEDNOSTKA RYWALA · PODGLĄD')
+            statuses=active_statuses(self.game,uid)
+        self._text(self.cards_view.clip(title,self.fonts[13],260),
+                   13,box.x+13,box.y+11,TAVERN_GOLD)
         card=self.game.cards[uid]
-        self.cards_view.draw(self.screen,card,pygame.Rect(box.x+15,box.y+34,255,380),
-                             statuses=hand_grants(self.game,uid),
-                             rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
-                             animate_rarity=self.animations_enabled)
-        self._text('PRAWY KLIK / [I] — PEŁNY OPIS',12,
+        params={}
+        if unit is not None:
+            attack=attack_display(self.game,uid)
+            params=dict(attacks_remaining=attack.remaining,
+                        attacks_total=attack.limit,ready=attack.ready,
+                        guard_kills=self._guard_progress(uid))
+        self.cards_view.draw(
+            self.screen,card,pygame.Rect(box.x+15,box.y+34,255,380),
+            unit=unit,statuses=statuses,
+            rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+            animate_rarity=self.animations_enabled,**params)
+        self._text('PRAWY KLIK — PEŁNY OPIS' if unit is not None
+                   else 'PRAWY KLIK / [I] — PEŁNY OPIS',12,
                    box.x+13,box.bottom-20,TAVERN_MUTED)
 
     def _present(self):
