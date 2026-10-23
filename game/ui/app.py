@@ -1854,7 +1854,7 @@ class SoloApp:
             base_atk=u.atk if u else c.attack
             normal_damage, boosted=standard_hit_damage(
                 base_atk, active_statuses(self.game,card_id) if u else ())
-            combat_line=(f'ATK {base_atk} ×2 = {normal_damage} OBR. / PŻ {u.hp}'
+            combat_line=(f'ATAK {normal_damage} (GEN. ×2) / PŻ {u.hp}'
                          if boosted else
                          f'ATAK {base_atk} / PŻ {u.hp if u else c.max_hp}')
             self._infographic_box(pygame.Rect(1104,290,320,69),
@@ -2435,7 +2435,9 @@ class SoloApp:
             self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
                        14,194,685,cfg.MUTED)
             # Archetype baseline and actual MAX HP are distinct from wounds.
-            current_atk=u.atk if u else card.attack
+            raw_atk=u.atk if u else card.attack
+            current_atk,_general=standard_hit_damage(
+                raw_atk,active_statuses(self.game,uid) if u else ())
             current_max=u.max_hp if u else card.max_hp
             # Real deltas only; wounds stay separate from maximum HP.
             atk_label=(f'ATK  BAZA {d.atk} → TERAZ {current_atk}'
@@ -2474,8 +2476,8 @@ class SoloApp:
                 u.atk, active_statuses(self.game,uid))
             if doubled:
                 if content_top<=y<content_bottom-24:
-                    self._text(f'ZWYKŁY ATAK: {u.atk} × 2 = {damage} OBRAŻEŃ (PRZED OBRONĄ)',
-                               16,520,y,cfg.GOLD)
+                    self._text(f'GENERAŁ: ATK W WALCE {u.atk} × 2 = {damage} (PRZED OBRONĄ)',
+                               16,520,y,cfg.GREEN)
                 y+=35
         if content_top<=y<content_bottom-27:self._text('ZDOLNOŚĆ — WARTOŚĆ SKALUJĄCA POGRUBIONA',18,520,y,cfg.GOLD)
         y+=37

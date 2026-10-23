@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.66 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.67 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.67 (kolory statystyk / pancerz / ATK bojowy)
+
+- ATK na karcie pokazuje skuteczną wartość bojową z premią Generała A002 (`9→18` staje się zielonym `18`), lecz obliczenia innych zdolności w silniku nie zmieniają się.
+- Zielony/czerwony wskazuje wzrost/spadek ATK względem statystyki jednostki bez aktywnych modifierów; analogiczne kolory dla **MAX PŻ**, ale nie dla ran.
+- Pancerz dodatni ma mały srebrny medalion przy prawej krawędzi PŻ; brak pancerza nie wyświetla medalionu.
+- Ręka, plansza i szczegóły karty są spójne; dodano test jednostkowy kolorów i geometrii.
 
 ### Etap — 0.9.66 (A002 — podwojone obrażenia w UI)
 
