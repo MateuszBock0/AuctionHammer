@@ -480,11 +480,9 @@ def mark_general_new_ally(game,uid):
     for src,leader in list(game.units.items()):
         if (src!=uid and leader.owner==owner and kind(game,src)=='A002'
             and rarity(game,src)==2 and not game._disabled(leader)):
-            recipients=game.auction_general_grants.setdefault(src,set())
-            if uid not in recipients:
-                recipients.add(uid)
-                game._log(f'{game.label(uid)}: premia od {game.label(src)} — '
-                          'do 2 ataków i obrażenia standardowych ataków ×2.')
+            # Preserve the historical audit journal byte-for-byte.
+            # UI/status and combat book explain the multiplier read-only.
+            game.auction_general_grants.setdefault(src,set()).add(uid)
 
 
 def boosted_attack(game,uid):
@@ -584,8 +582,7 @@ def execute(game,uid,context,choice,attacked=None):
     elif aid=='A002':
         if mode=='general_target' and target in own.board:
             game.auction_general_targets[uid]=target
-            game._log(f'Generał wybiera {game.label(target)}: '
-                      'do 2 ataków i obrażenia standardowych ataków ×2.')
+            game._log(f'Generał wybiera {game.label(target)} do podwójnych ataków.')
     elif aid=='A003' and context=='death':
         if mode=='to_hand':
             game.auction_wave_ops.append(('to_hand',owner,target,False))
