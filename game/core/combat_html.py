@@ -118,10 +118,22 @@ def _battle(item):
 
 def render_combat_html(payload):
     """Render a searchable, standalone local HTML with no external dependencies."""
-    combat = payload.get("combat_analysis", {})
-    attacks = combat.get("attacks")
-    if attacks is None:
-        attacks = build_combat_analysis(payload)
+    combat = payload.get("combat_analysis") or {}
+    cached_attacks = combat.get("attacks")
+    # Embedded battle summaries are derived presentation, not the signed
+    # source of truth. Rebuild from recorded command deltas when available:
+    # pre-0.9.59 summaries did not include General A002 combat bonuses.
+    # Preserve original participant names where they are available.
+    if isinstance(payload.get("initial_state"), dict) and isinstance(payload.get("actions"), list):
+        names = {}
+        for item in cached_attacks or ():
+            for role in ("attacker", "defender"):
+                participant = item.get(role) or {}
+                if participant.get("uid") and participant.get("name"):
+                    names[participant["uid"]] = participant["name"]
+        attacks = build_combat_analysis(payload, names)
+    else:
+        attacks = cached_attacks if cached_attacks is not None else []
     total = len(attacks)
     resolved_choices = sum(len(item["actions"]) > 1 for item in attacks)
     death_attacks = sum(_participant_died(item["defender"]) for item in attacks)

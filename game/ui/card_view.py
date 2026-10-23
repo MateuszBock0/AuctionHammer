@@ -40,6 +40,15 @@ ART = {
 }
 PRIORITY = ('stun','taunt','poison','shield','armor','double','quick','regen',
             'immune','atk_down','hp_down','atk_up','hp_up','heal_aura','cleanse','other')
+def status_display_priority(status):
+    """Protect combat-critical badges, then surface A002's damage multiplier."""
+    if status.category in ('stun', 'taunt'):
+        return PRIORITY.index(status.category)
+    if status.name == 'Premia Generała Oddziału Natarcia':
+        return 1.5
+    return PRIORITY.index(status.category) if status.category in PRIORITY else 99
+
+
 FAMILY_MARK = {
     'Obrażenia':'✦','Leczenie':'+','ATK ±':'±','MAX HP ±':'PŻ',
     'Pancerz':'◆','Tarcza':'◇','Trucizna':'☣','Ogłuszenie':'!',
@@ -243,8 +252,7 @@ class CardView:
                              tuple(statuses[3:])))
             return hits
         from game.ui.game_icons import status_icon_key
-        ordered=sorted(statuses,key=lambda st:(
-            PRIORITY.index(st.category) if st.category in PRIORITY else 99))
+        ordered=sorted(statuses,key=status_display_priority)
         x=art.x+3
         y=art.bottom-17
         result=[]
@@ -407,8 +415,7 @@ class CardView:
                 pygame.draw.circle(screen,cfg.GOLD,(rect.x+2,art.bottom-1),2)
             # Full status names, durations and sources remain available in I.
         elif statuses:
-            prio=lambda st:PRIORITY.index(st.category) if st.category in PRIORITY else 99
-            ordered=sorted(statuses,key=prio)
+            ordered=sorted(statuses,key=status_display_priority)
             compact=ordered[:2]
             x=art.x+3;y=art.bottom-17
             for status in compact:

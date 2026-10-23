@@ -161,9 +161,9 @@ def active_statuses(game, uid: str) -> list[VisibleStatus]:
                     and auction_ability_rules.rarity(game,src)==2
                     and not game._disabled(leader)):
                 generals.append(src)
-        add('double','2× OBRAŻ','Premia Generała Oddziału Natarcia',
-            'Maksymalnie 2 ataki w turze, a standardowe obrażenia ataku ×2; '
-            'wartość ATK na karcie nie jest podwajana; premia znika po utracie Generała',
+        add('double','DMG×2','Premia Generała Oddziału Natarcia',
+            'OBRAŻENIA STANDARDOWE ×2; maksymalnie 2 ataki w turze; '
+            'ATK na karcie bez zmian; premia znika po utracie Generała',
             ', '.join(generals))
 
     if u.fallback_double_pending and (u.played_turn != player.turn_count or game._fast(u)) and not game._has(u,'stun'):
