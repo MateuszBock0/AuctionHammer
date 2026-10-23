@@ -1,9 +1,14 @@
 """0.9.62: starter Chorazy kill-based growth, old archives and persistence."""
 from __future__ import annotations
 
+import os
 import tempfile
 import unittest
 from pathlib import Path
+
+os.environ.setdefault("SDL_VIDEODRIVER","dummy")
+os.environ.setdefault("SDL_AUDIODRIVER","dummy")
+import pygame
 
 from game.core.engine import Match
 from game.core.audit import (
@@ -151,6 +156,8 @@ class StarterGuardKillTests(unittest.TestCase):
         self.assertTrue(verify_replay(payload,replay_factory))
 
     def test_old_s34_art_does_not_upgrade(self):
+        pygame.init()
+        pygame.display.set_mode((32,32))
         view=CardView()
         self.assertEqual(ART["S34"],"chorazy_krolewskiej_kompanii.png")
         for level in (0,1,2,3,10):
