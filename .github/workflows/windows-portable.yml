@@ -54,7 +54,7 @@ jobs:
           python -c "from game.core.build_info import build_identity; x=build_identity(); assert x['source']=='embedded-ci' and x['commit']=='${{ github.sha }}', x"
       - name: Build AuctionHammer.exe with Python and pygame-ce included
         run: |
-          python -m PyInstaller --noconfirm --clean --onedir --windowed --name AuctionHammer --paths . --add-data "data;data" --add-data "assets;assets" --collect-all pygame game/main.py
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name AuctionHammer --paths . --icon "assets/branding/chorazy_zawsze_zdazy.ico" --add-data "data;data" --add-data "assets;assets" --collect-all pygame game/main.py
       - name: Assemble standalone master folder
         shell: pwsh
         run: |

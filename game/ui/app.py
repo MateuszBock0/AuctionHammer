@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.57: 51 auction art variants and gameplay clarity."""
+"""AuctionHammer UI: v23 game client, card art progression and gameplay clarity."""
 from __future__ import annotations
 import os
 import re
@@ -23,6 +23,7 @@ from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import CardView, FACTION_COLORS, ART, status_display_priority
+from game.ui.assets import ROOT_DIR
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
@@ -60,6 +61,14 @@ class SoloApp:
         self.windowed_size=preferred_window_size(desktop_size,logical_size)
         self.window=pygame.display.set_mode(self.windowed_size,pygame.RESIZABLE)
         self.screen=pygame.Surface(logical_size).convert()
+        # The exact same heraldic icon is embedded in the Windows executable.
+        # Non-Windows/development startup stays safe if the optional art is absent.
+        icon_path=ROOT_DIR/'assets'/'branding'/'chorazy_zawsze_zdazy_icon.png'
+        if icon_path.is_file():
+            try:
+                pygame.display.set_icon(pygame.image.load(str(icon_path)).convert_alpha())
+            except (pygame.error,OSError):
+                pass
         pygame.display.set_caption(cfg.WINDOW_TITLE)
         self.clock=pygame.time.Clock()
         self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (11,12,13,14,15,16,18,20,22,28,34,46)}

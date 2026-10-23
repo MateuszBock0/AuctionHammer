@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.60",
+  "mvp": "0.9.61",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -294,5 +294,19 @@
     "scope": "A010 end-of-turn grow by clicking Queen / summon by clicking vacant own slot; show OGŁUSZONY on stunned board units",
     "gameplay_rules_changed": false,
     "manual_windows_dpi_acceptance": "pending"
+  },
+  "chorazy_art_0961": {
+    "visual_series": "Chorąży Zawsze Zdąży",
+    "engine_card": "S34 — Chorąży Królewskiej Kompanii",
+    "levels": [
+      "assets/cards/chorazy.png",
+      "assets/cards/chorazy_rzadka.png",
+      "assets/cards/chorazy_legendarna.png"
+    ],
+    "tier_rule": "existing card.ability_level: 0 / 1 / 2+",
+    "windows_icon": "assets/branding/chorazy_zawsze_zdazy.ico",
+    "window_icon": "assets/branding/chorazy_zawsze_zdazy_icon.png",
+    "manifest": "assets/branding/manifest.json",
+    "rules_or_rng_changes": false
   }
 }
