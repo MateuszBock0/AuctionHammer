@@ -3,6 +3,8 @@
 
 from pathlib import Path
 import sys
+import io
+import zipfile
 import pygame
 
 from game import config as cfg
@@ -112,18 +114,85 @@ class ImageAssets:
         key = self._auction_base(archetype, rarity)
         return self._auction_colors[key] if key is not None else None
 
+    # All 51 authentic rarity portraits are composed over 51 bespoke fantasy
+    # atmospheres. The background ZIP stores 102 pixel-art crops (portrait and
+    # banner), but the recognizable character ALWAYS comes from the original
+    # verified assets/auction/Axxx_rarity.png. No external API / runtime network.
+    AUCTION_SCENES_ZIP = 'auction51_scenes.zip'
+
+    def _auction_pixel_scene(self, archetype: str, rarity: str,
+                             size: tuple[int,int]) -> pygame.Surface | None:
+        kind = 'banner' if size[1] <= 58 else 'portrait'
+        name = f'{archetype}_{rarity}_{kind}.png'
+        key = 'auction_scene/' + name
+        if key not in self._original:
+            archive = ROOT_DIR / 'assets' / 'auction' / 'pixel_art' / self.AUCTION_SCENES_ZIP
+            if not archive.is_file():
+                return None
+            try:
+                with zipfile.ZipFile(archive) as bundle:
+                    scene_bytes = bundle.read(name)
+                self._original[key] = pygame.image.load(
+                    io.BytesIO(scene_bytes), name).convert_alpha()
+            except (KeyError, OSError, pygame.error, zipfile.BadZipFile, ValueError):
+                return None
+        return self.fit_art(
+            self._original[key], size, mode='cover', pixelated=True)
+
+    @staticmethod
+    def _compose_original_auction_character(
+            scene: pygame.Surface, original: pygame.Surface,
+            *, banner: bool) -> pygame.Surface:
+        """Keep the correct existing character; new pixel art supplies scenery.
+
+        Figures are scaled with nearest neighbour only, with natural aspect ratio.
+        A cropped square portrait must never turn into a miniature inside a wide
+        strip or turn into a stretched face. This is display-only compositing.
+        """
+        w,h = scene.get_size()
+        bbox = original.get_bounding_rect(min_alpha=12)
+        if bbox.width <= 0 or bbox.height <= 0:
+            return scene
+        figure = original.subsurface(bbox)
+        fw,fh = figure.get_size()
+        target_height = max(1, round(h * (1.32 if banner else 0.93)))
+        target_width = max(1,round(fw * target_height / fh))
+        # Keep some fantasy environment on both sides of the hero.
+        if target_width > round(w * 0.76):
+            target_width = max(1,round(w * 0.76))
+            target_height = max(1,round(fh * target_width / fw))
+        sprite = pygame.transform.scale(figure,(target_width,target_height))
+        x = (w - target_width) // 2
+        y = (-round(h * 0.06) if banner else
+             h - target_height - round(h * 0.025))
+        scene.blit(sprite,(x,y))
+        return scene
+
     def get_auction_image(self, archetype: str, rarity: str,
                           size: tuple[int, int],
                           mode: str = 'cover') -> pygame.Surface | None:
-        """Current rarity sprite on a matching-color backdrop (cached)."""
+        """A001–A018: cinematic pixel-art card crop, authentic character.
+
+        Card/hover ('cover') uses one of the 102 composition-specific backgrounds
+        and the original 96x96 character on top. Image inspection ('contain')
+        continues to show the entire unmodified ORIGINAL sprite. Legacy
+        screenshots/replays and non-updated builds still have a safe fallback.
+        """
         original_key = self._auction_base(archetype, rarity)
         if original_key is None:
             return None
         cache_key = ('auction', original_key, tuple(size), mode)
         if cache_key not in self._scaled:
-            self._scaled[cache_key] = self.fit_art(
-                self._original[original_key], size, mode,
-                background=self._auction_colors[original_key])
+            scene = (self._auction_pixel_scene(archetype, rarity, size)
+                     if mode == 'cover' else None)
+            if scene is not None:
+                self._scaled[cache_key] = self._compose_original_auction_character(
+                    scene, self._original[original_key],
+                    banner=size[1] <= 58)
+            else:
+                self._scaled[cache_key] = self.fit_art(
+                    self._original[original_key],size,mode,
+                    background=self._auction_colors[original_key])
         return self._scaled[cache_key]
 
     @staticmethod
