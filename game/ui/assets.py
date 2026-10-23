@@ -1,4 +1,5 @@
 """Proste ładowanie ilustracji PNG, z pamięcią podręczną i awaryjną grafiką."""
+# AUCTIONHAMMER_PIXEL_ART_70_v1
 
 from pathlib import Path
 import sys
@@ -18,7 +19,7 @@ class ImageAssets:
     @staticmethod
     def fit_art(image: pygame.Surface, size: tuple[int,int],
                 mode: str='cover', focus: tuple[float,float]=(0.5,0.5),
-                background: tuple[int, int, int] | None = None) -> pygame.Surface:
+                background: tuple[int, int, int] | None = None, pixelated: bool = False) -> pygame.Surface:
         """One uniform scale; optional background fills containment margins."""
         import math
         w,h=map(int,size)
@@ -29,7 +30,8 @@ class ImageAssets:
         if iw<=0 or ih<=0:raise ValueError('Empty source image')
         ratio=(max if mode=='cover' else min)(w/iw,h/ih)
         sw,sh=max(1,math.ceil(iw*ratio)),max(1,math.ceil(ih*ratio))
-        fitted=pygame.transform.smoothscale(image,(sw,sh))
+        fitted=(pygame.transform.scale(image,(sw,sh)) if pixelated
+                else pygame.transform.smoothscale(image,(sw,sh)))
         surface=pygame.Surface((w,h),pygame.SRCALPHA)
         surface.fill(cfg.PANEL if background is None else background)
         if mode=='cover':
@@ -41,8 +43,9 @@ class ImageAssets:
         return surface
 
     def get_card_image(self, filename: str, size: tuple[int,int],
-                       mode: str='cover',focus: tuple[float,float]=(0.5,0.5)) -> pygame.Surface:
-        key=(filename,tuple(size),mode,tuple(focus))
+                       mode: str='cover',focus: tuple[float,float]=(0.5,0.5),
+                       pixelated: bool=False) -> pygame.Surface:
+        key=(filename,tuple(size),mode,tuple(focus),pixelated)
         if key not in self._scaled:
             if filename not in self._original:
                 path=ROOT_DIR/'assets'/'cards'/filename
@@ -57,7 +60,7 @@ class ImageAssets:
                     import warnings
                     warnings.warn(f'Brak grafiki karty: {filename}',RuntimeWarning)
                     self._original[filename]=self._fallback()
-            self._scaled[key]=self.fit_art(self._original[filename],size,mode,focus)
+            self._scaled[key]=self.fit_art(self._original[filename],size,mode,focus,pixelated=pixelated)
         return self._scaled[key]
 
     @staticmethod

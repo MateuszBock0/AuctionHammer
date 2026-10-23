@@ -22,7 +22,7 @@ from game.core.engine import Match
 from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
-from game.ui.card_view import (CardView, FACTION_COLORS, ART,
+from game.ui.card_view import (CardView, FACTION_COLORS, ART, PIXEL_ART_IDS,
                                CHORAZY_ART_LEVELS, status_display_priority)
 from game.ui.assets import ROOT_DIR
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
@@ -2386,7 +2386,12 @@ class SoloApp:
         details_attack=attack_display(self.game,uid) if u else None
         if self.details_image_zoom:
             # "Contain" is important here: see the ENTIRE existing image.
-            if d.id in ART or (d.id=='SUM_START_GUARD' and d.name=='Chorąży'):
+            # AUCTIONHAMMER_PIXEL_ART_70_v1
+            if d.id in PIXEL_ART_IDS:
+                artwork=self.cards_view.images.get_card_image(
+                    f'pixel_art/{d.id}_portrait.png',(276,520),
+                    mode='contain',pixelated=True)
+            elif d.id in ART or (d.id=='SUM_START_GUARD' and d.name=='Chorąży'):
                 file=(CHORAZY_ART_LEVELS[min(2,guard_kills)]
                       if guard_kills is not None else ART.get(d.id,ART['S34']))
                 artwork=self.cards_view.images.get_card_image(
