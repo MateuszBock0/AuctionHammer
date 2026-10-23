@@ -37,7 +37,7 @@ class ChorazyArt0961(unittest.TestCase):
 
     def test_5_artifact_checksums_and_png_format(self):
         manifest=json.loads((ROOT/"assets/branding/manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest["card_id"],"S34")
+        self.assertEqual(manifest["card_id"],"SUM_START_GUARD")
         self.assertEqual(len(manifest["files"]),5)
         found=set()
         for item in manifest["files"]:
@@ -57,6 +57,16 @@ class ChorazyArt0961(unittest.TestCase):
             elif path.suffix.lower()==".ico":
                 self.assertEqual(data[:4],b"\x00\x00\x01\x00")
                 self.assertGreaterEqual(struct.unpack("<H",data[4:6])[0],4)
+
+    def test_restored_s34_sprite_is_exact_original_git_blob(self):
+        file=ROOT/"assets/cards/chorazy_krolewskiej_kompanii.png"
+        raw=file.read_bytes()
+        git_blob=hashlib.sha1(
+            b"blob "+str(len(raw)).encode("ascii")+b"\0"+raw).hexdigest()
+        self.assertEqual(git_blob,
+                         "3807f79343f1f789a38a4db70f2b5325be89096e")
+        img=pygame.image.load(str(file)).convert_alpha()
+        self.assertEqual(img.get_size(),(96,96))
 
     def test_exact_three_starter_portraits_by_kills_and_s34_remains_constant(self):
         self.assertEqual(CHORAZY_ART_LEVELS,
