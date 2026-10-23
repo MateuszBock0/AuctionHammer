@@ -1118,7 +1118,9 @@ class SoloApp:
         try:
             self.game.choose_starting_compensation(0,choice)
             self.last_error=''
-            self.visual_notice=('WYBRANO CHORĄŻEGO 2/5' if choice=='unit_2_5'
+            self.visual_notice=(('WYBRANO CHORĄŻEGO 2/1 + 4 PANC.'
+                                 if getattr(self.game,'starter_guard_armor_rule',False)
+                                 else 'WYBRANO CHORĄŻEGO 2/5') if choice=='unit_2_5'
                                 else 'WYBRANO +3 MONETY')
             self.visual_notice_tick=pygame.time.get_ticks()
         except IllegalMove as exc:
@@ -1136,16 +1138,19 @@ class SoloApp:
         self._text('Jedna decyzja przed wymianą kart. Wybierz swoją rekompensatę.',
                    16,740,369,TAVERN_TEXT,center=True)
         pygame.draw.line(self.screen,TAVERN_BRASS,(442,412),(1038,412),1)
-        # Original S34 artwork and original button hitboxes: no new assets.
+        # Starter Chorazy portrait and existing button hitboxes.
         guard_area=pygame.Rect(438,443,604,67)
         self.theme.button(self.screen,guard_area,guard_area.collidepoint(self.mouse_pos()),
                           True,True,False)
         portrait=self.cards_view.images.get_card_image(
-            ART['S34'],(80,55),mode='contain')
+            CHORAZY_ART_LEVELS[0],(80,55),mode='contain')
         self.screen.blit(portrait,(guard_area.x+13,guard_area.y+6))
-        self._text('[1] CHORĄŻY  2 ATK / 5 PŻ',18,guard_area.x+111,
-                   guard_area.y+9,cfg.TEXT)
-        self._text('„Chorąży zawsze zdąży.” · Jednostka bez zdolności',
+        armored=getattr(self.game,'starter_guard_armor_rule',False)
+        self._text('[1] CHORĄŻY  2 ATK / 1 PŻ / 4 PANC.' if armored
+                   else '[1] CHORĄŻY  2 ATK / 5 PŻ',
+                   18,guard_area.x+111,guard_area.y+9,cfg.TEXT)
+        self._text('„Chorąży zawsze zdąży.” · +1 ATK / +2 PŻ za zabójstwo'
+                   if armored else '„Chorąży zawsze zdąży.” · Jednostka bez zdolności',
                    12,guard_area.x+111,guard_area.y+41,TAVERN_MUTED)
         coin_area=pygame.Rect(438,537,604,67)
         self.theme.button(self.screen,coin_area,coin_area.collidepoint(self.mouse_pos()),
@@ -1796,8 +1801,13 @@ class SoloApp:
             summary=ability_summary(c,u)
             self._text(self.cards_view.clip(d.name,self.fonts[18],310),18,1105,150,FACTION_COLORS[d.faction])
             self._text(f'{d.id} • {d.faction} • POZ. {cue.ability_level}',13,1105,181,cfg.MUTED)
+            guard_kills=self._guard_progress(card_id)
             self._infographic_box(pygame.Rect(1104,210,153,70),'AKTYWACJA',cue.trigger,(142,215,238),cue.family)
-            self._infographic_box(pygame.Rect(1267,210,157,70),'ROZWÓJ CO 3 TURY',cue.upgrade,cfg.GREEN,cue.next_threshold)
+            self._infographic_box(
+                pygame.Rect(1267,210,157,70),
+                'ZA ZABÓJSTWA' if guard_kills is not None else 'ROZWÓJ CO 3 TURY',
+                f'{guard_kills}/3 ZABÓJSTW' if guard_kills is not None else cue.upgrade,
+                cfg.GREEN, 'LIMIT 3' if guard_kills is not None else cue.next_threshold)
             self._infographic_box(pygame.Rect(1104,290,320,69),'AKTUALNY EFEKT',cue.base,cue.color,
                                   f'ATAK {u.atk if u else c.attack} / PŻ {u.hp if u else c.max_hp}')
             rules=getattr(self.game,'ruleset_version','v22')
@@ -1950,7 +1960,9 @@ class SoloApp:
             return 'KONIEC MECZU  ·  [R] NOWA PARTIA   [H] HISTORIA   [P] POWTÓRKA'
         if g.phase=='mulligan':
             if self._bonus_selection_due():
-                return 'WYBÓR REKOMPENSATY  ·  [1] CHORĄŻY 2/5 LUB [2] +3 MONETY'
+                guard=('2/1 +4 PANC.' if getattr(g,'starter_guard_armor_rule',False)
+                       else '2/5')
+                return f'WYBÓR REKOMPENSATY  ·  [1] CHORĄŻY {guard} LUB [2] +3 MONETY'
             count=len(g.players[0].mulligan_selected)
             if 0 not in g.mulligan_done:
                 return (f'WYMIANA STARTOWA {count}/3  ·  ZAZNACZ DO 3 KART Z RĘKI  ·  '
@@ -2421,7 +2433,9 @@ class SoloApp:
             if content_top<=y<content_bottom-25:self._text(line,18,520,y,cfg.TEXT)
             y+=27
         y+=23
-        if content_top<=y<content_bottom-25:self._text('PRZYROST STATYSTYK NA RĘCE',18,520,y,cfg.GOLD)
+        if content_top<=y<content_bottom-25:
+            self._text('PREMIA ZA ZABÓJSTWA' if guard_kills is not None
+                       else 'PRZYROST STATYSTYK NA RĘCE',18,520,y,cfg.GOLD)
         y+=32
         if content_top<=y<content_bottom-25:self._text(cue.growth,18,520,y,cfg.TEXT)
         y+=48

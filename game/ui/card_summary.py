@@ -324,12 +324,18 @@ def ability_summary(card, unit=None) -> AbilitySummary:
                                   'ukończone rundy od zakupu.')
         # Noncanonical or legacy text must not be falsely certified as v4.
         return AbilitySummary('OPIS AUKCYJNY — SPRAWDŹ WERSJĘ',d.effect)
-    # Starter compensation tokens have no spell; their effect text is a
-    # flavor description, and must be rendered verbatim, not like A010 soldiers.
+    # Only the new armored starting guard has this unique signed description.
+    # Old 3/5 or 2/5 archived tokens keep their original historical copy.
     if d.id=='SUM_START_GUARD':
+        if '4 trwałego pancerza na start' in d.effect:
+            return AbilitySummary(
+                'ZABÓJSTWA: +1 ATK / +2 PŻ',
+                d.effect+' Pancerz początkowy nie odnawia się po zabójstwie. '
+                'Po opuszczeniu planszy nie wraca do talii.'
+            )
         return AbilitySummary(
             'BEZ ZDOLNOŚCI',
-            d.effect+' Jest to jednostka startowa bez zdolności specjalnych; '
+            d.effect+' Jest to historyczna jednostka startowa bez zdolności specjalnych; '
             'po opuszczeniu planszy nie wraca do talii.'
         )
     # Summoned Queen soldiers are real board units but not among the 70

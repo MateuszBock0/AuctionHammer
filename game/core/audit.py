@@ -211,6 +211,10 @@ def state_snapshot(game):
                 state['ruleset_state']['starter_guard_kill_rule']=True
                 state['ruleset_state']['starter_guard_kills']=getattr(
                     game,'starter_guard_kills',0)
+            if getattr(game,'starter_guard_armor_rule',False):
+                # A separate version marker keeps 0.9.62's 2/5 archives
+                # byte-identical, even when the old kill egg was enabled.
+                state['ruleset_state']['starter_guard_armor_rule']=True
     return state
 
 
@@ -631,6 +635,25 @@ def verify_replay(payload,match_factory):
         raise ValueError("Nieznana reguła rozwoju Chorążego")
     game.starter_guard_kill_rule=guard_enabled
     game.starter_guard_kills=0
+    # Signed 0.9.63 variant only: 2 ATK / 1 HP + 4 permanent armor.
+    # Old 0.9.62 signed matches still use 2/5 and the old event wording.
+    armor_flag=isinstance(signed_rule,dict) and signed_rule.get(
+        'starter_guard_armor_rule') is True
+    if isinstance(signed_rule,dict) and (
+            'starter_guard_armor_rule' in signed_rule) and not armor_flag:
+        raise ValueError("Nieprawidłowa flaga pancerza Chorążego")
+    if armor_flag and (not guard_enabled or
+                       signed_rule.get('audit_schema')!=4):
+        raise ValueError("Nieprawidłowy wariant Chorążego w audycie")
+    game.starter_guard_armor_rule=armor_flag
+    if (getattr(game,'starting_compensation',None)=='choice_2_5_or_coins'
+            and not armor_flag):
+        old='Drugi gracz wybierze Chorążego 2/5 lub +3 monety.'
+        new='Drugi gracz wybierze Chorążego 2/1 z 4 pancerza lub +3 monety.'
+        for entry in game.event_journal:
+            if new in entry['text']:
+                entry['text']=entry['text'].replace(new,old)
+        game.events=[e.replace(new,old) for e in game.events]
     # PR #82 briefly changed only the wording/number of A002 journal lines.
     # Historical hashes must be verified with the *original* event sequence:
     # old archives keep the established wording, while precisely identified

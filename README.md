@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.62** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.63** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -39,7 +39,7 @@ Celem jest zmniejszenie PŻ bohatera komputera z **100 do 0**, zanim on zrobi to
 | Jednostki | Mają ATK, PŻ, frakcję, aktywację zdolności i postęp rozwoju na ręce |
 | Atak | Kliknij swoją gotową jednostkę, potem legalny cel; Prowokacja i statusy mogą ograniczać wybór |
 | Monety | Służą przede wszystkim do aukcji, **nie do zagrywania zwykłych kart** |
-| Rekompensata za drugi ruch | Drugi gracz wybiera **Chorążego 2 ATK / 5 PŻ** albo **+3 monety** |
+| Rekompensata za drugi ruch | Drugi gracz wybiera **Chorążego 2 ATK / 1 PŻ / 4 trwałego pancerza** albo **+3 monety** |
 | Ekonomia dodatkowa | +1 moneta dla obu po pełnej rundzie; w aktualnym wariancie v22 dochód za własne puste pola na koniec tury |
 
 **Ważne:** Chorąży nie atakuje w swojej pierwszej turze. Zapisane mecze ze starszych wersji zachowują swoje historyczne reguły.
@@ -66,7 +66,7 @@ Co trzy ukończone rundy może rozpocząć się aukcja. System losuje **trzy ofe
 | Rzadka | 30% | Srebrno-błękitna |
 | Legendarna | 10% | Złota, z ornamentami i świetlistą ilustracją |
 
-**Easter egg Chorążego „Zawsze zdąży” (0.9.62):** Jeżeli drugi gracz wybierze na starcie **Chorążego 2 ATK / 5 PŻ** (`SUM_START_GUARD`), każdy pokonany jego własnym standardowym atakiem przeciwnik daje **+1 ATK, +2 MAX PŻ i +2 bieżące PŻ**. Premia nalicza się najwyżej **3 razy**: po 0/1/2+ zabójstwach Chorąży pokazuje grafikę podstawową/rzadką/legendarną. Kontratak, efekt pośredni i obustronna śmierć nie liczą się. **S34 Chorąży Królewskiej Kompanii odzyskał swoją oryginalną, niezmienną grafikę.** Stare zapisane mecze i audyty pozostają zgodne ze swoimi historycznymi regułami.
+**Korekta wytrzymałości Chorążego (0.9.63):** Nowy startowy Chorąży „Zawsze zdąży” ma **2 ATK / 1 PŻ / 4 trwałego pancerza**. Pancerz pochłania obrażenia i nie odnawia się po zabójstwach; kolejne zabójstwa podnoszą ATK i PŻ o dotychczasowe wartości. Po 3 zabójstwach jego bazowe statystyki to **5 ATK / 7 MAX PŻ**, a pozostały pancerz zależy od otrzymanych ciosów. Opisy wyboru, karty i podglądu wskazują prawdziwą zdolność. Mecze zapisane w 0.9.62 i wcześniej zachowują swoje początkowe 2/5.\n\n**Easter egg Chorążego „Zawsze zdąży” (0.9.62):** Jeżeli drugi gracz wybierze na starcie **Chorążego** (`SUM_START_GUARD`), każdy pokonany jego własnym standardowym atakiem przeciwnik daje **+1 ATK, +2 MAX PŻ i +2 bieżące PŻ**. Premia nalicza się najwyżej **3 razy**: po 0/1/2+ zabójstwach Chorąży pokazuje grafikę podstawową/rzadką/legendarną. Kontratak, efekt pośredni i obustronna śmierć nie liczą się. **S34 Chorąży Królewskiej Kompanii odzyskał swoją oryginalną, niezmienną grafikę.** Stare zapisane mecze i audyty pozostają zgodne ze swoimi historycznymi regułami.
 
 **Oprawa graficzna Chorążego (0.9.61 → 0.9.62):** Trzy zatwierdzone portrety 96×96 pozostają w grze, ale od 0.9.62 należą do **startowego Chorążego „Zawsze zdąży”**, a nie S34. Wersję grafiki określa liczba bezpośrednich zabójstw. Ikony okna i pliku `AuctionHammer.exe` nie uległy zmianie. [Grafiki i manifest SHA-256](docs/CHORAZY_ART_0961.md).
 

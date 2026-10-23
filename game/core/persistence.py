@@ -213,6 +213,12 @@ def load_match(path: Path | None = None) -> Match:
     # this pair in the authenticated serialized Match state.
     data.setdefault('starter_guard_kill_rule',False)
     data.setdefault('starter_guard_kills',0)
+    # Missing on 0.9.62 and earlier saved games: keep 2/5, no armor.
+    data.setdefault('starter_guard_armor_rule',False)
+    if type(data['starter_guard_armor_rule']) is not bool or (
+            data['starter_guard_armor_rule'] and
+            not data['starter_guard_kill_rule']):
+        raise ValueError('Nieprawidłowy wariant Chorążego w zapisie')
     if (type(data['starter_guard_kill_rule']) is not bool or
             type(data['starter_guard_kills']) is not int or
             not 0<=data['starter_guard_kills']<=3 or

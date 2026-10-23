@@ -79,14 +79,16 @@ class StarterGuardKillTests(unittest.TestCase):
     def test_three_direct_kills_grow_attack_hp_and_cap(self):
         game=fresh()
         self.assertTrue(game.starter_guard_kill_rule)
-        self.assertEqual((game.units[GUARD].atk,game.units[GUARD].hp),(2,5))
+        self.assertEqual((game.units[GUARD].atk,game.units[GUARD].hp),(2,1))
+        self.assertEqual(game.units[GUARD].armor_perm,4)
         for n,cid in enumerate(("S01","S02","S03","S04"),1):
             strike_victim(game,cid)
             capped=min(n,3)
             unit=game.units[GUARD]
             self.assertEqual(game.starter_guard_kills,capped)
             self.assertEqual((unit.base_attack,unit.base_max_hp,unit.hp),
-                             (2+capped,5+2*capped,5+2*capped))
+                             (2+capped,1+2*capped,1+2*capped))
+            self.assertEqual(unit.armor_perm,4)
             self.assertEqual(CHORAZY_ART_LEVELS[min(capped,2)],
                              ("chorazy_rzadka.png" if n==1 else
                               "chorazy_legendarna.png"))
@@ -153,6 +155,12 @@ class StarterGuardKillTests(unittest.TestCase):
         # Simulate a pre-0.9.62 archive: its signed state has no kill marker.
         game.starter_guard_kill_rule=False
         game.starter_guard_kills=0
+        game.starter_guard_armor_rule=False
+        old='Drugi gracz wybierze Chorążego 2/5 lub +3 monety.'
+        new='Drugi gracz wybierze Chorążego 2/1 z 4 pancerza lub +3 monety.'
+        for entry in game.event_journal:
+            entry['text']=entry['text'].replace(new,old)
+        game.events=[line.replace(new,old) for line in game.events]
         initialize_audit(game)
         game.choose_starting_compensation(1-game.first,"unit_2_5")
         payload=signed_trace(game)
@@ -169,6 +177,7 @@ class StarterGuardKillTests(unittest.TestCase):
         before=state_snapshot(game)["ruleset_state"]
         self.assertIs(before["starter_guard_kill_rule"],True)
         self.assertEqual(before["starter_guard_kills"],0)
+        self.assertTrue(before["starter_guard_armor_rule"])
         game.choose_starting_compensation(1-game.first,"unit_2_5")
         payload=signed_trace(game)
         self.assertTrue(verify_replay(payload,replay_factory))

@@ -146,7 +146,7 @@ class HoverAndTavernAcceptance(unittest.TestCase):
         app=self.app
         app.game=bonus_match(human_second=True)
         before=digest(state_snapshot(app.game))
-        self.assertIn('[1] CHORĄŻY 2/5',app._phase_guidance())
+        self.assertIn('[1] CHORĄŻY 2/1 +4 PANC.',app._phase_guidance())
         self.assertIn('[2] +3 MONETY',app._phase_guidance())
         self.assertEqual(digest(state_snapshot(app.game)),before)
 

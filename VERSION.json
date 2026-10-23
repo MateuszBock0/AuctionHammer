@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.62",
+  "mvp": "0.9.63",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -92,7 +92,7 @@
     "coins"
   ],
   "starting_compensation_choice_audit_schema": 4,
-  "starting_compensation_bonus_card": "Chorąży, 2/5, Chorąży zawsze zdąży.",
+  "starting_compensation_bonus_card": "Chorąży, 2 ATK / 1 PŻ / 4 trwałego pancerza, do +3 ATK i +6 MAX PŻ za zabójstwa.",
   "starting_compensation_archive_0939": "unit_5_5_guard_no_coins",
   "starting_compensation_available_modes": [
     "coins",
@@ -318,5 +318,14 @@
     "signed_new_ruleset_field": "starter_guard_kill_rule and starter_guard_kills",
     "legacy_save_and_audit_compatibility": "disabled for historical matches",
     "mechanics_scope": "only opt-in new 2/5 starter guard; no changes to card S34 or other cards"
+  },
+  "starter_chorazy_armor_0963": {
+    "base_atk": 2,
+    "base_hp": 1,
+    "permanent_armor": 4,
+    "kill_bonus": "+1 ATK +2 MAX/bieżącego PŻ, maks. trzy razy",
+    "post_three_kills": "5 ATK / 7 MAX PŻ, przed aurami; pancerz nie odnawia się",
+    "old_saves_and_replays": "old 2/5 and 3/5 remain identical; new signed starter_guard_armor_rule only",
+    "description": "in game descriptions, selection UI and HUD corrected"
   }
 }
