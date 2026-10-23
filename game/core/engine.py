@@ -34,6 +34,9 @@ class Match:
         # Historical games/replays disable this via their signed ruleset.
         self.starter_guard_kill_rule=(starting_compensation=="choice_2_5_or_coins")
         self.starter_guard_kills=0
+        # 0.9.63: explicitly versioned 2/1 + 4 armor starter. Absence of
+        # this bit in archived 0.9.62 audit/saves preserves 2/5 semantics.
+        self.starter_guard_armor_rule=(starting_compensation=="choice_2_5_or_coins")
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
@@ -164,7 +167,10 @@ class Match:
         elif self.starting_compensation=="unit_3_5":
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma Chorążego 3/5 na planszy, bez premii monet.')
         elif self.starting_compensation=="choice_2_5_or_coins":
-            self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz wybierze Chorążego 2/5 lub +3 monety.')
+            option=('Chorążego 2/1 z 4 pancerza'
+                    if self.starter_guard_armor_rule else 'Chorążego 2/5')
+            self._log(f'Pierwszy ruch: {self.players[self.first].name}. '
+                      f'Drugi gracz wybierze {option} lub +3 monety.')
         else:
             self._log(f'Pierwszy ruch: {self.players[self.first].name}. Drugi gracz ma 3 monety.')
         if self.auctions_enabled:
@@ -211,15 +217,30 @@ class Match:
             self._log(f'{self.players[player_idx].name}: wybrano +3 monety na start.')
         else:
             uid='SUM_START_GUARD'
+            armored=getattr(self,'starter_guard_armor_rule',False)
+            hp=1 if armored else 5
+            effect=('Chorąży zawsze zdąży. 4 trwałego pancerza na start. '
+                    'Za każde bezpośrednie zabójstwo atakiem: '
+                    '+1 ATK i +2 MAX/bieżącego PŻ, najwyżej 3 razy.'
+                    if armored else 'Chorąży zawsze zdąży.')
+            scaling=('Zabójstwa: 0/3; +1 ATK i +2 MAX/bieżącego PŻ za zabójstwo. '
+                     'Pancerz nie odnawia się; po śmierci nie wraca do talii.'
+                     if armored else 'Brak wzrostu; po śmierci nie wraca do talii.')
             definition=CardDefinition(
-                uid,'Chorąży','Ludzie','Bez zdolności','Pasywna',2,5,
-                'Chorąży zawsze zdąży.',
-                'Brak wzrostu; po śmierci nie wraca do talii.',0,0)
+                uid,'Chorąży','Ludzie','Bez zdolności','Pasywna',2,hp,
+                effect,scaling,0,0)
             self.cards[uid]=Card(uid,definition,owner=player_idx,zone='board')
-            self.units[uid]=Unit(uid,player_idx,2,5,5,0,1)
+            unit=Unit(uid,player_idx,2,hp,hp,0,1)
+            if armored:
+                unit.armor_perm=4
+                unit.armor_perm_source=uid
+                unit.armor_perm_grants[uid]=4
+            self.units[uid]=unit
             self._place_on_board(uid,player_idx)
             self.ephemeral_ids.add(uid)
-            self._log(f'{self.players[player_idx].name}: wybrano Chorążego 2/5 na start.')
+            description=('2/1 z 4 pancerza' if armored else '2/5')
+            self._log(f'{self.players[player_idx].name}: '
+                      f'wybrano Chorążego {description} na start.')
         self.assert_integrity()
 
     @audit_action('mulligan_toggle')
