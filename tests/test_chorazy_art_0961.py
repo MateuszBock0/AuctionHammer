@@ -48,14 +48,14 @@ class ChorazyArt0961(unittest.TestCase):
             self.assertNotIn(item["path"],found)
             found.add(item["path"])
             if path.suffix.lower()==".png":
-                self.assertTrue(data.startswith(b"\\x89PNG\\r\\n\\x1a\\n"))
+                self.assertTrue(data.startswith(b"\x89PNG\r\n\x1a\n"))
                 self.assertEqual(struct.unpack(">II",data[16:24]),
                                  (item["width"],item["height"]))
                 self.assertEqual(data[25],6)  # RGBA truecolor
                 surface=pygame.image.load(str(path)).convert_alpha()
                 self.assertEqual(surface.get_size(),(item["width"],item["height"]))
             elif path.suffix.lower()==".ico":
-                self.assertEqual(data[:4],b"\\x00\\x00\\x01\\x00")
+                self.assertEqual(data[:4],b"\x00\x00\x01\x00")
                 self.assertGreaterEqual(struct.unpack("<H",data[4:6])[0],4)
 
     def test_exact_three_distinct_s34_portraits_by_existing_ability_level(self):
