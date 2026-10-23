@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.60** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.61** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
 
@@ -65,6 +65,10 @@ Co trzy ukończone rundy może rozpocząć się aukcja. System losuje **trzy ofe
 | Podstawowa | 60% | Brązowa |
 | Rzadka | 30% | Srebrno-błękitna |
 | Legendarna | 10% | Złota, z ornamentami i świetlistą ilustracją |
+
+**Nowa oprawa graficzna (0.9.61):** Trzy zatwierdzone obrazy **Chorążego** (S34, Chorąży Królewskiej Kompanii) pod nazwą artystyczną „Chorąży Zawsze Zdąży” są automatycznie wybierane na podstawie **istniejącego poziomu zdolności**: 0 — podstawowy, 1 — rzadszy wygląd, 2+ — legendarny wygląd. Zmiany dotyczą tylko ilustracji, bez nowej rzadkości ani zmian zasad i balansu. Dodano ikonę okna i pliku `AuctionHammer.exe` z tym samym portretem. [Grafiki i manifest SHA-256](docs/CHORAZY_ART_0961.md).
+
+<img src="assets/branding/chorazy_zawsze_zdazy_icon.png" alt="Chorąży — ikona fantasy z królewskim sztandarem" width="112">
 
 **Sterowanie i czytelność walki (0.9.60):** Podczas wyboru zdolności Królowej Tysiąca Twarzy (A010) kliknij samą Królową, aby wybrać **WZMOCNIJ**, albo dowolne wolne własne pole, aby wybrać **PRZYWOŁAJ** (faktyczne rozmieszczenie przywołanych jednostek pozostaje zgodne z regułami silnika). Legalne cele są podświetlone; przy pełnej planszy dostępne jest tylko wzmocnienie. Jednostka ogłuszona pokazuje wyraźne **OGŁUSZONY** zamiast mylącego licznika ataków mimo Szybkiego Ataku. Sterowanie przyciskami wyboru pozostaje dostępne. Zasady, obrażenia, AI, RNG i archiwalne audyty bez zmian.
 
