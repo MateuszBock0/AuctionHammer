@@ -48,6 +48,20 @@ CHORAZY_ART_LEVELS = (
 PIXEL_ART_IDS = frozenset(('S103', 'S104', 'S34', 'S35', 'S105', 'S106', 'S107', 'S108', 'S109', 'S33', 'S111', 'S39', 'S114', 'S115', 'S01', 'S02', 'S04', 'S08', 'S03', 'S05', 'S58', 'S59', 'S60', 'S61', 'S07', 'S64', 'S66', 'S67', 'S27', 'S25', 'S28', 'S93', 'S26', 'S94', 'S32', 'S95', 'S31', 'S96', 'S97', 'S99', 'S101', 'S102', 'S09', 'S10', 'S68', 'S69', 'S12', 'S70', 'S11', 'S15', 'S71', 'S72', 'S74', 'S76', 'S78', 'S79', 'S21', 'S17', 'S23', 'S81', 'S82', 'S20', 'S83', 'S84', 'S85', 'S86', 'S87', 'S88', 'S90', 'S91'))
 PRIORITY = ('stun','taunt','poison','shield','armor','double','quick','regen',
             'immune','atk_down','hp_down','atk_up','hp_up','heal_aura','cleanse','other')
+GENERAL_DAMAGE_STATUS = 'Premia Generała Oddziału Natarcia'
+
+def standard_hit_damage(attack: int, statuses=()) -> tuple[int, bool]:
+    """Read-only preview: raw normal-hit damage before armor/shield.
+
+    Uses the live General status, which is generated from the same combat
+    predicate as Match.attack(); other double-attack effects do NOT double
+    damage. The actual ATK statistic remains unchanged.
+    """
+    doubled = any(getattr(s, 'name', None) == GENERAL_DAMAGE_STATUS
+                  for s in statuses)
+    return int(attack) * (2 if doubled else 1), doubled
+
+
 def status_display_priority(status):
     """Protect combat-critical badges, then surface A002's damage multiplier."""
     if status.category in ('stun', 'taunt'):
@@ -489,16 +503,25 @@ class CardView:
             self._pill(screen,tag,count,tone,sf)
         # ATK + PŻ last: large, opaque, never dimmed or overlapped.
         attack=unit.atk if board else card.attack
+        raw_damage, general_boost = standard_hit_damage(
+            attack, statuses if board else ())
         hp=(max(0,int(hp_override)) if board and hp_override is not None
             else max(0,unit.hp) if board else card.max_hp)
         max_hp=unit.max_hp if board else card.max_hp
         label_font=self.font(10 if large else 9,True)
         value_font=self.font(25 if large else (22 if rect.height>=210 else 20),True)
         max_font=self.font(13 if large else 10)
-        for r,t in ((attack_box,'ATAK'),(health_box,'PŻ')):
+        for r,t in ((attack_box,'ATK→OBR.' if general_boost else 'ATAK'),
+                    (health_box,'PŻ')):
             label=label_font.render(t,True,(213,210,201))
             screen.blit(label,(r.x+4,r.y+2))
-        aa=value_font.render(str(attack),True,(255,215,132))
+        # General doubles normal-hit DAMAGE, not ATK. Show both numbers:
+        # e.g. 9→18; prevent the old misleading single "9" on the board.
+        attack_text=(f'{attack}→{raw_damage}' if general_boost else str(attack))
+        attack_font=(self._fit_font(attack_text,attack_box.width-6,
+                     (23,21,19,17,15,13) if large else (20,18,16,14,12))
+                     if general_boost else value_font)
+        aa=attack_font.render(attack_text,True,(255,215,132))
         screen.blit(aa,aa.get_rect(centerx=attack_box.centerx,bottom=attack_box.bottom-2))
         hh=value_font.render(str(hp),True,(255,153,157))
         mm=max_font.render('/'+str(max_hp),True,(223,196,198))

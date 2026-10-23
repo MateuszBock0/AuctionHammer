@@ -23,6 +23,7 @@ from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
 from game.ui.card_view import (CardView, FACTION_COLORS, ART, PIXEL_ART_IDS,
+                               standard_hit_damage,
                                CHORAZY_ART_LEVELS, status_display_priority)
 from game.ui.assets import ROOT_DIR
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
@@ -1850,8 +1851,14 @@ class SoloApp:
                 'ZA ZABÓJSTWA' if guard_kills is not None else 'ROZWÓJ CO 3 TURY',
                 f'{guard_kills}/3 ZABÓJSTW' if guard_kills is not None else cue.upgrade,
                 cfg.GREEN, 'LIMIT 3' if guard_kills is not None else cue.next_threshold)
-            self._infographic_box(pygame.Rect(1104,290,320,69),'AKTUALNY EFEKT',cue.base,cue.color,
-                                  f'ATAK {u.atk if u else c.attack} / PŻ {u.hp if u else c.max_hp}')
+            base_atk=u.atk if u else c.attack
+            normal_damage, boosted=standard_hit_damage(
+                base_atk, active_statuses(self.game,card_id) if u else ())
+            combat_line=(f'ATK {base_atk} ×2 = {normal_damage} OBR. / PŻ {u.hp}'
+                         if boosted else
+                         f'ATAK {base_atk} / PŻ {u.hp if u else c.max_hp}')
+            self._infographic_box(pygame.Rect(1104,290,320,69),
+                                  'AKTUALNY EFEKT',cue.base,cue.color,combat_line)
             rules=getattr(self.game,'ruleset_version','v22')
             conditional=v23_base_card_short_note(d.id,rules)
             if conditional:
@@ -2462,6 +2469,14 @@ class SoloApp:
 
         content_top=264;content_bottom=817
         y=content_top-self.details_scroll
+        if u:
+            damage, doubled=standard_hit_damage(
+                u.atk, active_statuses(self.game,uid))
+            if doubled:
+                if content_top<=y<content_bottom-24:
+                    self._text(f'ZWYKŁY ATAK: {u.atk} × 2 = {damage} OBRAŻEŃ (PRZED OBRONĄ)',
+                               16,520,y,cfg.GOLD)
+                y+=35
         if content_top<=y<content_bottom-27:self._text('ZDOLNOŚĆ — WARTOŚĆ SKALUJĄCA POGRUBIONA',18,520,y,cfg.GOLD)
         y+=37
         for line in self._wrap(detail_summary,16,750):

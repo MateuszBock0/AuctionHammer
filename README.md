@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.65** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.66** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,10 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.66 — czytelne obrażenia po premii Generała
+
+Przy premii Generała Oddziału Natarcia na karcie jednostki wyświetlamy **ATK → obrażenia**, np. **9→18**, a panel boczny i podgląd [I] rozpisują `9 × 2 = 18` jako obrażenia **przed tarczą i pancerzem**. Sama statystyka ATK pozostaje 9; Generał zwiększa obrażenia zwykłego ataku, nie ATK. Podwojona liczba ataków nadal jest oddzielnym efektem. Po utracie aktywnej premii licznik wraca automatycznie do 9. Żadne zasady walki, replay ani balans nie zostały zmienione.
 
 ## Nowość 0.9.65 — komplet 70 kart podstawowych w pixel arcie
 
