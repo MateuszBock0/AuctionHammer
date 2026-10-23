@@ -2,9 +2,9 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.63** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.64** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
-[**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz zasady](AUCTIONHAMMER_MASTER.md)
+[**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
 > **English:** A free, offline, single-player fantasy card game against AI. Build a five-unit board, grow cards in your hand and bid for unique auction cards. The interface is in Polish. Windows builds do not require Python.
 
@@ -25,13 +25,23 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
 
+## Nowość 0.9.64 — zawsze ustalona kolejność pierwszych meczów
+
+**Pierwszy mecz po uruchomieniu aplikacji rozpoczyna komputer, czyli Ty grasz jako drugi. Drugi nowy mecz rozpoczynasz Ty, a komputer jest drugi.** Następne mecze powtarzają ten układ naprzemiennie (3. komputer, 4. Ty itd.). Ta kolejność resetuje się przy **nowym uruchomieniu aplikacji**. Nie zapisuje się jej na stałe między uruchomieniami.
+
+**NOWY MECZ** z pierwszego menu, **KONTYNUUJ** oraz pierwszy **SAMOUCZEK** wykorzystują przygotowaną pierwszą partię i nie pomijają jej. Dopiero kolejny nowy mecz przełącza kolejność. Anulowanie potwierdzenia restartu niczego nie przełącza. **WCZYTAJ ZAPIS** zachowuje kolejność z pliku, a następny nowy mecz otrzymuje kolejność przeciwną do wczytanego meczu.
+
+W każdym meczu **drugi gracz** (Ty albo komputer) wybiera bonus: **+3 monety** lub **Chorążego „Zawsze zdąży” 2 ATK / 1 PŻ / 4 pancerza**. Silnik nadal losuje kolejność deterministycznie z seeda; aplikacja dobiera seed odpowiadający tej naprzemiennej kolejności, dlatego archiwalne audyty i symulacje nie zmieniają zasad.
+
+**[Aktualny Game Master MVP 0.9.64](docs/CURRENT_MVP_RULES_0964.md)** · [Dane do odczytu maszynowego](data/MVP_RULES_0964.json).
+
 ## 2. Jak wygrać?
 
 Celem jest zmniejszenie PŻ bohatera komputera z **100 do 0**, zanim on zrobi to samo z Twoim bohaterem. Gra jest **turowa**, ale w swojej turze możesz wykonać dostępne ataki i wystawić kartę w wybranej kolejności.
 
 | Element | Zasada |
 |---|---|
-| Początek meczu | Każdy ma 5 kart na ręce i 5 w talii; karty pochodzą ze wspólnej puli 70 różnych jednostek |
+| Kolejność rozpoczynania meczów | **Mecz 1: komputer zaczyna, gracz jest drugi. Mecz 2: gracz zaczyna, komputer jest drugi.** Kolejne mecze naprzemiennie w tej samej sesji aplikacji |\n| Początek meczu | Każdy ma 5 kart na ręce i 5 w talii; karty pochodzą ze wspólnej puli 70 różnych jednostek |
 | Pierwsza decyzja | Wymiana do 3 kart z początkowej ręki (można wymienić 0) |
 | Wystawianie | Zasadniczo **1 karta na własną turę**, bez kosztu w monetach |
 | Plansza | **5 fizycznych pól** po każdej stronie; zgon nie przesuwa sąsiadów |
