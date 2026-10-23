@@ -12,7 +12,7 @@ import pygame
 
 from game.core.engine import Match
 from game.core.audit import (
-    digest, initialize_audit, make_report, state_snapshot, verify_replay)
+    digest, initialize_audit, state_snapshot, verify_replay)
 from game.core.persistence import load_match, save_match
 from game.ui.card_view import CardView, ART, CHORAZY_ART_LEVELS
 from test_engine import force_unit
@@ -55,6 +55,24 @@ def replay_factory(seed,auctions_enabled=False,auction_catalog="v3",
                  auctions_enabled=auctions_enabled,
                  auction_catalog=auction_catalog,
                  starting_compensation=starting_compensation)
+
+
+def signed_trace(game):
+    """Replay all recorded commands from seed; not an export of an unfinished match."""
+    return {
+        "seed":game.seed,
+        "version":"0.9.62",
+        "complete_from_start":True,
+        "initial_state":game.audit_initial,
+        "actions":game.audit_actions,
+        "internal_events":game.audit_internal,
+        "event_journal":game.event_journal,
+        "final_state":state_snapshot(game),
+        "summary":{
+            "ruleset_version":game.ruleset_version,
+            "vacant_slot_income_enabled":game.vacant_income_enabled,
+        },
+    }
 
 
 class StarterGuardKillTests(unittest.TestCase):
@@ -137,7 +155,7 @@ class StarterGuardKillTests(unittest.TestCase):
         game.starter_guard_kills=0
         initialize_audit(game)
         game.choose_starting_compensation(1-game.first,"unit_2_5")
-        payload=make_report(game)["payload"]
+        payload=signed_trace(game)
         self.assertNotIn("starter_guard_kills",
                          payload["initial_state"]["ruleset_state"])
         frozen=digest(payload)
@@ -152,7 +170,7 @@ class StarterGuardKillTests(unittest.TestCase):
         self.assertIs(before["starter_guard_kill_rule"],True)
         self.assertEqual(before["starter_guard_kills"],0)
         game.choose_starting_compensation(1-game.first,"unit_2_5")
-        payload=make_report(game)["payload"]
+        payload=signed_trace(game)
         self.assertTrue(verify_replay(payload,replay_factory))
 
     def test_old_s34_art_does_not_upgrade(self):
