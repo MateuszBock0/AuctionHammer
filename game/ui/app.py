@@ -84,7 +84,15 @@ class SoloApp:
         self.help_open=False
         self.help_page=0
         self._start_tutorial_after_restart=False
+        # Local UI session only: computer opens game 1, human opens game 2,
+        # then alternate. The engine's seeded/random first-player rule stays
+        # unchanged for archives, replay tools and headless simulations.
+        self._next_first_player=1
+        self._first_menu_game_unused=False
         self.restart()
+        # The opening menu has a pre-created game behind it. Starting from
+        # that menu should use it rather than silently skip game number one.
+        self._first_menu_game_unused=bool(start_in_menu)
         self.confirm_action=None
         self.confirm_error=''
         self.menu_open=bool(start_in_menu)
@@ -97,15 +105,38 @@ class SoloApp:
         self.history_scroll=0
         self.replay_index=None
 
+    @staticmethod
+    def _match_with_first_player(first):
+        """Select a fresh random seed with the requested opening seat.
+
+        Match remains the sole authority on first-player selection, including
+        its original RNG draw order. This preserves signed replay verification:
+        replaying the chosen seed without any UI reproduces the same start.
+        Rejected candidates are never shown, recorded, or saved.
+        """
+        if first not in (0,1):
+            raise ValueError('Nieprawidłowy gracz rozpoczynający')
+        for _ in range(128):
+            candidate=Match(audit_enabled=True,auctions_enabled=True,
+                            auction_catalog='v22',
+                            starting_compensation='choice_2_5_or_coins',
+                            fixed_board_slots=True)
+            if candidate.first==first:
+                return candidate
+        raise RuntimeError('Nie znaleziono losowania właściwej kolejności')
+
     def restart(self):
         if hasattr(self,'game') and self.game.phase=='finished':
             self._export_finished_audit_once()
         self.tutorial.active=False
         self.tutorial_welcome_open=False
         self.help_open=False
-        self.game=Match(audit_enabled=True,auctions_enabled=True,
-                        auction_catalog='v22',starting_compensation='choice_2_5_or_coins',
-                        fixed_board_slots=True)
+        self._first_menu_game_unused=False
+        # UI creates game #1 with human second (first=1), game #2 with
+        # computer second (first=0), and alternates from there.
+        first=self._next_first_player
+        self.game=self._match_with_first_player(first)
+        self._next_first_player=1-first
         configure_audit_context(self.game,self.ai.difficulty,fresh=True)
         self._audit_saved_match=None
         self._audit_notice=''
@@ -1169,6 +1200,11 @@ class SoloApp:
                        13,740,654,cfg.RED,center=True)
 
     def _request_restart(self):
+        if self._first_menu_game_unused:
+            # Start button on the opening menu is NOT a second match.
+            self._first_menu_game_unused=False
+            self.menu_open=False
+            return True
         if self._needs_confirmation():
             self.confirm_action='restart'
             self.confirm_error=''
@@ -1179,6 +1215,12 @@ class SoloApp:
 
     def _start_guided_match(self):
         """Launch a fresh, opt-in tutorial; never discard a live match silently."""
+        if self._first_menu_game_unused:
+            self._first_menu_game_unused=False
+            self.tutorial.start(self.game)
+            self.tutorial_welcome_open=True
+            self.menu_open=False
+            return True
         if self._needs_confirmation():
             self._start_tutorial_after_restart=True
             return self._request_restart()
@@ -2516,6 +2558,7 @@ class SoloApp:
                 if i==0:
                     self._request_restart()
                 elif i==1:
+                    self._first_menu_game_unused=False
                     self.menu_open=False
                 elif i==2:
                     try:
@@ -2529,6 +2572,11 @@ class SoloApp:
                         if recorded_difficulty in ('łatwy','normalny','trudny'):
                             self.ai.difficulty=recorded_difficulty
                         self.game=game
+                        # A loaded match is the last displayed seat; the next
+                        # NEW MATCH opens from its opposite seat. Loading is
+                        # not itself counted as starting a new game.
+                        self._next_first_player=1-game.first
+                        self._first_menu_game_unused=False
                         self.tutorial.active=False
                         self._audit_saved_match=None
                         self._audit_notice=''
