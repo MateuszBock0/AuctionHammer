@@ -63,9 +63,12 @@ class SecondPlayerChoice(unittest.TestCase):
             g=fresh(seed);second=1-g.first
             g.choose_starting_compensation(second,'unit_2_5')
             self.assertEqual(g.starting_compensation_choice,'unit_2_5')
-            self.assertEqual((g.units[TOKEN].atk,g.units[TOKEN].hp),(2,5))
+            self.assertEqual((g.units[TOKEN].atk,g.units[TOKEN].hp,
+                              g.units[TOKEN].max_hp,g.units[TOKEN].armor),
+                             (2,1,1,4))
             self.assertEqual(g.cards[TOKEN].definition.name,'Chorąży')
-            self.assertEqual(g.cards[TOKEN].definition.effect,'Chorąży zawsze zdąży.')
+            self.assertIn('Chorąży zawsze zdąży.',g.cards[TOKEN].definition.effect)
+            self.assertIn('4 trwałego pancerza',g.cards[TOKEN].definition.effect)
             self.assertEqual(len(g.cards),71)
             self.assertEqual(len(g.defs),70)
             self.assertEqual((g.players[0].coins,g.players[1].coins),(0,0))
