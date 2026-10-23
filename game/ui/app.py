@@ -1200,7 +1200,7 @@ class SoloApp:
                        13,740,654,cfg.RED,center=True)
 
     def _request_restart(self):
-        if self._first_menu_game_unused:
+        if self._first_menu_game_unused and not self._needs_confirmation():
             # Start button on the opening menu is NOT a second match.
             self._first_menu_game_unused=False
             self.menu_open=False
@@ -1215,7 +1215,7 @@ class SoloApp:
 
     def _start_guided_match(self):
         """Launch a fresh, opt-in tutorial; never discard a live match silently."""
-        if self._first_menu_game_unused:
+        if self._first_menu_game_unused and not self._needs_confirmation():
             self._first_menu_game_unused=False
             self.tutorial.start(self.game)
             self.tutorial_welcome_open=True
