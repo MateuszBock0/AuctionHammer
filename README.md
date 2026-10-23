@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.68** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.69** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,14 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.69 — 51 spójnych kompozycji pixel art dla kart aukcyjnych
+
+- Wszystkie **17 archetypów aukcyjnych × 3 rzadkości = 51 grafik** dostały nową oprawę, z dwiema kompozycjami każda: **295×78 (pasek)** i **295×209 (portret)**.
+- **Rozpoznawalna postać jest zawsze tą samą postacią z oryginalnego pliku** `assets/auction/Axxx_rzadkosc.png`. Nowo wygenerowany pixel art buduje szerokie tło; na pierwszym planie Pygame nakłada autentyczną grafikę odpowiedniego archetypu i rzadkości.
+- Żadnego bezmyślnego przycinania postaci, rozciągania głów lub małych kwadratów na środku paska. Obrazy są składane raz i cache'owane. Nie trzeba płatnego API, kluczy ani zewnętrznego generatora.
+- W dużym podglądzie [G] pozostaje pełna **oryginalna** ilustracja karty. Podgląd hover planszy i ręki pozostaje aktywny.
+- Nowe tła i ich 102 podpisane sumy SHA-256 znajdują się w `assets/auction/pixel_art/auction51_scenes.zip`; test `tests/test_auction51_pixelart_0969.py` weryfikuje je wraz z autentycznymi kartami.
 
 ## Nowość 0.9.68 — podgląd jednostek na planszy i pełne grafiki aukcyjne
 
