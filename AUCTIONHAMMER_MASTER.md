@@ -1,6 +1,6 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.54 (bieżąca wersja z `VERSION.json`; oryginalna baza mechanik v19)  
+**Wersja gry:** MVP 0.9.64 (oryginalna baza mechanik v19, nowsze zasady v23/aukcje v22)  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, offline. Multiplayer nie należy do zakresu MVP.  
 **Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
@@ -9,6 +9,14 @@
 > **Uzupełnienie do wersji 0.9.53:** nadrzędne dla nowych partii są aktywny kod silnika, `VERSION.json`, `docs/GAME_MASTER_v23_ADDENDUM.md`, `docs/BOARD_CARD_IDENTITY_0951.md` i `docs/CHATGPT_PROJECT_CONTEXT_0953.md`. Pięć pól jest stałych, a drugi gracz wybiera Chorążego 2/5 lub +3 monety. Starsze opisy monet, przesuwania planszy lub kolejnych etapów PvP dokumentują historię i nie obowiązują w nowych meczach. Ręczny odbiór Windows DPI pozostaje otwarty.
 
 > **Etap 0.9.54:** wyłącznie dekoracyjna oprawa legendarnych kart i ofert aukcyjnych (ciemnoametystowe marginesy, złoto-fioletowe wykończenie ilustracji, narożniki i istniejący animowany klejnot). Źródło: `docs/LEGENDARY_VISUAL_0954.md`. Zasady, dane kart, obrażenia i RNG bez zmian. Automatyczne testy nie zastępują ręcznego odbioru fizycznego Windows.
+
+## Zasady nadrzędne dla bieżącego klienta solo (0.9.64)
+
+> **Czytaj najpierw [aktualny podręcznik zasad MVP](docs/CURRENT_MVP_RULES_0964.md) i [manifest zasad 0.9.64](data/MVP_RULES_0964.json).** Starsze opisy w niniejszym dużym Game Masterze zachowano dla historii i nie zastępują nowszych reguł implementacji.
+
+W aplikacji `SoloApp` **pierwszy mecz zawsze rozpoczyna komputer** (człowiek drugi), **drugi rozpoczyna człowiek**, a kolejne rozpoczynają strony naprzemiennie. Kolejność resetuje się po ponownym uruchomieniu programu; pierwsze „NOWY MECZ” w ekranie otwierającym nie przeskakuje meczu. Każdy drugi gracz ma prawo wyboru **+3 monet** albo startowego **Chorążego 2 ATK / 1 PŻ / 4 pancerza** z maksymalnie trzema premiami za bezpośrednie zabójstwa (+1 ATK i +2 maks. oraz bieżących PŻ za każde). **S34** pozostaje osobną kartą, bez zmian.
+
+Silnik `Match` nadal wybiera `first` losowo i deterministycznie po seedzie — to część starszej specyfikacji i weryfikacji audytu. Klient jedynie wybiera seedy o wymaganym wyniku; nie zmienia schematu podpisanych replayów ani dawnych zapisów. Aktywny katalog aukcyjny v22, pięć stałych pól, 70 kart podstawowych, bonusy i zgodność historyczna są opisane w bieżącym aneksie.
 
 ## Stabilizacja silnika 0.9.38
 

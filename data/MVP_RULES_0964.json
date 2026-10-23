@@ -1,0 +1,108 @@
+{
+  "project": "AuctionHammer",
+  "version": "0.9.64",
+  "date": "2026-10-23",
+  "scope": "offline single-player vs AI; active engine v23; auction catalog v22; historical master data preserved",
+  "source_of_truth": [
+    "game/core/engine.py",
+    "game/ui/app.py",
+    "docs/CURRENT_MVP_RULES_0964.md",
+    "VERSION.json"
+  ],
+  "solo_session_opening_order": {
+    "seat_ids": {
+      "human": 0,
+      "computer": 1
+    },
+    "first_match_first_player": 1,
+    "second_match_first_player": 0,
+    "pattern": "odd matches computer first; even matches human first",
+    "human_second_first_match": true,
+    "alternates_after_new_match": true,
+    "reset_on_application_launch": true,
+    "startup_menu_first_new_reuses_prepared_match": true,
+    "opening_tutorial_uses_prepared_match": true,
+    "next_new_match_after_loaded_save": "opposite of loaded game's first player",
+    "cancel_confirmation_does_not_advance": true,
+    "implementation": "UI creates fresh Match candidates with random seeds until Match.first matches expected; engine RNG and replay algorithm are unmodified",
+    "historical_replays": "Match.first remains seeded random, not globally forced",
+    "counter_is_persisted": false
+  },
+  "starter_compensation": {
+    "recipient": "second actor (human or AI)",
+    "options": [
+      "3 coins",
+      "starter guard"
+    ],
+    "starter_id": "SUM_START_GUARD",
+    "base": {
+      "atk": 2,
+      "hp": 1,
+      "max_hp": 1,
+      "permanent_armor": 4
+    },
+    "kill_bonus": {
+      "atk": 1,
+      "max_hp": 2,
+      "current_hp": 2,
+      "max_kills": 3,
+      "criterion": "surviving direct attacker kills enemy unit in standard combat",
+      "not_counted": [
+        "counterattack",
+        "poison",
+        "indirect death",
+        "hero damage",
+        "simultaneous death"
+      ],
+      "armor_replenished": false
+    },
+    "portraits": [
+      "chorazy.png",
+      "chorazy_rzadka.png",
+      "chorazy_legendarna.png"
+    ],
+    "art_stage_by_kills": {
+      "0": 0,
+      "1": 1,
+      "2": 2,
+      "3": 2
+    },
+    "legacy_saved_matches_unchanged": true
+  },
+  "cards": {
+    "base": 70,
+    "board_slots_per_side": 5,
+    "usual_cards_per_own_turn": 1,
+    "card_play_coin_cost": 0
+  },
+  "auctions": {
+    "archetypes": 17,
+    "variants": 51,
+    "cadence": "every 3 full rounds when offers remain"
+  },
+  "controls": {
+    "queen": "click Queen to grow, click vacant friendly slot to summon where legal",
+    "stun": "displays OGŁUSZONY despite fast attack",
+    "card_details": "I",
+    "full_image": "G",
+    "new_match": "R"
+  },
+  "state_compatibility": {
+    "historical_game_master_versions": [
+      "v14",
+      "v19",
+      "v23"
+    ],
+    "new_opening_order_only_in_ui": true,
+    "match_audit_schema_unchanged": true,
+    "match_seed_replay_unchanged": true
+  },
+  "release_acceptance": {
+    "unit_tests": true,
+    "pygame_render": true,
+    "windows_qa": true,
+    "full_replays": true,
+    "build_and_sha256": "must be verified after merge",
+    "manual_dpi": "pending"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.63",
+  "mvp": "0.9.64",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -327,5 +327,21 @@
     "post_three_kills": "5 ATK / 7 MAX PŻ, przed aurami; pancerz nie odnawia się",
     "old_saves_and_replays": "old 2/5 and 3/5 remain identical; new signed starter_guard_armor_rule only",
     "description": "in game descriptions, selection UI and HUD corrected"
+  },
+  "solo_session_opening_order_0964": {
+    "first_match": "computer first, human second",
+    "second_match": "human first, computer second",
+    "subsequent": "alternating",
+    "resets_on_app_launch": true,
+    "opening_menu_new_game_consumes_additional_match": false,
+    "opening_tutorial_uses_first_game": true,
+    "next_after_load": "opposite of loaded game's first",
+    "engine_first_player": "unchanged seeded random",
+    "rng_determinism": "client accepts only randomly seeded Match with required first",
+    "audit_schema_changed": false,
+    "documentation": [
+      "docs/CURRENT_MVP_RULES_0964.md",
+      "data/MVP_RULES_0964.json"
+    ]
   }
 }
