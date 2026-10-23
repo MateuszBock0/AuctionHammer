@@ -2,18 +2,18 @@
 
 ## Korekta 0.9.61
 
-Trzy zatwierdzone obrazy serii „Chorąży Zawsze Zdąży” należą do **`SUM_START_GUARD`** (Chorąży 2/5 wybierany jako rekompensata przez gracza zaczynającego jako drugi), a nie do karty bazowej **S34 — Chorąży Królewskiej Kompanii**. Wersja 0.9.61 omyłkowo połączyła je z S34. W 0.9.62 oryginalny portret S34 został przywrócony *dokładnie*, poprzez stary Git blob `3807f79343f1f789a38a4db70f2b5325be89096e` (źródło: `ea0f4b86`), do `assets/cards/chorazy_krolewskiej_kompanii.png`. Mechanika S34 pozostała niezmieniona.
+Trzy zatwierdzone obrazy serii „Chorąży Zawsze Zdąży” należą do **`SUM_START_GUARD`** (Chorąży 2/1 +4 pancerza wybierany jako rekompensata przez gracza zaczynającego jako drugi), a nie do karty bazowej **S34 — Chorąży Królewskiej Kompanii**. Wersja 0.9.61 omyłkowo połączyła je z S34. W 0.9.62 oryginalny portret S34 został przywrócony *dokładnie*, poprzez stary Git blob `3807f79343f1f789a38a4db70f2b5325be89096e` (źródło: `ea0f4b86`), do `assets/cards/chorazy_krolewskiej_kompanii.png`. Mechanika S34 pozostała niezmieniona.
 
-## Ulepszanie przez zabójstwa
+## 0.9.63 — nowy pancerz startowy\n\nChorąży wybrany w nowym meczu zaczyna z **2 ATK / 1 PŻ / 4 trwałego pancerza**. Każde zabójstwo nadal podnosi MAX i bieżące PŻ o 2 oraz ATK o 1 (maksymalnie trzy razy), ale zużyty pancerz **nie jest uzupełniany**. Starsze zapisy i audyty 0.9.62 zachowują swoje 2/5 dzięki osobnej fladze wersji w podpisanym stanie gry.\n\n## Ulepszanie przez zabójstwa
 
-W **nowym** meczu z wyborem startowego Chorążego 2/5, bezpośrednie zabójstwo wrogiej jednostki **własnym standardowym atakiem** zwiększa jego **ATK o 1, MAX PŻ o 2 i bieżące PŻ o 2**. Limit: **3 zabójstwa**. Po uzyskaniu trzeciej premii kolejne zabójstwa nie podnoszą statystyk.
+W **nowym** meczu z wyborem startowego Chorążego 2/1 z 4 pancerza, bezpośrednie zabójstwo wrogiej jednostki **własnym standardowym atakiem** zwiększa jego **ATK o 1, MAX PŻ o 2 i bieżące PŻ o 2**. Limit: **3 zabójstwa**. Po uzyskaniu trzeciej premii kolejne zabójstwa nie podnoszą statystyk.
 
 | Zabójstwa | Podstawowe ATK / MAX PŻ (bez aur) | Ilustracja |
 |---|---|---|
-| 0 | 2/5 | `assets/cards/chorazy.png` |
-| 1 | 3/7 | `assets/cards/chorazy_rzadka.png` |
-| 2 | 4/9 | `assets/cards/chorazy_legendarna.png` |
-| 3 lub więcej | 5/11 (limit) | `assets/cards/chorazy_legendarna.png` |
+| 0 | 2/1 | `assets/cards/chorazy.png` |
+| 1 | 3/3 | `assets/cards/chorazy_rzadka.png` |
+| 2 | 4/5 | `assets/cards/chorazy_legendarna.png` |
+| 3 lub więcej | 5/7 (limit) | `assets/cards/chorazy_legendarna.png` |
 
 Nie liczą się obrażenia pośrednie, trucizna, zastąpienie jednostki, kontratak, ani atak na bohatera. Jeśli w tym samym starciu Chorąży ginie, nie zostaje uratowany premią. Przywołanego raz startowego Chorążego nie można ponownie umieścić w talii.
 
