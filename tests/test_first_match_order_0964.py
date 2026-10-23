@@ -87,6 +87,22 @@ class AlternatingSeatSessionTests(unittest.TestCase):
         app.restart()
         self.assertEqual(app.game.first,1)
 
+    def test_active_game_requires_confirmation_even_if_opening_menu_was_never_used(self):
+        app=self.create_app(menu=True)
+        original=app.game.seed
+        app.game.phase='turn'
+        self.assertTrue(app._first_menu_game_unused)
+        app._request_restart()
+        self.assertEqual(app.confirm_action,'restart')
+        self.assertEqual(app.game.seed,original)
+        app.confirm_action=None
+        app._start_guided_match()
+        self.assertEqual(app.confirm_action,'restart')
+        self.assertEqual(app.game.seed,original)
+        app._resolve_confirmation(save=False)
+        self.assertEqual(app.game.first,0)
+        self.assertTrue(app.tutorial.active)
+
     def test_loaded_save_does_not_create_game_and_next_is_opposite(self):
         app=self.create_app(menu=True)
         existing=Match(96411,audit_enabled=True,auctions_enabled=True,
