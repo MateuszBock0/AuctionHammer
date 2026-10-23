@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.63 (nowy startowy Chorąży 2/1 +4 pancerza, w walidacji CI)  
+**Wersja gałęzi:** MVP 0.9.64 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.64 (pierwszy mecz: gracz drugi; drugi mecz: komputer drugi)
+
+- W **sesji klienta SoloApp** pierwszy mecz ma `first=1` (zaczyna komputer), drugi ma `first=0` (zaczyna gracz), kolejne naprzemiennie. Po ponownym uruchomieniu aplikacji cykl zaczyna się od nowa. Drugie miejsce zawsze otrzymuje prawo wyboru +3 monet lub Chorążego 2/1 z 4 pancerza.
+- Pierwsze „NOWY MECZ”, „KONTYNUUJ” i „SAMOUCZEK” z ekranu startowego nie pomijają przygotowanej partii. Potwierdzony restart przełącza kolejność tylko raz; anulowany nie zmienia seeda ani stanu.
+- `WCZYTAJ ZAPIS` zachowuje oryginalnego pierwszego gracza i pełny stan meczu; następny nowy mecz będzie miał pierwszy ruch po stronie przeciwnej do załadowanej.
+- Nie zmieniono deterministycznego `Match.first`: UI wybiera nowe ziarno RNG dające oczekiwaną stronę, dzięki czemu dotychczasowe audyty, replaye, gry historyczne i symulacje pozostają zgodne z silnikiem.
+- **Pełna bieżąca dokumentacja:** `docs/CURRENT_MVP_RULES_0964.md`, `data/MVP_RULES_0964.json` i sekcja README. Wersje Game Master v14/v19 są historyczne i nie zostały zmodyfikowane.
 
 ### Etap — 0.9.63 (jedno PŻ i cztery pancerza na start)\n\n- Tylko **nowe** partie z wyborem rekompensaty: startowy `SUM_START_GUARD` ma **2 ATK / 1 MAX i bieżące PŻ / 4 trwałego pancerza**, bez samoczynnego odnawiania pancerza.\n- Zabójstwa nadal dają +1 ATK i +2 MAX/bieżących PŻ, maksymalnie 3 razy; wartości bez aur wynoszą 2/1 → 3/3 → 4/5 → 5/7.\n- Wszystkie krótkie i pełne opisy, okno wyboru, HUD i zapis wersji zostały zsynchronizowane z silnikiem. Osobny znacznik w podpisanym stanie zapewnia zachowanie starych audytów 0.9.62 (2/5) oraz starszych odmian historycznych.\n\n### Etap — 0.9.62 (Chorąży „Zawsze zdąży” — za zabójstwa)
 
