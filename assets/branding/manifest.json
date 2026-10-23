@@ -1,10 +1,10 @@
 {
-  "title": "AuctionHammer — Chorąży Zawsze Zdąży: ilustracje i ikony",
+  "title": "AuctionHammer — Chorąży Zawsze Zdąży: 3 progi zabójstw i ikony",
   "released_for": "MVP 0.9.61",
-  "card_id": "S34",
-  "card_name_in_rules": "Chorąży Królewskiej Kompanii",
-  "artist_note": "Chorąży Zawsze Zdąży is the visual series name; game card name and mechanics unchanged",
-  "selection": "card.ability_level: 0 -> podstawowa; 1 -> rzadka; >=2 -> legendarna",
+  "card_id": "SUM_START_GUARD",
+  "card_name_in_rules": "Chorąży",
+  "artist_note": "S34 Chorąży Królewskiej Kompanii zachowuje poprzednią grafikę, oddzieloną od jednostki startowej.",
+  "selection": "starter_guard_kills: 0=podstawowa, 1=rzadka, 2-3=legendarna; tylko nowe mecze z regułą easter egg",
   "source": "Three user-approved AI-generated transparent RGBA fantasy illustrations, cropped for card readability and resized with Lanczos; standalone game icon uses user-approved generated portrait",
   "files": [
     {
@@ -42,5 +42,10 @@
       "sha256": "6be1d14c2ce776e5b1764de0d589c655dbbe1d5d01236f6bf8fd331947135de6",
       "stage": "ikona Windows"
     }
-  ]
+  ],
+  "restored_s34_asset": {
+    "path": "assets/cards/chorazy_krolewskiej_kompanii.png",
+    "prior_git_blob_sha": "3807f79343f1f789a38a4db70f2b5325be89096e",
+    "source_commit": "ea0f4b8667a923bed247d4103ae4ff5f06dfaf8d"
+  }
 }
