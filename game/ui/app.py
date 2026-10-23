@@ -1149,7 +1149,7 @@ class SoloApp:
         self._text('[1] CHORĄŻY  2 ATK / 1 PŻ / 4 PANC.' if armored
                    else '[1] CHORĄŻY  2 ATK / 5 PŻ',
                    18,guard_area.x+111,guard_area.y+9,cfg.TEXT)
-        self._text('Za zabójstwo: +1 ATK, +2 MAX PŻ · maks. 3 razy'
+        self._text('„Chorąży zawsze zdąży.” · +1 ATK / +2 PŻ za zabójstwo'
                    if armored else '„Chorąży zawsze zdąży.” · Jednostka bez zdolności',
                    12,guard_area.x+111,guard_area.y+41,TAVERN_MUTED)
         coin_area=pygame.Rect(438,537,604,67)
