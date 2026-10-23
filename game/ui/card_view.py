@@ -448,12 +448,18 @@ class CardView:
             self._pill(screen,pygame.Rect(art.right-pw-3,art.y+4,pw,16),
                        label,(34,79,65),sf)
         elif attacks_total is not None:
+            # The numeric attack allowance is not a promise of readiness.
+            # A stunned unit may still have ATAKI 1/1, but cannot attack.
+            stunned=any(st.category=='stun' for st in statuses)
             rem=max(0,int(attacks_remaining or 0))
-            count=f'ATAKI {rem}/{max(1,int(attacks_total))}'
+            count=('OGŁUSZONY' if stunned else
+                   f'ATAKI {rem}/{max(1,int(attacks_total))}')
             sf=self.font(9,True)
             w=min(art.width-6,sf.size(count)[0]+10)
             tag=pygame.Rect(art.right-w-3,art.y+3,w,17)
-            self._pill(screen,tag,count,(43,105,72) if ready else (74,78,89),sf)
+            tone=((161,85,172) if stunned else
+                  (43,105,72) if ready else (74,78,89))
+            self._pill(screen,tag,count,tone,sf)
         # ATK + PŻ last: large, opaque, never dimmed or overlapped.
         attack=unit.atk if board else card.attack
         hp=(max(0,int(hp_override)) if board and hp_override is not None
