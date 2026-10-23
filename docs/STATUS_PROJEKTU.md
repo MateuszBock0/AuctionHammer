@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 22 października 2026  
-**Wersja gałęzi:** MVP 0.9.60 (zmiana UX w walidacji CI)  
+**Data aktualizacji:** 23 października 2026  
+**Wersja gałęzi:** MVP 0.9.61 (grafiki i ikona, po walidacji CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.61 (Chorąży — trójstopniowa grafika i ikona)
+
+- Zamiast pojedynczej ilustracji `S34` gra wyświetla trzy odrębne, wygenerowane portrety Chorążego przy istniejących poziomach 0, 1, 2+ (poziom 2+ korzysta ze wspólnego trzeciego wariantu).
+- Seria wizualna nosi roboczą nazwę „Chorąży Zawsze Zdąży”; definicja i nazwa karty `S34` pozostają „Chorąży Królewskiej Kompanii”.
+- Kwadratowy portret 128×128 służy jako ikona okna, plik `.ico` jako ikona pliku wykonywalnego PyInstaller. Wszystkie pięć zasobów ma zapisane SHA-256 w `assets/branding/manifest.json`.
+- Zmiany wyłącznie w zasobach i UI, nie w `Match`, walkach, ekonomii, zdolnościach, katalogach 70/17 ani audytach.
 
 ### Etap — 0.9.60 (UX wybierania zdolności)
 
