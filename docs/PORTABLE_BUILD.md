@@ -11,3 +11,7 @@ Workflow `.github/workflows/windows-portable.yml` builds 64-bit Windows folder w
 ## Later
 
 The launcher checks `releases/latest` via Windows PowerShell, downloads the changed release only if build tag changed, and falls back to local EXE when offline. Source updates in release overwrite corresponding source files, so commit local changes before updating.
+
+## Iconography since 0.9.61
+
+The Windows PyInstaller bundle embeds `assets/branding/chorazy_zawsze_zdazy.ico` via `--icon`. The Pygame application loads `assets/branding/chorazy_zawsze_zdazy_icon.png` as its window/taskbar icon when present. Both assets are validated by `tests/test_chorazy_art_0961.py` and `assets/branding/manifest.json`. Missing PNGs do not prevent development startup; the Windows release always packages and verifies the ICO asset.
