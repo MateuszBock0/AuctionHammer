@@ -103,6 +103,16 @@ def card_cue(card, unit=None) -> CardCue:
     level=unit.ability_level if unit is not None else card.ability_level
     # A versioned initial compensation token, not a Queen summon.
     if d.id=='SUM_START_GUARD':
+        if '4 trwałego pancerza na start' in d.effect:
+            return CardCue(
+                trigger='PASYWNA', family='ZABÓJSTWA',
+                color=FAMILY_COLORS['Pancerz'],
+                base='+1 ATK / +2 PŻ',
+                upgrade='ZA ZABÓJSTWA · MAX 3',
+                effect_value=None, ability_level=0,
+                growth='+1 ATK, +2 MAX/bieżące PŻ za zabójstwo; pancerz nie wraca',
+                next_threshold='NIE WRACA DO TALII',
+            )
         return CardCue(
             trigger='PASYWNA', family='BEZ ZDOL.',
             color=FAMILY_COLORS['Bez zdolności'],
