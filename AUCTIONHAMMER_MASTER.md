@@ -1,10 +1,12 @@
 # AUCTIONHAMMER — DOKUMENT GŁÓWNY PROJEKTU
 
-**Wersja gry:** MVP 0.9.64 (oryginalna baza mechanik v19, nowsze zasady v23/aukcje v22)  
+**Wersja gry:** MVP 0.9.65 (oryginalna baza mechanik v19, nowsze zasady v23/aukcje v22)  
 **Obowiązująca specyfikacja:** Game Master v19 (18.10.2026)  
 **Aktualny tryb:** jeden gracz przeciwko komputerowi, offline. Multiplayer nie należy do zakresu MVP.  
 **Aukcje i karty aukcyjne:** aktywny katalog v22 z 17 archetypami i 51 wariantami zdolności; aukcje rozgrywane co 3 pełne rundy.  
 **Język interfejsu:** polski.
+
+> **Oprawa 0.9.65:** 70 kart podstawowych otrzymało portrety i paski pixel art, mapowane po ID. Kod renderuje je bez rozmywania. S34 i startowy token Chorążego pozostają odrębnymi jednostkami. Bez zmian zasad; [szczegóły](docs/PIXEL_ART_70.md).
 
 > **Uzupełnienie do wersji 0.9.53:** nadrzędne dla nowych partii są aktywny kod silnika, `VERSION.json`, `docs/GAME_MASTER_v23_ADDENDUM.md`, `docs/BOARD_CARD_IDENTITY_0951.md` i `docs/CHATGPT_PROJECT_CONTEXT_0953.md`. Pięć pól jest stałych, a drugi gracz wybiera Chorążego 2/5 lub +3 monety. Starsze opisy monet, przesuwania planszy lub kolejnych etapów PvP dokumentują historię i nie obowiązują w nowych meczach. Ręczny odbiór Windows DPI pozostaje otwarty.
 
