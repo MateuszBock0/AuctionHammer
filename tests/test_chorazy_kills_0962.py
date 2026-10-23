@@ -189,8 +189,9 @@ class StarterGuardKillTests(unittest.TestCase):
         self.assertEqual(ART["S34"],"chorazy_krolewskiej_kompanii.png")
         for level in (0,1,2,3,10):
             view.art("S34","Ludzie",(96,96),level=level)
-        self.assertTrue(all(x[0].startswith("chorazy_krolewskiej")
-                            for x in view.images._scaled if isinstance(x[0],str)))
+        self.assertEqual(
+            {x[0] for x in view.images._scaled if isinstance(x[0], str)},
+            {"pixel_art/S34_portrait.png"})
 
 
 if __name__=="__main__":

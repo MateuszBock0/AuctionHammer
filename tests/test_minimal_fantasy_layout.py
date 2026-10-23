@@ -51,7 +51,9 @@ class MinimalFantasyLayout(unittest.TestCase):
             for size in ((125,195),(148,220),(255,380)):
                 with self.subTest(uid=card.uid,size=size):
                     view.draw(screen,card,pygame.Rect(20,25,*size))
-        self.assertEqual(len(view.artcache),63*3)
+        self.assertEqual(len(view.artcache), 0)  # all base cards now use pixel PNGs
+        self.assertEqual(sum(1 for key in view.images._scaled
+                             if key[0].startswith("pixel_art/")), 70*3)
 
     def test_deployed_statuses_and_high_stats_do_not_break_draw(self):
         from game.ui.card_view import CardView
