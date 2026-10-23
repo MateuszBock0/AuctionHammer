@@ -1,59 +1,29 @@
-# AuctionHammer 0.9.61 — Chorąży Zawsze Zdąży (oprawa graficzna)
+# AuctionHammer 0.9.62 — Chorąży „Zawsze zdąży”: poprawne przypisanie i easter egg
 
-## Zakres
+## Korekta 0.9.61
 
-Trzy zatwierdzone obrazy 2D przedstawiające tego samego młodego chorążego ze
-sztandarem oraz osobna kwadratowa ikona powstały dla gry AuctionHammer.
-**„Chorąży Zawsze Zdąży” jest nazwą serii ilustracji**, a nie nową kartą.
+Trzy zatwierdzone obrazy serii „Chorąży Zawsze Zdąży” należą do **`SUM_START_GUARD`** (Chorąży 2/5 wybierany jako rekompensata przez gracza zaczynającego jako drugi), a nie do karty bazowej **S34 — Chorąży Królewskiej Kompanii**. Wersja 0.9.61 omyłkowo połączyła je z S34. W 0.9.62 oryginalny portret S34 został przywrócony *dokładnie*, poprzez stary Git blob `3807f79343f1f789a38a4db70f2b5325be89096e` (źródło: `ea0f4b86`), do `assets/cards/chorazy_krolewskiej_kompanii.png`. Mechanika S34 pozostała niezmieniona.
 
-W obecnym katalogu Game Master v19 istnieje **S34 — Chorąży Królewskiej Kompanii**.
-To właśnie tej karcie przypisano grafiki; jej nazwa, ID, zdolność, statystyki
-i kolejka zdarzeń nie zostały zmienione.
+## Ulepszanie przez zabójstwa
 
-## Mapowanie, bez wprowadzania nowej rzadkości
+W **nowym** meczu z wyborem startowego Chorążego 2/5, bezpośrednie zabójstwo wrogiej jednostki **własnym standardowym atakiem** zwiększa jego **ATK o 1, MAX PŻ o 2 i bieżące PŻ o 2**. Limit: **3 zabójstwa**. Po uzyskaniu trzeciej premii kolejne zabójstwa nie podnoszą statystyk.
 
-| Istniejący poziom zdolności `card.ability_level` | Portret |
-|---|---|
-| 0 | `assets/cards/chorazy.png` |
-| 1 | `assets/cards/chorazy_rzadka.png` |
-| 2 lub więcej | `assets/cards/chorazy_legendarna.png` |
+| Zabójstwa | Podstawowe ATK / MAX PŻ (bez aur) | Ilustracja |
+|---|---|---|
+| 0 | 2/5 | `assets/cards/chorazy.png` |
+| 1 | 3/7 | `assets/cards/chorazy_rzadka.png` |
+| 2 | 4/9 | `assets/cards/chorazy_legendarna.png` |
+| 3 lub więcej | 5/11 (limit) | `assets/cards/chorazy_legendarna.png` |
 
-Poziom powstaje dokładnie tak jak wcześniej, tj. `hand_turns // 3`.
-Po wystawieniu jednostki nie zmieniamy poziomu ani mechaniki: wygląd
-wyświetlany na planszy, w ręce i w podglądzie odpowiada temu samemu stanowi
-`Card`. Wszystkie trzy pliki są PNG RGBA **96×96**, przycięte z zatwierdzonych
-przez użytkownika portretów 1254×1254, z kadrem pokazującym twarz,
-sztandar i charakterystyczną zbroję.
+Nie liczą się obrażenia pośrednie, trucizna, zastąpienie jednostki, kontratak, ani atak na bohatera. Jeśli w tym samym starciu Chorąży ginie, nie zostaje uratowany premią. Przywołanego raz startowego Chorążego nie można ponownie umieścić w talii.
 
-## Ikona
+## Historia, zasoby i prezentacja
 
-- `assets/branding/chorazy_zawsze_zdazy_icon.png` — **128×128 RGBA**,
-  portret do paska okna Pygame oraz podglądu w repozytorium.
-- `assets/branding/chorazy_zawsze_zdazy.ico` — wielorozdzielcza ikona
-  Windows (16, 24, 32, 48, 64, 96, 128, 256 px).
-- Workflow budujący Windows podaje `--icon` do PyInstaller, natomiast
-  `SoloApp` ładuje PNG przez `pygame.display.set_icon`. W środowisku
-  deweloperskim brak PNG nie powoduje błędu uruchomienia.
+- Trzy odrębne pliki są PNG RGBA **96×96**; manifest pięciu oryginalnych zasobów graficznych i ikon z sumami SHA-256: `assets/branding/manifest.json`.
+- Osobna zachowana grafika S34 ma udokumentowany hash Git blob i nie korzysta z trzech wariantów.
+- `starter_guard_kill_rule` i `starter_guard_kills` są zapisywane i podpisywane tylko dla **nowych** partii zgodnych z tą regułą. Starsze zapisy/replaye bez znacznika zachowują poprzednie obliczenia.
+- Na karcie widoczny jest licznik `ZABÓJSTWA N/3`, a powiększenie [G] korzysta z właściwego obrazka.
+- Ikona okna (128×128) i ikona EXE (.ico, wiele rozdzielczości) z wydania 0.9.61 są niezmienione.
+- Tło ilustracji: `cfg.PANEL` (`#192431`) w przezroczystych marginesach. Gra nie zmienia danych bazowych katalogu 70 kart ani 17 archetypów aukcyjnych.
 
-## Integralność i odbiór
-
-Komplet pięciu plików jest wyszczególniony z sumami SHA-256 w
-`assets/branding/manifest.json`. Test
-`tests/test_chorazy_art_0961.py` potwierdza integralność, format PNG,
-odrębność trzech obrazów, przypisanie progów `0/1/2+`,
-render w ręce i na planszy oraz wczytywanie ikony.
-
-W pakiecie Windows uruchomić nowy build i sprawdzić: widoczność
-trzech etapów grafiki po wzroście poziomu, spójność ikon w oknie i pliku
-EXE, czytelność karty przy skalowaniu DPI 100%, 125% i 150%.
-
-**Nie zmieniono** katalogu 70 kart, aukcyjnego katalogu 17 archetypów,
-statystyk, ataków, zdolności, ekonomii, balansu, AI, RNG, logiki zapisu
-ani schematu i weryfikacji audytu.
-
-## Źródła
-
-Grafiki źródłowe wygenerowane i zaakceptowane w rozmowie 23.10.2026.
-Repozytorium przechowuje **zasoby runtime**; większe źródła 1254×1254
-nie są potrzebne do pakietu Windows. Obrazy zoptymalizowano do
-docelowych wymiarów z zachowaniem kanału alfa.
+Na fizycznym Windows potrzebny jest końcowy przegląd czytelności przy skalach DPI 100%, 125%, 150%.
