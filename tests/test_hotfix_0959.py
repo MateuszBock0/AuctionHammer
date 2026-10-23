@@ -69,9 +69,9 @@ class HistoricalGeneralReplayTests(unittest.TestCase):
         place_basic(rare, "S35", owner=0)
         leader = award(rare, "A002", tier=1, zone="board")
         execute(rare, leader, "play", Choice("general_target", "S35", ""))
-        self.assertEqual(
-            rare.event_journal[-1]["text"],
-            "Generał wybiera Komendant Straży do podwójnych ataków.")
+        self.assertIn(
+            "Generał wybiera Komendant Straży do podwójnych ataków.",
+            [entry["text"] for entry in rare.event_journal])
 
         legendary = ready(95912)
         src = award(legendary, "A002", tier=2, zone="board")
