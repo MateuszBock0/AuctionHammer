@@ -609,6 +609,17 @@ def verify_replay(payload,match_factory):
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
         game=match_factory(payload["seed"])
+    # PR #82 briefly changed only the wording/number of A002 journal lines.
+    # Historical hashes must be verified with the *original* event sequence:
+    # old archives keep the established wording, while precisely identified
+    # 0.9.58 builds replay their verbose General events. This flag is NOT part
+    # of signed game state and does not change combat or RNG.
+    recorded_build=(payload.get('environment') or {}).get('build') or {}
+    recorded_commit=recorded_build.get('commit')
+    game._replay_verbose_general_0958=recorded_commit in (
+        '164cdfcfff7368589dabfcda9d0256b0d3dbb0d7',
+        '3d6135da9a192aab0dbc2393037f6d5ad7069e6c',
+    )
     # Signed physical layout is an explicit new rule, not an inferred UI
     # property. Historical signed matches have no board_layout field.
     layout=initial.get('board_layout')
