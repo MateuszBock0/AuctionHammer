@@ -22,7 +22,7 @@ from game.core.engine import Match
 from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
-from game.ui.card_view import CardView, FACTION_COLORS, ART
+from game.ui.card_view import CardView, FACTION_COLORS, ART, status_display_priority
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
@@ -1773,7 +1773,8 @@ class SoloApp:
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
             self._text(self.cards_view.clip(cue.growth,self.fonts[13],309),13,1105,517,cfg.MUTED)
             if u:
-                statuses=active_statuses(self.game,card_id)
+                statuses=sorted(active_statuses(self.game,card_id),
+                                key=status_display_priority)
                 self._text(f'AKTYWNE EFEKTY ({len(statuses)})',15,1105,548,cfg.GOLD)
                 # Important quantities are available immediately from the
                 # sidebar, not hidden behind the full documentation window.
