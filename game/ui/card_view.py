@@ -35,11 +35,12 @@ TRIGGER_BADGES = {
 }
 ART = {
     'S01':'mag_zorzy.png','S09':'wilk_szponiasty.png',
-    'S21':'widmo.png','S34':'chorazy.png','S105':'straznik.png',
+    'S21':'widmo.png','S34':'chorazy_krolewskiej_kompanii.png','S105':'straznik.png',
     'S27':'kowal_run.png','S82':'rycerz_kosci.png',
 }
-# Three presentation-only S34 portraits, driven by its EXISTING ability level.
-# No new card rarity, stat modifier, trigger or combat rule is introduced.
+# Three new portraits belong ONLY to summoned starter SUM_START_GUARD.
+# Stages: 0 kills=basic, 1 kill=rare, 2-3 kills=legendary.
+# S34 keeps its original single portrait.
 CHORAZY_ART_LEVELS = (
     'chorazy.png', 'chorazy_rzadka.png', 'chorazy_legendarna.png'
 )
@@ -170,7 +171,8 @@ class CardView:
             'lines':lines,'boxes':boxes,'show_value':show_value,
         }
 
-    def art(self,cid,faction,size,family='',card_name='',rarity=None,level=0):
+    def art(self,cid,faction,size,family='',card_name='',rarity=None,level=0,
+            guard_kills=None):
         # Exact archetype and CURRENT rarity: the same rendering path serves
         # hand, board, detail preview, and historical/replay views.
         if rarity is not None and cid.startswith('A0'):
@@ -179,16 +181,13 @@ class CardView:
             sprite=self.images.get_auction_image(cid,rarity,size,mode='contain')
             if sprite is not None:
                 return sprite
-        if cid=='S34':
-            # Use current ability_level (hand turns // 3). On board this
-            # remains frozen naturally, just like all other card statistics.
-            portrait=CHORAZY_ART_LEVELS[max(0,min(2,int(level)))]
-            return self.images.get_card_image(
-                portrait, size, mode='cover', focus=(0.5,0.32))
         if cid=='SUM_START_GUARD' and card_name=='Chorąży':
-            # Reuse the project's existing artwork, not a new/generated asset.
-            # The historical 5/5 Guard keeps its procedural illustration.
-            return self.images.get_card_image(ART['S34'],size)
+            # Old 0.9.61 saves deliberately retain their original portrait.
+            # New opted-in matches use the real signed kill counter.
+            portrait=(CHORAZY_ART_LEVELS[max(0,min(2,int(guard_kills)))]
+                      if guard_kills is not None else ART['S34'])
+            return self.images.get_card_image(
+                portrait,size,mode='cover',focus=(0.5,0.32))
         if cid in ART:
             return self.images.get_card_image(ART[cid],size)
         key=(cid,size,family)
@@ -284,7 +283,7 @@ class CardView:
     def draw(self,screen,card,rect,unit=None,selected=False,dim=False,
              hover=False,statuses=(),ready=None,attacks_remaining=None,
              attacks_total=None,hp_override=None,rarity=None,
-             animate_rarity=True):
+             animate_rarity=True,guard_kills=None):
         d=card.definition
         cue=card_cue(card,unit)
         summary=ability_summary(card,unit)
@@ -301,7 +300,8 @@ class CardView:
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
         artwork=self.art(d.id,d.faction,art.size,d.family,d.name,
-                         rarity=tier,level=card.ability_level)
+                         rarity=tier,level=card.ability_level,
+                         guard_kills=guard_kills)
         if dim and board:
             # Exhaustion/stun/new-unit lock: grayscale just the artwork.
             # Never reduce legibility of ATK, HP or status labels.
@@ -376,7 +376,8 @@ class CardView:
         info=zone['info']
         text_plan=self.summary_layout(card,rect,unit)
         family=text_plan['family']
-        family_name=d.family.upper().replace("MAX HP","MAX PŻ").replace("ATK","ATAK")
+        family_name=('ZA ZABÓJSTWA' if guard_kills is not None else
+                     d.family.upper().replace("MAX HP","MAX PŻ").replace("ATK","ATAK"))
         # Bez ozdobnych znaków, które mogą być wyświetlane jako puste kwadraty
         # w niektórych czcionkach Windows.
         family_icon=self.icons.get(d.family,'families',15 if large else 13)
@@ -404,16 +405,23 @@ class CardView:
                                  (20,18,17,15,13,11) if large else (15,14,13,12,11))
             self._center(screen,self.clip(cue.base,bfont,main.width),main,
                          bfont,(245,245,230))
-        for line,region in zip(text_plan['lines'],text_plan['boxes']):
+        lines=text_plan['lines']
+        if guard_kills is not None:
+            lines=self.wrap_ability(
+                'Za każde z 3 zabójstw: +1 ATK i +2 MAX PŻ.',
+                text_plan['font'],info.width-8,len(text_plan['boxes']))
+        for line,region in zip(lines,text_plan['boxes']):
             screen.blit(text_plan['font'].render(line,True,(235,240,239)),
                         region.topleft)
         # Pasek rozwoju jest oddzielony od opisów. Nie rysujemy nad nim
         # dodatkowego tekstu, który w 0.9.12 kolidował z podglądem 255×380.
         footer=text_plan['footer']
         pygame.draw.rect(screen,(39,75,65),footer,border_radius=3)
-        ft=self._fit_font(cue.upgrade,footer.width-8,
+        footer_label=(f'ZABÓJSTWA {guard_kills}/3'
+                      if guard_kills is not None else cue.upgrade)
+        ft=self._fit_font(footer_label,footer.width-8,
                           (13,12,11,10) if large else (10,9))
-        self._center(screen,self.clip(cue.upgrade,ft,footer.width-8),
+        self._center(screen,self.clip(footer_label,ft,footer.width-8),
                      footer,ft,(183,255,196))
         # Statuses cover artwork only, never stats or ability panel.
         if statuses and not board and not large:

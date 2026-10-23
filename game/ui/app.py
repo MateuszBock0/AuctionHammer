@@ -22,7 +22,8 @@ from game.core.engine import Match
 from game.core.auction_catalog import CATALOG,RARITIES,live_variant,v23_variant,catalog_for
 from game.core.ai import ComputerOpponent
 from game.core.models import IllegalMove
-from game.ui.card_view import CardView, FACTION_COLORS, ART, status_display_priority
+from game.ui.card_view import (CardView, FACTION_COLORS, ART,
+                               CHORAZY_ART_LEVELS, status_display_priority)
 from game.ui.assets import ROOT_DIR
 from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
 from game.ui.card_summary import ability_summary
@@ -1674,6 +1675,15 @@ class SoloApp:
             self.screen.blit(stamp,(marker.centerx-stamp.get_width()//2,
                                     marker.centery-stamp.get_height()//2))
 
+    def _guard_progress(self,uid):
+        """Show the new opt-in starter's kill stage; not S34 or old saves."""
+        if (uid=='SUM_START_GUARD'
+                and getattr(self.game,'starter_guard_kill_rule',False)
+                and uid in self.game.units
+                and self.game.cards[uid].definition.name=='Chorąży'):
+            return min(3,getattr(self.game,'starter_guard_kills',0))
+        return None
+
     def _draw_board(self):
         self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
         self._text('TWOJA STREFA',15,107,412,cfg.MUTED)
@@ -1699,6 +1709,7 @@ class SoloApp:
                      animate_rarity=self.animations_enabled,
                      statuses=active_statuses(self.game,uid),ready=attack_info.ready,
                      attacks_remaining=attack_info.remaining,attacks_total=attack_info.limit,
+                     guard_kills=self._guard_progress(uid),
                      hp_override=(self.combat_visuals.hp_display(uid,pygame.time.get_ticks())
                                   if self.animations_enabled and self.replay_index is None
                                   else None))
@@ -2304,6 +2315,14 @@ class SoloApp:
         # Show one coherent full text, not a duplicated baseline plus a
         # truncated v23 appendix. Historical ruleset descriptions are untouched.
         detail_summary=v23_note or summary.full
+        guard_kills=self._guard_progress(uid)
+        if guard_kills is not None:
+            detail_summary=(
+                f'EASTER EGG — CHORĄŻY ZAWSZE ZDĄŻY: {guard_kills}/3 zabójstw. '
+                'Za zabicie wrogiej jednostki własnym zwykłym atakiem '
+                'otrzymuje +1 ATK i +2 MAX PŻ oraz +2 bieżące PŻ, '
+                'najwyżej trzykrotnie. Kontratak i efekty innych kart '
+                'nie naliczają zabójstw.')
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((*TAVERN_SCRIM,225));self.screen.blit(shade,(0,0))
         box=pygame.Rect(146,75,1190,831)
@@ -2314,7 +2333,8 @@ class SoloApp:
         if self.details_image_zoom:
             # "Contain" is important here: see the ENTIRE existing image.
             if d.id in ART or (d.id=='SUM_START_GUARD' and d.name=='Chorąży'):
-                file=ART.get(d.id,ART['S34'])
+                file=(CHORAZY_ART_LEVELS[min(2,guard_kills)]
+                      if guard_kills is not None else ART.get(d.id,ART['S34']))
                 artwork=self.cards_view.images.get_card_image(
                     file,(276,520),mode='contain')
             else:
@@ -2334,6 +2354,7 @@ class SoloApp:
                                  unit=u,selected=True,
                                  rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
                                  animate_rarity=self.animations_enabled,
+                                 guard_kills=guard_kills,
                                  statuses=active_statuses(self.game,uid) if u else hand_grants(self.game,uid),
                                  ready=details_attack.ready if u else None,
                                  attacks_total=details_attack.limit if u else None,
@@ -2341,7 +2362,8 @@ class SoloApp:
             self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
             self._text(f'Aktywacja: {d.trigger}',16,194,600)
             self._text(f'Rodzina: {d.family}',16,194,629)
-            label=(f'Poziom zdolności: {cue.ability_level}' if not d.id.startswith('SUM')
+            label=(f'ZABÓJSTWA: {guard_kills}/3' if guard_kills is not None
+                   else f'Poziom zdolności: {cue.ability_level}' if not d.id.startswith('SUM')
                    else 'JEDNOSTKA BEZ ROZWOJU NA RĘCE')
             self._text(self.cards_view.clip(label,self.fonts[16],276),16,194,659,cfg.GOLD)
             self._text(cue.next_threshold if not u else f'Pancerz {u.armor}  •  Tarcza {u.shield}',
@@ -2364,10 +2386,17 @@ class SoloApp:
                      small=True,accent=self.details_image_zoom)
 
         self._text(self.cards_view.clip(d.name,self.fonts[28],760),28,520,115,FACTION_COLORS[d.faction])
-        self._infographic_box(pygame.Rect(520,159,228,70),'AKTUALNY EFEKT',cue.base,cue.color,
-                              'Liczba zmienna oznaczona pogrubieniem')
-        self._infographic_box(pygame.Rect(763,159,227,70),'CO 3 WŁASNE TURY NA RĘCE',cue.upgrade,cfg.GREEN,
-                              'Próg: 3 / 6 / 9 / 12…')
+        self._infographic_box(
+            pygame.Rect(520,159,228,70),'AKTUALNY EFEKT',
+            f'+{guard_kills} ATK / +{guard_kills*2} MAX PŻ'
+            if guard_kills is not None else cue.base,cue.color,
+            'Premia za zabójstwa' if guard_kills is not None else
+            'Liczba zmienna oznaczona pogrubieniem')
+        self._infographic_box(
+            pygame.Rect(763,159,227,70),
+            'AWANS ZA ZABÓJSTWA' if guard_kills is not None else 'CO 3 WŁASNE TURY NA RĘCE',
+            f'{guard_kills}/3 ZABÓJSTW' if guard_kills is not None else cue.upgrade,
+            cfg.GREEN,'MAX 3' if guard_kills is not None else 'Próg: 3 / 6 / 9 / 12…')
         self._infographic_box(pygame.Rect(1005,159,227,70),'MOMENT AKTYWACJI',cue.trigger,cfg.HOVER,
                               cue.family)
         pygame.draw.line(self.screen,cfg.PANEL_BORDER,(518,243),(1297,243),1)

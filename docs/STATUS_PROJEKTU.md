@@ -1,14 +1,21 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.61 (grafiki i ikona, po walidacji CI)  
+**Wersja gałęzi:** MVP 0.9.62 (easter egg Chorążego, w walidacji CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
 
+### Etap — 0.9.62 (Chorąży „Zawsze zdąży” — za zabójstwa)
+
+- Nowy starter `SUM_START_GUARD` 2/5: **+1 ATK, +2 MAX i bieżącego PŻ** za bezpośrednie zabójstwo wrogiej jednostki własnym standardowym atakiem, **maksymalnie 3 razy**. Kontratak, efekt pośredni i jednoczesna śmierć nie nagradzają Chorążego.
+- Trzy grafiki z 0.9.61 poprawnie przeniesiono na `SUM_START_GUARD`: 0 / 1 / 2–3 zabójstw. S34 odzyskał dokładnie poprzedni plik z commita `ea0f4b86`; karta S34 nie otrzymuje premii za zabójstwa.
+- Licznik i przełącznik reguły są częścią podpisanego stanu nowej partii. Zapisane wcześniejsze gry oraz historyczne audyty zachowują stare zasady bez migracji obrażeń.
+- UI i powiększenie [G] pokazują ten sam wariant. Podstawowa statystyka startera 2/5; maksimum bez dodatkowych aur 5/11.
+
 ### Etap — 0.9.61 (Chorąży — trójstopniowa grafika i ikona)
 
-- Zamiast pojedynczej ilustracji `S34` gra wyświetla trzy odrębne, wygenerowane portrety Chorążego przy istniejących poziomach 0, 1, 2+ (poziom 2+ korzysta ze wspólnego trzeciego wariantu).
+- Historycznie wydanie 0.9.61 przypisało trzy portrety do S34; przypisanie zostało skorygowane w 0.9.62 na jednostkę startową.
 - Seria wizualna nosi roboczą nazwę „Chorąży Zawsze Zdąży”; definicja i nazwa karty `S34` pozostają „Chorąży Królewskiej Kompanii”.
 - Kwadratowy portret 128×128 służy jako ikona okna, plik `.ico` jako ikona pliku wykonywalnego PyInstaller. Wszystkie pięć zasobów ma zapisane SHA-256 w `assets/branding/manifest.json`.
 - Zmiany wyłącznie w zasobach i UI, nie w `Match`, walkach, ekonomii, zdolnościach, katalogach 70/17 ani audytach.

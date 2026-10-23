@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.61",
+  "mvp": "0.9.62",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -308,5 +308,15 @@
     "window_icon": "assets/branding/chorazy_zawsze_zdazy_icon.png",
     "manifest": "assets/branding/manifest.json",
     "rules_or_rng_changes": false
+  },
+  "starter_chorazy_kill_easter_egg_0962": {
+    "uid": "SUM_START_GUARD",
+    "rule": "+1 ATK +2 MAX HP and +2 current HP per direct standard-combat kill, max 3",
+    "starter_choice_only": "choice_2_5_or_coins",
+    "rarity_visuals": "0 kills basic; 1 rare; 2-3 legendary",
+    "restore_s34_original_art": true,
+    "signed_new_ruleset_field": "starter_guard_kill_rule and starter_guard_kills",
+    "legacy_save_and_audit_compatibility": "disabled for historical matches",
+    "mechanics_scope": "only opt-in new 2/5 starter guard; no changes to card S34 or other cards"
   }
 }

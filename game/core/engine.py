@@ -30,6 +30,10 @@ class Match:
             raise ValueError("Starter guard requires the live v22 catalog")
         self.starting_compensation=starting_compensation
         self.starting_compensation_choice=None  # signed only for new schema 4
+        # 0.9.62: opt-in only for freshly started choice-mode matches.
+        # Historical games/replays disable this via their signed ruleset.
+        self.starter_guard_kill_rule=(starting_compensation=="choice_2_5_or_coins")
+        self.starter_guard_kills=0
         # Opt in from the real game client; bulk simulations remain lightweight.
         self.audit_enabled=bool(audit_enabled)
         self.auctions_enabled=bool(auctions_enabled)
@@ -423,8 +427,36 @@ class Match:
                     if d.id=='S107' and received>0 and not self._disabled(self.units[defender]):
                         self._add_poison(attacker,1,2,defender,self.units[defender].ability_level)
             fallen=[c for c in (uid,target) if c in self.units and self.units[c].hp<=0]
+            # Only the starter Chorazy's own standard attack may claim a kill.
+            # A simultaneous fatal counterattack earns no upgrade.
+            earned=(getattr(self,'starter_guard_kill_rule',False)
+                    and uid=='SUM_START_GUARD'
+                    and self.cards[uid].definition.name=='Chorąży'
+                    and target in fallen and to_defender>0
+                    and a.hp>0 and b.owner!=a.owner)
             self._kill_batch(fallen)
+            if earned and uid in self.units and self.units[uid].hp>0:
+                self._starter_guard_on_kill()
         self._update_auras()
+
+    def _starter_guard_on_kill(self):
+        """Visual Easter egg: +1 ATK, +2 MAX/current HP, at most 3 kills.
+
+        This method is intentionally called only from standard combat after
+        an actual opposing-unit death, never from generic death rewards.
+        """
+        if (not getattr(self,'starter_guard_kill_rule',False)
+                or self.starter_guard_kills>=3
+                or 'SUM_START_GUARD' not in self.units):
+            return
+        u=self.units['SUM_START_GUARD']
+        self.starter_guard_kills+=1
+        u.base_attack+=1
+        u.base_max_hp+=2
+        u.hp+=2
+        self._log(f'Chorąży zawsze zdąży: zabójstwo {self.starter_guard_kills}/3 '
+                  f'— +1 ATK i +2 MAX/bieżącego PŻ. '
+                  f'Teraz {u.atk} ATK i {u.hp}/{u.max_hp} PŻ.')
 
     @audit_action('end_turn')
     def end_turn(self):

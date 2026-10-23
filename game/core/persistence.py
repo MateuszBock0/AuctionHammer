@@ -209,6 +209,16 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('audit_state_schema',1)
     data.setdefault('starting_compensation','coins')
     data.setdefault('starting_compensation_choice',None)
+    # Old saves remain under their original guard rules. New matches have
+    # this pair in the authenticated serialized Match state.
+    data.setdefault('starter_guard_kill_rule',False)
+    data.setdefault('starter_guard_kills',0)
+    if (type(data['starter_guard_kill_rule']) is not bool or
+            type(data['starter_guard_kills']) is not int or
+            not 0<=data['starter_guard_kills']<=3 or
+            (data['starter_guard_kills'] and
+             not data['starter_guard_kill_rule'])):
+        raise ValueError('Nieprawidłowy stan rozwoju Chorążego')
     data.setdefault('pending_vacant_income',None)
     data.setdefault('slot_income',[0,0])
     data.setdefault('slot_income_turns',[0,0])

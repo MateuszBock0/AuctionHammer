@@ -205,6 +205,12 @@ def state_snapshot(game):
         if schema>=4:
             state['ruleset_state']['starting_compensation_choice']=getattr(
                 game,'starting_compensation_choice',None)
+            # Explicitly signed opt-in: old 0.9.61 archives have no marker,
+            # so their hashes and underlying combat semantics do not change.
+            if getattr(game,'starter_guard_kill_rule',False):
+                state['ruleset_state']['starter_guard_kill_rule']=True
+                state['ruleset_state']['starter_guard_kills']=getattr(
+                    game,'starter_guard_kills',0)
     return state
 
 
@@ -609,6 +615,22 @@ def verify_replay(payload,match_factory):
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
         game=match_factory(payload["seed"])
+    # The starter Chorazy kill Easter egg is part of the new, signed ruleset.
+    # A missing flag means an older archive, not permission to reinterpret it
+    # with new damage values; set this BEFORE comparing initial-state hashes.
+    guard_enabled=(isinstance(signed_rule,dict)
+                   and signed_rule.get('starter_guard_kill_rule') is True)
+    if guard_enabled and (
+            signed_rule.get('audit_schema')!=4
+            or signed_rule.get('starting_compensation')!='choice_2_5_or_coins'
+            or signed_rule.get('starter_guard_kills')!=0):
+        raise ValueError("Nieprawidłowa flaga zabójstw Chorążego w archiwum")
+    if isinstance(signed_rule,dict) and (
+            'starter_guard_kill_rule' in signed_rule or
+            'starter_guard_kills' in signed_rule) and not guard_enabled:
+        raise ValueError("Nieznana reguła rozwoju Chorążego")
+    game.starter_guard_kill_rule=guard_enabled
+    game.starter_guard_kills=0
     # PR #82 briefly changed only the wording/number of A002 journal lines.
     # Historical hashes must be verified with the *original* event sequence:
     # old archives keep the established wording, while precisely identified
