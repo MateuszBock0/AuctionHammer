@@ -211,9 +211,9 @@ class CardView:
         # Exact archetype and CURRENT rarity: the same rendering path serves
         # hand, board, detail preview, and historical/replay views.
         if rarity is not None and cid.startswith('A0'):
-            # Portraits are square: show the entire tier artwork inside the
-            # horizontal card-art strip instead of cropping its center.
-            sprite=self.images.get_auction_image(cid,rarity,size,mode='contain')
+            # Fill the art strip like base cards, preserving proportions.
+            # The full square portrait remains available in [G] zoom.
+            sprite=self.images.get_auction_image(cid,rarity,size,mode='cover')
             if sprite is not None:
                 return sprite
         if cid=='SUM_START_GUARD' and card_name=='Chorąży':
