@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.72 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.74 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.74 (doprecyzowane efekty walki)
+
+- `CombatVisuals.sync` dalej korzysta wyłącznie z autorytatywnych różnic dwóch zatwierdzonych stanów. Pływające komunikaty mają jednoznaczne jednostki PŻ, faktyczną wartość zużytej/przyznanej tarczy i pancerza oraz trzy niezależne pionowe pozycje dla równoczesnych zdarzeń.
+- Czerwone efekty obrażeń pokazują drobne iskry, zielone leczenie delikatne cząsteczki, a kontrastowe tło chroni czytelność wartości na dowolnym pixel arcie. Potwierdzone trafienie przesuwa samą grafikę jednostki o kilka pikseli na maks. 220 ms, bez zmiany slotów i hitboxów.
+- Animacje są wyłączalne `A`; brak zmian mechaniki, AI, aukcji, sygnatur audytu, RNG i replay. Akceptacja obejmuje `tests/test_combat_impact_feedback_0974.py`, komplet wcześniejszych testów, render Pygame na obu platformach, Windows QA i odtworzenia pełnych meczów.
 
 ### Etap — 0.9.72 (strzałka ataku + pasek i animacja poziomów)
 
