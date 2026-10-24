@@ -3077,10 +3077,12 @@ class SoloApp:
             p=self.game.players[owner]
             rect=pygame.Rect(205+owner*544,270,524,65)
             self._panel(rect,(28,43,52),cfg.GREEN if owner==0 else cfg.RED,8)
-            self._text('TY' if owner==0 else 'KOMPUTER',18,
+            # Preserve the historical, regression-tested "GRACZ: 0 PŻ"
+            # presentation for clamped negative health.
+            self._text(f'{p.name}: {summary.hero_hp[owner]} PŻ',18,
                        rect.x+15,rect.y+7,cfg.GOLD)
-            health=f'{summary.hero_hp[owner]} PŻ   ·   {summary.coins[owner]} monet'
-            self._text(health,16,rect.right-255,rect.y+9,cfg.TEXT)
+            self._text(f'MONETY: {summary.coins[owner]}',16,
+                       rect.right-180,rect.y+9,cfg.TEXT)
             deaths=(str(summary.deaths[owner]) if summary.deaths else '—')
             self._text('ZGONY JEDNOSTEK: '+deaths,12,
                        rect.x+15,rect.y+37,cfg.MUTED)
