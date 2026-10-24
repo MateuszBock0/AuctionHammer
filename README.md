@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Wersja MVP: 0.9.79</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.79</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -129,7 +129,7 @@ Projekt jest w fazie **MVP**: działa lokalnie w trybie jednego gracza przeciwko
 
 ### Licencja i muzyka
 
-Własny kod i dokumentacja AuctionHammer są udostępnione na licencji [MIT](LICENSE). Muzyka *Fantasy Tavern Music* autorstwa **Aleka Kaczana / PGN Music** oraz ewentualne inne materiały zewnętrzne podlegają **odrębnym prawom i warunkom** — nie są automatycznie objęte MIT. Zobacz [credits i zasady wykorzystania](docs/THIRD_PARTY_MUSIC.md).
+Własny kod i dokumentacja AuctionHammer są udostępnione na licencji [MIT](LICENSE). Muzyka **Fantasy Tavern Music / Fantasy Tavern Album** (2021) — kompozytor **Alek Kaczan**, wydawca **PGN Music (Paradox Gaming Network)**. [Posłuchaj albumu](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album) i zobacz [credits oraz zasady wykorzystania](docs/THIRD_PARTY_MUSIC.md). Nagrania i inne materiały zewnętrzne podlegają **odrębnym prawom** — nie są automatycznie objęte licencją MIT.
 
 ---
 
