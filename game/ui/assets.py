@@ -3,8 +3,6 @@
 
 from pathlib import Path
 import sys
-import io
-import zipfile
 import pygame
 
 from game import config as cfg
@@ -114,86 +112,51 @@ class ImageAssets:
         key = self._auction_base(archetype, rarity)
         return self._auction_colors[key] if key is not None else None
 
-    # All 51 authentic rarity portraits are composed over 51 bespoke fantasy
-    # atmospheres. The background ZIP stores 102 pixel-art crops (portrait and
-    # banner), but the recognizable character ALWAYS comes from the original
-    # verified assets/auction/Axxx_rarity.png. No external API / runtime network.
-    AUCTION_SCENES_ZIP = 'auction51_scenes.zip'
-
-    def _auction_pixel_scene(self, archetype: str, rarity: str,
-                             size: tuple[int,int]) -> pygame.Surface | None:
-        kind = 'banner' if size[1] <= 58 else 'portrait'
+    # v0.9.70: each auction variant has an individually prepared final PNG.
+    # Runtime compositing with opaque 96x96 legacy squares has been removed.
+    def _auction_final(self, archetype: str, rarity: str,
+                       kind: str) -> str | None:
+        from game.core.auction_catalog import V22_CARDS, RARITIES
+        if archetype not in V22_CARDS or rarity not in RARITIES:
+            return None
         name = f'{archetype}_{rarity}_{kind}.png'
-        key = 'auction_scene/' + name
+        key = 'auction_final/' + name
         if key not in self._original:
-            archive = ROOT_DIR / 'assets' / 'auction' / 'pixel_art' / self.AUCTION_SCENES_ZIP
-            if not archive.is_file():
+            path = ROOT_DIR / 'assets' / 'auction' / 'final' / name
+            if not path.is_file():
                 return None
             try:
-                with zipfile.ZipFile(archive) as bundle:
-                    scene_bytes = bundle.read(name)
-                self._original[key] = pygame.image.load(
-                    io.BytesIO(scene_bytes), name).convert_alpha()
-            except (KeyError, OSError, pygame.error, zipfile.BadZipFile, ValueError):
+                self._original[key] = pygame.image.load(str(path)).convert_alpha()
+            except (OSError, pygame.error):
                 return None
-        return self.fit_art(
-            self._original[key], size, mode='cover', pixelated=True)
-
-    @staticmethod
-    def _compose_original_auction_character(
-            scene: pygame.Surface, original: pygame.Surface,
-            *, banner: bool) -> pygame.Surface:
-        """Keep the correct existing character; new pixel art supplies scenery.
-
-        Figures are scaled with nearest neighbour only, with natural aspect ratio.
-        A cropped square portrait must never turn into a miniature inside a wide
-        strip or turn into a stretched face. This is display-only compositing.
-        """
-        w,h = scene.get_size()
-        bbox = original.get_bounding_rect(min_alpha=12)
-        if bbox.width <= 0 or bbox.height <= 0:
-            return scene
-        figure = original.subsurface(bbox)
-        fw,fh = figure.get_size()
-        target_height = max(1, round(h * (1.32 if banner else 0.93)))
-        target_width = max(1,round(fw * target_height / fh))
-        # Keep some fantasy environment on both sides of the hero.
-        if target_width > round(w * 0.76):
-            target_width = max(1,round(w * 0.76))
-            target_height = max(1,round(fh * target_width / fw))
-        sprite = pygame.transform.scale(figure,(target_width,target_height))
-        x = (w - target_width) // 2
-        y = (-round(h * 0.06) if banner else
-             h - target_height - round(h * 0.025))
-        scene.blit(sprite,(x,y))
-        return scene
+        return key
 
     def get_auction_image(self, archetype: str, rarity: str,
                           size: tuple[int, int],
                           mode: str = 'cover') -> pygame.Surface | None:
-        """A001–A018: cinematic pixel-art card crop, authentic character.
+        """Final auction banner/portrait with nearest-neighbour pixel scaling.
 
-        Card/hover ('cover') uses one of the 102 composition-specific backgrounds
-        and the original 96x96 character on top. Image inspection ('contain')
-        continues to show the entire unmodified ORIGINAL sprite. Legacy
-        screenshots/replays and non-updated builds still have a safe fallback.
+        Hand and board use the banner, large card and full zoom use portrait.
+        An absent final image falls back to the original sprite for reliability.
         """
+        kind = 'banner' if mode == 'cover' and size[1] <= 58 else 'portrait'
+        final_key = self._auction_final(archetype, rarity, kind)
+        if final_key is not None:
+            key = ('auction_final', final_key, tuple(size), mode)
+            if key not in self._scaled:
+                self._scaled[key] = self.fit_art(
+                    self._original[final_key], size, mode=mode,
+                    pixelated=True)
+            return self._scaled[key]
         original_key = self._auction_base(archetype, rarity)
         if original_key is None:
             return None
-        cache_key = ('auction', original_key, tuple(size), mode)
-        if cache_key not in self._scaled:
-            scene = (self._auction_pixel_scene(archetype, rarity, size)
-                     if mode == 'cover' else None)
-            if scene is not None:
-                self._scaled[cache_key] = self._compose_original_auction_character(
-                    scene, self._original[original_key],
-                    banner=size[1] <= 58)
-            else:
-                self._scaled[cache_key] = self.fit_art(
-                    self._original[original_key],size,mode,
-                    background=self._auction_colors[original_key])
-        return self._scaled[cache_key]
+        key = ('auction_legacy', original_key, tuple(size), mode)
+        if key not in self._scaled:
+            self._scaled[key] = self.fit_art(
+                self._original[original_key], size, mode,
+                background=self._auction_colors[original_key])
+        return self._scaled[key]
 
     @staticmethod
     def _fallback() -> pygame.Surface:
