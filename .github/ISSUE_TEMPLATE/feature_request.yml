@@ -1,0 +1,27 @@
+name: Zaproponuj funkcję
+description: Pomysł na lepszą czytelność, sterowanie lub mechanikę gry.
+title: "[POMYSŁ] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Co chcesz usprawnić?
+      description: Opisz problem gracza, a nie tylko proponowane rozwiązanie.
+      placeholder: "Podczas aukcji trudno mi porównać..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proponowana zmiana
+      description: Jak miałoby to działać podczas normalnej partii?
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Wpływ na zasady lub istniejące zapisy (jeśli znany)
+      description: Czy zmienia to balans, aukcje, AI lub mechanikę?
+    validations:
+      required: false

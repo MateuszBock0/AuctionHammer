@@ -1,0 +1,49 @@
+name: Zgłoś błąd
+description: Problem z uruchomieniem, kartami, rozgrywką lub interfejsem.
+title: "[BŁĄD] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dzięki za zgłoszenie! Przed publikacją sprawdź, czy problem nie jest już opisany. Nie przesyłaj logów ani zapisów zawierających dane prywatne.
+  - type: input
+    id: version
+    attributes:
+      label: Wersja gry
+      description: Odczytaj `mvp` z VERSION.json (np. 0.9.79).
+      placeholder: "0.9.79"
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: System i rozdzielczość
+      description: Wersja Windows, rozdzielczość i skala DPI (jeżeli dotyczy).
+      placeholder: "Windows 11, 1920x1080, DPI 125%"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Jak odtworzyć błąd?
+      description: Podaj kolejne czynności prowadzące do problemu.
+      placeholder: |
+        1. Uruchom grę...
+        2. Wybierz...
+        3. Zauważ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Oczekiwany i rzeczywisty rezultat
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Zrzuty ekranu / fragment logu (opcjonalnie)
+      description: Po sprawdzeniu prywatności danych możesz dodać crash_latest.log lub screenshot.
+    validations:
+      required: false

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Pomoc i FAQ
+    url: https://github.com/MateuszBock0/AuctionHammer/blob/main/docs/TROUBLESHOOTING.md
+    about: Najpierw sprawdź typowe problemy oraz sposób zgłaszania awarii.
+  - name: Pobierz najnowszą wersję
+    url: https://github.com/MateuszBock0/AuctionHammer/releases/latest
+    about: Oficjalne wydania Windows portable.

@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.78 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.79 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.79 (publiczna strona projektu i release management)
+
+- README jest teraz **landing page dla nowych graczy**, nie kroniką deweloperską: pobranie Windows, cel gry, oryginalne grafiki, pierwsza partia, FAQ, skróty i zasady licencjonowania.
+- Zmieniono wyłącznie materiały publiczne i proces wydawania: `CHANGELOG.md`, `docs/PLAYER_GUIDE.md`, `docs/TROUBLESHOOTING.md`, `docs/DEVELOPMENT.md`, `docs/RELEASE_PROCESS.md`, `CONTRIBUTING.md` i szablony GitHub Issues/PR.
+- `VERSION.json.mvp` jest źródłem wersji; `tools/release_meta.py` sprawdza zgodność z `game/config.py`, README, changelogiem i linkami, generuje release notes oraz przygotowuje numer wersji następnego etapu. Workflow Windows otrzymuje release notes bezpośrednio z aktualnego wpisu changeloga.
+- **Mechanika, karty, AI, aukcje, RNG, schemat audytu i zapisów: BEZ ZMIAN.** Przejście 0.9.78 → 0.9.79 ma charakter dokumentacyjno-wydawniczy.
 
 ### Etap — 0.9.78 (wskazywanie synergii i aur)
 
