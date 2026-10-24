@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.71 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.72 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.72 (strzałka ataku + pasek i animacja poziomów)
+
+- Przeciąganie własnej gotowej jednostki tworzy strzałkę podążającą za kursorem w logicznych współrzędnych Pygame, uwzględniających skalowanie okna. Zwolnienie na celu potwierdzonym przez `Match.legal_attacks()` wykonuje standardowe `Match.attack` tym samym handlerem co kliknięcie. Nielegalne cele i przeciągnięcia ogłuszonych/wyczerpanych jednostek nie wydają komend ani nie modyfikują audytu. Sterowanie kliknięciami pozostaje dostępne.
+- Podstawowe karty na ręce mają pasek trzech etapów pod ilustracją. Zaobserwowanie rzeczywistego przejścia poziomu (co trzecia tura na ręce) powoduje wyłącznie wizualny rozbłysk na 1050 ms, pokazanie nowego poziomu oraz rzeczywistych zmian ATK i MAX PŻ. Wczytanie gry inicjalizuje licznik od istniejącego stanu, bez sztucznego awansu.
+- Brak zmian silnika, AI, balansu, aukcji, replay ani schematu zapisów. Testy `tests/test_attack_drag_hand_level_0972.py` plus pełna regresja Windows/Linux i mecze audytowane.
 
 ### Etap — 0.9.71 (płynne przeciąganie kart z ręki)
 
