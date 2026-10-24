@@ -507,6 +507,16 @@ class CardView:
             pw=min(art.width-6,sf.size(label)[0]+9)
             self._pill(screen,pygame.Rect(art.right-pw-3,art.y+4,pw,16),
                        label,(34,79,65),sf)
+            # A continuous three-stage meter, independent of ability texts.
+            # Keep it inside the bottom of the illustration so even 125×195
+            # hand cards retain their name, effects and ATK/HP hitboxes.
+            meter=pygame.Rect(art.x+3,art.bottom-5,art.width-6,3)
+            pygame.draw.rect(screen,(21,36,33),meter,border_radius=1)
+            filled=meter.width*(card.hand_turns%3)//3
+            if filled:
+                pygame.draw.rect(screen,(147,235,172),
+                                 pygame.Rect(meter.x,meter.y,filled,meter.height),
+                                 border_radius=1)
         elif attacks_total is not None:
             # The numeric attack allowance is not a promise of readiness.
             # A stunned unit may still have ATAKI 1/1, but cannot attack.
