@@ -41,6 +41,7 @@ class Pulse:
     label: str = ''
     origin: tuple[int,int] | None = None
     lifetime: int = 840
+    lane: int = 0  # Separate simultaneous HP / shield / armor callouts.
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,7 @@ class CombatVisuals:
         self.combat_cards: dict[str,CombatCard] = {}
         self.fallen_cards: list[CombatCard] = []
         self.last_attack_outcome = None
+        self.impacts: dict[str,tuple[int,int]] = {}
         self._attack_start_state = None
         self._attack_start_event = 0
 
@@ -103,9 +105,33 @@ class CombatVisuals:
         return state
 
     def _push(self,kind,at,now,label='',origin=None,delay_ms=0):
-        self.pulses.append(Pulse(kind,at,int(now)+delay_ms,str(label),origin))
+        # Distinguish simultaneously committed HP, shield and armor changes.
+        # An impact projectile is not a label and does not consume a lane.
+        labelled=('damage','heal','shield','armor','death')
+        lane=0
+        if kind in labelled:
+            lane=sum(
+                1 for p in self.pulses
+                if p.kind in labelled and p.at==at
+                and abs(p.born-(int(now)+delay_ms))<250
+            )%3
+        self.pulses.append(Pulse(kind,at,int(now)+delay_ms,str(label),
+                                 origin,lane=lane))
         if len(self.pulses)>self.max_pulses:
             del self.pulses[:-self.max_pulses]
+
+    def shake_offset(self,uid: str,now: int) -> tuple[int,int]:
+        """Brief deterministic UI-only nudge after a real resolved impact."""
+        impact=self.impacts.get(uid)
+        if impact is None:
+            return (0,0)
+        born,strength=impact
+        age=now-born
+        if age<0 or age>=220:
+            return (0,0)
+        frame=min(4,age//44)
+        dx,dy=((4,0),(-3,1),(2,-1),(-1,0),(0,0))[frame]
+        return (round(dx*strength/4),round(dy*strength/4))
 
     def sync(self,game,unit_rect,hero_rect,now: int):
         """Pobierz zatwierdzony stan po wykonaniu komend przez silnik."""
@@ -205,8 +231,16 @@ class CombatVisuals:
                 continue
             new=current[uid]
             delta=new['hp']-old['hp']
-            if delta<0:self._push('damage',new['at'],now,str(delta),delay_ms=impact_delay)
-            if delta>0:self._push('heal',new['at'],now,f'+{delta}',delay_ms=impact_delay)
+            if delta<0:
+                self._push('damage',new['at'],now,f'-{abs(delta)} PŻ',
+                           delay_ms=impact_delay)
+            if delta>0:
+                self._push('heal',new['at'],now,f'+{delta} PŻ',
+                           delay_ms=impact_delay)
+            if (delta<0 or new['shield']<old['shield']
+                    or new['armor']<old['armor']) and not uid.startswith('hero:'):
+                strength=4 if delta<0 else 2
+                self.impacts[uid]=(int(now)+impact_delay,strength)
             if new['shield']<old['shield']:
                 # A blocked hit may deal zero HP damage. Show the actual
                 # consumed protection instead of falsely reporting a wound.
@@ -214,9 +248,15 @@ class CombatVisuals:
                            f'TARCZA -{old["shield"]-new["shield"]}',
                            delay_ms=impact_delay)
             if new['shield']>old['shield']:
-                self._push('shield',new['at'],now,'TARCZA')
+                self._push('shield',new['at'],now,
+                           f'TARCZA +{new["shield"]-old["shield"]}')
+            if new['armor']<old['armor']:
+                self._push('armor',new['at'],now,
+                           f'PANC. -{old["armor"]-new["armor"]}',
+                           delay_ms=impact_delay)
             if new['armor']>old['armor']:
-                self._push('armor',new['at'],now,f'+{new["armor"]-old["armor"]}')
+                self._push('armor',new['at'],now,
+                           f'PANC. +{new["armor"]-old["armor"]}')
             for kind in sorted(new['status']-old['status']):
                 mapped={'poison':'poison','stun':'stun','regen':'regen',
                         'quick':'quick','double':'double'}.get(kind,'special')
@@ -226,6 +266,8 @@ class CombatVisuals:
                            if now-card.born < card.lifetime}
         self.fallen_cards=[card for card in self.fallen_cards
                            if now-card.born < card.lifetime]
+        self.impacts={uid:data for uid,data in self.impacts.items()
+                      if now-data[0]<220}
 
     @staticmethod
     def interpolated_hp(card: CombatCard,now: int):
@@ -323,6 +365,9 @@ class CombatVisuals:
                 continue
             rise=14+int(32*(1-(1-t)**2))
             y-=rise
+            # Distinct anchored lanes prevent a simultaneous hit and shield
+            # absorption from painting their numbers directly over each other.
+            y+=pulse.lane*26
             radius=11+int(24*t)
             fx=pygame.Surface((radius*2+18,radius*2+18),pygame.SRCALPHA)
             center=(radius+9,radius+9)
@@ -341,6 +386,23 @@ class CombatVisuals:
                                        (int(center[0]+cos(angle)*length),
                                         int(center[1]+sin(angle)*length)),
                                        2+((i+1)%3))
+            elif pulse.kind=='damage':
+                pygame.draw.circle(fx,(*color,int(alpha*.25)),center,radius,2)
+                for k in range(7):
+                    angle=2*pi*k/7
+                    distance=radius*(.4+.55*t)
+                    px=int(center[0]+cos(angle)*distance)
+                    py=int(center[1]+sin(angle)*distance)
+                    pygame.draw.circle(fx,(*color,int(alpha*.88)),
+                                       (px,py),max(1,int(3*(1-t))))
+            elif pulse.kind=='heal':
+                pygame.draw.circle(fx,(*color,int(alpha*.15)),center,radius)
+                for k in range(5):
+                    angle=2*pi*k/5+t*1.6
+                    px=int(center[0]+cos(angle)*radius*.65)
+                    py=int(center[1]+sin(angle)*radius*.65)
+                    pygame.draw.circle(fx,(*color,int(alpha*.78)),
+                                       (px,py),max(1,int(3*(1-t))))
             else:
                 pygame.draw.circle(fx,(*color,int(alpha*.17)),center,radius)
                 pygame.draw.circle(fx,(*color,int(alpha*.38)),center,
@@ -352,11 +414,20 @@ class CombatVisuals:
             message=font.render(label,True,color)
             if message.get_width()>104:
                 continue
-            shadow=font.render(label,True,(6,14,21))
-            shadow.set_alpha(alpha)
+            # Contrast-protected floating value: transparent framed bubble
+            # over busy card pixel art, respecting canvas bounds.
+            bubble=pygame.Surface((message.get_width()+14,
+                                   message.get_height()+8),pygame.SRCALPHA)
+            bg_alpha=min(205,int(alpha*.88))
+            pygame.draw.rect(bubble,(12,23,30,bg_alpha),
+                             bubble.get_rect(),border_radius=6)
+            pygame.draw.rect(bubble,(*color,int(alpha*.8)),
+                             bubble.get_rect(),1,border_radius=6)
             message.set_alpha(alpha)
-            bx=int(x)-message.get_width()//2
-            by=int(y)-message.get_height()//2
-            screen.blit(shadow,(bx+1,by+2))
-            screen.blit(message,(bx,by))
+            bubble.blit(message,(7,4))
+            bx=max(4,min(screen.get_width()-bubble.get_width()-4,
+                         int(x)-bubble.get_width()//2))
+            by=max(4,min(screen.get_height()-bubble.get_height()-4,
+                         int(y)-bubble.get_height()//2))
+            screen.blit(bubble,(bx,by))
         self.pulses=alive
