@@ -21,7 +21,7 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 SEMVER = re.compile(r"0\.[0-9]+\.[0-9]+\Z")
-README_VERSION = re.compile(r"((?:\*\*|<strong>)Wersja MVP: )(0\.[0-9]+\.[0-9]+)((?:\*\*|</strong>))")
+README_VERSION = re.compile(r"((?:\*\*|<strong>)(?:Wersja MVP|Aktualna wersja): )(0\.[0-9]+\.[0-9]+)((?:\*\*|</strong>))")
 CONFIG_VERSION = re.compile(r"(MVP )(0\.[0-9]+\.[0-9]+)")
 CHANGELOG_HEADER = re.compile(r"(?m)^## \[(0\.[0-9]+\.[0-9]+)\](?:[^\n]*)\n")
 LOCAL_MARKDOWN_LINK = re.compile(r"!?(?:\[[^\]\n]*\])\(([^)\n]+)\)")
