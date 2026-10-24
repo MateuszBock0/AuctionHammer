@@ -37,12 +37,25 @@ Komenda `bump` synchronizuje **`VERSION.json`**, **`game/config.py`**, **`README
 2. Przygotuj numer wersji oraz wpis **na samej górze `CHANGELOG.md`**; opisuj faktycznie wdrożone funkcje.
 3. Uruchom `python -m tools.release_meta check` i kompletne testy silnika/interfejsu.
 4. Otwórz PR; GitHub Actions musi potwierdzić Linux, Windows i testy regresyjne (w tym launcher i audyt, jeśli dotyczą zmian).
-5. Po scaleniu na `main` workflow `.github/workflows/windows-portable.yml` uruchamia się automatycznie. Buduje EXE + zależności, kompletny ZIP i plik sumy `SHA-256`; wykonuje test instalacji **rzeczywistej paczki** z rollbackiem i trybem offline.
+5. Po scaleniu na `main` workflow `.github/workflows/windows-portable.yml` uruchamia się automatycznie. Zaczyna od niezależnych bramek Linux i pełnych audytowanych meczów; dopiero po ich sukcesie buduje EXE, weryfikuje kompletność rzeczywistej paczki (folder i ZIP) oraz SHA-256 i testuje instalator/rollback.
 6. **Dopiero po pozytywnej walidacji** workflow tworzy/aktualizuje GitHub Release dla taga `build-<8 znaków SHA commita>`, z numerem z `VERSION.json`, notatkami z odpowiedniego wpisu `CHANGELOG.md` oraz plikami `AuctionHammer-Windows.zip` i `AuctionHammer-Windows.zip.sha256`.
 7. Sprawdź zakładkę Releases oraz czy oba załączniki rzeczywiście istnieją. Brak taga lub assetów oznacza **brak potwierdzonego wydania** — zielony PR nie gwarantuje udanego ZIP-a.
 8. Osobno wykonaj ręczny test na fizycznym Windows: uruchomienie, rozdzielczość/DPI, wczytywanie zapisów, nowy mecz, tryb offline i cofnięcie aktualizacji. **GitHub Actions nie dowodzi przejścia fizycznych testów monitora.**
 
 Nie publikuj samego źródłowego ZIP-a GitHuba jako substytutu pakietu z EXE.
+
+## Warunki dopuszczenia Windows Release (od 0.9.80)
+
+Release nie może rozpocząć budowy ani publikacji przed sukcesem wszystkich **wymaganych bramek tego samego commita**, skonfigurowanych w `.github/workflows/windows-portable.yml`:
+
+- `linux-regressions`: pełne testy automatyczne, render Pygame, 20 pełnych partii na stałych polach z weryfikacją podpisanych replayów i kontrola katalogu 121 opisów kart.
+- `forensic-100`: 100 niezależnych, ukończonych partii normal-vs-normal oraz **100/100** ponownie odtworzonych podpisanych historii.
+- `signed-cohorts`: trzy kohorty 400/300/300 meczów przy różnych ustawieniach AI; każda partia ma zakończenie i zweryfikowaną powtórkę (**1000/1000**).
+- `windows` ma jawne `needs: [linux-regressions, forensic-100, signed-cohorts]`. Każdy FAIL lub anulowanie w dowolnej wymaganej bramce oznacza, że Windows nie przechodzi do tworzenia EXE/Release.
+
+Własne testy joba Windows obejmują regresje, launcher PowerShell, render, PyInstaller, sumę SHA-256, instalację **rzeczywistego ZIP-a** i kontrolę odnośników `README.md` na podstawie *naprawdę zapakowanych plików*, nie tylko zawartości repozytorium. Weryfikator `python -m tools.release_package --folder release/AuctionHammer --zip AuctionHammer-Windows.zip` odrzuca brakujące `CHANGELOG.md`, `CONTRIBUTING.md`, zasoby/ilustracje linkowane z README, launcher i runtime.
+
+Pozostałe historyczne workflow mogą działać niezależnie do analiz. Nie stanowią dodatkowej, niejawnej blokady — komplet wymaganych **testów kwalifikacyjnych wydania** został włączony do workflow publikacyjnego.
 
 ## Zgodność zapisów i odtwarzania
 

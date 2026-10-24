@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.79</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.80</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -98,6 +98,8 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 
+- **0.9.80** — trasy aur poza kartami, kompletne dokumenty w ZIP i bramki CI przed publikacją.
+
 - **0.9.78** — połączenia aktywnych aur między jednostkami.
 - **0.9.76** — inteligentny przycisk zakończenia tury.
 - **0.9.75** — ekran wyników i osiągnięć po meczu.
@@ -105,7 +107,7 @@ Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 - **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
 - **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
 
-Wersja **0.9.79** porządkuje publiczną dokumentację i proces wydań; nie zmienia zasad walki. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+Wersja **0.9.80** stabilizuje interfejs aur i publikację Windows; nie zmienia zasad walki. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Pomoc, bezpieczeństwo i rozwój
 

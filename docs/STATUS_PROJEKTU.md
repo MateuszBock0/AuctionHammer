@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.79 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.80 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.80 (naprawa trzech priorytetowych problemów)
+
+- Strzałki aur są prowadzone przez puste korytarze i nie przecinają wnętrz kart pośrednich; kierunek i autorytatywne wartości efektów pozostały bez zmian.
+- W ZIP Windows dodano pliki `CHANGELOG.md` i `CONTRIBUTING.md`. Automatyczny weryfikator `tools/release_package.py` sprawdza lokalne odnośniki i obrazy README w folderze dystrybucyjnym i samym ZIP-ie; brak elementu zatrzymuje wydanie.
+- Wymagane release gates (`linux-regressions`, `forensic-100`, `signed-cohorts`) obejmują Linux + 20 signed matches, niezależne 100 signed matches i 1000 signed replays. `windows` z jawnie ustawionymi `needs` może wystartować dopiero po zielonych bramkach. Nadal wykonuje realną walidację EXE, instalatora i sumy ZIP.
+- Brak zmian mechaniki, AI, ekonomii, RNG, schematów audytu i zapisów. Nowe testy: `tests/test_release_hardening_0980.py`.
 
 ### Etap — 0.9.79 (publiczna strona projektu i release management)
 

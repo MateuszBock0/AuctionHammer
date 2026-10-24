@@ -2048,11 +2048,32 @@ class SoloApp:
         return hovered if hovered in self.game.units else None
 
     @staticmethod
-    def _aura_edge_point(rect,dx,dy):
-        """Anchor a connector to the card boundary, not over its content."""
-        scale=max(abs(dx)/(rect.width/2),abs(dy)/(rect.height/2),1e-6)
-        return (int(rect.centerx+dx/scale),
-                int(rect.centery+dy/scale))
+    def _aura_connector_path(source_rect,target_rect,source_owner,target_owner):
+        """Orthogonal route in the empty corridor, never through a card.
+
+        Two same-side cards connect above the friendly row or below the enemy
+        row. Opposing rows connect through the 59px-wide central corridor.
+        Each vertical endpoint touches the source/target boundary, never the
+        image or stats plate. Works at all viewport scales (logical coords).
+        """
+        if source_owner==target_owner:
+            if source_owner==0:
+                y=min(source_rect.top,target_rect.top)-15
+                start=source_rect.midtop
+                end=target_rect.midtop
+            else:
+                y=max(source_rect.bottom,target_rect.bottom)+15
+                start=source_rect.midbottom
+                end=target_rect.midbottom
+        else:
+            upper=source_rect if source_owner==1 else target_rect
+            lower=source_rect if source_owner==0 else target_rect
+            y=(upper.bottom+lower.top)//2
+            start=(source_rect.midtop if source_owner==0
+                   else source_rect.midbottom)
+            end=(target_rect.midtop if target_owner==0
+                 else target_rect.midbottom)
+        return (start,(start[0],y),(end[0],y),end)
 
     def _draw_aura_links(self):
         """Visualize only current resolved aura links, never imagined effects."""
@@ -2081,13 +2102,15 @@ class SoloApp:
             pygame.draw.rect(self.screen,tint,
                              target_rect.inflate(7,7),2,border_radius=12)
             if link.source!=link.target:
-                dx=target_rect.centerx-source_rect.centerx
-                dy=target_rect.centery-source_rect.centery
-                start=self._aura_edge_point(source_rect,dx,dy)
-                end=self._aura_edge_point(target_rect,-dx,-dy)
-                pygame.draw.line(self.screen,(35,47,49),start,end,5)
-                pygame.draw.line(self.screen,tint,start,end,2)
-                # Arrow tip at beneficiary; no pixel reaches the card center.
+                path=self._aura_connector_path(
+                    source_rect,target_rect,src.owner,dst.owner)
+                for start,end in zip(path,path[1:]):
+                    if start==end:
+                        continue
+                    pygame.draw.line(self.screen,(35,47,49),start,end,5)
+                    pygame.draw.line(self.screen,tint,start,end,2)
+                # Arrow tip points from the empty corridor to the beneficiary.
+                start,end=path[-2:]
                 direction=pygame.Vector2(end)-pygame.Vector2(start)
                 if direction.length_squared()>1:
                     direction=direction.normalize()
