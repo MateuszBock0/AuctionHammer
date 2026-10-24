@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.76** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.78** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,15 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.78 — wizualizacja aktywnych aur i synergii na planszy
+
+- **Zaznacz lub wskaż jednostkę z aktywną aurą:** cienkie kolorowe strzałki łączą jej kartę z jednostkami, które **rzeczywiście otrzymują modyfikator**. Wartość obok karty odbiorcy pochodzi z aktualnego efektu źródła, np. `ATK +3`, `ATK -2`, `MAX PŻ +2`, `MAX PŻ -1`, `PANC. +4`.
+- Obsługiwane źródła: `S34` (sąsiad po prawej, potem lewej; alternatywnie przeciwnik naprzeciwko), `S35` (grupowa aura maksymalnych PŻ dla własnych lub wrogich jednostek), `S105` (pozostały, **niezużyty** pancerz konkretnego źródła) i brązowy `A002` (ATK +1 wszystkim jednostkom, w tym sobie). Rzadki/legendarny `A002` ma inne zdolności i nie pokazuje fałszywej globalnej aury.
+- **Wskaż jednostkę korzystającą z aury:** jeżeli sama nie jest źródłem aktywnej aury, zobaczysz połączenia przychodzące od źródeł wsparcia lub osłabienia. Kolor zielony = dodatni ATK, pomarańczowy = ujemny ATK, błękitny = premia maksymalnych PŻ / pancerza, miedziany = kara do maksymalnych PŻ.
+- Ogłuszone i wyciszone źródła nie tworzą strzałek. Po zgonie lub usunięciu źródła oraz zużyciu pancerza obraz aktualizuje się z silnika. Działa też zgodnie z historycznymi kompaktowymi planszami, a w trybie powtórki i przy modalach połączenia nie zasłaniają interfejsu.
+- `S108` nadal ma **osobne oznaczenie obszaru przyszłej reakcji**, a nie nieprawdziwą „aktywną aurę”. Kolorowe wskaźniki reprezentują modyfikator jednego źródła; suma końcowa statystyk może uwzględniać również inne aury. Geometria pól i obszary klikania nie zmieniają się.
+- Testy: `tests/test_aura_links_0978.py` oraz kompletne regresje Linux/Windows, render Pygame i audytowane mecze.
 
 ## Nowość 0.9.76 — inteligentny przycisk końca tury
 
