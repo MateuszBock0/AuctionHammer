@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.76 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.78 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.78 (wskazywanie synergii i aur)
+
+- Warstwa `game/ui/aura_links.py` odczytuje realne położenie/stan jednostek i reguły modyfikatorów zaimplementowanych w `Match._update_auras`. Wskazanie źródła pokazuje wyjściowe strzałki, a jednostki niebędącej źródłem — wejściowe; bez symulacji efektów i bez zmieniania `Match`.
+- Obsługa S34 (priorytet prawego sąsiada, osłabienie wroga naprzeciwko), S35 (+/- MAX PŻ), S105 (pozostały rzeczywisty pancerz wpisany dla źródła), brązowego A002 (globalne ATK +1). Stun/silence i wymarłe źródła nie wyświetlają połączenia. Opisy wartości wyjaśniają **wkład konkretnego źródła**, a nie sumę po wszystkich aurach.
+- Linie wychodzą i kończą się na brzegach kart, nie zmieniają hitboxów, nie wchodzą na planszę podczas modali/replay. S108 jest nadal wyłącznie osobną podpowiedzią przyszłej reakcji; nie udajemy zaaplikowanego buffa.
+- QA: `tests/test_aura_links_0978.py` (16 scenariuszy), pełna regresja 0.9.78 na obu systemach i niezależne podpisane replaye.
 
 ### Etap — 0.9.76 (inteligentne zakończenie tury)
 
