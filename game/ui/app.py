@@ -53,6 +53,7 @@ class SoloApp:
     HAND_H=195
     DRAG_THRESHOLD_SQ=100  # 10 px: distinguish drags from clicks.
     DRAG_RETURN_MS=180     # Cosmetic only; no Match state mutation.
+    HAND_LEVEL_FX_MS=1050  # Read-only celebration after each 3 turns in hand.
 
     def __init__(self,start_in_menu=False):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
@@ -167,6 +168,7 @@ class SoloApp:
         self.drag_start=None
         self.drag_pointer=None
         self.drag_return=None
+        self._reset_hand_growth_tracking()
         self.tooltip_open=False
         self.details_card=None
         self.details_scroll=0
@@ -429,6 +431,75 @@ class SoloApp:
                   self.slot_rect(1,self.game.slot_of(valid)))
             pygame.draw.rect(self.screen,color,rect.inflate(9,9),4,
                              border_radius=13)
+
+    def _reset_hand_growth_tracking(self):
+        """Loading/new games establish baseline; no artificial level-up."""
+        game=self.game
+        self._hand_growth_game=game
+        self._hand_growth_seen={
+            uid:(game.cards[uid].hand_turns,
+                 game.cards[uid].attack,game.cards[uid].max_hp)
+            for uid in game.players[0].hand
+        }
+        self._hand_level_fx={}
+
+    def _sync_hand_growth(self,now=None):
+        """Detect actual committed level changes without altering Match."""
+        if getattr(self,'_hand_growth_game',None) is not self.game:
+            self._reset_hand_growth_tracking()
+            return
+        if now is None:
+            now=pygame.time.get_ticks()
+        previous=self._hand_growth_seen
+        updated={}
+        for uid in self.game.players[0].hand:
+            card=self.game.cards[uid]
+            latest=(card.hand_turns,card.attack,card.max_hp)
+            before=previous.get(uid)
+            if (before is not None and latest[0]//3>before[0]//3
+                    and uid not in self.game.auction_awards
+                    and self.animations_enabled):
+                self._hand_level_fx[uid]=(
+                    now,latest[0]//3,latest[1]-before[1],
+                    latest[2]-before[2])
+            updated[uid]=latest
+        self._hand_growth_seen=updated
+        self._hand_level_fx={
+            uid:fx for uid,fx in self._hand_level_fx.items()
+            if uid in updated and 0<=now-fx[0]<self.HAND_LEVEL_FX_MS
+        }
+
+    def _draw_hand_level_fx(self,uid,rect):
+        """Brief gold glow and grounded ATK/HP changes on the hand card."""
+        if not self.animations_enabled or self.replay_index is not None:
+            return
+        fx=self._hand_level_fx.get(uid)
+        if fx is None:
+            return
+        started,level,atk,hp=fx
+        age=pygame.time.get_ticks()-started
+        if not 0<=age<self.HAND_LEVEL_FX_MS:
+            return
+        fade=1-age/self.HAND_LEVEL_FX_MS
+        halo=pygame.Surface((rect.width+18,rect.height+18),pygame.SRCALPHA)
+        pygame.draw.rect(halo,(255,206,92,round(165*fade)),
+                         halo.get_rect().inflate(-8,-8),width=5,
+                         border_radius=13)
+        self.screen.blit(halo,(rect.x-9,rect.y-9))
+        banner=pygame.Rect(rect.x+4,rect.y+76,rect.width-8,42)
+        panel=pygame.Surface(banner.size,pygame.SRCALPHA)
+        panel.fill((34,35,30,round(237*fade)))
+        self.screen.blit(panel,banner.topleft)
+        pygame.draw.rect(self.screen,(239,196,102),banner,2,
+                         border_radius=5)
+        heading=self.fonts_bold[13].render(
+            f'AWANS! POZ. {level}',True,(255,223,137))
+        changes=self.fonts[11].render(
+            f'ATK {atk:+d}  PŻ {hp:+d}',True,(215,253,219))
+        self.screen.blit(heading,(banner.centerx-heading.get_width()//2,
+                                  banner.y+4))
+        self.screen.blit(changes,(banner.centerx-changes.get_width()//2,
+                                  banner.y+23))
 
     HOVER_PREVIEW_DELAY_MS=420
 
@@ -1867,6 +1938,7 @@ class SoloApp:
         # The newest attack recap must appear on the very next rendered frame.
         self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
         self._capture_visual_feedback()
+        self._sync_hand_growth()
         self.tutorial.observe(g)
         if (self.menu_open or self.history_open or self.help_open
                 or self.tutorial_welcome_open or self.auction_inspect_index is not None
@@ -1883,6 +1955,7 @@ class SoloApp:
                     try:self.ai.step(g)
                     except IllegalMove as e:self.last_error=str(e)
                     self.last_ai_ms=t
+                    self._sync_hand_growth(t)
             if self.selected in g.cards and self.selected not in g.players[0].hand and self.selected not in g.units:
                 self.selected=None
         now=pygame.time.get_ticks()
@@ -2014,6 +2087,7 @@ class SoloApp:
                 if can_place and uid!=self.selected:
                     pygame.draw.rect(self.screen,(207,164,90),rect.inflate(6,6),
                                      2,border_radius=12)
+            self._draw_hand_level_fx(uid,rect)
             if marked:
                 pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(9,9),4,border_radius=12)
                 badge=pygame.Rect(rect.x+6,rect.y+72,rect.width-12,29)
@@ -2801,6 +2875,10 @@ class SoloApp:
                         if recorded_difficulty in ('łatwy','normalny','trudny'):
                             self.ai.difficulty=recorded_difficulty
                         self.game=game
+                        self._reset_hand_growth_tracking()
+                        self.drag_start=None
+                        self.drag_pointer=None
+                        self.drag_return=None
                         # A loaded match is the last displayed seat; the next
                         # NEW MATCH opens from its opposite seat. Loading is
                         # not itself counted as starting a new game.
