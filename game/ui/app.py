@@ -381,7 +381,9 @@ class SoloApp:
 
     def _attack_drag_state(self):
         """Read-only in-flight attack selection from an allied board unit."""
-        if self.drag_start is None or self.drag_pointer is None:
+        # Historical read-only tests construct SoloApp without __init__.
+        if (getattr(self,'drag_start',None) is None
+                or getattr(self,'drag_pointer',None) is None):
             return None
         if (self.menu_open or self.history_open or self.help_open
                 or self.replay_index is not None or self.details_card is not None
