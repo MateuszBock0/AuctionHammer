@@ -169,6 +169,7 @@ class SoloApp:
         self.drag_start=None
         self.drag_pointer=None
         self.drag_return=None
+        self._end_turn_warning=None
         self._reset_hand_growth_tracking()
         self.tooltip_open=False
         self.details_card=None
@@ -920,10 +921,7 @@ class SoloApp:
                 self.selected=None
             return
         if pygame.Rect(1201,816,221,52).collidepoint(pos):
-            if g.active==0:
-                try:g.end_turn()
-                except IllegalMove as e:self.last_error=str(e)
-                self.selected=None
+            self._request_end_turn()
             return
         if pygame.Rect(1093,869,145,33).collidepoint(pos):
             self._request_restart();return
@@ -1383,6 +1381,61 @@ class SoloApp:
                             else 'ANIMACJE WYŁĄCZONE')
         self.visual_notice_tick=pygame.time.get_ticks()
 
+    END_TURN_WARNING_MS=4200
+
+    def _end_turn_available(self):
+        """Only expose a turn-finish command when the engine allows it."""
+        g=self.game
+        return (g.phase=='turn' and g.active==0 and g.pending is None
+                and g.end_queue is None and g.deferred_attack is None)
+
+    def _end_turn_warning_key(self):
+        """Invalidate confirmation after any authoritative action or turn swap."""
+        g=self.game
+        return (g, g.action_turn,
+                len(getattr(g,'audit_actions',())),
+                len(g.event_journal))
+
+    def _end_turn_warning_active(self,now=None):
+        warning=getattr(self,'_end_turn_warning',None)
+        if warning is None or not self._end_turn_available():
+            return False
+        if now is None:
+            now=pygame.time.get_ticks()
+        key,born=warning
+        return (key==self._end_turn_warning_key()
+                and 0<=now-born<self.END_TURN_WARNING_MS)
+
+    def _end_turn_warning_text(self,readout):
+        """Show potential actions only; never imply a guaranteed card effect."""
+        cues=[]
+        if readout.can_play:
+            cues.append('KARTA DO ZAGRANIA')
+        if readout.ready_units:
+            label=('1 GOTOWA JEDNOSTKA' if readout.ready_units==1
+                   else f'{readout.ready_units} GOTOWE JEDNOSTKI')
+            cues.append(label)
+        return 'POMIJASZ: '+' + '.join(cues)
+
+    def _request_end_turn(self):
+        """Single UI entry for mouse and Space, without touching Match on warn."""
+        if not self._end_turn_available():
+            return False
+        hud=turn_readout(self.game)
+        if hud.can_act and not self._end_turn_warning_active():
+            self._end_turn_warning=(self._end_turn_warning_key(),
+                                    pygame.time.get_ticks())
+            return False
+        self._end_turn_warning=None
+        try:
+            self.game.end_turn()
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+            return False
+        self.selected=None
+        self.last_error=''
+        return True
+
     def _needs_confirmation(self):
         return self.game.phase not in ('mulligan','finished')
 
@@ -1796,8 +1849,7 @@ class SoloApp:
                 try:self.game.finish_mulligan(0)
                 except IllegalMove as e:self.last_error=str(e)
             elif event.key==pygame.K_SPACE and self.game.phase=='turn' and self.game.active==0 and not self.game.pending:
-                try:self.game.end_turn();self.selected=None
-                except IllegalMove as e:self.last_error=str(e)
+                self._request_end_turn()
             elif event.key==pygame.K_LEFT:
                 if self.game.pending and self.game.pending.owner==0:self.choice_page=max(0,self.choice_page-1)
                 else:self.scroll=max(0,self.scroll-1)
@@ -2263,19 +2315,31 @@ class SoloApp:
                 self._text(self.cards_view.clip(status,self.fonts[12],319),
                            12,1104,773,cfg.GREEN)
             else:self._text('RUCH KOMPUTERA',15,1104,773,cfg.RED)
-            if self.game.players[0].next_fast:
-                self._text('NASTĘPNA KARTA: SZYBKI ATAK',13,1104,796,STATUS_COLORS['quick'])
-            else:
-                status=turn_readout(self.game)
-                if status.is_human_turn:
-                    action_msg=('MASZ JESZCZE LEGALNE AKCJE' if status.can_act
-                                else 'WSZYSTKIE AKCJE WYKORZYSTANE')
-                    self._text(action_msg,12,1104,797,
-                               cfg.GOLD if status.can_act else cfg.GREEN)
-            can=self.game.phase=='turn' and self.game.active==0 and not self.game.pending
             status=turn_readout(self.game)
-            self._button(pygame.Rect(1201,816,221,52),'ZAKOŃCZ TURĘ  [SPACJA]',
-                         active=can,accent=can and not status.can_act,small=True)
+            warned=self._end_turn_warning_active()
+            if warned:
+                # No modal: 4.2 s to confirm, with a real engine readout.
+                notice=self._end_turn_warning_text(status)
+                self._text(self.cards_view.clip(notice,self.fonts[12],319),
+                           12,1104,797,cfg.GOLD)
+            elif self.game.players[0].next_fast:
+                self._text('NASTĘPNA KARTA: SZYBKI ATAK',13,1104,796,STATUS_COLORS['quick'])
+            elif status.is_human_turn:
+                action_msg=('DOSTĘPNE AKCJE: ZAGRAJ / ATAKUJ' if status.can_act
+                            else 'BRAK DALSZYCH AKCJI — ZAKOŃCZ TURĘ')
+                self._text(self.cards_view.clip(action_msg,self.fonts[12],319),
+                           12,1104,797,
+                           cfg.GOLD if status.can_act else cfg.GREEN)
+            can=self._end_turn_available()
+            label=('POTWIERDŹ  [SPACJA]' if warned else
+                   'ZAKOŃCZ TURĘ  [SPACJA]')
+            rect=pygame.Rect(1201,816,221,52)
+            self._button(rect,label,active=can,
+                         accent=can and not status.can_act,small=True)
+            if warned:
+                # Important but restrained warning frame around existing CTA.
+                pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(4,4),
+                                 3,border_radius=12)
         if self.game.phase!='finished':
             self._button(pygame.Rect(1093,869,145,33),'NOWY MECZ  [R]',small=True)
 
@@ -2885,6 +2949,7 @@ class SoloApp:
                         if recorded_difficulty in ('łatwy','normalny','trudny'):
                             self.ai.difficulty=recorded_difficulty
                         self.game=game
+                        self._end_turn_warning=None
                         self._reset_hand_growth_tracking()
                         self.drag_start=None
                         self.drag_pointer=None

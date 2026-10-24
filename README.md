@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.75** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.76** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,17 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.76 — inteligentny przycisk końca tury
+
+Przycisk **ZAKOŃCZ TURĘ [SPACJA]** wykorzystuje te same autorytatywne dane co HUD: `Match.can_play()` oraz `Match.legal_attacks()` przez `turn_readout()`.
+
+- **Nie masz już legalnych zagrań ani gotowych jednostek:** przycisk jest wyróżniony i kończy turę jednym kliknięciem lub naciśnięciem spacji.
+- **Masz kartę do zagrania lub gotową jednostkę:** pierwsze kliknięcie/spacja wyświetla nieblokujące ostrzeżenie `POMIJASZ: KARTA DO ZAGRANIA + N GOTOWE JEDNOSTKI`. Etykieta przycisku zmienia się na **POTWIERDŹ [SPACJA]**. Powtórne kliknięcie/spacja w ciągu **4,2 s** kończy turę. Bez drugiego potwierdzenia gra toczy się dalej — nie powstaje żadna komenda silnika.
+- Zakończenie tury po ostrzeżeniu jest świadomym wyborem gracza, bez kar i zmian w ekonomii. Ostrzeżenie wygasa lub zostaje unieważnione po wykonaniu dowolnego zarejestrowanego ruchu albo zmianie tury/meczu.
+- Spacja i kliknięcie są równoważne. Nie ma dodatkowego modalu, zasłaniania kart czy zmiany wymagań silnika. Własna tura z trwającym obowiązkowym wyborem pozostaje zablokowana tak jak dotychczas.
+
+Testy `tests/test_smart_end_turn_0976.py` i dotychczasowe regresje Windows/Linux sprawdzają m.in. brak mutacji po ostrzeżeniu, sterowanie klawiszem/spacją, anulowanie po wykonanym zagraniu, zgodność przycisku z legalnością akcji i zgodność powtórek.
 
 ## Nowość 0.9.75 — ekran podsumowania zakończonej partii
 
