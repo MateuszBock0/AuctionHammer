@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.80] — 2026-10-24
+
+### Naprawiono
+- Strzałki aktywnych aur poprowadzono ortogonalnie przez wolne korytarze między rzędami lub wzdłuż ich zewnętrznych krawędzi, aby nie przecinały środka innych kart.
+- Wydanie Windows zawiera teraz `CHANGELOG.md` i `CONTRIBUTING.md`. Weryfikator sprawdza lokalne linki i ilustracje README w rzeczywistym folderze gry oraz w gotowym ZIP-ie przed publikacją.
+- Publikacja GitHub Release została uzależniona od pełnej regresji Linux, 20 podpisanych pełnych meczów, 100 niezależnych meczów forensic oraz trzech kohort 400/300/300 (łącznie 1000 podpisanych powtórek). Build Windows rozpoczyna się dopiero po sukcesie tych bramek; później przechodzi własne testy, kompilację i kontrolę ZIP-a.
+
+**Bez zmian** zasad, AI, kart, balansu, losowania, formatu zapisów i schematów audytu.
+
 ## [0.9.79] — 2026-10-24
 
 ### Zmieniono
