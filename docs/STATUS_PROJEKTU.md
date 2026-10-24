@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.75 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.76 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.76 (inteligentne zakończenie tury)
+
+- Wykorzystujemy istniejący `turn_readout()`, który odczytuje realne `Match.can_play` i `Match.legal_attacks`: przy braku dostępnych akcji koniec tury w jednym kroku, przy możliwych zagraniach/atakach — najpierw nieblokujące ostrzeżenie, potem potwierdzenie.
+- Ostrzeżenie wymienia tylko faktycznie dostępne rodzaje akcji, podaje liczbę gotowych jednostek, nie prognozuje skutków akcji. Jest aktywne 4200 ms, traci ważność po udokumentowanej komendzie, zmianie tury lub gry. `ZAKOŃCZ TURĘ` i `POTWIERDŹ` mają wspólną obsługę myszy i SPACJI.
+- Render zachowuje dotychczasowy układ przycisku, panel, reguły, AI, audyty i stary schemat zapisów. Całość w UI, testy `tests/test_smart_end_turn_0976.py`, pełna regresja Windows/Linux, audytowane replaye.
 
 ### Etap — 0.9.75 (podsumowanie partii)
 
