@@ -2,6 +2,8 @@ name: Build portable Windows + Release
 on:
   push:
     branches: [main, feature/0943-quality-release-safe-launcher]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 concurrency:
   group: auctionhammer-windows-${{ github.ref }}
@@ -9,7 +11,121 @@ concurrency:
 permissions:
   contents: write
 jobs:
+  linux-regressions:
+    name: Release gate / Linux regression + 20 signed games
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Check version and every public README link
+        run: python -m tools.release_meta check
+      - name: Complete Linux regression suite
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m unittest discover -s tests -v
+      - name: Real Pygame UI render
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python tools/render_minimal_fantasy_preview.py
+      - name: 20 full fixed-board matches, verify each signed replay
+        env:
+          PYTHONUTF8: '1'
+        run: python -m tools.check_fixed_board_0951 --games 20
+      - name: Validate descriptions of all 121 card variants
+        run: |
+          python -m scripts.card_copy_matrix_0949 > card-copy-121.csv
+          python -c "import csv; assert len(list(csv.DictReader(open('card-copy-121.csv',encoding='utf-8'))))==121"
+
+  forensic-100:
+    name: Release gate / 100 fresh matches and 100 signed replays
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: Full independent 100-match forensic run
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          python tools/simulate_v22.py --games 100 --start-seed 230000 \
+            --max-steps 3000 --verify-every 1 \
+            --level-0 normalny --level-1 normalny \
+            --output-dir reports/release_forensic_100
+      - name: Strict signed 100-match report gate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('reports/release_forensic_100')
+          r=json.loads((root/'raport_100_meczow.json').read_text(encoding='utf-8'))
+          summary=r['summary']
+          assert summary['finished']==100 and summary['failed']==0,summary
+          assert summary['audit_replays_verified']==100,summary
+          assert all(row['status']=='finished' and row['replay_verified']
+                     and row['failed_commands']==0 for row in r['matches'])
+          assert len(list((root/'historia_meczow').glob('mecz_*.json.gz')))==100
+          print('PASS: 100 complete signed histories, 100 full replays')
+          PY
+
+  signed-cohorts:
+    name: Release gate / ${{ matrix.label }} full signed replays
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: normal-normal, games: 400, seed: 39000, level0: normalny, level1: normalny}
+          - {label: easy-hard, games: 300, seed: 49000, level0: łatwy, level1: trudny}
+          - {label: hard-easy, games: 300, seed: 59000, level0: trudny, level1: łatwy}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - name: 1000-game audit cohorts / each game independently replayed
+        env:
+          PYTHONUTF8: '1'
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: |
+          python tools/simulate_v22.py --games ${{ matrix.games }} \
+            --start-seed ${{ matrix.seed }} --max-steps 3000 \
+            --level-0 ${{ matrix.level0 }} --level-1 ${{ matrix.level1 }} \
+            --starting-compensation choice_2_5_or_coins --verify-every 1 \
+            --output-dir reports/release_${{ matrix.label }}
+      - name: Exact per-cohort completion and replay gate
+        env:
+          LABEL: ${{ matrix.label }}
+          COUNT: ${{ matrix.games }}
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          r=json.loads((Path('reports/release_'+os.environ['LABEL'])/
+                        'raport_100_meczow.json').read_text(encoding='utf-8'))
+          summary=r['summary']
+          n=int(os.environ['COUNT'])
+          assert summary['finished']==n and summary['failed']==0,summary
+          assert summary['audit_replays_verified']==n,summary
+          assert all(row['replay_verified'] and row['failed_commands']==0
+                     for row in r['matches'])
+          print('PASS:',n,'complete signed replays',os.environ['LABEL'])
+          PY
+
   windows:
+    name: Package Windows only after ALL independent release gates PASS
+    needs: [linux-regressions, forensic-100, signed-cohorts]
     env:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: '1'
@@ -68,7 +184,7 @@ jobs:
           foreach ($dir in @('game','assets','data','docs','tests','tools','preview','.vscode')) {
             Copy-Item -Path $dir -Destination $dest -Recurse -Force
           }
-          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','COFNIJ_AKTUALIZACJE.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
+          foreach ($f in @('AUCTIONHAMMER_MASTER.md','README.md','CHANGELOG.md','CONTRIBUTING.md','LICENSE','VERSION.json','requirements.txt','URUCHOM_AUCTIONHAMMER.bat','GRAJ_BEZ_INTERNETU.bat','COFNIJ_AKTUALIZACJE.bat','OPUBLIKUJ_NA_GITHUB.bat','OTWORZ_W_VS_CODE.bat','START_DEVELOPER.bat')) {
             Copy-Item -Path $f -Destination $dest -Force
           }
           # Ship a tracked, permitted album once, beside the portable EXE.
@@ -90,6 +206,8 @@ jobs:
           $hash = (Get-FileHash -LiteralPath 'AuctionHammer-Windows.zip' -Algorithm SHA256).Hash.ToLowerInvariant()
           [IO.File]::WriteAllText((Join-Path (Get-Location) 'AuctionHammer-Windows.zip.sha256'), ($hash + ' *AuctionHammer-Windows.zip'), [Text.Encoding]::ASCII)
           Write-Host ('SHA256 ' + $hash)
+      - name: Verify REAL packaged README links and required release docs in folder AND ZIP
+        run: python -m tools.release_package --folder release/AuctionHammer --zip AuctionHammer-Windows.zip
       - name: Verify archive and checksum on Windows
         shell: powershell
         run: |
