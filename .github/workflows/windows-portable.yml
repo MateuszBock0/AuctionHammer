@@ -23,6 +23,10 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
           python -m pip install pyinstaller
+      - name: Validate release version, public README links and changelog
+        run: python -m tools.release_meta check
+      - name: Generate exact GitHub Release notes from current CHANGELOG section
+        run: python -m tools.release_meta notes --output release-notes.md
       - name: Automated regression tests
         env:
           SDL_VIDEODRIVER: dummy
@@ -132,5 +136,6 @@ jobs:
           if ([string]::IsNullOrWhiteSpace([string]$version)) {
             throw 'Invalid app version in VERSION.json'
           }
-          $notes = "AuctionHammer $version portable Windows release. Verified SHA-256 update, side-by-side versions and rollback. Extract the folder once and launch URUCHOM_AUCTIONHAMMER.bat. Old EXE and user saves remain intact during update."
-          gh release create $tag 'AuctionHammer-Windows.zip' 'AuctionHammer-Windows.zip.sha256' --title "AuctionHammer $version Portable $tag" --notes $notes --latest --target '${{ github.sha }}'
+          # Release notes are sourced from the verified VERSION.json release
+          # heading in CHANGELOG.md. Never publish stale hard-coded notes.
+          gh release create $tag 'AuctionHammer-Windows.zip' 'AuctionHammer-Windows.zip.sha256' --title "AuctionHammer $version Portable $tag" --notes-file 'release-notes.md' --latest --target '${{ github.sha }}'
