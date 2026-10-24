@@ -22,7 +22,8 @@ def fake_game(complete=True):
     cards["u2"].ability_level=1
     cards["a1"].ability_level=3
     units={"u1":SimpleNamespace(atk=8,max_hp=13)}
-    players=[SimpleNamespace(hp=57,coins=7),SimpleNamespace(hp=-1,coins=11)]
+    players=[SimpleNamespace(name="GRACZ",hp=57,coins=7),
+             SimpleNamespace(name="KOMPUTER",hp=-1,coins=11)]
     actions=[
         {"operation":"play","result":"ok","command_owner":0,
          "changes":{"units":{"u1":{"before":None,
