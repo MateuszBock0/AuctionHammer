@@ -2,6 +2,7 @@
 from __future__ import annotations
 import os
 import re
+import math
 import subprocess
 from pathlib import Path
 import pygame
@@ -52,6 +53,7 @@ class SoloApp:
     HAND_H=195
     DRAG_THRESHOLD_SQ=100  # 10 px: distinguish drags from clicks.
     DRAG_RETURN_MS=180     # Cosmetic only; no Match state mutation.
+    HAND_LEVEL_FX_MS=1050  # Read-only celebration after each 3 turns in hand.
 
     def __init__(self,start_in_menu=False):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
@@ -166,6 +168,7 @@ class SoloApp:
         self.drag_start=None
         self.drag_pointer=None
         self.drag_return=None
+        self._reset_hand_growth_tracking()
         self.tooltip_open=False
         self.details_card=None
         self.details_scroll=0
@@ -375,6 +378,130 @@ class SoloApp:
             statuses=hand_grants(self.game,uid))
         pygame.draw.rect(self.screen,outline,rect.inflate(4,4),
                          3 if valid else 2,border_radius=12)
+
+    def _attack_drag_state(self):
+        """Read-only in-flight attack selection from an allied board unit."""
+        # Historical read-only tests construct SoloApp without __init__.
+        if (getattr(self,'drag_start',None) is None
+                or getattr(self,'drag_pointer',None) is None):
+            return None
+        if (self.menu_open or self.history_open or self.help_open
+                or self.replay_index is not None or self.details_card is not None
+                or self.confirm_action or self.tutorial_welcome_open
+                or self.game.phase!='turn' or self.game.active!=0
+                or self.game.pending is not None):
+            return None
+        start,uid=self.drag_start
+        point=self.drag_pointer
+        if uid not in self.game.players[0].board or uid not in self.game.units:
+            return None
+        if (point[0]-start[0])**2+(point[1]-start[1])**2<=self.DRAG_THRESHOLD_SQ:
+            return None
+        targets=self.game.legal_attacks(uid)
+        if not targets:
+            return None
+        hovered=self.target_under(point)
+        return (uid,point,hovered if hovered in targets else None)
+
+    def _draw_attack_drag(self):
+        """Draw a targeting arrow following the logical cursor on every frame."""
+        state=self._attack_drag_state()
+        if state is None:
+            return
+        uid,point,valid=state
+        src=self.slot_rect(0,self.game.slot_of(uid))
+        dx,dy=point[0]-src.centerx,point[1]-src.centery
+        length=math.hypot(dx,dy)
+        if length<1:
+            return
+        ux,uy=dx/length,dy/length
+        offset=min(src.width,src.height)*0.32
+        start=(round(src.centerx+ux*offset),round(src.centery+uy*offset))
+        color=(109,244,225) if valid is not None else (233,177,100)
+        pygame.draw.line(self.screen,(17,29,38),start,point,9)
+        pygame.draw.line(self.screen,color,start,point,4)
+        base=(point[0]-ux*20,point[1]-uy*20)
+        side=(-uy*9,ux*9)
+        points=[point,(round(base[0]+side[0]),round(base[1]+side[1])),
+                      (round(base[0]-side[0]),round(base[1]-side[1]))]
+        pygame.draw.polygon(self.screen,(17,29,38),points)
+        points=[point,(round(base[0]+side[0]*0.68),round(base[1]+side[1]*0.68)),
+                      (round(base[0]-side[0]*0.68),round(base[1]-side[1]*0.68))]
+        pygame.draw.polygon(self.screen,color,points)
+        if valid is not None:
+            rect=(self.hero_rect(1) if valid=='hero:1' else
+                  self.slot_rect(1,self.game.slot_of(valid)))
+            pygame.draw.rect(self.screen,color,rect.inflate(9,9),4,
+                             border_radius=13)
+
+    def _reset_hand_growth_tracking(self):
+        """Loading/new games establish baseline; no artificial level-up."""
+        game=self.game
+        self._hand_growth_game=game
+        self._hand_growth_seen={
+            uid:(game.cards[uid].hand_turns,
+                 game.cards[uid].attack,game.cards[uid].max_hp)
+            for uid in game.players[0].hand
+        }
+        self._hand_level_fx={}
+
+    def _sync_hand_growth(self,now=None):
+        """Detect actual committed level changes without altering Match."""
+        if getattr(self,'_hand_growth_game',None) is not self.game:
+            self._reset_hand_growth_tracking()
+            return
+        if now is None:
+            now=pygame.time.get_ticks()
+        previous=self._hand_growth_seen
+        updated={}
+        for uid in self.game.players[0].hand:
+            card=self.game.cards[uid]
+            latest=(card.hand_turns,card.attack,card.max_hp)
+            before=previous.get(uid)
+            if (before is not None and latest[0]//3>before[0]//3
+                    and uid not in self.game.auction_awards
+                    and self.animations_enabled):
+                self._hand_level_fx[uid]=(
+                    now,latest[0]//3,latest[1]-before[1],
+                    latest[2]-before[2])
+            updated[uid]=latest
+        self._hand_growth_seen=updated
+        self._hand_level_fx={
+            uid:fx for uid,fx in self._hand_level_fx.items()
+            if uid in updated and 0<=now-fx[0]<self.HAND_LEVEL_FX_MS
+        }
+
+    def _draw_hand_level_fx(self,uid,rect):
+        """Brief gold glow and grounded ATK/HP changes on the hand card."""
+        if not self.animations_enabled or self.replay_index is not None:
+            return
+        fx=self._hand_level_fx.get(uid)
+        if fx is None:
+            return
+        started,level,atk,hp=fx
+        age=pygame.time.get_ticks()-started
+        if not 0<=age<self.HAND_LEVEL_FX_MS:
+            return
+        fade=1-age/self.HAND_LEVEL_FX_MS
+        halo=pygame.Surface((rect.width+18,rect.height+18),pygame.SRCALPHA)
+        pygame.draw.rect(halo,(255,206,92,round(165*fade)),
+                         halo.get_rect().inflate(-8,-8),width=5,
+                         border_radius=13)
+        self.screen.blit(halo,(rect.x-9,rect.y-9))
+        banner=pygame.Rect(rect.x+4,rect.y+76,rect.width-8,42)
+        panel=pygame.Surface(banner.size,pygame.SRCALPHA)
+        panel.fill((34,35,30,round(237*fade)))
+        self.screen.blit(panel,banner.topleft)
+        pygame.draw.rect(self.screen,(239,196,102),banner,2,
+                         border_radius=5)
+        heading=self.fonts_bold[13].render(
+            f'AWANS! POZ. {level}',True,(255,223,137))
+        changes=self.fonts[11].render(
+            f'ATK {atk:+d}  PŻ {hp:+d}',True,(215,253,219))
+        self.screen.blit(heading,(banner.centerx-heading.get_width()//2,
+                                  banner.y+4))
+        self.screen.blit(changes,(banner.centerx-changes.get_width()//2,
+                                  banner.y+23))
 
     HOVER_PREVIEW_DELAY_MS=420
 
@@ -830,14 +957,7 @@ class SoloApp:
                     self.tooltip_open=False
                     return
             if self.selected in g.players[0].board and target is not None and (target in g.players[1].board or target=='hero:1'):
-                issue=self._attack_issue(self.selected,target)
-                if issue:
-                    self.last_error=issue
-                else:
-                    try:g.attack(self.selected,target);self.last_error=''
-                    except IllegalMove as e:self.last_error=str(e)
-                    else:self._release_exhausted_attacker()
-                if self.selected not in g.units:self.selected=None
+                self._try_attack(self.selected,target)
                 return
             if target in g.players[0].board:
                 self.selected=target if self.selected!=target else None
@@ -1207,6 +1327,24 @@ class SoloApp:
                 all(t in self.game.players[1].board for t in legal)):
             return 'PROWOKACJA: najpierw zaatakuj turkusowo podświetlonego obrońcę.'
         return 'Nielegalny cel. Dozwolone cele są podświetlone turkusową ramką.'
+
+    def _try_attack(self,uid,target):
+        """One authoritative attack route for mouse clicks and drag releases."""
+        issue=self._attack_issue(uid,target)
+        if issue:
+            self.last_error=issue
+            return False
+        try:
+            self.game.attack(uid,target)
+            self.last_error=''
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+            return False
+        self.selected=uid
+        self._release_exhausted_attacker()
+        if self.selected not in self.game.units:
+            self.selected=None
+        return True
 
     def _try_play(self,uid,replace=None,slot=None):
         g=self.game
@@ -1682,12 +1820,27 @@ class SoloApp:
             pos=self._physical_to_virtual(event.pos)
             if self.drag_start:
                 down,card=self.drag_start
-                # Capture its floating location before clearing cursor state.
+                # Capture both drag previews before clearing the pointer.
                 self.drag_pointer=pos
+                attack_drag=self._attack_drag_state()
                 floating=self._floating_hand_card()
                 self.drag_start=None
                 self.drag_pointer=None
                 distance=(pos[0]-down[0])**2+(pos[1]-down[1])**2
+                if attack_drag is not None:
+                    uid,point,legal_target=attack_drag
+                    if legal_target is not None:
+                        self._try_attack(uid,legal_target)
+                    else:
+                        target=self.target_under(point)
+                        if target in self.game.players[1].board or target=='hero:1':
+                            self.last_error=self._attack_issue(uid,target)
+                    return True
+                if (card in self.game.players[0].board
+                        and self.game.phase=='turn' and self.game.active==0
+                        and distance>self.DRAG_THRESHOLD_SQ):
+                    # Exhausted/stunned allies cannot start drag attacks.
+                    return True
                 if (not self.game.pending and card in self.game.players[0].hand
                         and distance>self.DRAG_THRESHOLD_SQ):
                     played=False
@@ -1787,6 +1940,7 @@ class SoloApp:
         # The newest attack recap must appear on the very next rendered frame.
         self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
         self._capture_visual_feedback()
+        self._sync_hand_growth()
         self.tutorial.observe(g)
         if (self.menu_open or self.history_open or self.help_open
                 or self.tutorial_welcome_open or self.auction_inspect_index is not None
@@ -1803,6 +1957,7 @@ class SoloApp:
                     try:self.ai.step(g)
                     except IllegalMove as e:self.last_error=str(e)
                     self.last_ai_ms=t
+                    self._sync_hand_growth(t)
             if self.selected in g.cards and self.selected not in g.players[0].hand and self.selected not in g.units:
                 self.selected=None
         now=pygame.time.get_ticks()
@@ -1934,6 +2089,7 @@ class SoloApp:
                 if can_place and uid!=self.selected:
                     pygame.draw.rect(self.screen,(207,164,90),rect.inflate(6,6),
                                      2,border_radius=12)
+            self._draw_hand_level_fx(uid,rect)
             if marked:
                 pygame.draw.rect(self.screen,cfg.GOLD,rect.inflate(9,9),4,border_radius=12)
                 badge=pygame.Rect(rect.x+6,rect.y+72,rect.width-12,29)
@@ -2333,10 +2489,12 @@ class SoloApp:
         g=self.game
         if g.pending or g.phase!='turn' or g.active!=0:
             return []
-        if self.selected not in g.players[0].board:
+        drag=self._attack_drag_state()
+        candidate=drag[0] if drag is not None else self.selected
+        if candidate not in g.players[0].board:
             return []
         result=[]
-        for target in g.legal_attacks(self.selected):
+        for target in g.legal_attacks(candidate):
             if target.startswith('hero:'):
                 result.append(self.hero_rect(int(target.split(':')[1])))
             elif target in g.players[1].board:
@@ -2719,6 +2877,10 @@ class SoloApp:
                         if recorded_difficulty in ('łatwy','normalny','trudny'):
                             self.ai.difficulty=recorded_difficulty
                         self.game=game
+                        self._reset_hand_growth_tracking()
+                        self.drag_start=None
+                        self.drag_pointer=None
+                        self.drag_return=None
                         # A loaded match is the last displayed seat; the next
                         # NEW MATCH opens from its opposite seat. Loading is
                         # not itself counted as starting a new game.
@@ -3077,6 +3239,7 @@ class SoloApp:
             self._draw_choices()
             self._draw_hover_guidance()
             self._draw_drag_overlay()
+            self._draw_attack_drag()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:

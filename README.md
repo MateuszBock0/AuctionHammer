@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.71** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.72** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,12 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.72 — przeciąganie ataków i awans kart na ręce
+
+**Atak przez przeciągnięcie:** przytrzymaj lewy przycisk myszy na własnej gotowej jednostce i przeciągnij strzałkę na legalny cel (wrogą jednostkę lub bohatera). Legalne cele pochodzą wyłącznie z `Match.legal_attacks()` i są podświetlane; kolor strzałki zmienia się po trafieniu w legalny cel. Puszczenie przycisku na legalnym celu uruchamia ten sam atak co dwuklikowe sterowanie (wybierz jednostkę → wybierz cel). Puszczenie poza celem nie wykonuje ruchu, a ogłuszone i wyczerpane jednostki nie mogą atakować. Stare sterowanie kliknięciami pozostaje dostępne.
+
+**Rozwój kart na ręce:** każda podstawowa karta ma w dolnej części ilustracji 3-stopniowy pasek pokazujący postęp do kolejnego poziomu `0/3 → 1/3 → 2/3`. Gdy karta osiągnie rzeczywisty próg trzech własnych tur na ręce, krótki złoty rozbłysk i napis `AWANS! POZ. N` pokazują również faktyczne zmiany ATK i maks. PŻ. Grafika nie udaje awansu przy wczytywaniu zapisów; karty aukcyjne nie korzystają z tego licznika. Efekty są wyłącznie wizualne — bez zmian zasad, AI, zapisów lub RNG.
 
 ## Nowość 0.9.71 — karta podąża za kursorem
 
