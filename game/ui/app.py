@@ -2,6 +2,7 @@
 from __future__ import annotations
 import os
 import re
+import math
 import subprocess
 from pathlib import Path
 import pygame
@@ -375,6 +376,59 @@ class SoloApp:
             statuses=hand_grants(self.game,uid))
         pygame.draw.rect(self.screen,outline,rect.inflate(4,4),
                          3 if valid else 2,border_radius=12)
+
+    def _attack_drag_state(self):
+        """Read-only in-flight attack selection from an allied board unit."""
+        if self.drag_start is None or self.drag_pointer is None:
+            return None
+        if (self.menu_open or self.history_open or self.help_open
+                or self.replay_index is not None or self.details_card is not None
+                or self.confirm_action or self.tutorial_welcome_open
+                or self.game.phase!='turn' or self.game.active!=0
+                or self.game.pending is not None):
+            return None
+        start,uid=self.drag_start
+        point=self.drag_pointer
+        if uid not in self.game.players[0].board or uid not in self.game.units:
+            return None
+        if (point[0]-start[0])**2+(point[1]-start[1])**2<=self.DRAG_THRESHOLD_SQ:
+            return None
+        targets=self.game.legal_attacks(uid)
+        if not targets:
+            return None
+        hovered=self.target_under(point)
+        return (uid,point,hovered if hovered in targets else None)
+
+    def _draw_attack_drag(self):
+        """Draw a targeting arrow following the logical cursor on every frame."""
+        state=self._attack_drag_state()
+        if state is None:
+            return
+        uid,point,valid=state
+        src=self.slot_rect(0,self.game.slot_of(uid))
+        dx,dy=point[0]-src.centerx,point[1]-src.centery
+        length=math.hypot(dx,dy)
+        if length<1:
+            return
+        ux,uy=dx/length,dy/length
+        offset=min(src.width,src.height)*0.32
+        start=(round(src.centerx+ux*offset),round(src.centery+uy*offset))
+        color=(109,244,225) if valid is not None else (233,177,100)
+        pygame.draw.line(self.screen,(17,29,38),start,point,9)
+        pygame.draw.line(self.screen,color,start,point,4)
+        base=(point[0]-ux*20,point[1]-uy*20)
+        side=(-uy*9,ux*9)
+        points=[point,(round(base[0]+side[0]),round(base[1]+side[1])),
+                      (round(base[0]-side[0]),round(base[1]-side[1]))]
+        pygame.draw.polygon(self.screen,(17,29,38),points)
+        points=[point,(round(base[0]+side[0]*0.68),round(base[1]+side[1]*0.68)),
+                      (round(base[0]-side[0]*0.68),round(base[1]-side[1]*0.68))]
+        pygame.draw.polygon(self.screen,color,points)
+        if valid is not None:
+            rect=(self.hero_rect(1) if valid=='hero:1' else
+                  self.slot_rect(1,self.game.slot_of(valid)))
+            pygame.draw.rect(self.screen,color,rect.inflate(9,9),4,
+                             border_radius=13)
 
     HOVER_PREVIEW_DELAY_MS=420
 
@@ -830,14 +884,7 @@ class SoloApp:
                     self.tooltip_open=False
                     return
             if self.selected in g.players[0].board and target is not None and (target in g.players[1].board or target=='hero:1'):
-                issue=self._attack_issue(self.selected,target)
-                if issue:
-                    self.last_error=issue
-                else:
-                    try:g.attack(self.selected,target);self.last_error=''
-                    except IllegalMove as e:self.last_error=str(e)
-                    else:self._release_exhausted_attacker()
-                if self.selected not in g.units:self.selected=None
+                self._try_attack(self.selected,target)
                 return
             if target in g.players[0].board:
                 self.selected=target if self.selected!=target else None
@@ -1207,6 +1254,24 @@ class SoloApp:
                 all(t in self.game.players[1].board for t in legal)):
             return 'PROWOKACJA: najpierw zaatakuj turkusowo podświetlonego obrońcę.'
         return 'Nielegalny cel. Dozwolone cele są podświetlone turkusową ramką.'
+
+    def _try_attack(self,uid,target):
+        """One authoritative attack route for mouse clicks and drag releases."""
+        issue=self._attack_issue(uid,target)
+        if issue:
+            self.last_error=issue
+            return False
+        try:
+            self.game.attack(uid,target)
+            self.last_error=''
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+            return False
+        self.selected=uid
+        self._release_exhausted_attacker()
+        if self.selected not in self.game.units:
+            self.selected=None
+        return True
 
     def _try_play(self,uid,replace=None,slot=None):
         g=self.game
@@ -1682,12 +1747,27 @@ class SoloApp:
             pos=self._physical_to_virtual(event.pos)
             if self.drag_start:
                 down,card=self.drag_start
-                # Capture its floating location before clearing cursor state.
+                # Capture both drag previews before clearing the pointer.
                 self.drag_pointer=pos
+                attack_drag=self._attack_drag_state()
                 floating=self._floating_hand_card()
                 self.drag_start=None
                 self.drag_pointer=None
                 distance=(pos[0]-down[0])**2+(pos[1]-down[1])**2
+                if attack_drag is not None:
+                    uid,point,legal_target=attack_drag
+                    if legal_target is not None:
+                        self._try_attack(uid,legal_target)
+                    else:
+                        target=self.target_under(point)
+                        if target in self.game.players[1].board or target=='hero:1':
+                            self.last_error=self._attack_issue(uid,target)
+                    return True
+                if (card in self.game.players[0].board
+                        and self.game.phase=='turn' and self.game.active==0
+                        and distance>self.DRAG_THRESHOLD_SQ):
+                    # Exhausted/stunned allies cannot start drag attacks.
+                    return True
                 if (not self.game.pending and card in self.game.players[0].hand
                         and distance>self.DRAG_THRESHOLD_SQ):
                     played=False
@@ -2333,10 +2413,12 @@ class SoloApp:
         g=self.game
         if g.pending or g.phase!='turn' or g.active!=0:
             return []
-        if self.selected not in g.players[0].board:
+        drag=self._attack_drag_state()
+        candidate=drag[0] if drag is not None else self.selected
+        if candidate not in g.players[0].board:
             return []
         result=[]
-        for target in g.legal_attacks(self.selected):
+        for target in g.legal_attacks(candidate):
             if target.startswith('hero:'):
                 result.append(self.hero_rect(int(target.split(':')[1])))
             elif target in g.players[1].board:
@@ -3077,6 +3159,7 @@ class SoloApp:
             self._draw_choices()
             self._draw_hover_guidance()
             self._draw_drag_overlay()
+            self._draw_attack_drag()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:
