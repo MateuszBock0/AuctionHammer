@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.70 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Data aktualizacji:** 24 października 2026  
+**Wersja gałęzi:** MVP 0.9.71 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.71 (płynne przeciąganie kart z ręki)
+
+- Karta trzymana lewym przyciskiem podąża za kursorem w logicznych współrzędnych Pygame przy zachowaniu oryginalnego punktu chwycenia; rysowana jest na wierzchu bez duplikowania karty w ręce.
+- Legalne sloty nadal wyznacza silnik; upuszczenie tylko na jednym z pięciu pól wykonuje standardowe `_try_play`. Upuszczenie poza obszarem lub między polami nie wykonuje ruchu i animuje powrót do ręki (180 ms, easing), o ile animacje są włączone.
+- Zwykłe kliknięcia, ograniczenie jednej karty na turę, zastępowanie przy planszy 5/5, mulligan, modale, hover oraz skalowanie okna pozostają zgodne z dotychczasowym sterowaniem. Żadnych zmian mechaniki, zapisów, replay, RNG ani AI.
+- Testy regresji: `tests/test_live_card_drag_0971.py` i `tests/test_windows_drag_drop_crash_0943.py`; CI Windows/Linux. Fizyczny odbiór przy DPI 100/125/150% pozostaje osobny.
 
 ### Etap — 0.9.70 (finalny pixel art wszystkich 51 wariantów aukcyjnych)
 

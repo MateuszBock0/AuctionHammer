@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.70** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.71** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,10 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.71 — karta podąża za kursorem
+
+Przytrzymaj **lewy przycisk myszy na karcie w ręce** i przeciągaj ją po ekranie: widoczna karta podąża za kursorem bez przeskakiwania do środka, a legalne pola własnej planszy są podświetlone. Puść przycisk nad jednym z pięciu dozwolonych pól, aby ją wystawić lub legalnie zastąpić istniejącą jednostkę. Upuszczenie poza legalnym polem nie wykonuje ruchu; przy włączonych animacjach karta płynnie wraca do ręki. Zwykłe kliknięcie i dotychczasowe sterowanie pozostają bez zmian. Przeciąganie nie wpływa na silnik, AI, aukcje ani audyty.
 
 ## Nowość 0.9.70 — 51 pięknych kart aukcyjnych w finalnym pixel arcie
 

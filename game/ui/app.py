@@ -50,6 +50,8 @@ class SoloApp:
     HAND_Y=746
     HAND_W=125
     HAND_H=195
+    DRAG_THRESHOLD_SQ=100  # 10 px: distinguish drags from clicks.
+    DRAG_RETURN_MS=180     # Cosmetic only; no Match state mutation.
 
     def __init__(self,start_in_menu=False):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
@@ -162,6 +164,8 @@ class SoloApp:
         self.last_error=''
         self.last_ai_ms=0
         self.drag_start=None
+        self.drag_pointer=None
+        self.drag_return=None
         self.tooltip_open=False
         self.details_card=None
         self.details_scroll=0
@@ -289,6 +293,8 @@ class SoloApp:
             self.windowed_size=tuple(self.window.get_size())
             self.window=pygame.display.set_mode(self._desktop_resolution(),pygame.FULLSCREEN)
         self.drag_start=None
+        self.drag_pointer=None
+        self.drag_return=None
 
     def _viewport(self):
         return pygame.Rect(*fitted_viewport(self.window.get_size(),(cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT)))
@@ -299,6 +305,76 @@ class SoloApp:
 
     def mouse_pos(self):
         return self._physical_to_virtual(pygame.mouse.get_pos())
+
+    def _floating_hand_card(self):
+        """Read-only dragged/returning hand card and its canvas rectangle.
+
+        Preserve the original cursor-to-card offset so grabbing a corner
+        does not snap the card center to the mouse. All positions are in
+        logical canvas coordinates, including on scaled Windows displays.
+        """
+        player=self.game.players[0]
+        if (self.drag_start is not None and self.game.phase=='turn'
+                and self.game.active==0 and self.game.pending is None
+                and not (self.menu_open or self.history_open
+                         or self.replay_index is not None or self.details_card
+                         or self.confirm_action or self.help_open)):
+            start,uid=self.drag_start
+            pointer=self.drag_pointer if self.drag_pointer is not None else start
+            distance=(pointer[0]-start[0])**2+(pointer[1]-start[1])**2
+            if uid in player.hand and distance>self.DRAG_THRESHOLD_SQ:
+                origin=self.hand_layout().get(uid)
+                if origin is not None:
+                    return (uid,origin.move(pointer[0]-start[0],
+                                            pointer[1]-start[1]),False)
+        if self.drag_return is not None:
+            uid,start,started=self.drag_return
+            if uid not in player.hand:
+                self.drag_return=None
+                return None
+            target=self.hand_layout().get(uid)
+            if target is None:
+                self.drag_return=None
+                return None
+            elapsed=max(0,pygame.time.get_ticks()-started)
+            if elapsed>=self.DRAG_RETURN_MS:
+                self.drag_return=None
+                return None
+            progress=elapsed/self.DRAG_RETURN_MS
+            ease=1-(1-progress)**3
+            left=round(start[0]+(target.x-start[0])*ease)
+            top=round(start[1]+(target.y-start[1])*ease)
+            return (uid,pygame.Rect(left,top,target.width,target.height),True)
+        return None
+
+    def _queue_drag_return(self,uid,rect):
+        """Animate an invalid drop back to hand, without playing a card."""
+        if not self.animations_enabled or rect is None:
+            return
+        destination=self.hand_layout().get(uid)
+        if destination is not None and rect.topleft!=destination.topleft:
+            self.drag_return=(uid,rect.topleft,pygame.time.get_ticks())
+
+    def _draw_drag_overlay(self):
+        """Draw the floating card above the board, without intercepting input."""
+        floating=self._floating_hand_card()
+        if floating is None:
+            return
+        uid,rect,returning=floating
+        shadow=rect.move(6,8)
+        pygame.draw.rect(self.screen,(9,17,24),shadow,border_radius=12)
+        pointer=self.drag_pointer
+        valid=(not returning and pointer is not None
+               and any(target.collidepoint(pointer)
+                       for target in self._play_target_rects()))
+        outline=(238,187,83) if valid else (113,214,223)
+        self.cards_view.draw(
+            self.screen,self.game.cards[uid],rect,hover=True,
+            rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
+            animate_rarity=self.animations_enabled,
+            statuses=hand_grants(self.game,uid))
+        pygame.draw.rect(self.screen,outline,rect.inflate(4,4),
+                         3 if valid else 2,border_radius=12)
 
     HOVER_PREVIEW_DELAY_MS=420
 
@@ -1312,7 +1388,10 @@ class SoloApp:
         if self.music.handle_event(event):return True
         if event.type==pygame.QUIT:return self._request_exit()
         if event.type==pygame.MOUSEMOTION:
-            self._update_hover_target(self._physical_to_virtual(event.pos))
+            pointer=self._physical_to_virtual(event.pos)
+            if self.drag_start is not None:
+                self.drag_pointer=pointer
+            self._update_hover_target(pointer)
         # Global shortcuts must work from the *first menu screen*,
         # during mulligan, history/replay and any open modal.
         if event.type==pygame.KEYDOWN and event.key==pygame.K_F11:
@@ -1597,14 +1676,24 @@ class SoloApp:
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
             pos=self._physical_to_virtual(event.pos)
             self.drag_start=(pos,self.card_under(pos))
+            self.drag_pointer=pos
+            self.drag_return=None
         elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
             pos=self._physical_to_virtual(event.pos)
             if self.drag_start:
-                down,card=self.drag_start;self.drag_start=None
-                if not self.game.pending and card in self.game.players[0].hand and (pos[0]-down[0])**2+(pos[1]-down[1])**2>100:
-                    if self.OWN_Y-12<=pos[1]<=self.OWN_Y+self.SLOT_H+12 and self.game.phase=='turn' and self.game.active==0:
-                        # Gaps and side margins must never cause the engine
-                        # to silently choose its default free slot.
+                down,card=self.drag_start
+                # Capture its floating location before clearing cursor state.
+                self.drag_pointer=pos
+                floating=self._floating_hand_card()
+                self.drag_start=None
+                self.drag_pointer=None
+                distance=(pos[0]-down[0])**2+(pos[1]-down[1])**2
+                if (not self.game.pending and card in self.game.players[0].hand
+                        and distance>self.DRAG_THRESHOLD_SQ):
+                    played=False
+                    if (self.OWN_Y-12<=pos[1]<=self.OWN_Y+self.SLOT_H+12
+                            and self.game.phase=='turn' and self.game.active==0):
+                        # Only one of the five real slots is legal.
                         target_slot=self.slot_under(0,pos)
                         if target_slot is None:
                             self.last_error='Upuść kartę na jednym z pięciu pól własnej planszy.'
@@ -1612,10 +1701,10 @@ class SoloApp:
                             target=self.target_under(pos)
                             replace=(target if target in self.game.players[0].board
                                      and len(self.game.players[0].board)==5 else None)
-                            self._try_play(card,replace,target_slot)
-                    # An event handled by the UI MUST return True.
-                    # SoloApp.run() treats False/None as a request to quit;
-                    # previously every successful drag shut down the window.
+                            played=self._try_play(card,replace,target_slot)
+                    if not played and floating is not None:
+                        self._queue_drag_return(card,floating[1])
+                    # False would shut down the main application loop.
                     return True
             self.click(pos)
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==3:
@@ -1820,8 +1909,13 @@ class SoloApp:
             self._text('TWOJA RĘKA  ·  wybierz kartę i pole lub przeciągnij',
                        14,100,721,cfg.MUTED)
         hand=self.hand_layout()
+        floating=self._floating_hand_card()
         for uid,rect in hand.items():
             pygame.draw.rect(self.screen,(18,32,41),rect.inflate(11,10),border_radius=13)
+            if floating is not None and floating[0]==uid:
+                # Empty recess rather than drawing the same card twice.
+                pygame.draw.rect(self.screen,(113,214,223),rect,2,border_radius=11)
+                continue
             marked=(self.game.phase=='mulligan'
                     and uid in self.game.players[0].mulligan_selected)
             self.cards_view.draw(self.screen,self.game.cards[uid],rect,
@@ -2982,6 +3076,7 @@ class SoloApp:
             self._draw_log()
             self._draw_choices()
             self._draw_hover_guidance()
+            self._draw_drag_overlay()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:
