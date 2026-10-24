@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 23 października 2026  
-**Wersja gałęzi:** MVP 0.9.69 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.70 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.70 (finalny pixel art wszystkich 51 wariantów aukcyjnych)
+
+- 102 niezależne finalne PNG bez jakichkolwiek nakładek starych kwadratów: 51 portrait 295×209 i 51 banner 295×78, mapowanie po Axxx+rarity, osobny manifest SHA-256.
+- Bez runtime-compositingu: `ImageAssets.get_auction_image` ładuje wprost plik `assets/auction/final/Axxx_rzadkosc_(banner|portrait).png`, nearest-neighbour + cache. Dotychczasowe obrazy 96×96 zostają tylko awaryjnym fallbackiem.
+- W ręce/planszy pełny banner, na dużej karcie/hover i w zoomie [G] finalny portret.
+- Akceptacja: `tests/test_auction51_final_0970.py`, stary test migracyjny i pełne CI Windows/Linux; przegląd wizualny dwóch arkuszy zawierających 51 finalnych grafik.
+- Nie zmienia żadnych zasad aukcyjnych ani rozgrywki.
 
 ### Etap — 0.9.69 (51 rozpoznawalnych grafik aukcyjnych)
 

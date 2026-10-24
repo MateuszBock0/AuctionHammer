@@ -98,8 +98,12 @@ class AuctionDominantBackdrop0958(unittest.TestCase):
                         image=cache.get_auction_image(
                             card_id,tier,(192,96),mode="contain")
                         self.assertIsNotNone(image)
-                        self.assertEqual(image.get_at((2,48))[:3],color)
-                        self.assertEqual(image.get_at((189,48))[:3],color)
+                        # Final pixel art uses its own full-scene colors;
+                        # the 96px legacy palette stays queryable separately.
+                        self.assertEqual(image.get_size(),(192,96))
+                        self.assertIn(
+                            f'auction_final/{card_id}_{tier}_portrait.png',
+                            cache._original)
                         found.add((card_id,tier))
             self.assertEqual(len(found),51)
 

@@ -52,35 +52,23 @@ class Auction51Art0969(unittest.TestCase):
                     unique.add(e[kind+'_sha256'])
             self.assertEqual(len(unique),102)
 
-    def test_all_live_card_compositions_and_unmodified_zoom(self):
+    def test_0970_uses_final_pixel_art_not_opaque_sprite_overlay(self):
         loader=ImageAssets()
         for cid in V22_CARDS:
             for rarity in RARITIES:
-                original=loader.get_auction_image(cid,rarity,(96,96),mode='contain')
-                self.assertIsNotNone(original,(cid,rarity))
-                for dims in ((110,22),(136,38),(233,112),(295,209)):
+                for dims,kind in (((110,22),'banner'),((136,38),'banner'),
+                                  ((233,112),'portrait'),((295,209),'portrait')):
                     art=loader.get_auction_image(cid,rarity,dims,mode='cover')
                     self.assertEqual(art.get_size(),dims)
                     self.assertIs(art,loader.get_auction_image(
                         cid,rarity,dims,mode='cover'))
-                # Each exact original sprite remains available for large zoom.
-                full=loader.get_auction_image(cid,rarity,(295,209),mode='contain')
-                self.assertEqual(full.get_size(),(295,209))
-                self.assertIn('auction_scene/'+cid+'_'+rarity+'_banner.png',
-                              loader._original)
-                self.assertIn('auction_scene/'+cid+'_'+rarity+'_portrait.png',
-                              loader._original)
-
-    def test_transparent_character_keeps_environment_visible(self):
-        backdrop=pygame.Surface((295,78),pygame.SRCALPHA)
-        backdrop.fill((24,51,89,255))
-        sprite=pygame.Surface((96,96),pygame.SRCALPHA)
-        sprite.fill((0,0,0,0))
-        pygame.draw.circle(sprite,(236,87,173,255),(48,48),35)
-        out=ImageAssets._compose_original_auction_character(backdrop,sprite,banner=True)
-        self.assertEqual(out.get_size(),(295,78))
-        self.assertEqual(out.get_at((4,39))[:3],(24,51,89))
-        self.assertGreater(out.get_at((147,39)).r,160)
+                    self.assertIn(
+                        f'auction_final/{cid}_{rarity}_{kind}.png',
+                        loader._original)
+                zoom=loader.get_auction_image(cid,rarity,(276,520),mode='contain')
+                self.assertEqual(zoom.get_size(),(276,520))
+        self.assertFalse(hasattr(ImageAssets,'_compose_original_auction_character'))
+        self.assertFalse(hasattr(ImageAssets,'_auction_pixel_scene'))
 
     def test_missing_background_uses_legacy_sprite_without_network(self):
         with patch('game.ui.assets.ROOT_DIR',Path('/nonexistent/auctionhammer')):

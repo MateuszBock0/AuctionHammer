@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.69** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.70** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,16 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.70 — 51 pięknych kart aukcyjnych w finalnym pixel arcie
+
+Wszystkie **17 kart aukcyjnych w 3 rzadkościach** dostały kompletną nową oprawę, dopasowaną do stylu 70 kart podstawowych: **51 portretów 295×209** oraz **51 szerokich bannerów 295×78**. Oznaczenia, nazwy i ramki rysuje gra — same ilustracje są czyste, bez napisów i ramek.
+
+- W ręce i na planszy używane są **gotowe szerokie ilustracje**; w powiększonym podglądzie po najechaniu i w [G] — gotowe portrety.
+- Poprzedni system z 0.9.69, który nakładał nieprzezroczyste kwadratowe obrazki postaci na nowe tła, **został wyłączony i usunięty z renderera**. Nie powstają prostokątne nakładki.
+- Bez rozmywania pikseli (nearest-neighbour) i bez obcego generatora/API podczas działania gry. Oryginalne 96×96 PNG pozostają wyłącznie awaryjną kompatybilnością, gdyby któregoś nowego pliku brakowało.
+- `assets/auction/final/manifest.json` przechowuje SHA-256 wszystkich 102 grafik. Test `tests/test_auction51_final_0970.py` sprawdza 51 ID/rzadkości, faktyczne PNG, ich użycie w Pygame oraz fallback.
+- **Bez zmian mechaniki gry**, zdolności, RNG, aukcji i podglądów kart.
 
 ## Nowość 0.9.69 — 51 spójnych kompozycji pixel art dla kart aukcyjnych
 
