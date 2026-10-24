@@ -3098,7 +3098,7 @@ class SoloApp:
             rect=pygame.Rect(205+index*274,351,249,83)
             self._panel(rect,(35,51,60),TAVERN_BRASS,8)
             self._text(label,13,rect.centerx,rect.y+8,cfg.MUTED,center=True)
-            self._text(value,28,rect.centerx,rect.y+28,cfg.GOLD,center=True)
+            self._text(value,28,rect.centerx,rect.y+54,cfg.GOLD,center=True)
 
         highlights=(
             ('NAJSILNIEJSZA JEDNOSTKA',
