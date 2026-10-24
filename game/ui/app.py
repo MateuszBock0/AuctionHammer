@@ -36,6 +36,7 @@ from game.ui.rarity_view import rarity_color, card_rarity
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.decision_clarity import economy_cue, positional_cues
+from game.ui.aura_links import live_aura_links
 from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
@@ -2031,12 +2032,99 @@ class SoloApp:
         self._text(f'{hp}/100',14,x+173,rect.y+14,(255,255,255))
         self._text(f'MONETY  {p.coins}',16,rect.right-172,rect.y+11,cfg.GOLD)
 
+    def _aura_focus(self):
+        """Selected or hovered living unit, suppressed in blocking overlays."""
+        if (self.game.phase!='turn' or self.game.pending is not None
+                or self.replay_index is not None or self.menu_open
+                or self.history_open or self.help_open or self.confirm_action
+                or self.details_card is not None or self.tutorial_welcome_open
+                or self.drag_start is not None):
+            return None
+        hovered=self.card_under(self.mouse_pos())
+        if hovered in self.game.units and live_aura_links(self.game,hovered):
+            return hovered
+        if self.selected in self.game.units:
+            return self.selected
+        return hovered if hovered in self.game.units else None
+
+    @staticmethod
+    def _aura_edge_point(rect,dx,dy):
+        """Anchor a connector to the card boundary, not over its content."""
+        scale=max(abs(dx)/(rect.width/2),abs(dy)/(rect.height/2),1e-6)
+        return (int(rect.centerx+dx/scale),
+                int(rect.centery+dy/scale))
+
+    def _draw_aura_links(self):
+        """Visualize only current resolved aura links, never imagined effects."""
+        focus=self._aura_focus()
+        links=live_aura_links(self.game,focus)
+        if not links:
+            return
+        # Link color is tied to the individual source's modifier direction.
+        color_for=lambda link: (
+            (120,208,150) if link.kind=='atk' and link.amount>0 else
+            (245,163,109) if link.kind=='atk' else
+            (126,193,238) if link.kind=='max_hp' and link.amount>0 else
+            (226,155,129) if link.kind=='max_hp' else
+            (150,189,246))
+        stamp_counts={}
+        for link in links:
+            src=self.game.units.get(link.source)
+            dst=self.game.units.get(link.target)
+            if src is None or dst is None:
+                continue
+            source_rect=self.slot_rect(src.owner,self.game.slot_of(link.source))
+            target_rect=self.slot_rect(dst.owner,self.game.slot_of(link.target))
+            tint=color_for(link)
+            pygame.draw.rect(self.screen,tint,
+                             source_rect.inflate(5,5),2,border_radius=12)
+            pygame.draw.rect(self.screen,tint,
+                             target_rect.inflate(7,7),2,border_radius=12)
+            if link.source!=link.target:
+                dx=target_rect.centerx-source_rect.centerx
+                dy=target_rect.centery-source_rect.centery
+                start=self._aura_edge_point(source_rect,dx,dy)
+                end=self._aura_edge_point(target_rect,-dx,-dy)
+                pygame.draw.line(self.screen,(35,47,49),start,end,5)
+                pygame.draw.line(self.screen,tint,start,end,2)
+                # Arrow tip at beneficiary; no pixel reaches the card center.
+                direction=pygame.Vector2(end)-pygame.Vector2(start)
+                if direction.length_squared()>1:
+                    direction=direction.normalize()
+                    side=pygame.Vector2(-direction.y,direction.x)
+                    tip=pygame.Vector2(end)
+                    back=tip-direction*9
+                    pygame.draw.polygon(self.screen,tint,[
+                        (int(tip.x),int(tip.y)),
+                        (int((back+side*4).x),int((back+side*4).y)),
+                        (int((back-side*4).x),int((back-side*4).y))])
+            # The tag identifies the exact applied *source contribution*.
+            # Use image area, not the name/stats plate, and stack when two
+            # different sources point to the same recipient.
+            rank=stamp_counts.get(link.target,0)
+            stamp_counts[link.target]=rank+1
+            label=self.cards_view.clip(link.label,self.fonts_bold[13],125)
+            font=self.fonts_bold[13]
+            text=font.render(label,True,tint)
+            tag=pygame.Rect(target_rect.centerx-text.get_width()//2-8,
+                            target_rect.y+51+rank*24,
+                            text.get_width()+16,21)
+            pygame.draw.rect(self.screen,(22,33,42),tag,border_radius=5)
+            pygame.draw.rect(self.screen,tint,tag,1,border_radius=5)
+            self.screen.blit(text,(tag.centerx-text.get_width()//2,
+                                   tag.centery-text.get_height()//2))
+
     def _draw_positional_cues(self):
         """Highlight actual S34 aura recipient / S108 reaction lane."""
         if (self.game.phase!='turn' or self.selected not in self.game.units
                 or self.game.pending or self.replay_index is not None):
             return
         for cue in positional_cues(self.game,self.selected):
+            # Detailed active S34 labels are now drawn by the aura-link
+            # renderer; retain S108's hypothetical reaction-area cue.
+            if cue.label.startswith('AURA ') and live_aura_links(
+                    self.game,self.selected):
+                continue
             rect=self.slot_rect(cue.owner,cue.slot)
             color=((112,214,156) if cue.label=='AURA +ATK'
                    else (243,176,105) if cue.label=='AURA -ATK'
@@ -2102,6 +2190,7 @@ class SoloApp:
                     pygame.draw.rect(self.screen,(121,196,160),rect.inflate(6,6),
                                      2,border_radius=13)
         self._draw_positional_cues()
+        self._draw_aura_links()
         note=('STAŁE POZYCJE  ·  WYBIERZ WOLNE POLE  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI'
               if self.game.fixed_board_slots else
               'WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI')
