@@ -13,6 +13,8 @@ jobs:
           python-version: '3.12'
       - name: Instalacja bibliotek
         run: python -m pip install -r requirements.txt
+      - name: Validate public version, changelog and README paths
+        run: python -m tools.release_meta check
       - name: Testy jednostkowe
         env:
           SDL_VIDEODRIVER: dummy
