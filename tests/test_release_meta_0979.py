@@ -41,7 +41,7 @@ class ReleaseMetadata0979(unittest.TestCase):
             encoding='utf-8')
 
     def test_live_repo_public_metadata_is_consistent(self):
-        self.assertEqual(validate(ROOT),'0.9.79')
+        self.assertEqual(validate(ROOT),current_version(ROOT))
 
     def test_fixture_consistency(self):
         self.assertEqual(validate(self.root),'0.9.78')
