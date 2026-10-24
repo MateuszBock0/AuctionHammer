@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.74** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.75** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,14 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.75 — ekran podsumowania zakończonej partii
+
+Po wygranej lub porażce pojawia się rozbudowany ekran wyników, oparty na **rzeczywistych danych meczu**, a nie zgadywanych statystykach. Wyświetla końcową rundę, PŻ i monety obu bohaterów, zgony jednostek (jeśli ich pełna historia jest dostępna), liczbę własnych ręcznych wystawień kart, własnych wykonanych ataków oraz liczbę podstawowych kart gracza, które osiągnęły choć jeden poziom.
+
+Trzy wyróżnienia prezentują **najsilniejszą jednostkę całej partii** według jasno opisanej metryki `ATK + MAX PŻ`, **największy pojedynczy zaobserwowany ubytek PŻ** (z faktycznej zmiany stanu przed i po operacji obrażeń, a nie surowej wartości ataku) oraz **lidera rozwoju** gracza wraz z osiągniętym poziomem. Nie dopisujemy punktów obrażeń przy usunięciu jednostki, jeżeli po jej śmierci nie istnieje jednoznaczny, podpisany odczyt PŻ.
+
+Dane szczegółowe są liczone raz, po zakończeniu gry, z istniejącej podpisanej historii działań i efektów. Przy niepełnym audycie starszego zapisu gra pokazuje wyraźny komunikat, zamiast prezentować zmyślone lub częściowe osiągnięcia jako pełne. Nadal działają dotychczasowe przyciski `NOWY MECZ`, `KSIĘGA STARC`, `EKSPORT AUDYTU`, `OTWÓRZ FOLDER`, skróty `P`, `H` i `R`. Nie zmienia to silnika, balansu, replayów, RNG ani formatu zapisów.
 
 ## Nowość 0.9.74 — precyzyjny feedback obrażeń, leczenia i ochrony
 

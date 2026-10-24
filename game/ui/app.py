@@ -14,6 +14,7 @@ from game.ui.visual_theme import (
     TAVERN_MUTED, TAVERN_SCRIM
 )
 from game.ui.match_history import MatchRecorder
+from game.ui.match_summary import build_match_summary
 from game.core.persistence import save_match, load_match, save_path
 from game.core.audit import (audit_path, archive_path, list_archived_matches,
                              write_last_match, initialize_audit,
@@ -3047,40 +3048,104 @@ class SoloApp:
                    f' · RUNDA {frame.round}',20,120,902,cfg.GOLD)
         self._text('← / →  POPRZEDNI / NASTĘPNY STAN      P / ESC  POWRÓT DO GRY',14,120,941,cfg.TEXT)
 
+    def _finished_summary(self):
+        """Calculate signed statistics once per finished game, not per frame."""
+        if self.game.phase!='finished':
+            return None
+        if getattr(self,'_match_summary_game',None) is not self.game:
+            self._match_summary_game=self.game
+            self._match_summary_cache=build_match_summary(self.game)
+        return self._match_summary_cache
+
     def _draw_gameover(self):
         if self.game.phase!='finished':return
+        summary=self._finished_summary()
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
-        overlay.fill((*TAVERN_SCRIM,173))
+        overlay.fill((*TAVERN_SCRIM,205))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(332,226,810,586),TAVERN_PANEL_INNER,TAVERN_GOLD,16)
+        self._panel(pygame.Rect(164,117,1152,738),
+                    TAVERN_PANEL_INNER,TAVERN_GOLD,16)
         won=self.game.winner==0
-        self._text('ZWYCIĘSTWO!' if won else 'PORAŻKA',46,738,300,
-                   cfg.GREEN if won else cfg.RED,center=True)
-        self._text(f'Wygrywa: {self.game.players[self.game.winner].name}',
-                   22,738,370,center=True)
-        self._text(f'ROZEGRANE RUNDY: {self.game.round}',18,738,419,cfg.GOLD,center=True)
-        for owner,p in enumerate(self.game.players):
-            y=470+owner*47
-            deaths=getattr(self.game,'death_counts',[0,0])[owner]
-            complete=getattr(self.game,'death_counts_complete',False)
-            deaths_label=(f'{deaths} zgonów jednostek' if complete
-                          else f'{deaths} zgonów od wczytania')
-            label=(f'{p.name}: {max(0,min(100,p.hp))} PŻ  ·  '
-                   f'{deaths_label}  ·  {p.coins} monet')
-            self._text(label,16,738,y,cfg.TEXT,center=True)
-        self._text(f'Historia: {len(self.game.event_journal)} zdarzeń  ·  '
-                   f'powtórka: {len(self.recorder.frames)} stanów',15,738,575,cfg.MUTED,center=True)
-        self._text('H — historia  ·  P — powtórka  ·  R — nowy mecz',
-                   15,738,608,cfg.MUTED,center=True)
+        color=cfg.GREEN if won else cfg.RED
+        self._text('ZWYCIĘSTWO!' if won else 'PORAŻKA',46,740,142,
+                   color,center=True)
+        self._text('Wygrywa: '+self.game.players[self.game.winner].name,
+                   20,740,209,cfg.TEXT,center=True)
+        pygame.draw.line(self.screen,TAVERN_BRASS,(206,258),(1274,258),2)
+
+        for owner in (0,1):
+            p=self.game.players[owner]
+            rect=pygame.Rect(205+owner*544,270,524,65)
+            self._panel(rect,(28,43,52),cfg.GREEN if owner==0 else cfg.RED,8)
+            # Preserve the historical, regression-tested "GRACZ: 0 PŻ"
+            # presentation for clamped negative health.
+            self._text(f'{p.name}: {summary.hero_hp[owner]} PŻ',18,
+                       rect.x+15,rect.y+7,cfg.GOLD)
+            self._text(f'MONETY: {summary.coins[owner]}',16,
+                       rect.right-180,rect.y+9,cfg.TEXT)
+            deaths=(str(summary.deaths[owner]) if summary.deaths else '—')
+            self._text('ZGONY JEDNOSTEK: '+deaths,12,
+                       rect.x+15,rect.y+37,cfg.MUTED)
+
+        tiles=(
+            ('RUNDA KOŃCOWA',str(summary.rounds)),
+            ('WYSTAWIONE KARTY',str(summary.plays) if summary.plays is not None else '—'),
+            ('WYKONANE ATAKI',str(summary.attacks) if summary.attacks is not None else '—'),
+            ('KARTY ROZWINIĘTE',str(summary.levelled_cards)
+             if summary.levelled_cards is not None else '—'),
+        )
+        for index,(label,value) in enumerate(tiles):
+            rect=pygame.Rect(205+index*274,351,249,83)
+            self._panel(rect,(35,51,60),TAVERN_BRASS,8)
+            self._text(label,13,rect.centerx,rect.y+8,cfg.MUTED,center=True)
+            self._text(value,28,rect.centerx,rect.y+54,cfg.GOLD,center=True)
+
+        highlights=(
+            ('NAJSILNIEJSZA JEDNOSTKA',
+             summary.strongest.name if summary.strongest else 'Brak danych',
+             (f'ATK {summary.strongest.attack} + MAX PŻ {summary.strongest.max_hp}'
+              if summary.strongest else 'Wymagany pełny audyt'),
+             (f'ŁĄCZNIE: {summary.strongest.power}' if summary.strongest else '')),
+            ('NAJWIĘKSZY UBYTEK PŻ',
+             f'{summary.largest_damage.hp_lost} PŻ' if summary.largest_damage else 'Brak danych',
+             (summary.largest_damage.target_name if summary.largest_damage
+              else 'Wymagany pełny audyt'),
+             'Pojedynczy zarejestrowany efekt'),
+            ('LIDER ROZWOJU',
+             summary.leader.name if summary.leader else 'Brak awansów',
+             (f'POZIOM ZDOLNOŚCI {summary.leader.level}'
+              if summary.leader else 'Brak osiągniętego poziomu'),
+             'Podstawowe karty gracza'),
+        )
+        for index,(title,name,detail,caption) in enumerate(highlights):
+            rect=pygame.Rect(205+index*366,451,348,147)
+            self._panel(rect,(33,48,58),TAVERN_BRASS,9)
+            self._text(title,14,rect.centerx,rect.y+12,cfg.GOLD,center=True)
+            f=self.fonts_bold[16]
+            clipped=self.cards_view.clip(name,f,rect.width-24)
+            self._text(clipped,16,rect.centerx,rect.y+50,cfg.TEXT,center=True)
+            clipped=self.cards_view.clip(detail,self.fonts[14],rect.width-24)
+            self._text(clipped,14,rect.centerx,rect.y+83,cfg.GREEN,center=True)
+            self._text(caption,12,rect.centerx,rect.y+112,cfg.MUTED,center=True)
+
+        if not summary.complete:
+            footer='NIEPEŁNY AUDYT: szczegółowe osiągnięcia pominięto (starszy zapis)'
+        else:
+            footer=('Osiągnięcia na podstawie zapisu akcji i rzeczywistych '
+                    'zmian statystyk')
+        self._text(footer,13,740,609,cfg.MUTED,center=True)
         self._button(pygame.Rect(608,637,260,52),'NOWY MECZ',accent=True)
         self._button(pygame.Rect(885,637,239,52),'KSIĘGA STARC  [W]',small=True)
         self._button(pygame.Rect(392,702,325,46),'EKSPORT AUDYTU  [E]',small=True,accent=True)
         self._button(pygame.Rect(738,702,325,46),'OTWÓRZ FOLDER  [O]',small=True)
+        self._text(f'Historia: {len(self.game.event_journal)} zdarzeń'
+                   f'  ·  P — powtórka  ·  H — historia  ·  R — nowy mecz',
+                   13,740,757,cfg.MUTED,center=True)
         notice=getattr(self,'_audit_notice','')
         if notice:
             font=self.fonts[13]
-            self._text(self.cards_view.clip(notice,font,745),
-                       13,738,770,cfg.GOLD,center=True)
+            self._text(self.cards_view.clip(notice,font,1025),
+                       13,740,788,cfg.GOLD,center=True)
 
     def _draw_help_overlay(self):
         """Four-page, opt-in local reference; no new UI engine state."""
