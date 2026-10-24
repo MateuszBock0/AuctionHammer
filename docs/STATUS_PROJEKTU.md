@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.74 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.75 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.75 (podsumowanie partii)
+
+- Ekran końcowy przedstawia rzeczywiste PŻ, monety, rundę końcową, a po potwierdzeniu kompletnego audytu: ręczne wystawienia kart gracza, rzeczywiste komendy ataków i liczbę rozwiniętych kart podstawowych.
+- Najsilniejsza jednostka jest wybierana z zaobserwowanych stanów na podstawie jawnego wskaźnika ATK+MAX PŻ (łącznie obie strony); największy pojedynczy ubytek PŻ pochodzi z podpisanych mikrozmian `_damage` przed/po, bez wyciągania wniosków z nominalnego ATK; lider rozwoju z obserwowanych poziomów kart gracza.
+- Przy niepełnej historii starszego zapisu szczegóły są oznaczone jako niedostępne. Obliczenia w `game/ui/match_summary.py` zachodzą po zakończeniu meczu i są cache'owane poza silnikiem. Interfejs zachowuje wszystkie cztery istniejące przyciski oraz skróty i jest dostępny offline.
+- Brak zmian zasad, audytów, replay, ekonomii i AI. Regresje: `tests/test_match_summary_0975.py`, kompletne Windows/Linux CI, powtórki audytowe i Windows QA.
 
 ### Etap — 0.9.74 (doprecyzowane efekty walki)
 
