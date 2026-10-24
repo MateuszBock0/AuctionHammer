@@ -2,7 +2,7 @@
 
 **Taktyczna gra karciana fantasy dla jednego gracza przeciwko komputerowi.** Budujesz pięcioosobową armię na stałych polach, rozwijasz karty na ręce i zdobywasz nowe jednostki na aukcjach. Wszystko działa lokalnie, bez serwera i bez konta.
 
-**Aktualna wersja: 0.9.72** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
+**Aktualna wersja: 0.9.74** · Windows · offline · język polski · **70 kart podstawowych** · **17 archetypów aukcyjnych / 51 wariantów zdolności**.
 
 [**Pobierz najnowszą wersję Windows**](https://github.com/MateuszBock0/AuctionHammer/releases/latest) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues) · [Zobacz aktualne zasady](docs/CURRENT_MVP_RULES_0964.md) · [Game Master / historia](AUCTIONHAMMER_MASTER.md)
 
@@ -24,6 +24,14 @@ Nie instalujesz Pythona ani dodatkowych bibliotek. Po pobraniu gra działa bez i
 | `COFNIJ_AKTUALIZACJE.bat` | Powrót do wcześniej działającej wersji |
 
 Aktualizator sprawdza sumę **SHA-256**, instaluje wydania obok siebie i nie nadpisuje plików zapisanych meczów. Pierwszą instalację starszą niż 0.9.43 najlepiej rozpocząć od nowego ZIP. Szczegóły: [QA instalatora](docs/QUALITY_RELEASE_0943.md).
+
+## Nowość 0.9.74 — precyzyjny feedback obrażeń, leczenia i ochrony
+
+- **Rzeczywiste wartości PŻ:** po rozstrzygnięciu akcji obrażenia (`-8 PŻ`) i leczenie (`+3 PŻ`) pojawiają się bezpośrednio nad właściwą jednostką lub bohaterem. Czerwone i zielone efekty mają kontrastową obwódkę i własne drobne cząsteczki.
+- **Tarcza i pancerz:** osobne, kolorowe komunikaty z faktycznym zużyciem lub uzyskaniem ochrony, np. `TARCZA -2`, `PANC. -3`, `TARCZA +4`. Trafienie w samą tarczę nie jest błędnie przedstawiane jako utrata PŻ.
+- **Równoczesne efekty:** liczby obrażeń i wartości ochrony dostają oddzielne pozycje nad jednostką zamiast nakładać się na siebie. Wartości są odczytywane wyłącznie z dwóch zatwierdzonych stanów, również przy atakach wymagających dodatkowego wyboru.
+- **Odczucie trafienia:** lekki, maksymalnie 220-ms ruch trafionej karty; pięć pól planszy oraz obszary klikania pozostają nieruchome. Śmierć jednostki, pociski ataków i dotychczasowe animacje nadal działają.
+- Przełącznik animacji `A`, stare zapisy, powtórki, AI i zasady walki pozostają bez zmian. Implementacja nie wywołuje akcji silnika, nie zgaduje skutków, nie modyfikuje RNG ani audytu.
 
 ## Nowość 0.9.72 — przeciąganie ataków i awans kart na ręce
 

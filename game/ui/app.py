@@ -2025,7 +2025,14 @@ class SoloApp:
                 selected=self.selected==uid
                 u=self.game.units[uid]
                 attack_info=attack_display(self.game,uid)
-                self.cards_view.draw(self.screen,self.game.cards[uid],rect,u,
+                # Cosmetic impact shake: draw the live card a few pixels away
+                # from its fixed slot, never move gameplay hitboxes or state.
+                render_rect=rect
+                if self.animations_enabled and self.replay_index is None:
+                    offset=self.combat_visuals.shake_offset(
+                        uid,pygame.time.get_ticks())
+                    render_rect=rect.move(*offset)
+                self.cards_view.draw(self.screen,self.game.cards[uid],render_rect,u,
                      selected=selected,hover=rect.collidepoint(self.mouse_pos()),
                      dim=bool(inactive_card_reason(self.game,uid)),
                      rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
