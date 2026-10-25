@@ -274,7 +274,7 @@ class AuctionUITests(unittest.TestCase):
         from game.ui.app import SoloApp
         with patch.object(SoloApp,'_desktop_resolution',return_value=(1536,864)):
             app=SoloApp()
-        box=pygame.Rect(203,112,1076,732)
+        box=pygame.Rect(203,25,1076,819)
         for i in range(3):
             self.assertTrue(box.contains(app.auction_offer_rect(i)))
         for action in ('pass','bid'):
@@ -307,7 +307,7 @@ class AuctionUITests(unittest.TestCase):
                 return rect
             with patch.object(app,'_text',side_effect=trace):
                 app._draw_auction()
-            area=pygame.Rect(203,112,1076,732)
+            area=pygame.Rect(203,25,1076,819)
             for text,rect in boxes:
                 self.assertTrue(area.contains(rect),(stage,text,rect))
             for i,(a,ra) in enumerate(boxes):

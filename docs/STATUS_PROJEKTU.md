@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.84 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.85 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.85 (naprawa kolizji tekstu w realnej aukcji)
+
+- Okno aukcji podniesiono z `y=112` do `y=25`. Trzy karty urosły z 364 do 461 px (`y=159..620`), a dół aukcji i trzy kolumny pozostały w dotychczasowym obszarze.
+- Rozdzielono w strefach: nagłówek, pełny portret, ATK/PŻ, rzadkość, aktywację i klasę mechaniki, pięciowierszowy opis, przycisk inspekcji i status. `PODSTAWOWA` nie może zasłaniać obrazu ani wchodzić w `KONIEC TURY`; wszystkie dwie etykiety leżą pod portretem.
+- Przebudowano realny widok licytacji: dwie pikselowe ramki ze spacjowanym nagłówkiem i wartością; dodatkowe minimum po prawej oraz osobny rząd bonusów/pozostałych monet. Suwak i przyciski przesunięto poniżej; ostrzeżenie braku monet nie nakłada się na suwak.
+- Testy: `tests/test_auction_screen_layout_0985.py` (pięć nowych scenariuszy) i `tests/test_auction_placeholder_0919.py` (bieżące granice modalnego okna), w tym brak nachodzących tekstów na ekranie rzeczywistej aukcji. Zasady i assety bez zmian.
 
 ### Etap — 0.9.84 (cztery filary wizualne MVP — audyt i poprawki)
 
