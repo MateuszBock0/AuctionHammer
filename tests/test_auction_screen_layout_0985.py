@@ -121,7 +121,8 @@ class AuctionScreenLayout0985(unittest.TestCase):
                             ("BONUS A018",tiles["summary"])):
             matches=[rect for text,rect in lines if text.startswith(prefix)]
             self.assertEqual(len(matches),1,(prefix,matches))
-            self.assertTrue(tile.inflate(-12,-8).contains(matches[0]),
+            inner=(tile if prefix=="BONUS A018" else tile.inflate(-12,-8))
+            self.assertTrue(inner.contains(matches[0]),
                             (prefix,matches[0],tile))
         self.assertTrue(any(t.isdigit() for t,_ in lines))
 
