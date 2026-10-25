@@ -34,9 +34,9 @@ class AuctionPortraitFit0982(unittest.TestCase):
         for kind,dims in (("banner",(295,78)),("portrait",(295,209))):
             surf=pygame.Surface(dims,pygame.SRCALPHA)
             surf.fill((43,58,62,255))
-            pygame.draw.line(surf,(230,31,37,255),(0,0),(dims[0]-1,0),3)
+            pygame.draw.line(surf,(230,31,37,255),(0,0),(dims[0]-1,0),8)
             pygame.draw.line(surf,(30,98,231,255),(0,dims[1]-1),
-                             (dims[0]-1,dims[1]-1),3)
+                             (dims[0]-1,dims[1]-1),8)
             pygame.image.save(surf,str(folder/f"A002_rzadka_{kind}.png"))
 
     def test_strip_uses_uncropped_banner_and_keeps_top_bottom(self):
