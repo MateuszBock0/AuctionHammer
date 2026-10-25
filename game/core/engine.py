@@ -77,6 +77,8 @@ class Match:
         self.ephemeral_ids=set()
         self.auction_death_grants=set()
         self.auction_rescue_spent=set()
+        # New v24 buffs apply only to new games, not historical saved replays.
+        self.balance_patch_v24=True
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -649,7 +651,10 @@ class Match:
                         if uid in self.units and not self._disabled(self.units[uid]):
                             if (self.cards[uid].definition.faction=='Krasnoludy'
                                 or (self.auction_catalog in ('v4','v22') and
-                                    self.cards[uid].definition.id=='A010')):
+                                    (self.cards[uid].definition.id=='A010' or
+                                     (getattr(self,'balance_patch_v24',False) and
+                                      self.auction_catalog=='v22' and
+                                      self.cards[uid].definition.id=='A014')))):
                                 self._queue(uid,'end')
                         continue
                     self.end_queue=None
