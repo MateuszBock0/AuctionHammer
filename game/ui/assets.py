@@ -19,16 +19,23 @@ class ImageAssets:
     @staticmethod
     def fit_art(image: pygame.Surface, size: tuple[int,int],
                 mode: str='cover', focus: tuple[float,float]=(0.5,0.5),
-                background: tuple[int, int, int] | None = None, pixelated: bool = False) -> pygame.Surface:
+                background: tuple[int, int, int] | None = None, pixelated: bool = False,
+                zoom: float = 1.0) -> pygame.Surface:
         """One uniform scale; optional background fills containment margins."""
         import math
         w,h=map(int,size)
         if min(w,h)<=0:raise ValueError('Nonpositive image size')
         if mode not in ('cover','contain'):raise ValueError('Unknown image fit mode')
         if not all(0<=x<=1 for x in focus):raise ValueError('Invalid focus')
+        if not 1.0<=zoom<=1.5:raise ValueError('Invalid crop zoom')
+        if mode!='cover' and zoom!=1.0:
+            raise ValueError('Crop zoom requires cover mode')
         iw,ih=image.get_size()
         if iw<=0 or ih<=0:raise ValueError('Empty source image')
-        ratio=(max if mode=='cover' else min)(w/iw,h/ih)
+        # A landscape portrait fills a square exactly in height at plain
+        # cover: vertical focus is a no-op until an explicit zoom introduces
+        # a small vertical crop. Keep ordinary artwork unchanged by default.
+        ratio=(max if mode=='cover' else min)(w/iw,h/ih)*zoom
         sw,sh=max(1,math.ceil(iw*ratio)),max(1,math.ceil(ih*ratio))
         fitted=(pygame.transform.scale(image,(sw,sh)) if pixelated
                 else pygame.transform.smoothscale(image,(sw,sh)))
@@ -183,7 +190,9 @@ class ImageAssets:
 
     def get_auction_image(self, archetype: str, rarity: str,
                           size: tuple[int, int],
-                          mode: str = 'cover') -> pygame.Surface | None:
+                          mode: str = 'cover',
+                          focus: tuple[float,float] = (0.5,0.5),
+                          zoom: float = 1.0) -> pygame.Surface | None:
         """Final auction banner/portrait with nearest-neighbour pixel scaling.
 
         Hand and board use the banner, large card and full zoom use portrait.
@@ -195,23 +204,26 @@ class ImageAssets:
         kind = 'banner' if size[1] <= 58 else 'portrait'
         final_key = self._auction_final(archetype, rarity, kind)
         if final_key is not None:
-            key = ('auction_final', final_key, tuple(size), mode)
+            key = ('auction_final', final_key, tuple(size), mode,
+                   tuple(focus), zoom)
             if key not in self._scaled:
                 source=self._original[final_key]
                 self._scaled[key] = (
                     self.fit_auction_pixel_bleed(source,size)
                     if mode=='contain' else
-                    self.fit_art(source,size,mode=mode,pixelated=True))
+                    self.fit_art(source,size,mode=mode,focus=focus,
+                                 pixelated=True,zoom=zoom))
             return self._scaled[key]
         original_key = self._auction_base(archetype, rarity)
         if original_key is None:
             return None
-        key = ('auction_legacy', original_key, tuple(size), mode)
+        key = ('auction_legacy', original_key, tuple(size), mode,
+               tuple(focus), zoom)
         if key not in self._scaled:
             self._scaled[key] = self.fit_art(
-                self._original[original_key], size, mode,
+                self._original[original_key], size, mode, focus=focus,
                 background=self._auction_colors[original_key],
-                pixelated=True)
+                pixelated=True,zoom=zoom)
         return self._scaled[key]
 
     @staticmethod
