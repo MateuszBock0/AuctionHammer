@@ -25,6 +25,60 @@ def pick_choices(game,mode,ids,label):
     return [Choice(mode,x,f'{label} — {game.label(x)}') for x in ids]
 
 
+def _v24(game):
+    return getattr(game,'balance_patch_v24',False) and game.auction_catalog=='v22'
+
+
+def _v24_shield_options(game,uid,tier):
+    own=game.players[game.cards[uid].owner]
+    enemy=game.players[1-own.idx]
+    if tier==0:
+        return [Choice('v24_shield_only',None,'Tarcza: pełna plansza')]
+    targets=[x for x in own.board+enemy.board if x!=uid and x in game.units]
+    return (pick_choices(game,'v24_shield_stats',targets,'Tarcza i statystyki')
+            if targets else [Choice('v24_shield_only',None,'Tarcza: brak innej jednostki')])
+
+
+def _v24_shield_buff(game,uid,tier,target):
+    if uid not in game.units:return
+    u=game.units[uid]
+    u.shield=1;u.shield_source=uid
+    if tier and target in game.units and target!=uid:
+        chosen=game.units[target]
+        atk=max(0,chosen.atk);hp=max(0,chosen.max_hp)
+        if tier==1:
+            atk=(atk+1)//2;hp=(hp+1)//2
+        if atk:game._add_effect(uid,'atk',atk,source=uid,positive=True)
+        if hp:game._add_effect(uid,'max_hp',hp,source=uid,positive=True)
+    game._log(f'{game.label(uid)}: pełna plansza — Tarcza i alternatywne wzmocnienie.')
+
+
+def grant_general_defense(game,uid):
+    """Shield + durable 0/2/4 armor, grant only missing armor at evolution."""
+    if not _v24(game) or uid not in game.units or kind(game,uid)!='A002':return
+    u=game.units[uid]
+    u.shield=1;u.shield_source=uid
+    wanted=(0,2,4)[rarity(game,uid)]
+    given=u.armor_perm_grants.get('v24_A002',0)
+    if wanted>given:
+        u.armor_perm+=wanted-given
+        u.armor_perm_source=uid
+        u.armor_perm_grants['v24_A002']=wanted
+    game._log(f'Generał: Tarcza i {wanted} pancerza (v24).')
+
+
+def _v24_hand_buff(game,uid,tier):
+    """Apply permanent +stats to ALL cards in owner's new physical hand."""
+    amount=tier+1
+    own=game.players[game.cards[uid].owner]
+    for cid in list(own.hand):
+        card=game.cards[cid]
+        card.definition=replace(card.definition,atk=card.definition.atk+amount,
+                                hp=card.definition.hp+amount)
+        game.defs[cid]=card.definition
+    game._log(f'Złodziej Wspomnień: {len(own.hand)} kart w nowej ręce +{amount}/+{amount}.')
+
+
 def options(game,uid,context,attacked=None):
     aid=kind(game,uid)
     if not aid and uid not in game.auction_death_grants:return []
@@ -33,6 +87,8 @@ def options(game,uid,context,attacked=None):
     myboard=[x for x in own.board if x!=uid]
     opponents=list(enemy.board)
     tier=rarity(game,uid)
+    if context=='auction_v24_fallback' and _v24(game) and aid=='A016':
+        return _v24_shield_options(game,uid,tier)
     if context=='auction_cart_play':
         if tier==1:
             candidates=list(reversed(own.deck[-3:]))+list(reversed(enemy.deck[-1:]))
@@ -66,8 +122,10 @@ def options(game,uid,context,attacked=None):
                 result+=pick_choices(game,'capture_chain',opponents,'Przejmij i nadaj łańcuch')
         return result
     if aid=='A002' and (context=='play' or context=='auction_evolve'):
-        if tier==1:return pick_choices(game,'general_target',myboard,'Daj dwa ataki i x2 obrażeń')
-        return [Choice('auto',None,'Aura')] if tier==0 else []
+        if tier==1:
+            targets=pick_choices(game,'general_target',myboard,'Daj dwa ataki i x2 obrażeń')
+            return targets or ([Choice('auto',None,'Ochrona Generała')] if _v24(game) else [])
+        return [Choice('auto',None,'Aura / ochrona')] if (tier==0 or _v24(game)) else []
     if aid=='A003' and context=='death':
         available=[x for x in own.grave if x.startswith('S')]
         result=pick_choices(game,'to_hand',available,'Na rękę')
@@ -75,9 +133,12 @@ def options(game,uid,context,attacked=None):
             result+=pick_choices(game,'revive_one',available,'Wskrześ z 1 PŻ')
         if tier==2:
             result+=pick_choices(game,'revive_pair',available,'Wskrześ + zwróć inną')
+        if not available and _v24(game):
+            return [Choice('v24_skeleton',None,'Przywołaj Szkieleta')]
         return result
     if aid=='A004' and context=='play':
-        if len(own.board)>=5:return []
+        if len(own.board)>=5:
+            return _v24_shield_options(game,uid,tier) if _v24(game) else []
         ids=myboard + (opponents if tier>=1 else [])
         return pick_choices(game,'copy',[x for x in ids if x in game.units],
                             'Utwórz efemeryczną kopię')
@@ -94,6 +155,8 @@ def options(game,uid,context,attacked=None):
                             if tier>=1 and enemy.hand else [])
     if aid=='A009' and context=='play':
         if tier==2:return [Choice('swap_all',None,'Wymień obie ręce')]
+        if _v24(game) and (not own.hand or not enemy.hand):
+            return [Choice('v24_no_exchange',None,'Wzmocnij całą swoją rękę')]
         return pick_choices(game,'exchange_own',own.hand,'Wymień własną') if enemy.hand else []
     if aid=='A010' and context=='end':
         result=[]
@@ -114,13 +177,19 @@ def options(game,uid,context,attacked=None):
         return [Choice('auto',None,'Manipuluj PŻ bohaterów')]
     if aid=='A013' and context=='play':
         return pick_choices(game,'bastion',opponents,'Przebij MAX PŻ')
+    if aid=='A014' and context=='end' and tier>=1 and _v24(game):
+        return [Choice('auto',None,'Nadaj regenerację')]
     if aid in ('A014','A015'):
         return []
     if aid=='A016' and context=='play':
+        if _v24(game) and len(own.board)>=5 and tier==2:
+            return _v24_shield_options(game,uid,tier)
         if tier<2:
             choices=pick_choices(game,'cart_draw',list(reversed(own.deck[-3:])),
                                  'Dobierz jedną z własnej talii')
             if choices:return choices
+            if _v24(game) and len(own.board)>=5:
+                return _v24_shield_options(game,uid,tier)
             # The rare second effect is independent of the basic draw.
             # Even with no own cards, it may play the opponent's top card.
             if tier==1 and len(own.board)<5 and enemy.deck:
