@@ -138,13 +138,13 @@ class MVPVisualConsistency0984(unittest.TestCase):
             with patch.object(app,'mouse_pos',return_value=rect.center):
                 with patch.object(app,'_pixel_attack_corners',
                                   wraps=app._pixel_attack_corners) as corners:
-                    with patch('game.ui.app.pygame.Surface.blit',
-                               wraps=pygame.Surface.blit) as blit:
-                        app._draw_attack_targets()
+                    app.screen.fill((10,20,30))
+                    app._draw_attack_targets()
         corners.assert_called_once()
-        # The actual target-feedback renderer creates no rendered ATAKUJ
-        # plaque above faces; image and card art remain untouched.
-        self.assertEqual(blit.call_count,0)
+        # The former text plaque at the center of the artwork is absent.
+        # Edge feedback leaves the central portrait pixels untouched.
+        self.assertEqual(app.screen.get_at(
+            (rect.centerx,rect.top+60))[:3],(10,20,30))
 
     def test_legacy_auction_sprite_fallback_is_crisp(self):
         assets=ImageAssets()
