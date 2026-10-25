@@ -1304,12 +1304,12 @@ class SoloApp:
                 pygame.draw.rect(self.screen,TAVERN_BRASS,tile,2)
             self._text(f'PROWADZI: {leader}   ·   SKUTECZNA OFERTA',12,
                        current_box.centerx,638,cfg.MUTED,center=True)
-            self._text(str(a.highest_effective),22,current_box.centerx,657,
+            self._text(str(a.highest_effective),22,current_box.centerx,671,
                        cfg.GOLD,center=True)
             self._text('TWOJA OFERTA   /   MINIMUM '+str(minimum),12,
                        own_box.centerx,638,cfg.MUTED,center=True)
             self._text(str(chosen) if chosen is not None else 'BRAK MONET',
-                       22,own_box.centerx,657,
+                       22,own_box.centerx,671,
                        cfg.GREEN if chosen is not None else cfg.RED,center=True)
             after_bid=(str(coins-chosen) if chosen is not None else '—')
             effective=(str(chosen+bonus) if chosen is not None else '—')
@@ -2793,7 +2793,7 @@ class SoloApp:
             area=rect.inflate(9 if hovered else 7,9 if hovered else 7)
             pygame.draw.rect(self.screen,
                              (170,250,255) if hovered else (115,223,238),
-                             area,3 if hovered else 2)
+                             area,4 if hovered else 2)
             if hovered:
                 self._pixel_attack_corners(self.screen,area,
                                            (226,245,224),length=13)
