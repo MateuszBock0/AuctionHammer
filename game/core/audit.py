@@ -199,6 +199,9 @@ def state_snapshot(game):
             'pending_vacant_income':getattr(game,'pending_vacant_income',None),
             'vacant_income_enabled':getattr(game,'vacant_income_enabled',False),
         }
+        # New 0.9.90 buffs are signed opt-in; older audit hashes stay byte-identical.
+        if getattr(game,'balance_patch_v24',False):
+            state['ruleset_state']['balance_patch_v24']=True
         if schema>=3:
             state['ruleset_state']['starting_compensation']=getattr(
                 game,'starting_compensation','coins')
@@ -619,6 +622,12 @@ def verify_replay(payload,match_factory):
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
         game=match_factory(payload["seed"])
+    # A replay's rules come from its signed initial snapshot, NEVER from today's
+    # default Match constructor. Old signed archives did not carry this bit.
+    game.balance_patch_v24=(isinstance(signed_rule,dict)
+                            and signed_rule.get('balance_patch_v24') is True)
+    if isinstance(signed_rule,dict) and 'balance_patch_v24' in signed_rule and not game.balance_patch_v24:
+        raise ValueError('Nieprawidłowy znacznik balansu v24 w audycie')
     # The starter Chorazy kill Easter egg is part of the new, signed ruleset.
     # A missing flag means an older archive, not permission to reinterpret it
     # with new damage values; set this BEFORE comparing initial-state hashes.
