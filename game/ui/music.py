@@ -43,7 +43,8 @@ def local_music_folder() -> Path:
 class FantasyTavernMusic:
     """Play all tracks in order, then repeat; audio never restarts between matches."""
 
-    def __init__(self, folder: Path | None = None):
+    def __init__(self, folder: Path | None = None, volume: float = 0.40):
+        self.volume=max(0.0,min(1.0,float(volume)))
         self.tracks = album_files(Path(folder) if folder is not None else local_music_folder())
         self.index = 0
         self.end_event = None
@@ -53,7 +54,7 @@ class FantasyTavernMusic:
         try:
             if not pygame.mixer.get_init():
                 pygame.mixer.init()
-            pygame.mixer.music.set_volume(0.3)
+            pygame.mixer.music.set_volume(self.volume)
             if len(self.tracks) == 1:
                 pygame.mixer.music.set_endevent()
             else:
@@ -63,6 +64,14 @@ class FantasyTavernMusic:
         except (pygame.error, OSError) as exc:
             self.error = str(exc)
             self.end_event = None
+
+    def set_volume(self,level: float):
+        self.volume=max(0.0,min(1.0,float(level)))
+        try:
+            if pygame.mixer.get_init():
+                pygame.mixer.music.set_volume(self.volume)
+        except pygame.error:
+            pass
 
     def _play(self):
         pygame.mixer.music.load(str(self.tracks[self.index]))
