@@ -1,11 +1,12 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.85",
+  "mvp": "0.9.86",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
   "card_costs": false,
   "starter_cards": 70,
+  "legible_ui_0986": {"fractional_scaling":"smooth UI typography", "pixel_art":"nearest-neighbour only in visible artwork regions", "game_rules_unchanged":true, "manual_windows_acceptance":"pending"},
   "board_hover_preview": "Hand, allied and enemy board units after 420 ms with current effects/stats",
   "release_hardening_0980": {"auras":"orthogonal lane routing", "package":"validate README paths in folder and ZIP", "required_release_gates":["linux regression","20 fixed-board signed games","100 forensic games","1000 signed cohorts","Windows packaged smoke"], "engine_unchanged":true},
   "public_release_management": {"player_first_readme": true, "history": "CHANGELOG.md", "version_source": "VERSION.json.mvp", "release_notes": "CHANGELOG.md -> tools.release_meta", "release_check": "tools.release_meta check", "documentation_only_no_gameplay_change": true},

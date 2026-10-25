@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.86] — 2026-10-25
+
+### Czytelność fontów bez rozmywania ilustracji
+- Skalowanie całego interfejsu do rozmiaru okna wykorzystuje filtr interpolacyjny poprawiający czytelność niewielkich liter przy ułamkowej skali (np. mniejsze okno i Windows DPI 125%).
+- Same portrety kart i aukcji są kompozytowane osobno przez nearest-neighbour z końcowej klatki; ilustracje PNG pozostają bez zmian. Warstwy modalne nie przywracają obrazów planszy nad menu.
+- Test renderingu wymaga jednocześnie wygładzonych napisów oraz ostrych pikseli portretów; zachowano istniejące testy aukcji.
+
+**Zakres:** wyłącznie prezentacja obrazu, bez zmian zasad, AI, balansu, kart i zapisów. Odbiór ręczny na fizycznym Windows (DPI 100/125/150%) jest nadal wymagany.
+
 ## [0.9.85] — 2026-10-25
 
 ### Naprawiono — czytelność aukcji
