@@ -109,7 +109,7 @@ Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 - **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
 - **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
 
-Wersja **0.9.80** stabilizuje interfejs aur i publikację Windows; nie zmienia zasad walki. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+Wersja **0.9.81** upraszcza celowanie w ataku przez usunięcie strzałki podążającej za kursorem. Wersja **0.9.80** wcześniej usprawniła wizualizację aur i publikację Windows. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Pomoc, bezpieczeństwo i rozwój
 
