@@ -1298,8 +1298,13 @@ class SoloApp:
             # Keep the portrait intact: every label now has a separate
             # opaque pixel-art strip BELOW the image, never across faces.
             artbox=zones['art']
+            # Square auction tiles: a landscape 295x209 portrait shown with
+            # 'contain' produces visible horizontal edge-bleed seams. Cover
+            # the square instead: original top/bottom remain intact and only
+            # a symmetric slice of side scenery is lost. Full-size previews,
+            # hand banners and inspection still use uncropped 'contain'.
             portrait=self.cards_view.images.get_auction_image(
-                off.archetype,off.rarity,artbox.size,mode='contain')
+                off.archetype,off.rarity,artbox.size,mode='cover')
             if portrait is not None:
                 self.auction_art_regions.append(artbox.copy())
                 dominant=self.cards_view.images.get_auction_color(
@@ -3080,7 +3085,7 @@ class SoloApp:
             self.detail_art_regions.append(pygame.Rect(184,164,276,520))
             self._text('POWIĘKSZONA ORYGINALNA ILUSTRACJA',13,186,697,cfg.MUTED)
         else:
-            self.detail_art_regions.append(self.cards_view.card_art_region(pygame.Rect(194,164,255,380)))
+            detail_start=len(self.cards_view.pixel_art_regions)
             self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
                                  unit=u,selected=True,
                                  rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
@@ -3090,6 +3095,10 @@ class SoloApp:
                                  ready=details_attack.ready if u else None,
                                  attacks_total=details_attack.limit if u else None,
                                  attacks_remaining=details_attack.remaining if u else None)
+            # CardView excludes the status/readiness plaques from the sharp
+            # portrait segments; keep precisely those segments in this modal.
+            self.detail_art_regions.extend(
+                self.cards_view.pixel_art_regions[detail_start:])
             self._text(f'{d.id} • {d.faction}',18,194,570,FACTION_COLORS[d.faction])
             self._text(f'Aktywacja: {d.trigger}',16,194,600)
             self._text(f'Rodzina: {d.family}',16,194,629)
