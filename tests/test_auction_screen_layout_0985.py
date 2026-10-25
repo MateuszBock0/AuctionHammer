@@ -126,6 +126,46 @@ class AuctionScreenLayout0985(unittest.TestCase):
                             (prefix,matches[0],tile))
         self.assertTrue(any(t.isdigit() for t,_ in lines))
 
+    def test_live_v22_screenshot_archetypes_and_all_rarities_have_no_collisions(self):
+        """A010 / A018 / A001 are the actual cards shown in user screenshot."""
+        from game.core import auction
+        from game.core.auction import AuctionOffer
+        from game.core.auction_catalog import stats_v22,RARITIES
+        from test_auction_v22_0931 import ready as v22_ready
+        app=self.app
+        game=v22_ready(985985)
+        game.round=4
+        auction.begin(game)
+        app.game=game
+        app.auction_inspect_index=None
+        ids=('A010','A018','A001')
+        for tier in range(3):
+            # Source card IDs and all variant summaries are actual v22 data.
+            game.auction.offers=[
+                AuctionOffer(f'AUC001{cid}',stats_v22(cid,3)[1],
+                             stats_v22(cid,3)[0],RARITIES[tier],1,cid)
+                for cid in ids]
+            before=digest(state_snapshot(game))
+            labels=[]
+            real=app._text
+            def capture(text,size,x,y,color=None,center=False):
+                rect=real(text,size,x,y,color,center)
+                labels.append((str(text),rect))
+                return rect
+            with patch.object(app,'_text',side_effect=capture):
+                app._draw_auction()
+            self.assertEqual(digest(state_snapshot(game)),before)
+            self.assertTrue(any('KONIEC TURY' in t for t,_ in labels))
+            self.assertTrue(any('POZIOM' in t for t,_ in labels))
+            for i,(text,rect) in enumerate(labels):
+                for other,other_rect in labels[i+1:]:
+                    self.assertFalse(rect.colliderect(other_rect),
+                                     (tier,text,rect,other,other_rect))
+                for n in range(3):
+                    self.assertFalse(rect.colliderect(
+                        app.auction_offer_zones(n)['art']),
+                        (tier,text,rect,'art',n))
+
     def test_inspection_button_is_in_new_position_and_remains_clickable(self):
         app=self.app
         for i in range(3):
