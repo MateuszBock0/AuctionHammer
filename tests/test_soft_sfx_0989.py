@@ -93,6 +93,18 @@ class SoundPolish0989(unittest.TestCase):
         cues.observe(game,visuals,1000,allowed=True)
         cues.sounds['card_place'].play.assert_not_called()
 
+    def test_actual_sdl_mixer_decodes_all_eight_generated_wavs(self):
+        if not pygame.mixer.get_init():
+            pygame.mixer.init()
+        sfx=QuietSFX(volume=.1)
+        self.assertIsNone(sfx.error,sfx.error)
+        self.assertEqual(len(sfx.sounds),8)
+        for name,sound in sfx.sounds.items():
+            with self.subTest(name=name):
+                self.assertGreater(sound.get_length(),0.1)
+                self.assertLess(sound.get_length(),0.7)
+                self.assertAlmostEqual(sound.get_volume(),.1,places=2)
+
     def test_audio_device_failure_keeps_game_running(self):
         with patch.object(pygame.mixer,'get_init',return_value=None), \
              patch.object(pygame.mixer,'init',side_effect=pygame.error('no device')):
