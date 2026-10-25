@@ -1,33 +1,181 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.88",
+  "mvp": "0.9.90",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
   "card_costs": false,
   "starter_cards": 70,
-  "legible_ui_0986": {"fractional_scaling":"smooth UI typography", "pixel_art":"nearest-neighbour only in visible artwork regions", "game_rules_unchanged":true, "manual_windows_acceptance":"pending"},
-  "ui_polish_0987": {"hover":"smooth status/readiness text cutouts inside crisp artwork; larger large-card health and readiness labels", "auction_square":"cover landscape portrait without horizontal extension seams", "other_views":"unchanged contain art", "gameplay_unchanged":true, "windows_manual_acceptance":"pending"},
-  "auction_top_framing_0988": {"square_offer_only":true, "crop":"cover 1.08x top anchored", "source_png_untouched":true, "other_art_views_unchanged":true, "engine_unchanged":true, "windows_manual_acceptance":"pending"},
+  "legible_ui_0986": {
+    "fractional_scaling": "smooth UI typography",
+    "pixel_art": "nearest-neighbour only in visible artwork regions",
+    "game_rules_unchanged": true,
+    "manual_windows_acceptance": "pending"
+  },
+  "ui_polish_0987": {
+    "hover": "smooth status/readiness text cutouts inside crisp artwork; larger large-card health and readiness labels",
+    "auction_square": "cover landscape portrait without horizontal extension seams",
+    "other_views": "unchanged contain art",
+    "gameplay_unchanged": true,
+    "windows_manual_acceptance": "pending"
+  },
+  "auction_top_framing_0988": {
+    "square_offer_only": true,
+    "crop": "cover 1.08x top anchored",
+    "source_png_untouched": true,
+    "other_art_views_unchanged": true,
+    "engine_unchanged": true,
+    "windows_manual_acceptance": "pending"
+  },
   "board_hover_preview": "Hand, allied and enemy board units after 420 ms with current effects/stats",
-  "release_hardening_0980": {"auras":"orthogonal lane routing", "package":"validate README paths in folder and ZIP", "required_release_gates":["linux regression","20 fixed-board signed games","100 forensic games","1000 signed cohorts","Windows packaged smoke"], "engine_unchanged":true},
-  "public_release_management": {"player_first_readme": true, "history": "CHANGELOG.md", "version_source": "VERSION.json.mvp", "release_notes": "CHANGELOG.md -> tools.release_meta", "release_check": "tools.release_meta check", "documentation_only_no_gameplay_change": true},
-  "aura_synergy_links": {"source": "read-only Match board and resolved aura state", "supported": ["S34 ATK", "S35 MAX HP", "S105 remaining aura armor", "A002 bronze global ATK"], "hover_or_select": true, "incoming_for_beneficiaries": true, "inactive_silenced_or_stunned": "no link", "S108_future_reaction": "retains separate area cue, never treated as applied aura", "no_core_rule_changes": true},
-  "smart_end_turn": {"single_click_when_no_legal_actions": true, "confirmation_if_actions_remaining": true, "confirmation_duration_ms": 4200, "keyboard_mouse_parity": true, "legal_actions_source": "turn_readout -> Match.can_play, Match.legal_attacks", "nonblocking_inline_warning": true, "gameplay_engine_unchanged": true},
-  "post_match_summary": {"finished_only": true, "audit_source": "signed engine actions and internal deltas", "metrics": ["round", "hero status", "cards played", "attacks", "levelled cards", "record ATK+MAX HP", "largest observed HP loss"], "legacy_incomplete_audit": "hide unsupported metrics", "read_only": true},
-  "combat_impact_feedback": {"hp_damage_and_healing": "committed-only floating HP values", "shield_and_armor": "exact consumed and gained amounts", "simultaneous_effects": "three separate popup lanes", "impact_shake_ms": 220, "card_hitboxes_unchanged": true, "no_match_mutation": true},
-  "board_attack_drag": {"left_hold": true, "cursor_arrow": true, "cursor_arrow_rgba": [207,84,96,49], "valid_target_alpha": 77, "stroke_width_px": 2, "legal_target_outline": true, "targets": "Match.legal_attacks", "release_performs_authoritative_attack": true, "click_controls_preserved": true},
-  "auction_layout_0985": {"cards": "461px tall, extended 95px upward; separate art, rarity, trigger and description zones", "bid_panels": "padded pixel-art leading/own-price tiles and independent summary", "controls": "slider and buttons shifted below information", "card_portrait_images_unchanged": true, "gameplay_rules_unchanged": true},
-  "mvp_visual_audit_0984": {"pixel_art": "nearest-neighbour final viewport and fallback archive artwork", "combat": "crisp square projectile and zero-overpaint legal-target cue", "auction": "selectable-only pixel hover corners with existing real prices", "interface": "nonblocking attack hover previews and HUD-safe aura links", "engine_unchanged": true},
-  "pixel_art_polish_0983": {"auction_art": "intact center with 4px scene-edge pixel tiles and no smoothing", "auction_markers": "authentic trigger and mechanic-class icons, native nearest-neighbor 8bit", "bidding": "separate effective vs actual spent coin readout", "attack_feedback": "8bit attacker corners and legal-target brackets only", "core_rules_unchanged": true},
-  "auction_portrait_fit_0982": {"large_cards": "contain portrait centered, preserving head and scene", "compact_cards": "contain purpose-made banner", "auction_offers": "contain centered portrait", "letterbox": "pixel_art_dominant_color", "source_images_unchanged": true},
-  "hand_growth_feedback": {"base_cards_only": true, "progress_stages": 3, "level_flash_ms": 1050, "stat_deltas": "actual ATK and MAX HP", "save_and_replay_safe": true},
-  "hand_card_drag": {"live_cursor_follow": true, "preserve_grab_offset": true, "drop_targets": "five legal own slots", "invalid_drop_return_ms": 180, "no_engine_mutation_until_release": true},
-  "auction_final_pixelart": {"variants": 51, "png_files": 102, "method": "finished direct assets without runtime overlay", "path": "assets/auction/final/", "manifest": "assets/auction/final/manifest.json"},
-  "auction_pixel_compositions": {"archetypes": 17, "rarities": 3, "background_crops": 102, "authentic_originals_overlay": true, "archive": "assets/auction/pixel_art/auction51_scenes.zip"},
+  "release_hardening_0980": {
+    "auras": "orthogonal lane routing",
+    "package": "validate README paths in folder and ZIP",
+    "required_release_gates": [
+      "linux regression",
+      "20 fixed-board signed games",
+      "100 forensic games",
+      "1000 signed cohorts",
+      "Windows packaged smoke"
+    ],
+    "engine_unchanged": true
+  },
+  "public_release_management": {
+    "player_first_readme": true,
+    "history": "CHANGELOG.md",
+    "version_source": "VERSION.json.mvp",
+    "release_notes": "CHANGELOG.md -> tools.release_meta",
+    "release_check": "tools.release_meta check",
+    "documentation_only_no_gameplay_change": true
+  },
+  "aura_synergy_links": {
+    "source": "read-only Match board and resolved aura state",
+    "supported": [
+      "S34 ATK",
+      "S35 MAX HP",
+      "S105 remaining aura armor",
+      "A002 bronze global ATK"
+    ],
+    "hover_or_select": true,
+    "incoming_for_beneficiaries": true,
+    "inactive_silenced_or_stunned": "no link",
+    "S108_future_reaction": "retains separate area cue, never treated as applied aura",
+    "no_core_rule_changes": true
+  },
+  "smart_end_turn": {
+    "single_click_when_no_legal_actions": true,
+    "confirmation_if_actions_remaining": true,
+    "confirmation_duration_ms": 4200,
+    "keyboard_mouse_parity": true,
+    "legal_actions_source": "turn_readout -> Match.can_play, Match.legal_attacks",
+    "nonblocking_inline_warning": true,
+    "gameplay_engine_unchanged": true
+  },
+  "post_match_summary": {
+    "finished_only": true,
+    "audit_source": "signed engine actions and internal deltas",
+    "metrics": [
+      "round",
+      "hero status",
+      "cards played",
+      "attacks",
+      "levelled cards",
+      "record ATK+MAX HP",
+      "largest observed HP loss"
+    ],
+    "legacy_incomplete_audit": "hide unsupported metrics",
+    "read_only": true
+  },
+  "combat_impact_feedback": {
+    "hp_damage_and_healing": "committed-only floating HP values",
+    "shield_and_armor": "exact consumed and gained amounts",
+    "simultaneous_effects": "three separate popup lanes",
+    "impact_shake_ms": 220,
+    "card_hitboxes_unchanged": true,
+    "no_match_mutation": true
+  },
+  "board_attack_drag": {
+    "left_hold": true,
+    "cursor_arrow": true,
+    "cursor_arrow_rgba": [
+      207,
+      84,
+      96,
+      49
+    ],
+    "valid_target_alpha": 77,
+    "stroke_width_px": 2,
+    "legal_target_outline": true,
+    "targets": "Match.legal_attacks",
+    "release_performs_authoritative_attack": true,
+    "click_controls_preserved": true
+  },
+  "auction_layout_0985": {
+    "cards": "461px tall, extended 95px upward; separate art, rarity, trigger and description zones",
+    "bid_panels": "padded pixel-art leading/own-price tiles and independent summary",
+    "controls": "slider and buttons shifted below information",
+    "card_portrait_images_unchanged": true,
+    "gameplay_rules_unchanged": true
+  },
+  "mvp_visual_audit_0984": {
+    "pixel_art": "nearest-neighbour final viewport and fallback archive artwork",
+    "combat": "crisp square projectile and zero-overpaint legal-target cue",
+    "auction": "selectable-only pixel hover corners with existing real prices",
+    "interface": "nonblocking attack hover previews and HUD-safe aura links",
+    "engine_unchanged": true
+  },
+  "pixel_art_polish_0983": {
+    "auction_art": "intact center with 4px scene-edge pixel tiles and no smoothing",
+    "auction_markers": "authentic trigger and mechanic-class icons, native nearest-neighbor 8bit",
+    "bidding": "separate effective vs actual spent coin readout",
+    "attack_feedback": "8bit attacker corners and legal-target brackets only",
+    "core_rules_unchanged": true
+  },
+  "auction_portrait_fit_0982": {
+    "large_cards": "contain portrait centered, preserving head and scene",
+    "compact_cards": "contain purpose-made banner",
+    "auction_offers": "contain centered portrait",
+    "letterbox": "pixel_art_dominant_color",
+    "source_images_unchanged": true
+  },
+  "hand_growth_feedback": {
+    "base_cards_only": true,
+    "progress_stages": 3,
+    "level_flash_ms": 1050,
+    "stat_deltas": "actual ATK and MAX HP",
+    "save_and_replay_safe": true
+  },
+  "hand_card_drag": {
+    "live_cursor_follow": true,
+    "preserve_grab_offset": true,
+    "drop_targets": "five legal own slots",
+    "invalid_drop_return_ms": 180,
+    "no_engine_mutation_until_release": true
+  },
+  "auction_final_pixelart": {
+    "variants": 51,
+    "png_files": 102,
+    "method": "finished direct assets without runtime overlay",
+    "path": "assets/auction/final/",
+    "manifest": "assets/auction/final/manifest.json"
+  },
+  "auction_pixel_compositions": {
+    "archetypes": 17,
+    "rarities": 3,
+    "background_crops": 102,
+    "authentic_originals_overlay": true,
+    "archive": "assets/auction/pixel_art/auction51_scenes.zip"
+  },
   "auction_card_art_fit": "cover centered on card, contain for full image zoom",
   "combat_damage_readout": "General A002 shown as live doubled combat ATK; core combat unchanged",
-  "pixel_art_base_70": {"portraits": 70, "banners": 70, "sprite_format": "295x209 + 295x78 PNG", "pixel_filter": "nearest-neighbor", "manifest": "assets/cards/pixel_art/manifest.json", "preserve_start_guard_art": true},
+  "pixel_art_base_70": {
+    "portraits": 70,
+    "banners": 70,
+    "sprite_format": "295x209 + 295x78 PNG",
+    "pixel_filter": "nearest-neighbor",
+    "manifest": "assets/cards/pixel_art/manifest.json",
+    "preserve_start_guard_art": true
+  },
   "copies_per_archetype": 1,
   "github_remote": "https://github.com/MateuszBock0/AuctionHammer",
   "distribution": "portable-windows-pyinstaller-github-releases",
@@ -48,7 +196,7 @@
       380
     ]
   },
-  "balance": "v21",
+  "balance": "v24-buff",
   "ui_audit": "0.9.35-archive-per-record-version-display-and-clamped-hero-hp-display",
   "auction_ability_activation": "active",
   "auction_supply": "v22-17-return-unbought-auction-only",
@@ -81,7 +229,7 @@
     "aura_deltas"
   ],
   "queen_summon_render": "SUM-ephemeral-render-all-rarities",
-  "next_balance": "v21-live",
+  "next_balance": "v24-buff-live",
   "next_auction_catalog": "v22-live",
   "auction_catalog_mode": "v22",
   "auction_catalog_metadata": "17/51 live-with-archived-source-proposal",
@@ -365,5 +513,15 @@
       "docs/CURRENT_MVP_RULES_0964.md",
       "data/MVP_RULES_0964.json"
     ]
+  },
+  "auction_buff_patch_0990": {
+    "scope": "A014, A003, A004, A009, A016, A002",
+    "user_approved": true,
+    "legendary_OP": true,
+    "nerfs": false,
+    "regen_A014": "2 HP for 2 owner turns; rare random ally, legendary all; stackable",
+    "legacy_saved_matches": "missing balance_patch_v24 disables new buffs",
+    "audit_v24": "archived; not overwritten",
+    "release_gate": "automated QA + Windows packaged smoke pending"
   }
 }
