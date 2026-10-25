@@ -155,6 +155,36 @@ class CardView:
     def card_art_region(rect):
         return card_zones(rect)['art'].copy()
 
+    @staticmethod
+    def artwork_only_regions(art,overlays):
+        """Exclude foreground UI plaques from nearest-neighbour pixel art.
+
+        The same anti-aliased text that is readable elsewhere in 0.9.86 must
+        remain smooth when drawn *inside* a portrait (statuses, readiness,
+        rarity and progress plaques). Only the uncovered artwork is pasted
+        from the nearest-neighbour projection of the final frame.
+        """
+        parts=[art.copy()]
+        for overlay in overlays:
+            cut=pygame.Rect(overlay).clip(art)
+            if cut.width<=0 or cut.height<=0:
+                continue
+            result=[]
+            for src in parts:
+                overlap=src.clip(cut)
+                if overlap.width<=0 or overlap.height<=0:
+                    result.append(src)
+                    continue
+                candidates=(
+                    pygame.Rect(src.left,src.top,src.width,overlap.top-src.top),
+                    pygame.Rect(src.left,overlap.bottom,src.width,src.bottom-overlap.bottom),
+                    pygame.Rect(src.left,overlap.top,overlap.left-src.left,overlap.height),
+                    pygame.Rect(overlap.right,overlap.top,src.right-overlap.right,overlap.height),
+                )
+                result.extend(r for r in candidates if r.width>0 and r.height>0)
+            parts=result
+        return tuple(parts)
+
     def font(self,size,bold=False):
         return self.fonts[(size,bold)]
 
@@ -346,7 +376,7 @@ class CardView:
             self.theme.legendary_underlay(screen,rect)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
-        self.pixel_art_regions.append(art.copy())
+        artwork_text_overlays=[]
         artwork=self.art(d.id,d.faction,art.size,d.family,d.name,
                          rarity=tier,level=card.ability_level,
                          guard_kills=guard_kills)
@@ -389,6 +419,7 @@ class CardView:
             badge_w=min(art.width-10,max(24,badge_font.size(tag)[0]+7))
             badge=pygame.Rect(art.right-badge_w-3,art.y+3,badge_w,14)
             pygame.draw.rect(screen,(92,64,36),badge,border_radius=3)
+            artwork_text_overlays.append(badge.inflate(2,2))
             self._center(screen,self.clip(tag,badge_font,badge.width-4),
                          badge,badge_font,(255,240,188))
         pygame.draw.rect(screen,(42,30,22),name_rect,border_radius=4)
@@ -487,25 +518,33 @@ class CardView:
             compact=ordered[:2]
             x=art.x+3;y=art.bottom-17
             for status in compact:
-                sf=self.font(9,True)
+                # Large hover/details cards can afford larger short status
+                # labels. Board-card badges keep their old hitbox geometry.
+                sf=self.font(10 if large else 9,True)
                 icon=self.icons.get(status_icon_key(status),'statuses',13)
                 if icon is not None:
-                    width=37
+                    label=self.clip(status.short,sf,46 if large else 21)
+                    width=max(37,14+sf.size(label)[0]+5) if large else 37
                     pill=pygame.Rect(x,y,width,14)
                     pygame.draw.rect(screen,status.color,pill,border_radius=4)
                     screen.blit(icon,(x,y))
-                    label=self.clip(status.short,sf,width-16)
+                    label=self.clip(label,sf,width-16)
                     text=sf.render(label,True,(14,23,29))
                     screen.blit(text,(x+14,y+(14-text.get_height())//2))
                 else:
-                    label=self.clip(status.short,sf,34)
-                    width=max(23,min(39,sf.size(label)[0]+8))
-                    self._pill(screen,pygame.Rect(x,y,width,14),label,status.color,sf,(14,23,29))
+                    label=self.clip(status.short,sf,46 if large else 34)
+                    width=max(27,min(58 if large else 39,sf.size(label)[0]+8))
+                    pill=pygame.Rect(x,y,width,14)
+                    self._pill(screen,pill,label,status.color,sf,(14,23,29))
+                artwork_text_overlays.append(pill.inflate(2,2))
                 x+=width+3
             rest=len(ordered)-len(compact)
             if rest:
-                self._pill(screen,pygame.Rect(art.right-29,y,26,14),f'+{rest}',
-                           (61,78,92),self.font(9,True))
+                pill=pygame.Rect(art.right-34 if large else art.right-29,
+                                 y,31 if large else 26,14)
+                self._pill(screen,pill,f'+{rest}',(61,78,92),
+                           self.font(10 if large else 9,True))
+                artwork_text_overlays.append(pill.inflate(2,2))
         # Progress on hand; never shown on deployed units.
         if not board and not d.id.startswith('A0'):
             # Only basic cards level through hand turns. Auction cards
@@ -513,8 +552,9 @@ class CardView:
             label=f'{card.hand_turns%3}/3 · POZ. {card.ability_level}'
             sf=self.font(10,True)
             pw=min(art.width-6,sf.size(label)[0]+9)
-            self._pill(screen,pygame.Rect(art.right-pw-3,art.y+4,pw,16),
-                       label,(34,79,65),sf)
+            pill=pygame.Rect(art.right-pw-3,art.y+4,pw,16)
+            self._pill(screen,pill,label,(34,79,65),sf)
+            artwork_text_overlays.append(pill.inflate(2,2))
             # A continuous three-stage meter, independent of ability texts.
             # Keep it inside the bottom of the illustration so even 125×195
             # hand cards retain their name, effects and ATK/HP hitboxes.
@@ -532,12 +572,13 @@ class CardView:
             rem=max(0,int(attacks_remaining or 0))
             count=('OGŁUSZONY' if stunned else
                    f'ATAKI {rem}/{max(1,int(attacks_total))}')
-            sf=self.font(9,True)
+            sf=self.font(11 if large else 9,True)
             w=min(art.width-6,sf.size(count)[0]+10)
             tag=pygame.Rect(art.right-w-3,art.y+3,w,17)
             tone=((161,85,172) if stunned else
                   (43,105,72) if ready else (74,78,89))
             self._pill(screen,tag,count,tone,sf)
+            artwork_text_overlays.append(tag.inflate(2,2))
         # ATK + PŻ last: large, opaque, never dimmed or overlapped.
         attack=unit.atk if board else card.attack
         # The General's x2 standard-hit bonus is the visible combat ATK.
@@ -549,9 +590,9 @@ class CardView:
         hp=(max(0,int(hp_override)) if board and hp_override is not None
             else max(0,unit.hp) if board else card.max_hp)
         max_hp=unit.max_hp if board else card.max_hp
-        label_font=self.font(10 if large else 9,True)
+        label_font=self.font(11 if large else 9,True)
         value_font=self.font(25 if large else (22 if rect.height>=210 else 20),True)
-        max_font=self.font(13 if large else 10)
+        max_font=self.font(15,True) if large else self.font(10)
         for r,t in ((attack_box,'ATAK'),(health_box,'PŻ')):
             label=label_font.render(t,True,(213,210,201))
             screen.blit(label,(r.x+4,r.y+2))
@@ -587,6 +628,11 @@ class CardView:
             bf=self._fit_font(caption,badge.width-5,
                               (12,11,10,9,8) if large else (10,9,8))
             self._center(screen,caption,badge,bf,(250,252,255))
+        # Preserve crisp pixel-art only where the card has no foreground
+        # writing. Excluding opaque plaques also avoids resampling a 9-11 px
+        # anti-aliased status label with nearest-neighbour downscaling.
+        self.pixel_art_regions.extend(
+            self.artwork_only_regions(art,artwork_text_overlays))
         # Board-level signature traits use exactly ONE restrained whole-card
         # tint. Existing status labels explain additional simultaneous traits.
         # Poison/stun/regen, etc. never colour the whole card.
