@@ -1290,6 +1290,12 @@ class SoloApp:
             elif selectable:
                 self._text('KLIKNIJ, ABY WYBRAĆ',14,rect.centerx,
                            rect.y+322,cfg.GOLD,center=True)
+            # Only truly purchasable offers respond to hover. Corner-only
+            # pixel brackets leave art, rarity and the ability text clear.
+            if selectable and rect.collidepoint(self.mouse_pos()):
+                self._pixel_attack_corners(self.screen,
+                                           rect.inflate(-8,-8),
+                                           (249,209,125),length=14)
         if self.tutorial.active:
             hint=self.tutorial.hint(self.game)
             if hint is not None:
@@ -2807,15 +2813,10 @@ class SoloApp:
                              (170,250,255) if hovered else (115,223,238),
                              area,4 if hovered else 2)
             if hovered:
+                # The 4px outline and hard pixel corners already signal
+                # a legal target; avoid stamping ATAKUJ over art/faces.
                 self._pixel_attack_corners(self.screen,area,
                                            (226,245,224),length=13)
-                label=self.fonts_bold[13].render('ATAKUJ',True,(170,250,255))
-                tx=rect.centerx-label.get_width()//2
-                ty=(rect.y+53 if rect.height>=100 else rect.y-24)
-                backdrop=pygame.Rect(tx-5,ty-2,label.get_width()+10,
-                                     label.get_height()+4)
-                pygame.draw.rect(self.screen,(20,34,45),backdrop)
-                self.screen.blit(label,(tx,ty))
 
     def _draw_attack_source_feedback(self):
         """Highlight the selected attacker without predicting combat results."""
