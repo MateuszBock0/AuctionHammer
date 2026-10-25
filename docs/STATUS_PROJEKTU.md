@@ -1,19 +1,27 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.90 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Data aktualizacji:** 25 października 2026  
+**Wersja gałęzi:** MVP 0.9.91 (Smart Auction AI, zależne od zaakceptowania v24 w 0.9.90; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
 
-### Etap — 0.9.90 (inteligentne limity licytacji)
+### Etap — 0.9.91 (inteligentna licytacja AI na bazie v24)
 
-- Licytacja v22 rozpoznaje, że wygrywający płaci za **pierwszy wybór**, podczas gdy przegrany otrzymuje jedną z dwóch pozostałych kart bezpłatnie. AI wycenia tę różnicę na podstawie trzech aktualnie odkrytych ofert i publicznych cech obu plansz.
-- Łatwy bot ma twarde **maksimum 50% własnych monet** (zaokrąglenie w dół) i prostą, zachowawczą politykę.
-- Normalny bot porównuje wyniki pierwszego i drugiego wyboru, uwzględnia minimalną wartość blokowania preferowanej karty rywala i niewielką rezerwę.
-- Trudny bot dodatkowo modeluje wartość monet w zależności od aktualnego budżetu i możliwości przyszłych aukcji, silne archetypy pozostające w ogólnodostępnej puli, a także zagrożenie porażką. Nie wykorzystuje ukrytej ręki przeciwnika ani przyszłego RNG/rzutu rzadkości.
-- Symulator `tools/simulate_smart_auction_0990.py` porównuje pary poziomów w dwóch rozmieszczeniach na identycznych seedach. Ostateczne wskaźniki zwycięstw są empiryczne, nie wymuszane.
-- Zasady aukcji, karty, podpisy replay i format savegame bez zmian.
+- Łatwy bot zachowuje zawsze co najmniej połowę swoich monet przy składaniu ofert (zaokrąglenie w dół limitu wydatków); normalny szacuje wartość **pierwszego wyboru względem darmowej drugiej karty**, trudny dodatkowo analizuje ryzyko finansowe, sytuację rywala i pozostające mocne archetypy.
+- Wycena ofert uwzględnia sześć buffów v24 jedynie gdy `balance_patch_v24` jest aktywny. Nie używa zakrytej ręki ani talii rywala, nie zmienia zasad i nie zużywa RNG.
+- Testy poziomów obejmują pełne partie, dwa ustawienia miejsc dla każdego seeda, raport empirycznych wyników. Nie wymusza porażek słabszego bota.
+
+### Etap — 0.9.90 (patch balansu v24, wyłącznie buffy)
+
+- **Legenda ma być OP:** zachowano wszystkie silne zdolności, nie zastosowano żadnych nerfów. Aukcje pozostają kluczową atrakcją meczu.
+- **A014:** R co turę regeneracja 2 PŻ przez 2 tury losowej własnej jednostce; L to samo wszystkim własnym jednostkom, porcje się nakładają. Wcześniejsza kontrola wrogiego leczenia pozostaje.
+- **A003:** gdy brak legalnej podstawowej karty cmentarnej, przywołanie Szkieleta bez umiejętności min. 6/6, 7/7, 8/8; statystyki mogą wzrosnąć według mocniejszej karty na ręce.
+- **A004/A016:** przy pełnej planszy bonus Tarcza / Tarcza plus połowa statystyk / Tarcza plus pełne statystyki wskazanej jednostki. Legalny dobór u Kartografa zachowany.
+- **A009:** po wymianie +1/+1, +2/+2 albo +3/+3 dla wszystkich kart w nowej własnej ręce, na stałe.
+- **A002:** na wejściu Tarcza, R +2 pancerza, L +4 pancerza; awans przyznaje tylko brakującą różnicę.
+- Reguły włączone tylko dla nowych meczów (`balance_patch_v24`). Historyczny audyt v24 to źródło projektowe, nie automatycznie wdrożona specyfikacja.
+- Wersja i dokumentacja: `VERSION.json`, `docs/BALANCE_PATCH_V24_0990.md`, `docs/CHATGPT_PROJECT_CONTEXT_0990.md`; testy regresyjne i fizyczny odbiór Windows wymagają zatwierdzenia.
 
 ### Etap — 0.9.89 (ciche efekty działań, niezależne od muzyki)
 

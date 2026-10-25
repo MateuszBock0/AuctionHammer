@@ -4,16 +4,27 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.91] — 2026-10-25
+
+### Smart Auction AI — pierwszeństwo wyboru, limity i ocena ryzyka
+- **Łatwy:** nigdy nie licytuje więcej niż `floor(własne_monety/2)`, także w obecności bonusu do skutecznej oferty; dodatkowo zachowuje zachowawczy limit związany z numerem aukcji.
+- **Normalny:** wycenia korzyść z pierwszego wyboru względem darmowej karty pozostałej po pierwszym wyborze przeciwnika; umiarkowanie uwzględnia pozbawienie rywala jego preferowanej oferty i przyszłe aukcje.
+- **Trudny:** uwzględnia publiczne preferencje i planszę obu graczy, ryzyko pozostania bez monet, silne archetypy w puli oraz krytyczne zagrożenie zdrowia.
+- Uwzględnia sześć buffów v24 obowiązujących w nowych partiach. Nie osłabia kart, nie zmienia reguł ani RNG, nie zagląda do ukrytej ręki lub talii przeciwnika.
+- Symulator `tools/simulate_smart_auction_0990.py` porównuje pełne mecze łatwy/normalny i normalny/trudny na wspólnych seedach, z zamienianiem stron. Nie wymusza 100% zwycięstw; raportuje statystykę empiryczną.
+
 ## [0.9.90] — 2026-10-25
 
-### Smart Auction AI — wartość pierwszego wyboru i ryzyko wydawania monet
-- **Łatwy:** twardy limit maksymalnego wydatku wynosi `floor(własne_monety/2)`. Dodatkowy ostrożny limit zależy od numeru aukcji. Bonus skutecznej oferty nie może spowodować przekroczenia limitu rzeczywiście wydawanych monet.
-- **Normalny:** odróżnia wartość całej karty od wartości **pierwszeństwa wyboru**. Symuluje publicznie dostępne alternatywy: przy przegranej i tak otrzymuje jedną z pozostałych dwóch kart za darmo. Rozważa utratę możliwości wybrania najlepszej karty, umiarkowane pozbawienie rywala jego preferencji i rezerwę na przyszłą aukcję.
-- **Trudny:** ocenia alternatywy obu graczy na podstawie publicznej planszy, PŻ i dostępnych ofert; bierze pod uwagę ryzyko uszczuplenia budżetu, silne archetypy jeszcze dostępne w puli oraz nagłą sytuację kończącą partię.
-- AI nie zagląda do ręki ani talii przeciwnika. Limit jest deterministyczny, nie zużywa RNG, a zlecenie bid/pass pozostaje wyłącznie legalną komendą silnika. Starsze katalogi v3/v4 zachowują swoje dotychczasowe limity na poziomach normalnym i trudnym.
-- Testy jednostkowe oraz pełne symulacje *łatwy vs normalny* i *normalny vs trudny*, po dwie partie na seed z zamienionymi miejscami. Raport podaje rzeczywiste wyniki i przedziały Wilsona. Nie wprowadza się sztucznego wymuszania zwycięstwa silniejszego bota.
+### Święto aukcji: sześć dodatkowych wzmocnień (buff-only)
+- **A014 Kapłan:** rzadka daje losowemu sojusznikowi regenerację 2 PŻ przez 2 tury; legendarna nadaje ją wszystkim własnym jednostkom co turę. Porcje kumulują się, wszystkie dotychczasowe aury antyleczenia pozostają.
+- **A003 Matka Kości:** gdy brak karty na cmentarzu, tworzy bezumiejętnościowego Szkieleta 6/6, 7/7 lub 8/8, zależnie od rzadkości, ewentualnie z większymi statystykami wskazanymi przez najsilniejszą kartę na ręce.
+- **A004 Regent oraz A016 Kartograf:** przy pełnej planszy otrzymują Tarczę (podstawowa), Tarczę + połowę statystyk innej jednostki (rzadka) albo Tarczę + pełne statystyki (legendarna) zamiast niemożliwej kopii lub dodatkowego wystawienia.
+- **A009 Złodziej Wspomnień:** po wymianie wszystkie karty na nowej własnej ręce otrzymują trwale +1/+1, +2/+2 lub +3/+3.
+- **A002 Generał:** Tarcza i dodatkowo 0/2/4 trwałego pancerza zależnie od rzadkości; przy awansie uzupełnienie różnicy, bez podwójnego naliczania.
+- Bez osłabiania wcześniejszych mocnych kart. Legendarne pozostają celowo OP; warianty historycznego audytu D-01–D-05 zachowano jako osobną dokumentację, nie jako automatyczny zestaw zmian.
+- Nowe reguły v24 dotyczą nowych meczów; starsze zapisy i podpisane audyty pozostają w poprzednich zasadach.
 
-**Bez zmian:** zasady rozstrzygania aukcji, statystyki i zdolności kart, RNG, format zapisów/audytu, grafika i dźwięki. Ręczny odbiór rozgrywki na Windows jest nadal potrzebny.
+**Testy i szczegóły:** [Patch v24](docs/BALANCE_PATCH_V24_0990.md) i `tests/test_balance_buff_v24_0990.py`. Fizyczna akceptacja Windows jest nadal wymagana.
 
 ## [0.9.89] — 2026-10-25
 

@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.90</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.91</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -98,7 +98,8 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 
-- **0.9.90** — inteligentne licytowanie: łatwy bot nigdy nie wyda ponad połowę własnych monet na jedną aukcję, normalny wycenia pierwszeństwo wyboru względem darmowej drugiej karty, trudny uwzględnia publiczny stan rywala, ryzyko utraty rezerw i pozostałe archetypy w puli; symulacje z zamianą stron.
+- **0.9.91** — inteligentne licytowanie: łatwy bot wydaje najwyżej 50% monet, normalny wycenia prawo pierwszego wyboru, a trudny uwzględnia publiczny stan przeciwnika, ryzyko wydatku oraz buffy v24; symulacje na wspólnych seedach.
+- **0.9.90** — zatwierdzone buffy v24 sześciu kart aukcyjnych (A014, A003, A004, A009, A016 i A002), bez nerfów i z mocnymi legendami.
 - **0.9.89** — osiem bardzo cichych, oryginalnych efektów dźwiękowych dla działań kart i aukcji. Domyślnie **muzyka 40%**, **efekty 10%**; osobne przyciski w USTAWIENIACH (co 10%, 0% = wyciszone), zapis lokalny, brak zmian rozgrywki.
 - **0.9.88** — subtelne kadrowanie kwadratowych portretów ofert wyżej: 8% powiększenia, górny priorytet kompozycji, bez zmiany ostrości i pozostałych obrazów.
 - **0.9.87** — poprawione małe oznaczenia statusów i PŻ w podglądach kart oraz pełniejsze kadrowanie kwadratowych ilustracji ofert aukcyjnych bez poziomych pasków; źródłowe PNG i zasady gry bez zmian.
@@ -122,7 +123,7 @@ Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 - **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
 - **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
 
-Wersja **0.9.90** wprowadza poziomy strategii licytacji i zachowanie rezerw gotówki. **0.9.89** dodaje dyskretną warstwę dźwiękową oraz niezależne poziomy muzyki i SFX. **0.9.88** ustawia wyższy kadr kwadratowych ofert aukcyjnych. **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+Wersja **0.9.91** rozwija licytowanie AI, uwzględniając buffy **v24 z 0.9.90**. **0.9.89** dodaje dyskretną warstwę dźwiękową oraz niezależne poziomy muzyki i SFX. **0.9.88** ustawia wyższy kadr kwadratowych ofert aukcyjnych. **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Pomoc, bezpieczeństwo i rozwój
 

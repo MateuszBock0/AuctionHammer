@@ -15,7 +15,8 @@ from tools.simulate_v22 import choose_actor
 
 def audited_game(seed,bonus):
     g=Match(seed,audit_enabled=True,auctions_enabled=True,
-            auction_catalog='v22',vacant_income_enabled=bonus)
+            auction_catalog='v22',vacant_income_enabled=bonus,
+            balance_patch_v24=bonus)
     bot=(ComputerOpponent(0,'normalny'),ComputerOpponent(1,'normalny'))
     for _ in range(3000):
         if g.phase=='finished':break

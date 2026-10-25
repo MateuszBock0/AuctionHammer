@@ -39,6 +39,22 @@ class ComputerOpponent:
             ability+=max(0,foe.hp-own.hp)/15
         elif offer.archetype=='A018' and len(game.auction_bag)<3:
             ability-=6  # no further auction with three distinct offers
+        # New games with approved v24 buff patch; old saves retain the
+        # exact historical ability valuation.
+        if (getattr(game,'balance_patch_v24',False)
+                and game.auction_catalog=='v22'):
+            if offer.archetype=='A014' and tier>=1:
+                ability+=(3.5 if tier==1 else
+                          min(5,len(own.board)+1)*3.2)
+            elif offer.archetype=='A002':
+                ability+=(2.0,4.0,6.5)[tier]
+            elif offer.archetype=='A003' and not own.grave:
+                if len(own.board)<5:
+                    ability+=(4.5,5.5,7.0)[tier]
+            elif offer.archetype in ('A004','A016') and len(own.board)>=4:
+                ability+=(2.0,4.0,7.0)[tier]
+            elif offer.archetype=='A009':
+                ability+=min(7,len(own.hand))*(tier+1)*.8
         return value+ability*(1+.22*tier)
 
     def auction_first_pick_advantage(self,game):

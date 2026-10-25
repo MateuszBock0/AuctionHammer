@@ -128,6 +128,20 @@ class SmartAuctionAI0990(unittest.TestCase):
             self.assertGreaterEqual(group['total_auctions'],1)
             self.assertTrue(0<=group['stronger_win_rate']<=1)
 
+    def test_v24_buffs_make_offers_more_valuable(self):
+        g=fixture(coins=24)
+        ai=ComputerOpponent(1,'trudny')
+        offers=[
+            SimpleNamespace(uid='A014',archetype='A014',atk=7,hp=7,rarity='legendarna'),
+            SimpleNamespace(uid='A002',archetype='A002',atk=7,hp=7,rarity='rzadka'),
+            SimpleNamespace(uid='A009',archetype='A009',atk=7,hp=7,rarity='rzadka')]
+        before=[ai.auction_offer_value(g,o) for o in offers]
+        g.balance_patch_v24=True
+        g.players[1].board.extend(['one','two'])
+        g.players[1].hand=['c1','c2']
+        after=[ai.auction_offer_value(g,o) for o in offers]
+        self.assertTrue(all(new>old for new,old in zip(after,before)))
+
     def test_legacy_bidding_limit_kept_for_normal_and_hard(self):
         game=fixture(coins=60,number=3)
         game.auction_catalog='v4'
