@@ -10,7 +10,7 @@
 2. **Rekompensata drugiego gracza.** Drugi uczestnik wybiera bonus: **+3 monety** lub specjalnego Chorążego (2 ATK, 1 PŻ, 4 trwałego pancerza).
 3. **Wymiana początkowa.** Możesz wymienić do trzech kart z ręki, w tym zero kart.
 4. **Twoja tura.** Zasadniczo możesz wystawić jedną kartę. Po wskazaniu karty zobaczysz dozwolone własne pola lub legalną zamianę na pełnej planszy.
-5. **Ataki.** Kliknij swoją jednostkę, a następnie dozwolony cel, albo przytrzymaj i przeciągnij jednostkę na cel, po czym puść przycisk myszy. Podświetlone ramki wskazują legalne cele. Podczas przeciągania widoczna jest bardzo delikatna, półprzezroczysta czerwona strzałka — nie zasłania już kart tak jak dawna gruba linia. Prowokacja, ogłuszenie, osłony i inne efekty mogą ograniczać ataki.
+5. **Ataki.** Kliknij swoją jednostkę, a następnie dozwolony cel, albo przytrzymaj i przeciągnij jednostkę na cel, po czym puść przycisk myszy. Podświetlone ramki i ostre narożniki wskazują legalne cele bez zasłaniania ilustracji. Podczas wyboru celu duży automatyczny podgląd innej karty nie blokuje planszy. Podczas przeciągania widoczna jest bardzo delikatna, półprzezroczysta czerwona strzałka — nie zasłania już kart tak jak dawna gruba linia. Prowokacja, ogłuszenie, osłony i inne efekty mogą ograniczać ataki.
 6. **Koniec tury.** Kliknij **ZAKOŃCZ TURĘ** lub naciśnij **SPACJĘ**. Jeśli pozostały legalne zagrania lub ataki, musisz potwierdzić chęć ich pominięcia.
 
 ## Karty i pięć frakcji

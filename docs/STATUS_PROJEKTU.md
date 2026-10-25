@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.83 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.84 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.84 (cztery filary wizualne MVP — audyt i poprawki)
+
+- **Pixel art:** końcowe skalowanie okna po stronie Pygame korzysta z ostrego nearest-neighbor, bez globalnego `smoothscale`; poprawiono również ścieżkę legacy dla archiwalnych sprite'ów aukcyjnych. Oryginalne assety 70+51 kart i pixel-artowe ikony nie są zmieniane.
+- **Walka:** trafienia mają proste pikselowe pociski i krótkie narożniki zamiast okrągłego halo; podświetlenie legalnego celu nadal pozostaje autorytatywne, ale nie nakłada już napisu `ATAKUJ` na twarz lub zbroję jednostki.
+- **Aukcja:** wybieralna karta oferuje mocniejsze pikselowe narożniki przy hoverze; niewybieralne oferty nie sugerują kliknięcia. Zachowano dwa znaczniki, pełny portret, skuteczną ofertę i faktycznie wydawane monety.
+- **Interfejs:** połączenia aur tego samego rzędu korzystają z wolnej szczeliny przy pasku PŻ bohatera; efekty przechodzące między rzędami zachowują kolorowe obramowania i dokładne etykiety, lecz nie rysują już długiej kreski przez HUD. Duże podglądy innych kart nie zasłaniają planszy podczas wybierania celu gotowym atakującym.
+- Audyt zapisano w `docs/MVP_VISUAL_AUDIT_0984.md`, a testy w `tests/test_mvp_visual_consistency_0984.py`. Zmiany wyłącznie kosmetyczne, bez ingerencji w silnik, AI, ekonomię, RNG, zapisy i podpisane audyty.
 
 ### Etap — 0.9.83 (pixel art — czytelniejsza aukcja i feedback ataku)
 
