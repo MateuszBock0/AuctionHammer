@@ -64,7 +64,7 @@ class AttackDragAndLevel0972(unittest.TestCase):
                    rel=(to[0]-start[0],to[1]-start[1]))
         return start
 
-    def test_target_arrow_tracks_cursor_without_changing_game(self):
+    def test_invisible_attack_drag_tracks_cursor_without_changing_game(self):
         uid=self.ready_attacker()
         app=self.app
         app.selected=next(iter(app.game.players[0].hand),None)
@@ -74,9 +74,9 @@ class AttackDragAndLevel0972(unittest.TestCase):
         state=app._attack_drag_state()
         self.assertEqual((state[0],state[1],state[2]),(uid,target,'hero:1'))
         self.assertIn(app.hero_rect(1),app._attack_target_rects())
-        with patch.object(app,"_draw_attack_drag",wraps=app._draw_attack_drag) as drawn:
-            app.draw()
-        drawn.assert_called_once()
+        # No aiming-arrow renderer at all; only legal-target outlines survive.
+        self.assertFalse(hasattr(app,'_draw_attack_drag'))
+        app.draw()
         self.assertEqual(digest(state_snapshot(app.game)),before)
         other=(570,390)
         self.event(pygame.MOUSEMOTION,other,buttons=(1,0,0),rel=(1,1))
