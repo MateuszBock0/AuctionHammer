@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.80 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.81 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.81 (uproszczenie celowania bez strzałki ataku)
+
+- Z gry usunięto renderer grubej strzałki rysowanej między własną jednostką a kursorem podczas przeciągania ataku. Plansza nie jest już zakrywana linią ani grotem.
+- Zachowano podświetlenie `Match.legal_attacks`, etykietę `ATAKUJ` na legalnym celu, atak dwuklikowym wskazaniem źródła i celu, jak i przeciągnięciem jednostki i upuszczeniem na cel. Dotychczasowe strzałki aur nie zmieniają się.
+- `tests/test_attack_drag_hand_level_0972.py` zaktualizowano o rzeczywiste testy renderu bez dawnych kolorów grotu i linii, brak mutacji Match, legalny/nielegalny drop oraz atak w bohatera wroga. Brak zmian logiki silnika, AI, RNG, zapisów, audytów czy aukcji.
 
 ### Etap — 0.9.80 (naprawa trzech priorytetowych problemów)
 
