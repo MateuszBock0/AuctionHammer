@@ -1350,27 +1350,41 @@ class SoloApp:
             bonus=a.bid_bonus[0] if self.game.auction_catalog=='v22' else 0
             self._sync_auction_slider()
             chosen=self.auction_slider_value
-            # Two large scan-friendly 8-bit price tiles. The bonus changes
-            # bid effectiveness, NOT the actual coins spent.
-            current_box=pygame.Rect(271,631,452,69)
-            own_box=pygame.Rect(736,631,452,69)
-            for tile in (current_box,own_box):
-                pygame.draw.rect(self.screen,(36,44,46),tile)
+            # Fixed, wood-tone pixel panels with top padding. The actual
+            # coin cost and effective bid remain separate authoritative data.
+            tiles=self.auction_bid_tiles()
+            leader_box=tiles['leader']
+            own_box=tiles['own']
+            for tile in (leader_box,own_box):
+                pygame.draw.rect(self.screen,(43,34,29),tile)
                 pygame.draw.rect(self.screen,TAVERN_BRASS,tile,2)
-            self._text(f'PROWADZI: {leader}   ·   SKUTECZNA OFERTA',12,
-                       current_box.centerx,638,cfg.MUTED,center=True)
-            self._text(str(a.highest_effective),22,current_box.centerx,671,
-                       cfg.GOLD,center=True)
-            self._text('TWOJA OFERTA   /   MINIMUM '+str(minimum),12,
-                       own_box.centerx,638,cfg.MUTED,center=True)
+                pygame.draw.rect(self.screen,(95,74,49),tile.inflate(-8,-8),1)
+            leader_label='PROWADZI: '+leader
+            self._text(self.cards_view.clip(leader_label,self.fonts[14],
+                                            leader_box.width-30),14,
+                       leader_box.x+16,leader_box.y+12,cfg.TEXT)
+            self._text('SKUTECZNA OFERTA',12,leader_box.x+16,
+                       leader_box.y+46,cfg.MUTED)
+            self._text(str(a.highest_effective),22,leader_box.right-40,
+                       leader_box.y+48,cfg.GOLD,center=True)
+
+            self._text('TWOJA OFERTA',14,own_box.x+16,
+                       own_box.y+12,cfg.TEXT)
             self._text(str(chosen) if chosen is not None else 'BRAK MONET',
-                       22,own_box.centerx,671,
-                       cfg.GREEN if chosen is not None else cfg.RED,center=True)
+                       22,own_box.x+16,own_box.y+40,
+                       cfg.GREEN if chosen is not None else cfg.RED)
+            divider=own_box.right-135
+            pygame.draw.line(self.screen,(119,92,56),
+                             (divider,own_box.y+11),(divider,own_box.bottom-11),2)
+            self._text('MINIMUM',12,divider+16,own_box.y+11,cfg.MUTED)
+            self._text(str(minimum),18,divider+16,own_box.y+37,cfg.GOLD)
             after_bid=(str(coins-chosen) if chosen is not None else '—')
             effective=(str(chosen+bonus) if chosen is not None else '—')
-            self._text(f'BONUS A018 +{bonus}   ·   SKUTECZNA {effective}   ·   '
-                       f'MONETY PO WYGRANEJ {after_bid}',12,741,703,
-                       cfg.MUTED,center=True)
+            summary=tiles['summary']
+            caption=(f'BONUS A018 +{bonus}  ·  SKUTECZNA {effective}  ·  '
+                     f'MONETY PO WYGRANEJ {after_bid}')
+            self._text(self.cards_view.clip(caption,self.fonts[12],summary.width-20),
+                       12,summary.centerx,summary.centery,cfg.MUTED,center=True)
             if a.turn==0:
                 affordable=minimum<=coins
                 track=self.auction_slider_rect()
