@@ -821,7 +821,11 @@ def execute(game,uid,context,choice,attacked=None):
             own.hand.append(target)
             game.cards[target].zone='hand'
             game._log(f'Kartograf: {game.label(target)} dobrano do ręki.')
-        if tier==1:
+        if (tier==0 and context=='play' and mode=='cart_draw'
+                and _v24(game) and len(own.board)>=5):
+            # Basic draws normally, but still gets its fallback shield.
+            _v24_shield_buff(game,uid,tier,None)
+        if tier==1 and context=='play' and not mode.startswith('v24_shield_'):
             # First choice can empty the deck; recycle again for the
             # optional second selection only when a board slot remains.
             if len(own.board)<5:
