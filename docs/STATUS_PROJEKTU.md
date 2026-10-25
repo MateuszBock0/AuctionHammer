@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.81 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.82 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.82 (subtelna strzałka ataku i poprawa kadrowania aukcji)
+
+- Celowanie myszą przy przeciąganiu własnej jednostki ponownie pokazuje prostą, bardzo przezroczystą czerwoną wskazówkę: RGBA (207,84,96,49), a po najechaniu na legalny cel alpha 77. Dwupikselowa linia i mały grot, bez ciemnej obwódki; brak efektu dopóki kursor nie opuści obszaru jednostki. Legalność celu, zrzut ataku, kliknięcia i audyty bez zmian.
+- Ilustracje kart aukcyjnych nie są już wycinane trybem cover. Na małych kartach wykorzystywany jest pełny, centrowany banner; w dużym podglądzie pełny portret bez odcinania głowy; kwadratowe portrety ofert licytacyjnych też pokazują całość. Marginesy mają kolor wyliczony z prawdziwego pliku PNG; żadnych zmian plików źródłowych ilustracji i rarity.
+- Regresje: testy RGBA strzałki oraz `tests/test_auction_portrait_fit_0982.py` z wykrywaniem zachowania górnej i dolnej krawędzi źródła. Brak zmian silnika, AI, RNG, schematu zapisów i aukcji.
 
 ### Etap — 0.9.81 (uproszczenie celowania bez strzałki ataku)
 
