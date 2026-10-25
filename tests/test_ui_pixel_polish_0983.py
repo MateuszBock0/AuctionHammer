@@ -122,7 +122,7 @@ class PixelArt083Tests(unittest.TestCase):
             self.assertTrue(any('MONETY PO WYGRANEJ' in t for t in labels))
             self.assertEqual(digest(state_snapshot(app.game)),before)
         finally:
-            pygame.quit()
+            app.menu_open=True
 
 
 class AttackFeedback083Tests(unittest.TestCase):
