@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.83",
+  "mvp": "0.9.84",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -14,6 +14,7 @@
   "post_match_summary": {"finished_only": true, "audit_source": "signed engine actions and internal deltas", "metrics": ["round", "hero status", "cards played", "attacks", "levelled cards", "record ATK+MAX HP", "largest observed HP loss"], "legacy_incomplete_audit": "hide unsupported metrics", "read_only": true},
   "combat_impact_feedback": {"hp_damage_and_healing": "committed-only floating HP values", "shield_and_armor": "exact consumed and gained amounts", "simultaneous_effects": "three separate popup lanes", "impact_shake_ms": 220, "card_hitboxes_unchanged": true, "no_match_mutation": true},
   "board_attack_drag": {"left_hold": true, "cursor_arrow": true, "cursor_arrow_rgba": [207,84,96,49], "valid_target_alpha": 77, "stroke_width_px": 2, "legal_target_outline": true, "targets": "Match.legal_attacks", "release_performs_authoritative_attack": true, "click_controls_preserved": true},
+  "mvp_visual_audit_0984": {"pixel_art": "nearest-neighbour final viewport and fallback archive artwork", "combat": "crisp square projectile and zero-overpaint legal-target cue", "auction": "selectable-only pixel hover corners with existing real prices", "interface": "nonblocking attack hover previews and HUD-safe aura links", "engine_unchanged": true},
   "pixel_art_polish_0983": {"auction_art": "intact center with 4px scene-edge pixel tiles and no smoothing", "auction_markers": "authentic trigger and mechanic-class icons, native nearest-neighbor 8bit", "bidding": "separate effective vs actual spent coin readout", "attack_feedback": "8bit attacker corners and legal-target brackets only", "core_rules_unchanged": true},
   "auction_portrait_fit_0982": {"large_cards": "contain portrait centered, preserving head and scene", "compact_cards": "contain purpose-made banner", "auction_offers": "contain centered portrait", "letterbox": "pixel_art_dominant_color", "source_images_unchanged": true},
   "hand_growth_feedback": {"base_cards_only": true, "progress_stages": 3, "level_flash_ms": 1050, "stat_deltas": "actual ATK and MAX HP", "save_and_replay_safe": true},
