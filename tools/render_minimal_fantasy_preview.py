@@ -325,5 +325,37 @@ for rect in (pygame.Rect(22,34,125,195),
     cv.draw(sheet,stage.cards[uid],rect)
 pygame.image.save(sheet,DEST/'VISUAL_0921_NIEAKTYWNE_ZDOLNOSCI_KART.png')
 
+# 0.9.85 — actual v22 auction with the exact 3 featured card archetypes.
+# Unlike archived placeholder previews, this exercises FINAL auction pixel art
+# and real rarity/trigger/ability copy, on the genuine SoloApp screen.
+from game.core import auction as auction_engine
+from game.core.auction import AuctionOffer
+from game.core.auction_catalog import stats_v22
+v22_scene=Match(985985,auctions_enabled=True,auction_catalog='v22',
+                starting_compensation='coins')
+v22_scene.finish_mulligan(0,[])
+v22_scene.finish_mulligan(1,[])
+v22_scene.round=4
+auction_engine.begin(v22_scene)
+assert v22_scene.phase=='auction'
+refs=('A010','A018','A001')
+v22_scene.auction.offers=[
+    AuctionOffer(f'AUC001{aid}',stats_v22(aid,3)[1],stats_v22(aid,3)[0],
+                 'podstawowa',1,aid)
+    for aid in refs]
+app.game=v22_scene
+app.menu_open=False
+app.history_open=False
+app.details_card=None
+app.auction_inspect_index=None
+app.replay_index=None
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0985_AUKCJA_V22_LICYTACJA.png')
+v22_scene.auction_pass(v22_scene.auction.turn)
+v22_scene.auction_pass(v22_scene.auction.turn)
+assert v22_scene.auction.phase=='picking'
+app.draw()
+pygame.image.save(app.screen,DEST/'VISUAL_0985_AUKCJA_V22_WYBOR.png')
+
 pygame.quit()
-print('Utworzono 37 obrazów podglądu Pygame w folderze preview.')
+print('Utworzono podglądy Pygame, w tym nową rzeczywistą aukcję v22 0.9.85.')
