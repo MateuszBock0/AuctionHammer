@@ -160,7 +160,7 @@ class AttackFeedback083Tests(unittest.TestCase):
         with patch('game.ui.app.pygame.draw.line',wraps=real) as strokes:
             self.app._draw_attack_source_feedback()
         self.assertEqual(strokes.call_count,8)
-        self.assertTrue(all(c.args[2]==(245,192,116)
+        self.assertTrue(all(c.args[1]==(245,192,116)
                             for c in strokes.call_args_list))
         self.assertEqual(digest(state_snapshot(game)),before)
 
