@@ -986,7 +986,33 @@ class SoloApp:
 
     @staticmethod
     def auction_offer_rect(index):
-        return pygame.Rect(271+index*318,254,278,364)
+        # Card bottom remains clear of the bidding HUD; grow vertically UP.
+        return pygame.Rect(271+index*318,159,278,461)
+
+    @staticmethod
+    def auction_offer_zones(index):
+        """Measured, mutually exclusive text/art/interaction slots."""
+        r=SoloApp.auction_offer_rect(index)
+        return {
+            'name':pygame.Rect(r.x+12,r.y+34,r.width-24,36),
+            'art':pygame.Rect(r.x+14,r.y+84,116,116),
+            'atk':pygame.Rect(r.x+142,r.y+96,r.width-153,28),
+            'hp':pygame.Rect(r.x+142,r.y+141,r.width-153,28),
+            'rarity':pygame.Rect(r.x+13,r.y+215,r.width-26,22),
+            'trigger':pygame.Rect(r.x+13,r.y+244,r.width-26,25),
+            'description':pygame.Rect(r.x+18,r.y+282,r.width-36,103),
+            'inspect':pygame.Rect(r.x+26,r.y+395,r.width-52,35),
+            'hint':pygame.Rect(r.x+18,r.y+437,r.width-36,18),
+        }
+
+    @staticmethod
+    def auction_bid_tiles():
+        """Leading offer, own bid and secondary totals; no text collisions."""
+        return {
+            'leader':pygame.Rect(271,633,452,74),
+            'own':pygame.Rect(736,633,452,74),
+            'summary':pygame.Rect(271,713,917,21),
+        }
 
     @staticmethod
     def auction_badge_rects(index):
@@ -998,13 +1024,13 @@ class SoloApp:
     @staticmethod
     def auction_control_rect(action):
         return {
-            'pass':pygame.Rect(528,753,210,49),
-            'bid':pygame.Rect(759,753,210,49),
+            'pass':pygame.Rect(528,773,210,45),
+            'bid':pygame.Rect(759,773,210,45),
         }[action]
 
     @staticmethod
     def auction_slider_rect():
-        return pygame.Rect(483,715,516,16)
+        return pygame.Rect(483,746,516,14)
 
     def auction_slider_bounds(self):
         a=self.game.auction
@@ -1094,7 +1120,7 @@ class SoloApp:
     @staticmethod
     def auction_inspection_rect(index):
         rect=SoloApp.auction_offer_rect(index)
-        return pygame.Rect(rect.x+26,rect.y+277,rect.width-52,32)
+        return SoloApp.auction_offer_zones(index)['inspect']
 
     def _auction_click(self,pos):
         a=self.game.auction
@@ -1184,13 +1210,14 @@ class SoloApp:
         overlay=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         overlay.fill((*TAVERN_SCRIM,225))
         self.screen.blit(overlay,(0,0))
-        self._panel(pygame.Rect(203,112,1076,732),TAVERN_PANEL_BG,TAVERN_GOLD,16)
-        self.theme.carved_panel(self.screen,pygame.Rect(219,125,1044,694),opacity=82)
+        # Reclaim the unused top gutter for vertically taller offers.
+        self._panel(pygame.Rect(203,25,1076,819),TAVERN_PANEL_BG,TAVERN_GOLD,12)
+        self.theme.carved_panel(self.screen,pygame.Rect(219,36,1044,786),opacity=82)
         self._text(f'AUKCJA {a.number} · PO RUNDZIE {a.completed_round}',28,
-                   741,152,cfg.GOLD,center=True)
+                   741,67,cfg.GOLD,center=True)
         self._text('17 ARCHETYPÓW · 51 AKTYWNYCH WARIANTÓW ZDOLNOŚCI',16,
-                   741,205,cfg.TEXT,center=True)
-        self.theme.ornament(self.screen,565,228,350,22)
+                   741,108,cfg.TEXT,center=True)
+        self.theme.ornament(self.screen,565,132,350,18)
         for i,off in enumerate(a.offers):
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
@@ -1225,42 +1252,55 @@ class SoloApp:
                     hint=('MECHANIKA: '+
                           AUCTION_MECHANIC_LABELS.get(off.archetype,adef.family.upper()))
 
+            zones=self.auction_offer_zones(i)
             name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
-            self._text(self.cards_view.clip(name,self.fonts[16],rect.width-20),16,
-                       rect.centerx,rect.y+53,cfg.TEXT,center=True)
-            # A visible auction portrait must not cover offer text or the
-            # ability/selection controls. The left column is reserved for art.
-            # Full centered portrait (not a square center-crop): keep
-            # headwear, faces and original scene edges visible.
+            self._text(self.cards_view.clip(name,self.fonts[16],zones['name'].width),
+                       16,zones['name'].centerx,zones['name'].centery,
+                       cfg.TEXT,center=True)
+
+            # Keep the portrait intact: every label now has a separate
+            # opaque pixel-art strip BELOW the image, never across faces.
+            artbox=zones['art']
             portrait=self.cards_view.images.get_auction_image(
-                off.archetype,off.rarity,(90,90),mode='contain')
+                off.archetype,off.rarity,artbox.size,mode='contain')
             if portrait is not None:
-                artbox=pygame.Rect(rect.x+14,rect.y+82,90,90)
                 dominant=self.cards_view.images.get_auction_color(
                     off.archetype,off.rarity)
                 if dominant is not None:
-                    pygame.draw.rect(self.screen,dominant,
-                                     artbox.inflate(12,12),border_radius=10)
+                    pygame.draw.rect(self.screen,dominant,artbox.inflate(6,6))
                 self.screen.blit(portrait,artbox)
-                pygame.draw.rect(self.screen,tier_accent,artbox,2,border_radius=7)
-                text_x=rect.x+112
-                self._text(f'ATAK {off.atk}',18,text_x,
-                           rect.y+99,cfg.GREEN if not claimed else cfg.MUTED)
-                self._text(f'PŻ {off.hp}',18,text_x,
-                           rect.y+131,cfg.GREEN if not claimed else cfg.MUTED)
-                tier_text=f'{off.rarity.upper()} · P{off.level}'
-                self._text(self.cards_view.clip(
-                           tier_text,self.fonts[12],rect.width-116),
-                           12,text_x,rect.y+159,tier_accent)
+                pygame.draw.rect(self.screen,tier_accent,artbox,2)
             else:
-                # Old asset-free source checkouts keep the existing layout.
-                self._text(f'{off.atk} ATAK     {off.hp} PŻ',22,rect.centerx,
-                           rect.y+102,cfg.GREEN if not claimed else cfg.MUTED,
-                           center=True)
-                self._text(f'{off.rarity.upper()} · POZIOM {off.level}',14,
-                           rect.centerx,rect.y+155,tier_accent,center=True)
+                pygame.draw.rect(self.screen,(42,33,29),artbox)
+                pygame.draw.rect(self.screen,tier_accent,artbox,1)
+            for key,value in (('atk',f'ATAK {off.atk}'),
+                              ('hp',f'PŻ {off.hp}')):
+                slot=zones[key]
+                self._text(self.cards_view.clip(value,self.fonts[18],slot.width),
+                           18,slot.left,slot.top+2,
+                           cfg.GREEN if not claimed else cfg.MUTED)
+
+            rarity=zones['rarity']
+            pygame.draw.rect(self.screen,(42,32,26),rarity)
+            pygame.draw.rect(self.screen,(110,82,54),rarity,1)
+            tier_text=f'{off.rarity.upper()} · POZIOM {off.level}'
+            self._text(self.cards_view.clip(tier_text,self.fonts[13],rarity.width-12),
+                       13,rarity.centerx,rarity.centery,tier_accent,center=True)
+
+            trigger=zones['trigger']
+            pygame.draw.rect(self.screen,(36,31,27),trigger)
+            pygame.draw.rect(self.screen,(111,87,59),trigger,1)
+            if adef is not None:
+                family_name=AUCTION_MECHANIC_LABELS.get(
+                    off.archetype,adef.family.upper())
+                label=TRIGGER_NAMES.get(adef.trigger,'ZDOLNOŚĆ')+' · '+family_name
+            else:
+                label='ZDOLNOŚĆ'
+            self._text(self.cards_view.clip(label,self.fonts[12],trigger.width-10),
+                       12,trigger.centerx,trigger.centery,cfg.GOLD,center=True)
+
             description=(v23_variant(self.game.auction_catalog,off.archetype,
-                                      off.rarity,getattr(self.game,'ruleset_version','v22'))
+                                       off.rarity,getattr(self.game,'ruleset_version','v22'))
                          if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')
@@ -1268,28 +1308,29 @@ class SoloApp:
             if adef is not None and self.game.auction_catalog=='v22':
                 description=preview_auction_copy(off.archetype,off.rarity,rules,
                                                  description)
-            if adef is not None:
-                family_name=AUCTION_MECHANIC_LABELS.get(off.archetype,adef.family.upper())
-                label=(TRIGGER_NAMES.get(adef.trigger,'ZDOLNOŚĆ')+'  ·  '+family_name)
-                self._text(self.cards_view.clip(label,self.fonts[12],rect.width-32),
-                           12,rect.centerx,rect.y+176,tier_accent,center=True)
-            lines=wrap_pixels(description,self.fonts[13],
-                              rect.width-36,max_lines=4)
+            desc=zones['description']
+            pygame.draw.rect(self.screen,(41,31,26),desc)
+            pygame.draw.rect(self.screen,(91,72,50),desc,1)
+            lines=wrap_pixels(description,self.fonts[13],desc.width-13,
+                              max_lines=5)
             for j,line in enumerate(lines):
-                self._text(line,13,rect.centerx,rect.y+190+23*j,
+                self._text(line,13,desc.centerx,desc.y+13+19*j,
                            cfg.TEXT,center=True)
-            inspect=self.auction_inspection_rect(i)
-            self._button(inspect,'PEŁNA ZDOLNOŚĆ',small=True)
+
+            self._button(zones['inspect'],'PEŁNA ZDOLNOŚĆ',small=True)
+            status=zones['hint']
             if hint is not None:
-                self._text(self.cards_view.clip(hint,self.fonts[12],rect.width-20),
-                           12,rect.centerx,rect.y+322,cfg.GOLD,center=True)
+                notice=self.cards_view.clip(hint,self.fonts[12],status.width)
+                self._text(notice,12,status.centerx,status.centery,
+                           cfg.GOLD,center=True)
             elif claimed:
                 selected_by=next(p for p,card in a.picks.items() if card==off.uid)
-                self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
-                           rect.centerx,rect.y+322,cfg.MUTED,center=True)
+                notice=f'WYBRANO: {self.game.players[selected_by].name}'
+                self._text(self.cards_view.clip(notice,self.fonts[12],status.width),
+                           12,status.centerx,status.centery,cfg.MUTED,center=True)
             elif selectable:
-                self._text('KLIKNIJ, ABY WYBRAĆ',14,rect.centerx,
-                           rect.y+322,cfg.GOLD,center=True)
+                self._text('KLIKNIJ, ABY WYBRAĆ',12,status.centerx,
+                           status.centery,cfg.GOLD,center=True)
             # Only truly purchasable offers respond to hover. Corner-only
             # pixel brackets leave art, rarity and the ability text clear.
             if selectable and rect.collidepoint(self.mouse_pos()):
