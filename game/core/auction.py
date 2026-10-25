@@ -263,7 +263,10 @@ def advance_rarity(game,completed_round):
         game.defs[uid]=card.definition
         game._log(f'{card.definition.name} ewoluuje: {old} → {new}.')
         if (game.auction_catalog in ('v4','v22') and archetype=='A002'
-                and uid in game.units and new=='rzadka' and
-                not game._disabled(game.units[uid])):
-            game._queue(uid,'auction_evolve')
+                and uid in game.units and not game._disabled(game.units[uid])):
+            if getattr(game,'balance_patch_v24',False) and game.auction_catalog=='v22':
+                from .auction_abilities import grant_general_defense
+                grant_general_defense(game,uid)
+            if new=='rzadka':
+                game._queue(uid,'auction_evolve')
     # v4 effects are implemented by auction_abilities; legacy v3 stays inert.
