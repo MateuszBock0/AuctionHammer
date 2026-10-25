@@ -118,6 +118,16 @@ class SmartAuctionAI0990(unittest.TestCase):
                 game.auction_bid.assert_not_called()
                 game.auction_pass.assert_called_once_with(1)
 
+    def test_paired_real_matches_complete_without_ai_illegal_moves(self):
+        from tools.simulate_smart_auction_0990 import tournament
+        result=tournament(pairs=2,seed=990300)
+        self.assertEqual(len(result['comparisons']),2)
+        for group in result['comparisons']:
+            self.assertEqual(group['matches'],4)
+            self.assertEqual(group['stronger_wins']+group['weaker_wins'],4)
+            self.assertGreaterEqual(group['total_auctions'],1)
+            self.assertTrue(0<=group['stronger_win_rate']<=1)
+
     def test_legacy_bidding_limit_kept_for_normal_and_hard(self):
         game=fixture(coins=60,number=3)
         game.auction_catalog='v4'
