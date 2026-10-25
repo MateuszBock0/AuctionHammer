@@ -106,6 +106,7 @@ class GameIcons:
                     if atlas.get_rect().contains(rect):
                         image=atlas.subsurface(rect).copy()
             self._original[target]=image
-        result=pygame.transform.smoothscale(image,(size,size)) if image else None
+        # Icons are pixel art; never blur their edges when shown at HUD sizes.
+        result=pygame.transform.scale(image,(size,size)) if image else None
         self._cache[cache_key]=result
         return result
