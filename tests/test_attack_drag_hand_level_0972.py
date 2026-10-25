@@ -64,7 +64,7 @@ class AttackDragAndLevel0972(unittest.TestCase):
                    rel=(to[0]-start[0],to[1]-start[1]))
         return start
 
-    def test_invisible_attack_drag_tracks_cursor_without_changing_game(self):
+    def test_subtle_attack_drag_tracks_cursor_without_changing_game(self):
         uid=self.ready_attacker()
         app=self.app
         app.selected=next(iter(app.game.players[0].hand),None)
@@ -74,8 +74,8 @@ class AttackDragAndLevel0972(unittest.TestCase):
         state=app._attack_drag_state()
         self.assertEqual((state[0],state[1],state[2]),(uid,target,'hero:1'))
         self.assertIn(app.hero_rect(1),app._attack_target_rects())
-        # No aiming-arrow renderer at all; only legal-target outlines survive.
-        self.assertFalse(hasattr(app,'_draw_attack_drag'))
+        # A minimal alpha arrow is allowed; no heavy strokes or outlines.
+        self.assertTrue(hasattr(app,'_draw_attack_drag'))
         app.draw()
         self.assertEqual(digest(state_snapshot(app.game)),before)
         other=(570,390)
@@ -105,6 +105,48 @@ class AttackDragAndLevel0972(unittest.TestCase):
                     self.assertNotIn(call.args[1],forbidden)
         self.assertIn(app.hero_rect(1),app._attack_target_rects())
         self.assertEqual(digest(state_snapshot(app.game)),before)
+
+    def test_subtle_arrow_is_rgba_two_pixel_stroke_and_small_tip(self):
+        uid=self.ready_attacker()
+        app=self.app
+        app.selected=None
+        target=app.hero_rect(1).center
+        self.drag(uid,target)
+        before=digest(state_snapshot(app.game))
+        real_line=pygame.draw.line
+        real_poly=pygame.draw.polygon
+        with patch('game.ui.app.pygame.draw.line',wraps=real_line) as strokes:
+            with patch('game.ui.app.pygame.draw.polygon',wraps=real_poly) as heads:
+                app._draw_attack_drag()
+        self.assertEqual(strokes.call_count,1)
+        self.assertEqual(heads.call_count,1)
+        line=strokes.call_args.args
+        triangle=heads.call_args.args
+        self.assertEqual(line[1],(207,84,96,77))
+        self.assertEqual(line[4],2)
+        self.assertEqual(triangle[1],(207,84,96,77))
+        self.assertEqual(len(triangle[2]),3)
+        self.assertEqual(digest(state_snapshot(app.game)),before)
+        # In a non-target part of the board the cue becomes even fainter.
+        other=(570,390)
+        self.event(pygame.MOUSEMOTION,other,buttons=(1,0,0),rel=(1,1))
+        with patch('game.ui.app.pygame.draw.line',wraps=real_line) as strokes:
+            app._draw_attack_drag()
+        self.assertEqual(strokes.call_args.args[1],(207,84,96,49))
+        self.assertEqual(digest(state_snapshot(app.game)),before)
+
+    def test_no_arrow_if_no_attack_drag_or_pointer_still_on_source(self):
+        app=self.app
+        real_line=pygame.draw.line
+        with patch('game.ui.app.pygame.draw.line',wraps=real_line) as strokes:
+            app._draw_attack_drag()
+            uid=self.ready_attacker()
+            start=app.slot_rect(0,app.game.slot_of(uid)).center
+            self.event(pygame.MOUSEBUTTONDOWN,start,button=1)
+            self.event(pygame.MOUSEMOTION,(start[0]+11,start[1]),
+                       buttons=(1,0,0),rel=(11,0))
+            app._draw_attack_drag()
+        self.assertEqual(strokes.call_count,0)
 
     def test_release_on_hero_attacks_once(self):
         uid=self.ready_attacker()

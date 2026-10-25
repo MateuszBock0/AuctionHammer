@@ -139,13 +139,19 @@ class ImageAssets:
         Hand and board use the banner, large card and full zoom use portrait.
         An absent final image falls back to the original sprite for reliability.
         """
-        kind = 'banner' if mode == 'cover' and size[1] <= 58 else 'portrait'
+        # The compact, purpose-made banner must stay a banner even when
+        # containment replaces crop-to-fill; otherwise it is letterboxed
+        # as a tiny full portrait in a horizontal 22/38px strip.
+        kind = 'banner' if size[1] <= 58 else 'portrait'
         final_key = self._auction_final(archetype, rarity, kind)
         if final_key is not None:
             key = ('auction_final', final_key, tuple(size), mode)
             if key not in self._scaled:
+                source=self._original[final_key]
+                backdrop=(self.dominant_color(source) if mode=='contain'
+                          else None)
                 self._scaled[key] = self.fit_art(
-                    self._original[final_key], size, mode=mode,
+                    source,size,mode=mode,background=backdrop,
                     pixelated=True)
             return self._scaled[key]
         original_key = self._auction_base(archetype, rarity)

@@ -77,7 +77,7 @@ class BoardHoverAuctionArt0968(unittest.TestCase):
         app.game.units.pop(uid)
         self.assertFalse(app._hover_preview_ready(now=1500))
 
-    def test_auction_art_fills_strip_and_full_zoom_can_show_all(self):
+    def test_auction_art_centers_strip_and_full_zoom_without_crop(self):
         view=CardView()
         placeholder=pygame.Surface((133,38))
         with patch.object(view.images,'get_auction_image',
@@ -86,7 +86,7 @@ class BoardHoverAuctionArt0968(unittest.TestCase):
                                    'ATK ±','Generał',rarity='legendarna'),
                           placeholder)
             lookup.assert_called_once_with('A002','legendarna',(133,38),
-                                           mode='cover')
+                                           mode='contain')
         # Cover and contain remain two distinct available presentation modes.
         source=pygame.Surface((96,96),pygame.SRCALPHA)
         source.fill((50,60,70,255))

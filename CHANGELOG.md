@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.82] — 2026-10-25
+
+### Ulepszono interfejs
+- Przy przeciąganiu własnej jednostki do ataku ponownie pojawia się strzałka celowania, ale jest bardzo dyskretna: cienka czerwona linia 2 px, półprzezroczystość alpha 49/255 poza celem i 77/255 na legalnym celu, mały grot i brak ciężkiej obwódki. Celowanie nadal podświetla legalne cele, a kliknięcie lub upuszczenie na celu korzystają z dotychczasowej mechaniki silnika.
+- Poprawiono kadrowanie 51 wariantów ilustracji kart aukcyjnych. Małe paski kart używają wyśrodkowanych, nieobcinanych bannerów, a duże karty/podglądy i miniatury ofert pokazują pełny portret zamiast przycinać górę głowy, hełm i skraje sceny. Marginesy dopasowują się do dominującej barwy konkretnej ilustracji.
+- Dodano testy zachowania całej wysokości oryginalnych ilustracji oraz przezroczystości, grubości i warunków rysowania strzałki. Żaden plik źródłowy pixel art nie został zmieniony.
+
+**Bez zmian** zasad ataku, legalności celów, obrażeń, AI, aukcji, RNG, zapisów i formatu audytów.
+
 ## [0.9.81] — 2026-10-25
 
 ### Uproszczono

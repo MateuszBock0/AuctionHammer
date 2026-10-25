@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.81",
+  "mvp": "0.9.82",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -13,7 +13,8 @@
   "smart_end_turn": {"single_click_when_no_legal_actions": true, "confirmation_if_actions_remaining": true, "confirmation_duration_ms": 4200, "keyboard_mouse_parity": true, "legal_actions_source": "turn_readout -> Match.can_play, Match.legal_attacks", "nonblocking_inline_warning": true, "gameplay_engine_unchanged": true},
   "post_match_summary": {"finished_only": true, "audit_source": "signed engine actions and internal deltas", "metrics": ["round", "hero status", "cards played", "attacks", "levelled cards", "record ATK+MAX HP", "largest observed HP loss"], "legacy_incomplete_audit": "hide unsupported metrics", "read_only": true},
   "combat_impact_feedback": {"hp_damage_and_healing": "committed-only floating HP values", "shield_and_armor": "exact consumed and gained amounts", "simultaneous_effects": "three separate popup lanes", "impact_shake_ms": 220, "card_hitboxes_unchanged": true, "no_match_mutation": true},
-  "board_attack_drag": {"left_hold": true, "cursor_arrow": false, "legal_target_outline": true, "targets": "Match.legal_attacks", "release_performs_authoritative_attack": true, "click_controls_preserved": true},
+  "board_attack_drag": {"left_hold": true, "cursor_arrow": true, "cursor_arrow_rgba": [207,84,96,49], "valid_target_alpha": 77, "stroke_width_px": 2, "legal_target_outline": true, "targets": "Match.legal_attacks", "release_performs_authoritative_attack": true, "click_controls_preserved": true},
+  "auction_portrait_fit_0982": {"large_cards": "contain portrait centered, preserving head and scene", "compact_cards": "contain purpose-made banner", "auction_offers": "contain centered portrait", "letterbox": "pixel_art_dominant_color", "source_images_unchanged": true},
   "hand_growth_feedback": {"base_cards_only": true, "progress_stages": 3, "level_flash_ms": 1050, "stat_deltas": "actual ATK and MAX HP", "save_and_replay_safe": true},
   "hand_card_drag": {"live_cursor_follow": true, "preserve_grab_offset": true, "drop_targets": "five legal own slots", "invalid_drop_return_ms": 180, "no_engine_mutation_until_release": true},
   "auction_final_pixelart": {"variants": 51, "png_files": 102, "method": "finished direct assets without runtime overlay", "path": "assets/auction/final/", "manifest": "assets/auction/final/manifest.json"},
