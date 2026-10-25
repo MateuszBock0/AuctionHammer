@@ -94,18 +94,50 @@ class MVPVisualConsistency0984(unittest.TestCase):
         app.selected=None
         self.assertTrue(app._hover_preview_ready(now=now))
 
-    def test_viewport_uses_nearest_neighbour_scaling_even_on_fractional_sizes(self):
+    def test_fractional_viewport_smooths_ui_text_and_preserves_card_art(self):
         app=self.app
         app.window=pygame.Surface((1000,740))
+        app.screen.fill((24,33,44))
+        region=pygame.Rect(160,120,125,195)
+        app.cards_view.pixel_art_regions=[region]
+        for x in range(region.left,region.right,4):
+            pygame.draw.line(app.screen,(240,100,80),(x,region.top),
+                             (x,region.bottom-1),1)
+        font=pygame.font.SysFont('segoeui',16)
+        app.screen.blit(font.render('KONTYNUUJ · PŻ',True,(240,234,214)),(420,290))
+        expected_smooth=pygame.transform.smoothscale(app.screen,(1000,740))
+        expected_pixel=pygame.transform.scale(app.screen,(1000,740))
         with patch.object(app,'_viewport',return_value=pygame.Rect(0,0,1000,740)):
-            with patch('game.ui.app.pygame.transform.smoothscale',
-                       side_effect=AssertionError('Blurry global pixel-art scaling')):
-                with patch('game.ui.app.pygame.transform.scale',
-                           wraps=pygame.transform.scale) as resize:
-                    app._present()
-        resize.assert_called_once()
-        self.assertIs(resize.call_args.args[0],app.screen)
-        self.assertEqual(resize.call_args.args[1],(1000,740))
+            app._present()
+        # UI/text area uses the real smooth-scaled output, not the missing
+        # thin glyph strokes from nearest-neighbour downsampling.
+        self.assertEqual(app.window.get_at((300,220)),
+                         expected_smooth.get_at((300,220)))
+        crop=pygame.Rect(round(region.left*1000/1480),
+                         round(region.top*740/980),
+                         round(region.width*1000/1480),
+                         round(region.height*740/980))
+        for y in range(crop.top,crop.bottom,5):
+            for x in range(crop.left,crop.right,5):
+                self.assertEqual(app.window.get_at((x,y)),
+                                 expected_pixel.get_at((x,y)))
+        self.assertTrue(any(expected_pixel.get_at((x,y))!=expected_smooth.get_at((x,y))
+                            for y in range(crop.top,crop.bottom,2)
+                            for x in range(crop.left,crop.right,2)))
+
+    def test_main_menu_never_pastes_old_card_pixels_over_readable_text(self):
+        app=self.app
+        app.window=pygame.Surface((1000,740))
+        app.menu_open=True
+        app.cards_view.pixel_art_regions=[pygame.Rect(400,350,400,300)]
+        app.screen.fill((17,37,63))
+        for x in range(400,800,3):
+            pygame.draw.line(app.screen,(240,98,35),(x,350),(x,649))
+        expected=pygame.transform.smoothscale(app.screen,(1000,740))
+        with patch.object(app,'_viewport',return_value=pygame.Rect(0,0,1000,740)):
+            app._present()
+        self.assertEqual(pygame.image.tostring(app.window,'RGB'),
+                         pygame.image.tostring(expected,'RGB'))
 
     def test_auction_hover_brackets_only_for_selectable_offer(self):
         app=self.app
