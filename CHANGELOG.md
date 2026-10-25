@@ -4,6 +4,17 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.89] — 2026-10-25
+
+### Dyskretna warstwa dźwiękowa (40% muzyka / 10% efekty)
+- Ustawiono **40% głośności muzyki** i **10% głośności efektów** jako domyślne wartości dla nowych ustawień. W menu USTAWIENIA pojawiły się osobne przyciski MUZYKA i EFEKTY, przełączające co 10% od 0% (wyciszenie) do 100%.
+- Preferencje zapisują się lokalnie do `audio_settings.json`, niezależnie od meczu i jego audytów.
+- Dodano **osiem autorskich, bardzo cichych efektów** generowanych z krótkich deterministycznych przebiegów PCM: karta podnoszona/wystawiona, atak, trafienie, tarcza lub pancerz, aktywacja zdolności, śmierć jednostki oraz rozstrzygnięcie aukcji.
+- Sygnały akcji odczytywane są z zatwierdzonych wpisów `Match.audit_actions`; trafienia, bloki i śmierci z rzeczywiście wyemitowanych wizualnych zmian stanu. Ograniczono częstotliwość, liczbę jednoczesnych powiadomień i zaległe dźwięki.
+- Gdy urządzenie audio nie działa, gra działa nadal bez błędu. Bez cudzych próbek i bez nowych plików muzycznych; muzyka Fantasy Tavern pozostaje bez zmian.
+
+**Bez zmian:** obrazy, tekst, reguły, AI, balans, RNG, zapis, replay i audyty. Fizyczna akceptacja dźwięków na Windows nadal wymagana.
+
 ## [0.9.88] — 2026-10-25
 
 ### Kadrowanie ku górze w kwadratowych ofertach aukcji
