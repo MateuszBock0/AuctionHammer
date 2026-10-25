@@ -80,6 +80,8 @@ def main():
     parser.add_argument('--pairs',type=int,default=24)
     parser.add_argument('--seed',type=int,default=990000)
     parser.add_argument('--output',type=Path)
+    parser.add_argument('--min-stronger-winrate',type=float,default=None,
+                        help='CI acceptance: require each stronger agent to beat the weaker in > threshold fraction')
     args=parser.parse_args()
     report=tournament(args.pairs,args.seed)
     encoded=json.dumps(report,ensure_ascii=False,indent=2,sort_keys=True)
@@ -87,6 +89,12 @@ def main():
     if args.output:
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(encoded+'\n',encoding='utf-8')
+    if args.min_stronger_winrate is not None:
+        failed=[f"{r['weaker']} vs {r['stronger']}: {r['stronger_win_rate']:.1%}"
+                for r in report['comparisons']
+                if r['stronger_win_rate'] <= args.min_stronger_winrate]
+        if failed:
+            raise SystemExit("SMART AUCTION AI QUALITY GATE FAILED: "+", ".join(failed))
 
 
 if __name__=='__main__':
