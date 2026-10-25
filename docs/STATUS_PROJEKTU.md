@@ -1,10 +1,19 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.89 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.90 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.90 (inteligentne limity licytacji)
+
+- Licytacja v22 rozpoznaje, że wygrywający płaci za **pierwszy wybór**, podczas gdy przegrany otrzymuje jedną z dwóch pozostałych kart bezpłatnie. AI wycenia tę różnicę na podstawie trzech aktualnie odkrytych ofert i publicznych cech obu plansz.
+- Łatwy bot ma twarde **maksimum 50% własnych monet** (zaokrąglenie w dół) i prostą, zachowawczą politykę.
+- Normalny bot porównuje wyniki pierwszego i drugiego wyboru, uwzględnia minimalną wartość blokowania preferowanej karty rywala i niewielką rezerwę.
+- Trudny bot dodatkowo modeluje wartość monet w zależności od aktualnego budżetu i możliwości przyszłych aukcji, silne archetypy pozostające w ogólnodostępnej puli, a także zagrożenie porażką. Nie wykorzystuje ukrytej ręki przeciwnika ani przyszłego RNG/rzutu rzadkości.
+- Symulator `tools/simulate_smart_auction_0990.py` porównuje pary poziomów w dwóch rozmieszczeniach na identycznych seedach. Ostateczne wskaźniki zwycięstw są empiryczne, nie wymuszane.
+- Zasady aukcji, karty, podpisy replay i format savegame bez zmian.
 
 ### Etap — 0.9.89 (ciche efekty działań, niezależne od muzyki)
 

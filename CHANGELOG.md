@@ -4,6 +4,17 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.90] — 2026-10-25
+
+### Smart Auction AI — wartość pierwszego wyboru i ryzyko wydawania monet
+- **Łatwy:** twardy limit maksymalnego wydatku wynosi `floor(własne_monety/2)`. Dodatkowy ostrożny limit zależy od numeru aukcji. Bonus skutecznej oferty nie może spowodować przekroczenia limitu rzeczywiście wydawanych monet.
+- **Normalny:** odróżnia wartość całej karty od wartości **pierwszeństwa wyboru**. Symuluje publicznie dostępne alternatywy: przy przegranej i tak otrzymuje jedną z pozostałych dwóch kart za darmo. Rozważa utratę możliwości wybrania najlepszej karty, umiarkowane pozbawienie rywala jego preferencji i rezerwę na przyszłą aukcję.
+- **Trudny:** ocenia alternatywy obu graczy na podstawie publicznej planszy, PŻ i dostępnych ofert; bierze pod uwagę ryzyko uszczuplenia budżetu, silne archetypy jeszcze dostępne w puli oraz nagłą sytuację kończącą partię.
+- AI nie zagląda do ręki ani talii przeciwnika. Limit jest deterministyczny, nie zużywa RNG, a zlecenie bid/pass pozostaje wyłącznie legalną komendą silnika. Starsze katalogi v3/v4 zachowują swoje dotychczasowe limity na poziomach normalnym i trudnym.
+- Testy jednostkowe oraz pełne symulacje *łatwy vs normalny* i *normalny vs trudny*, po dwie partie na seed z zamienionymi miejscami. Raport podaje rzeczywiste wyniki i przedziały Wilsona. Nie wprowadza się sztucznego wymuszania zwycięstwa silniejszego bota.
+
+**Bez zmian:** zasady rozstrzygania aukcji, statystyki i zdolności kart, RNG, format zapisów/audytu, grafika i dźwięki. Ręczny odbiór rozgrywki na Windows jest nadal potrzebny.
+
 ## [0.9.89] — 2026-10-25
 
 ### Dyskretna warstwa dźwiękowa (40% muzyka / 10% efekty)
