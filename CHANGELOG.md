@@ -4,6 +4,16 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.85] — 2026-10-25
+
+### Naprawiono — czytelność aukcji
+- Okno aukcji wykorzystuje wcześniej niewykorzystaną przestrzeń u góry. Trzy panele ofert są o 97 pikseli wyższe, ale kończą się nad panelem licytacji.
+- Ilustracje mają osobną strefę bez żadnych etykiet. Rzadkość (`PODSTAWOWA`, `RZADKA`, `LEGENDARNA`) oraz moment aktywacji (`KONIEC TURY`, `PASYWNA` itd.) są rozdzielone na dwa wyraźne paski **poniżej obrazu**. Opis zdolności ma pięć wierszy i własne ciemne tło; przycisk pełnego opisu oraz status oferty znajdują się poniżej. Nie zmieniono samych pięknych ilustracji pixel art.
+- Naprawiono panel `PROWADZI: KOMPUTER/GRACZ` i `TWOJA OFERTA`: oba pola mają osobne nagłówki, liczby i wewnętrzne odstępy. Faktyczna płatność, skuteczna oferta i minimum pozostają rozdzielone. Podsumowanie bonusów nie nachodzi na obramowanie, suwak ani przyciski.
+- Zaktualizowano pozycje kliknięć, pełnej inspekcji, suwaka, przycisków i komunikatów, tak aby odpowiadały nowej geometrii. Dodano testy realnego renderu Pygame i wykrywania kolizji tekstu/portretu.
+
+**Bez zmian** zasad licytacji, kosztów, AI, mechaniki kart, obrażeń, zapisów, audytów i plików oryginalnych grafik.
+
 ## [0.9.84] — 2026-10-25
 
 ### Poprawiono — tylko UX/UI istniejącego MVP
