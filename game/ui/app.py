@@ -7,6 +7,7 @@ from pathlib import Path
 import pygame
 from game.ui.combat_visuals import CombatVisuals
 from game.ui.music import FantasyTavernMusic
+from game.ui.sfx import QuietSFX,load_levels,save_levels
 from game.ui.visual_theme import (
     VisualTheme, TAVERN_PANEL_BG, TAVERN_PANEL_INNER, TAVERN_TOOLTIP_BG,
     TAVERN_GOLD, TAVERN_BRASS, TAVERN_HOVER_GOLD, TAVERN_TEXT,
@@ -61,7 +62,9 @@ class SoloApp:
     def __init__(self,start_in_menu=False):
         os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
         pygame.init()
-        self.music = FantasyTavernMusic()
+        self.audio_levels=load_levels()
+        self.music = FantasyTavernMusic(volume=self.audio_levels['music'])
+        self.sfx = QuietSFX(volume=self.audio_levels['sfx'])
         # Fit the opening window to the current display, respecting Windows DPI
         # scaling and keeping room for the title bar and taskbar.
         # The internal canvas and all clickable hitboxes retain their v17 size.
@@ -192,6 +195,7 @@ class SoloApp:
         self._last_logged_event=len(self.game.event_journal)
         self.combat_visuals=CombatVisuals()
         self.combat_visuals.sync(self.game,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
+        self.sfx.reset(self.game)
         self.recorder=MatchRecorder()
         self.recorder.capture(self.game)
         self.replay_index=None
@@ -2037,7 +2041,13 @@ class SoloApp:
             else:self.scroll=max(0,self.scroll-event.y)
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
             pos=self._physical_to_virtual(event.pos)
-            self.drag_start=(pos,self.card_under(pos))
+            card=self.card_under(pos)
+            self.drag_start=(pos,card)
+            if (card in self.game.players[0].hand and self.game.phase=='turn'
+                    and self.game.active==0 and not self.game.pending):
+                now=pygame.time.get_ticks()
+                self.sfx.enqueue('card_pick',now)
+                self.sfx.tick(now)
             self.drag_pointer=pos
             self.drag_return=None
         elif event.type==pygame.MOUSEBUTTONUP and event.button==1:
@@ -2163,6 +2173,11 @@ class SoloApp:
         # Synchronize committed snapshots BEFORE classifying their journal.
         # The newest attack recap must appear on the very next rendered frame.
         self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
+        self.sfx.observe(g,self.combat_visuals,pygame.time.get_ticks(),
+                         allowed=not (self.menu_open or self.help_open
+                                     or self.history_open or self.replay_index is not None
+                                     or self.confirm_action is not None
+                                     or self.details_card is not None))
         self._capture_visual_feedback()
         self._sync_hand_growth()
         self.tutorial.observe(g)
@@ -3203,7 +3218,25 @@ class SoloApp:
     def menu_exit_rect():
         return pygame.Rect(535,722,420,52)
 
+    def _change_audio_level(self,channel):
+        if channel not in ('music','sfx'):
+            return
+        steps=round(self.audio_levels[channel]*10)
+        self.audio_levels[channel]=((steps+1)%11)/10
+        if channel=='music':
+            self.music.set_volume(self.audio_levels[channel])
+        else:
+            self.sfx.set_volume(self.audio_levels[channel])
+        save_levels(self.audio_levels)
+
     def _menu_click(self,pos):
+        if self.menu_page=='settings':
+            if pygame.Rect(430,282,300,34).collidepoint(pos):
+                self._change_audio_level('music')
+                return
+            if pygame.Rect(745,282,300,34).collidepoint(pos):
+                self._change_audio_level('sfx')
+                return
         if self.menu_page=='main' and self.menu_exit_rect().collidepoint(pos):
             return self._request_exit()
         if (self.menu_page=='main'
@@ -3378,6 +3411,11 @@ class SoloApp:
             self._button(pygame.Rect(875,282,160,34),'CREDITS',small=True)
             self._button(self.menu_exit_rect(),'WYJDŹ Z GRY  [Q]',small=True)
         else:
+            # Independent levels: clicking steps by 10%, zero is mute.
+            self._button(pygame.Rect(430,282,300,34),
+                         f'MUZYKA: {round(100*self.audio_levels["music"])}%',small=True)
+            self._button(pygame.Rect(745,282,300,34),
+                         f'EFEKTY: {round(100*self.audio_levels["sfx"])}%',small=True)
             items=(f'ANIMACJE [A]: {"WŁ." if self.animations_enabled else "WYŁ."}',
                    'PEŁNY EKRAN [F11]',f'AI: {self.ai.difficulty.upper()}',
                    'ZAPISZ MECZ','POWRÓT DO MENU')
@@ -3390,7 +3428,7 @@ class SoloApp:
         footer=(
             'Archiwum zachowuje wersje i dawne zasady'
             if self.menu_page=='archive' else
-            '[A] animacje walki (nie muzyka) · [F11] pełny ekran'
+            'Kliknij MUZYKA / EFEKTY: +10% · 0% = wyciszone'
             if self.menu_page=='settings' else
             'F11 — pełny ekran · A — animacje · H — historia · M — menu'
         )
