@@ -41,6 +41,82 @@ class ComputerOpponent:
             ability-=6  # no further auction with three distinct offers
         return value+ability*(1+.22*tier)
 
+    def auction_first_pick_advantage(self,game):
+        """Calculate first-choice advantage for both sides from public offers.
+
+        Auction winner pays for priority, not for a card: the losing side
+        always gets its preferred card from the remaining two, for free.
+        Both players value the same publicly visible three offers, but their
+        board/graveyard/hero state may change their preferences.
+        """
+        offers=tuple(game.auction.offers)
+        if len(offers)<2:
+            return (0.,0.)
+        other=ComputerOpponent(1-self.player,'normalny')
+        own={o.uid:self.auction_offer_value(game,o) for o in offers}
+        foe={o.uid:other.auction_offer_value(game,o) for o in offers}
+        # Deterministic tie-breaking based only on the visible offer list.
+        first_own=max(offers,key=lambda o:(own[o.uid],-offers.index(o)))
+        first_foe=max(offers,key=lambda o:(foe[o.uid],-offers.index(o)))
+        own_if_lose=max(own[o.uid] for o in offers if o.uid!=first_foe.uid)
+        foe_if_win=max(foe[o.uid] for o in offers if o.uid!=first_own.uid)
+        gain=max(0.,own[first_own.uid]-own_if_lose)
+        denial=max(0.,foe[first_foe.uid]-foe_if_win)
+        return gain,denial
+
+    def auction_bid_ceiling(self,game):
+        """Deterministic maximum REAL spend; never uses hidden opponent cards.
+
+        This is recalculated on every legal turn of the current auction, but
+        is independent of rivals' bids and uses no RNG. Bonuses only affect
+        the legal effective minimum, not the coin budget. The cap applies
+        to a player's *actual* bid/price in coins.
+        """
+        state=game.auction
+        coins=max(0,int(game.players[self.player].coins))
+        if state is None or coins==0:
+            return 0
+        if self.difficulty=='łatwy':
+            # Strict user-requested cap: <= 50% of current coins, rounded DOWN.
+            # A very simple, timid bidder even at later auctions.
+            return min(coins//2,2+state.number)
+        if game.auction_catalog!='v22':
+            # Preserve older v3/v4 bot behavior for archived rule variants.
+            return min(coins,2+state.number*2)
+
+        own_gain,opponent_denial=self.auction_first_pick_advantage(game)
+        future=tuple(getattr(game,'auction_bag',()) or ())
+        future_auctions=len(future)>=3
+        if self.difficulty!='trudny':
+            # Normal: reasonable first-choice price plus a modest denial
+            # factor; retains a tiny reserve for later auctions.
+            value=1.75*own_gain+.35*opponent_denial
+            reserve=2 if future_auctions and coins>=9 else 0
+            return max(0,min(coins-reserve,int(value+.5)))
+
+        # Hard: use opponent's public position AND the identities of the
+        # unpurchased, still-eligible catalog archetypes, whose availability
+        # is derivable from previous public awards. No future rarity peek.
+        powerful={'A002','A006','A011','A012','A013','A015'}
+        premium_left=sum(1 for key in future if key in powerful)
+        own=game.players[self.player]
+        foe=game.players[1-self.player]
+        emergency=own.hp<=30 and (foe.board or foe.hp<=35)
+        # A thin purse and strong future catalog make coins more valuable.
+        risk_multiplier=(1.0
+                         +(.22 if coins<10 else .08)
+                         +(.16 if future_auctions else 0.)
+                         +min(.24,premium_left*.04))
+        if emergency:
+            risk_multiplier=max(1.,risk_multiplier-.25)
+        strategic_value=(2.0*own_gain+1.1*opponent_denial)
+        if emergency:
+            strategic_value*=1.2
+        # Not every coin should be committed while strong archetypes remain.
+        reserve=(min(coins//3,2+premium_left) if future_auctions
+                 and not emergency else 0)
+        return max(0,min(coins-reserve,int(strategic_value/risk_multiplier+.5)))
+
     def choose(self,game):
         p=game.pending
         if p is None:return
@@ -74,11 +150,10 @@ class ComputerOpponent:
             state=game.auction
             if state is None or state.turn!=self.player:return
             if state.phase=='bidding':
-                # Deterministic affordable bidding; the player may outbid.
-                budget=game.players[self.player].coins
-                ceiling=min(budget,2+state.number*2 if self.difficulty!='łatwy' else 1)
-                # Follow v22's legal *effective* minimum. This is only a
-                # compatibility fix, not a change of opponent heuristics.
+                # Value priority over the FREE second pick, not the card
+                # in isolation. Respect actual-spend ceilings at every level.
+                ceiling=self.auction_bid_ceiling(game)
+                # V22 vouchers modify effective minimum, never money paid.
                 minimum=(max(1,state.highest_effective+1-state.bid_bonus[self.player])
                          if game.auction_catalog=='v22' else state.current_bid+1)
                 if minimum<=ceiling:
