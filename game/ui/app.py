@@ -1197,8 +1197,10 @@ class SoloApp:
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
             # A visible auction portrait must not cover offer text or the
             # ability/selection controls. The left column is reserved for art.
+            # Full centered portrait (not a square center-crop): keep
+            # headwear, faces and original scene edges visible.
             portrait=self.cards_view.images.get_auction_image(
-                off.archetype,off.rarity,(90,90))
+                off.archetype,off.rarity,(90,90),mode='contain')
             if portrait is not None:
                 artbox=pygame.Rect(rect.x+14,rect.y+82,90,90)
                 dominant=self.cards_view.images.get_auction_color(
