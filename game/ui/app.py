@@ -405,6 +405,48 @@ class SoloApp:
         hovered=self.target_under(point)
         return (uid,point,hovered if hovered in targets else None)
 
+    def _draw_attack_drag(self):
+        """A faint red aiming cue only while actually dragging an attacker.
+
+        Uses a small temporary RGBA canvas so opacity is genuine, not a
+        simulated opaque pink stroke. Never changes game state or hitboxes.
+        The cursor stays unobstructed and valid targets retain their outlines.
+        """
+        state=self._attack_drag_state()
+        if state is None:
+            return
+        uid,pointer,valid=state
+        if not pygame.Rect(0,0,cfg.WINDOW_WIDTH,cfg.WINDOW_HEIGHT).collidepoint(pointer):
+            return
+        src=self.slot_rect(0,self.game.slot_of(uid))
+        if src.inflate(10,10).collidepoint(pointer):
+            return  # No backwards arrow when the mouse is still over source.
+        direction=pygame.Vector2(pointer)-pygame.Vector2(src.center)
+        if direction.length_squared()<1:
+            return
+        scale=max(abs(direction.x)/(src.width/2),
+                  abs(direction.y)/(src.height/2))
+        if scale<=0:
+            return
+        unit=direction.normalize()
+        start=pygame.Vector2(src.center)+direction/scale+unit*3
+        tip=pygame.Vector2(pointer)-unit*11
+        if (tip-start).length_squared()<100:
+            return
+        tail=tip-unit*8
+        side=pygame.Vector2(-unit.y,unit.x)*3.5
+        vertices=(tip,tail+side,tail-side)
+        xs=[start.x,tip.x]+[v.x for v in vertices]
+        ys=[start.y,tip.y]+[v.y for v in vertices]
+        bounds=pygame.Rect(int(min(xs))-4,int(min(ys))-4,
+                           int(max(xs)-min(xs))+9,int(max(ys)-min(ys))+9)
+        layer=pygame.Surface(bounds.size,pygame.SRCALPHA)
+        color=(207,84,96,77 if valid is not None else 49)
+        local=lambda p:(round(p.x-bounds.x),round(p.y-bounds.y))
+        pygame.draw.line(layer,color,local(start),local(tip),2)
+        pygame.draw.polygon(layer,color,[local(v) for v in vertices])
+        self.screen.blit(layer,bounds.topleft)
+
     def _reset_hand_growth_tracking(self):
         """Loading/new games establish baseline; no artificial level-up."""
         game=self.game
@@ -3456,6 +3498,7 @@ class SoloApp:
             self._draw_choices()
             self._draw_hover_guidance()
             self._draw_drag_overlay()
+            self._draw_attack_drag()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:
