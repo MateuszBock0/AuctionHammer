@@ -59,11 +59,16 @@ def grant_general_defense(game,uid):
     u=game.units[uid]
     u.shield=1;u.shield_source=uid
     wanted=(0,2,4)[rarity(game,uid)]
-    given=u.armor_perm_grants.get('v24_A002',0)
-    if wanted>given:
-        u.armor_perm+=wanted-given
+    # armor_perm_grants tracks REMAINING armor and shrinks after hits.
+    # Track awarded tiers separately to prevent replenishing spent armor.
+    prior=max((int(tag.rsplit('_',1)[-1]) for tag in u.passives_triggered
+               if tag.startswith('v24_a002_armor_')),default=0)
+    delta=max(0,wanted-prior)
+    if delta:
+        u.armor_perm+=delta
         u.armor_perm_source=uid
-        u.armor_perm_grants['v24_A002']=wanted
+        u.armor_perm_grants[uid]=u.armor_perm_grants.get(uid,0)+delta
+        u.passives_triggered.add(f'v24_a002_armor_{wanted}')
     game._log(f'Generał: Tarcza i {wanted} pancerza (v24).')
 
 
