@@ -547,6 +547,13 @@ class SoloApp:
             visible=uid in self.game.players[unit.owner].board
         else:
             visible=False
+        # Don't let a 286x439 preview obscure the opponent while the
+        # player is choosing a legal target for a selected attacker.
+        if (visible and uid!=self.selected
+                and self.selected in self.game.players[0].board
+                and self.game.phase=='turn' and self.game.active==0
+                and self.game.legal_attacks(self.selected)):
+            return False
         return (visible and uid in self.game.cards
                 and now-self._hover_start_ms>=self.HOVER_PREVIEW_DELAY_MS
                 and not (self.menu_open or self.history_open or self.confirm_action
@@ -687,7 +694,8 @@ class SoloApp:
         if viewport.size==self.screen.get_size():
             self.window.blit(self.screen,viewport.topleft)
         else:
-            scaled=pygame.transform.smoothscale(self.screen,viewport.size)
+            # Pixel-art-first display at any window/DPI scale: never blur.
+            scaled=pygame.transform.scale(self.screen,viewport.size)
             self.window.blit(scaled,viewport.topleft)
         pygame.display.flip()
 
@@ -2108,20 +2116,22 @@ class SoloApp:
     def _aura_connector_path(source_rect,target_rect,source_owner,target_owner):
         """Orthogonal route in the empty corridor, never through a card.
 
-        Two same-side cards connect above the friendly row or below the enemy
-        row. Opposing rows connect through the 59px-wide central corridor.
-        Each vertical endpoint touches the source/target boundary, never the
-        image or stats plate. Works at all viewport scales (logical coords).
+        Same-side paths run only in the free gap between cards and their
+        owner's hero bar, avoiding the central phase HUD. Cross-row geometry
+        is retained, but long cross-row lines are no longer painted over the
+        turn information: endpoint outlines and exact bonus tags remain.
         """
         if source_owner==target_owner:
             if source_owner==0:
-                y=min(source_rect.top,target_rect.top)-15
-                start=source_rect.midtop
-                end=target_rect.midtop
-            else:
-                y=max(source_rect.bottom,target_rect.bottom)+15
+                # Friendly card bottom y=651, own hero begins y=662.
+                y=max(source_rect.bottom,target_rect.bottom)+5
                 start=source_rect.midbottom
                 end=target_rect.midbottom
+            else:
+                # Opponent hero bottom y=142, enemy card top y=152.
+                y=min(source_rect.top,target_rect.top)-5
+                start=source_rect.midtop
+                end=target_rect.midtop
         else:
             upper=source_rect if source_owner==1 else target_rect
             lower=source_rect if source_owner==0 else target_rect
@@ -2158,7 +2168,9 @@ class SoloApp:
                              source_rect.inflate(5,5),2,border_radius=12)
             pygame.draw.rect(self.screen,tint,
                              target_rect.inflate(7,7),2,border_radius=12)
-            if link.source!=link.target:
+            # Cross-row aura effects retain colored endpoints and an
+            # authoritative label. Skip lines crossing the 56px turn HUD.
+            if link.source!=link.target and src.owner==dst.owner:
                 path=self._aura_connector_path(
                     source_rect,target_rect,src.owner,dst.owner)
                 for start,end in zip(path,path[1:]):
