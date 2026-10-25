@@ -1298,13 +1298,14 @@ class SoloApp:
             # Keep the portrait intact: every label now has a separate
             # opaque pixel-art strip BELOW the image, never across faces.
             artbox=zones['art']
-            # Square auction tiles: a landscape 295x209 portrait shown with
-            # 'contain' produces visible horizontal edge-bleed seams. Cover
-            # the square instead: original top/bottom remain intact and only
-            # a symmetric slice of side scenery is lost. Full-size previews,
-            # hand banners and inspection still use uncropped 'contain'.
+            # Square offers ONLY: 295x209 -> 116x116 with ordinary cover
+            # has ZERO vertical overflow, so focus_y alone is a no-op.
+            # Small 8% zoom creates room to crop lower scenery; top anchor
+            # preserves the first source row, faces and upper-body detail.
+            # Full-sized previews, banners and all gameplay UI stay intact.
             portrait=self.cards_view.images.get_auction_image(
-                off.archetype,off.rarity,artbox.size,mode='cover')
+                off.archetype,off.rarity,artbox.size,mode='cover',
+                focus=(0.5,0.0),zoom=1.08)
             if portrait is not None:
                 self.auction_art_regions.append(artbox.copy())
                 dominant=self.cards_view.images.get_auction_color(
