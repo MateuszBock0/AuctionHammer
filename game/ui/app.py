@@ -27,7 +27,9 @@ from game.ui.card_view import (CardView, FACTION_COLORS, ART, PIXEL_ART_IDS,
                                standard_hit_damage,
                                CHORAZY_ART_LEVELS, status_display_priority)
 from game.ui.assets import ROOT_DIR
-from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
+from game.ui.card_infographics import (card_cue, highlighted_numeric_ranges,
+                                       AUCTION_MECHANIC_LABELS)
+from game.ui.auction_badges import draw_trigger_icon, TRIGGER_NAMES
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
 from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
@@ -979,6 +981,13 @@ class SoloApp:
         return pygame.Rect(271+index*318,254,278,364)
 
     @staticmethod
+    def auction_badge_rects(index):
+        """Two small, fixed pixel-art tiles outside each offer title."""
+        rect=SoloApp.auction_offer_rect(index)
+        return (pygame.Rect(rect.x+9,rect.y+5,23,23),
+                pygame.Rect(rect.right-32,rect.y+5,23,23))
+
+    @staticmethod
     def auction_control_rect(action):
         return {
             'pass':pygame.Rect(528,753,210,49),
@@ -1192,6 +1201,22 @@ class SoloApp:
             adef=catalog_for(self.game.auction_catalog).get(off.archetype)
             self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
                        rect.centerx,rect.y+17,cfg.GOLD,center=True)
+            hint=None
+            if adef is not None:
+                trigger_icon,family_icon=self.auction_badge_rects(i)
+                draw_trigger_icon(self.screen,trigger_icon,adef.trigger)
+                pygame.draw.rect(self.screen,(29,38,43),family_icon)
+                pygame.draw.rect(self.screen,tier_accent,family_icon,1)
+                icon=self.cards_view.icons.get(adef.family,'families',19)
+                if icon is not None:
+                    self.screen.blit(icon,icon.get_rect(center=family_icon.center))
+                pointer=self.mouse_pos()
+                if trigger_icon.collidepoint(pointer):
+                    hint='AKTYWACJA: '+TRIGGER_NAMES.get(adef.trigger,'INNA')
+                elif family_icon.collidepoint(pointer):
+                    hint=('MECHANIKA: '+
+                          AUCTION_MECHANIC_LABELS.get(off.archetype,adef.family.upper()))
+
             name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
             self._text(self.cards_view.clip(name,self.fonts[16],rect.width-20),16,
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
@@ -1235,6 +1260,11 @@ class SoloApp:
             if adef is not None and self.game.auction_catalog=='v22':
                 description=preview_auction_copy(off.archetype,off.rarity,rules,
                                                  description)
+            if adef is not None:
+                family_name=AUCTION_MECHANIC_LABELS.get(off.archetype,adef.family.upper())
+                label=(TRIGGER_NAMES.get(adef.trigger,'ZDOLNOŚĆ')+'  ·  '+family_name)
+                self._text(self.cards_view.clip(label,self.fonts[12],rect.width-32),
+                           12,rect.centerx,rect.y+176,tier_accent,center=True)
             lines=wrap_pixels(description,self.fonts[13],
                               rect.width-36,max_lines=4)
             for j,line in enumerate(lines):
@@ -1242,7 +1272,10 @@ class SoloApp:
                            cfg.TEXT,center=True)
             inspect=self.auction_inspection_rect(i)
             self._button(inspect,'PEŁNA ZDOLNOŚĆ',small=True)
-            if claimed:
+            if hint is not None:
+                self._text(self.cards_view.clip(hint,self.fonts[12],rect.width-20),
+                           12,rect.centerx,rect.y+322,cfg.GOLD,center=True)
+            elif claimed:
                 selected_by=next(p for p,card in a.picks.items() if card==off.uid)
                 self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
                            rect.centerx,rect.y+322,cfg.MUTED,center=True)
@@ -1260,17 +1293,29 @@ class SoloApp:
             leader=('BRAK' if a.highest_bidder is None
                     else self.game.players[a.highest_bidder].name)
             bonus=a.bid_bonus[0] if self.game.auction_catalog=='v22' else 0
-            self._text(f'OFERUJE PRZECIWNIK: {leader}  ·  '
-                       f'NAJWYŻSZA OFERTA SKUTECZNA: {a.highest_effective}  ·  '
-                       f'NASZ BONUS A018: +{bonus}',14,741,644,cfg.TEXT,center=True)
             self._sync_auction_slider()
             chosen=self.auction_slider_value
-            self._text(
-                f'MINIMUM DO ZAPŁATY: {minimum}  ·  '
-                f'WYBRANA OFERTA: {chosen if chosen is not None else "BRAK"}  ·  '
-                f'SKUTECZNA WARTOŚĆ: {(chosen+bonus) if chosen is not None else "—"}  ·  '
-                f'MONETY PO WYGRANEJ: {(coins-chosen) if chosen is not None else "—"}',
-                13,741,678,cfg.MUTED,center=True)
+            # Two large scan-friendly 8-bit price tiles. The bonus changes
+            # bid effectiveness, NOT the actual coins spent.
+            current_box=pygame.Rect(271,631,452,69)
+            own_box=pygame.Rect(736,631,452,69)
+            for tile in (current_box,own_box):
+                pygame.draw.rect(self.screen,(36,44,46),tile)
+                pygame.draw.rect(self.screen,TAVERN_BRASS,tile,2)
+            self._text(f'PROWADZI: {leader}   ·   SKUTECZNA OFERTA',12,
+                       current_box.centerx,638,cfg.MUTED,center=True)
+            self._text(str(a.highest_effective),22,current_box.centerx,671,
+                       cfg.GOLD,center=True)
+            self._text('TWOJA OFERTA   /   MINIMUM '+str(minimum),12,
+                       own_box.centerx,638,cfg.MUTED,center=True)
+            self._text(str(chosen) if chosen is not None else 'BRAK MONET',
+                       22,own_box.centerx,671,
+                       cfg.GREEN if chosen is not None else cfg.RED,center=True)
+            after_bid=(str(coins-chosen) if chosen is not None else '—')
+            effective=(str(chosen+bonus) if chosen is not None else '—')
+            self._text(f'BONUS A018 +{bonus}   ·   SKUTECZNA {effective}   ·   '
+                       f'MONETY PO WYGRANEJ {after_bid}',12,741,703,
+                       cfg.MUTED,center=True)
             if a.turn==0:
                 affordable=minimum<=coins
                 track=self.auction_slider_rect()
@@ -2359,9 +2404,18 @@ class SoloApp:
                     self._text(f'+{len(statuses)-2} pozostałych efektów — [I]',12,1105,648,cfg.MUTED)
                 if u.owner==0:
                     reason=inactive_card_reason(self.game,card_id) or attack_display(self.game,card_id).reason
+                    target=self.target_under(self.mouse_pos())
+                    legal=self.game.legal_attacks(card_id)
+                    blocked=(target=='hero:1' or target in self.game.players[1].board) and target not in legal
+                    if blocked:
+                        issue=self._attack_issue(card_id,target)
+                        reason=('CEL: PROWOKACJA — ATAKUJ OBROŃCĘ'
+                                if issue.startswith('PROWOKACJA') else
+                                'CEL NIEDOSTĘPNY — '+reason)
                     self._text(self.cards_view.clip('ATAK: '+reason,
                                                    self.fonts[13],316),
-                               13,1105,667,cfg.GREEN if reason=='GOTOWA' else cfg.MUTED)
+                               13,1105,667,
+                               cfg.RED if blocked else cfg.GREEN if reason=='GOTOWA' else cfg.MUTED)
                 else:
                     self._text('JEDNOSTKA RYWALA — MOŻLIWY CEL ATAKU',
                                12,1105,667,cfg.RED)
@@ -2722,27 +2776,51 @@ class SoloApp:
             pygame.draw.rect(self.screen,(238,187,83),rect.inflate(8,8),
                              3,border_radius=13)
 
+    @staticmethod
+    def _pixel_attack_corners(screen,rect,color,length=11):
+        """Four short 8-bit corner brackets; leave art/stat labels unobscured."""
+        x1,y1,x2,y2=rect.left,rect.top,rect.right-1,rect.bottom-1
+        for x,dx in ((x1,1),(x2,-1)):
+            for y,dy in ((y1,1),(y2,-1)):
+                pygame.draw.line(screen,color,(x,y),(x+dx*length,y),2)
+                pygame.draw.line(screen,color,(x,y),(x,y+dy*length),2)
+
     def _draw_attack_targets(self):
         pointer=self.mouse_pos()
         for rect in self._attack_target_rects():
-            # Immediate pointer response on engine-confirmed legal targets.
-            # The hover style is cosmetic: clicking still uses legal_attacks.
+            # Only Match.legal_attacks makes a unit/hero target actionable.
             hovered=rect.collidepoint(pointer)
             area=rect.inflate(9 if hovered else 7,9 if hovered else 7)
             pygame.draw.rect(self.screen,
                              (170,250,255) if hovered else (115,223,238),
-                             area,4 if hovered else 3,border_radius=14)
+                             area,4 if hovered else 2)
             if hovered:
+                self._pixel_attack_corners(self.screen,area,
+                                           (226,245,224),length=13)
                 label=self.fonts_bold[13].render('ATAKUJ',True,(170,250,255))
                 tx=rect.centerx-label.get_width()//2
-                # Keep the cue inside an enemy card's artwork: above its
-                # effect/stat zones, below the opponent hero bar, and clear of
-                # the phase HUD between both board rows.
                 ty=(rect.y+53 if rect.height>=100 else rect.y-24)
                 backdrop=pygame.Rect(tx-5,ty-2,label.get_width()+10,
                                      label.get_height()+4)
-                pygame.draw.rect(self.screen,(20,34,45),backdrop,border_radius=5)
+                pygame.draw.rect(self.screen,(20,34,45),backdrop)
                 self.screen.blit(label,(tx,ty))
+
+    def _draw_attack_source_feedback(self):
+        """Highlight the selected attacker without predicting combat results."""
+        if (self.game.phase!='turn' or self.game.active!=0
+                or self.game.pending is not None):
+            return
+        drag=self._attack_drag_state()
+        uid=drag[0] if drag is not None else self.selected
+        if uid not in self.game.players[0].board:
+            return
+        if not self.game.legal_attacks(uid):
+            return
+        source=self.slot_rect(0,self.game.slot_of(uid)).inflate(8,8)
+        # Pixel-art gold brackets distinguish 'the one that will attack'
+        # from cyan engine-confirmed legal targets.
+        self._pixel_attack_corners(self.screen,source,(245,192,116),length=13)
+
 
     def _draw_choices(self):
         """Highlight legal ability targets without covering information."""
@@ -3495,6 +3573,7 @@ class SoloApp:
                     self.screen,self.game,self.cards_view,pygame.time.get_ticks())
             self._draw_play_targets()
             self._draw_attack_targets()
+            self._draw_attack_source_feedback()
             self._draw_sidebar()
             self._draw_log()
             self._draw_choices()

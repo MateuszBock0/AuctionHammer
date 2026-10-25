@@ -73,8 +73,10 @@ class AuctionPortraitFit0982(unittest.TestCase):
             self.assertEqual(offer.get_size(),(90,90))
             self.assertGreater(offer.get_at((45,13)).r,190)
             self.assertGreater(offer.get_at((45,76)).b,170)
-            self.assertEqual(offer.get_at((45,0))[:3],(43,58,62))
-            self.assertEqual(offer.get_at((45,89))[:3],(43,58,62))
+            # 0.9.83 extends scene edge pixels behind the intact art,
+            # rather than painting the former uniform letterbox bars.
+            self.assertGreater(offer.get_at((45,0)).r,190)
+            self.assertGreater(offer.get_at((45,89)).b,170)
 
     def test_card_view_uses_contain_for_small_and_large_auction_cards(self):
         view=CardView()

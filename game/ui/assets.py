@@ -42,6 +42,56 @@ class ImageAssets:
             surface.blit(fitted,((w-sw)//2,(h-sh)//2))
         return surface
 
+    @staticmethod
+    def fit_auction_pixel_bleed(image: pygame.Surface,
+                                size: tuple[int,int]) -> pygame.Surface:
+        """Contain intact pixel artwork; extend ONLY background edge pixels.
+
+        No blur, nonuniform stretch, invented figure fragments or per-frame
+        procedural noise. Nearest-neighbour 4px tiles sample a narrow band
+        at the real artwork edge, retaining its original pixel palette.
+        The untouched center is placed over the extension at the end.
+        """
+        import math
+        w,h=map(int,size)
+        iw,ih=image.get_size()
+        if min(w,h,iw,ih)<=0:
+            raise ValueError('Nonpositive pixel art dimensions')
+        ratio=min(w/iw,h/ih)
+        sw=max(1,math.ceil(iw*ratio))
+        sh=max(1,math.ceil(ih*ratio))
+        ox=(w-sw)//2
+        oy=(h-sh)//2
+        # First prepare the edge-only extension. Read from the original PNG;
+        # never sample a resized or smoothed copy of the character.
+        art=pygame.Surface((w,h),pygame.SRCALPHA)
+        backdrop=ImageAssets.dominant_color(image)
+        step=4
+        for y in range(0,h,step):
+            for x in range(0,w,step):
+                if ox<=x and x+step<=ox+sw and oy<=y and y+step<=oy+sh:
+                    continue
+                sx=min(iw-1,max(0,(x-ox)*iw//sw))
+                sy=min(ih-1,max(0,(y-oy)*ih//sh))
+                # Mirror a tiny strip of scene edge to avoid uniform bars,
+                # without repeating entire people, faces or helmets.
+                if x<ox:
+                    sx=min(6,max(0,(ox-x)//step%7))
+                elif x>=ox+sw:
+                    sx=max(0,iw-1-((x-ox-sw)//step%7))
+                if y<oy:
+                    sy=min(6,max(0,(oy-y)//step%7))
+                elif y>=oy+sh:
+                    sy=max(0,ih-1-((y-oy-sh)//step%7))
+                color=image.get_at((sx,sy))
+                if color.a<128:
+                    color=(*backdrop,255)
+                pygame.draw.rect(art,color,
+                                 (x,y,min(step,w-x),min(step,h-y)))
+        # The original is the only foreground: no hard crop, no distortion.
+        art.blit(pygame.transform.scale(image,(sw,sh)),(ox,oy))
+        return art
+
     def get_card_image(self, filename: str, size: tuple[int,int],
                        mode: str='cover',focus: tuple[float,float]=(0.5,0.5),
                        pixelated: bool=False) -> pygame.Surface:
@@ -148,11 +198,10 @@ class ImageAssets:
             key = ('auction_final', final_key, tuple(size), mode)
             if key not in self._scaled:
                 source=self._original[final_key]
-                backdrop=(self.dominant_color(source) if mode=='contain'
-                          else None)
-                self._scaled[key] = self.fit_art(
-                    source,size,mode=mode,background=backdrop,
-                    pixelated=True)
+                self._scaled[key] = (
+                    self.fit_auction_pixel_bleed(source,size)
+                    if mode=='contain' else
+                    self.fit_art(source,size,mode=mode,pixelated=True))
             return self._scaled[key]
         original_key = self._auction_base(archetype, rarity)
         if original_key is None:
