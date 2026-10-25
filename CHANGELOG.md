@@ -4,6 +4,17 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.84] — 2026-10-25
+
+### Poprawiono — tylko UX/UI istniejącego MVP
+- **Pixel art:** pełne okno jest skalowane ostro, metodą nearest-neighbor, również przy nietypowej wielkości okna. Starsze grafiki aukcyjne używają tej samej zasady zamiast rozmycia.
+- **Walka:** potwierdzone trafienia używają krótkich pikselowych elementów zamiast okrągłych poświat; wskazywanie legalnego celu pozostaje czytelne, ale nie zakrywa ilustracji napisem `ATAKUJ`. Duży podgląd karty nie otwiera się nad przeciwnikami, gdy wybrana własna jednostka może atakować.
+- **Aukcja:** subtelne pikselowe narożniki wskazują tylko te oferty, które można naprawdę wybrać. Wcześniejsze oznaczenia zdolności, rzadkość, pełne portrety i dokładna prezentacja ceny pozostają bez zmian.
+- **Interfejs:** same-stronowe połączenia aur biegną przez wąski bezpieczny pas przy bohaterze. Aury między stronami pokazują dokładne etykiety i obramowania źródła/odbiorcy, ale nie przecinają kreskami 56-pikselowego komunikatu tury.
+- Dodano testy rozdzielczości, HUD-u, zachowania podglądów, archiwalnych assetów, efektów trafienia i wskazywania ofert. Raport: `docs/MVP_VISUAL_AUDIT_0984.md`.
+
+**Bez zmian** kart, zasad walki, wyników obrażeń, zdolności, AI, balansu, waluty, losowania, zapisów i audytów.
+
 ## [0.9.83] — 2026-10-25
 
 ### Ulepszono wygląd i wygodę
