@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.81</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.82</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -75,7 +75,7 @@ Po pierwszym pobraniu gra nie wymaga logowania, konta ani serwera. Zapisy pozost
 1. **Wybierz bonus startowy**, jeżeli zaczynasz jako drugi: trzy monety albo specjalnego Chorążego.
 2. **Wymień do trzech kart** z początkowej ręki (możesz też zostawić wszystkie).
 3. **Zagraj kartę** na jedno z pięciu własnych pól. Możesz przeciągnąć ją z ręki.
-4. **Wybierz jednostkę i zaatakuj** legalny cel — klikając jednostkę, a potem cel, lub przeciągając jednostkę bez zasłaniającej planszę strzałki.
+4. **Wybierz jednostkę i zaatakuj** legalny cel — klikając jednostkę, a potem cel, lub przeciągając jednostkę z bardzo delikatną czerwoną strzałką.
 5. **Zakończ turę [SPACJA]**. Gdy jeszcze możesz coś zrobić, gra ostrzeże Cię przed pominięciem tych akcji.
 6. **Zdobądź przewagę** dzięki zdolnościom, aurze jednostek i aukcjom. Wygrywa gracz, który sprowadzi PŻ wrogiego bohatera do zera.
 
@@ -98,6 +98,8 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 
+- **0.9.82** — minimalistyczna, bardzo przezroczysta czerwona strzałka przy przeciąganiu ataku; pełne, wyśrodkowane ilustracje aukcyjne bez ucinania twarzy i hełmów.
+
 - **0.9.81** — usunięto nieestetyczną strzałkę prowadzącą od atakującej jednostki do kursora. Legalne cele nadal są podświetlane, a oba sposoby atakowania działają.
 
 - **0.9.80** — trasy aur poza kartami, kompletne dokumenty w ZIP i bramki CI przed publikacją.
@@ -109,7 +111,7 @@ Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 - **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
 - **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
 
-Wersja **0.9.81** upraszcza celowanie w ataku przez usunięcie strzałki podążającej za kursorem. Wersja **0.9.80** wcześniej usprawniła wizualizację aur i publikację Windows. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+Wersja **0.9.82** przywraca subtelną, półprzezroczystą wskazówkę celowania i poprawia kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Pomoc, bezpieczeństwo i rozwój
 
