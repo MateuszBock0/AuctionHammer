@@ -65,6 +65,7 @@ class ImageAssets:
         # First prepare the edge-only extension. Read from the original PNG;
         # never sample a resized or smoothed copy of the character.
         art=pygame.Surface((w,h),pygame.SRCALPHA)
+        backdrop=ImageAssets.dominant_color(image)
         step=4
         for y in range(0,h,step):
             for x in range(0,w,step):
@@ -84,7 +85,7 @@ class ImageAssets:
                     sy=max(0,ih-1-((y-oy-sh)//step%7))
                 color=image.get_at((sx,sy))
                 if color.a<128:
-                    color=(*ImageAssets.dominant_color(image),255)
+                    color=(*backdrop,255)
                 pygame.draw.rect(art,color,
                                  (x,y,min(step,w-x),min(step,h-y)))
         # The original is the only foreground: no hard crop, no distortion.
