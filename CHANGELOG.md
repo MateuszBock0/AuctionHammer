@@ -4,6 +4,17 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.83] — 2026-10-25
+
+### Ulepszono wygląd i wygodę
+- Portrety wszystkich 51 wariantów aukcyjnych zachowują pełny centralny obraz. Puste marginesy zastąpiono niewygładzanym, **pikselowym przedłużeniem faktycznego tła ilustracji** w kafelkach 4 px. Pixel art kart podstawowych pozostaje wzorcem stylistycznym: bez rozmycia, gradientów i deformacji postaci.
+- Ikony frakcji oraz rodzin zdolności są skalowane najbliższym sąsiadem. Na ofertach aukcyjnych dodano dwa małe symbole 8-bitowe wraz z wyjaśnieniem aktywacji i mechaniki po najechaniu.
+- W licytacji wyraźniej pokazane są skuteczna oferta lidera, rzeczywista własna cena, minimalna wymagana kwota, bonus A018 i monety pozostałe po wygranej.
+- Celowanie otrzymało dyskretne pikselowe narożniki na wybranym atakującym i legalnym celu. Nielegalne cele mogą wyświetlić krótkie wyjaśnienie w panelu bocznym; dotychczasowa cienka czerwona strzałka pozostaje bez zmian.
+- Dodano regresje renderowania, pixel art i zgodności stanu z podpisanym audytem.
+
+**Bez zmian** zasad walki, działania aukcji, mechaniki zdolności, AI, losowania, zapisu i powtórek.
+
 ## [0.9.82] — 2026-10-25
 
 ### Ulepszono interfejs
