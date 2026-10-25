@@ -84,7 +84,15 @@ class CartographerEdgeAcceptance(unittest.TestCase):
         self.assertEqual(len(game.players[0].board),5)
         self.assertEqual(game.players[0].grave,grave)
         self.assertEqual(game.players[0].deck,[])
-        self.assertIsNone(game.pending)
+        self.assertIsNotNone(game.pending)
+        self.assertTrue(all(c.mode=='v24_shield_stats' for c in game.pending.choices))
+        chosen=game.pending.choices[0].target
+        bonus=game.units[chosen].atk
+        before_atk=game.units[cart].atk
+        choose(game,'v24_shield_stats',chosen)
+        self.assertEqual(game.units[cart].shield,1)
+        self.assertEqual(game.units[cart].atk,before_atk+bonus)
+        self.assertEqual(len(game.players[0].board),5)
         game.assert_integrity()
 
 
