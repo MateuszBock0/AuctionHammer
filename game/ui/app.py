@@ -2404,9 +2404,18 @@ class SoloApp:
                     self._text(f'+{len(statuses)-2} pozostałych efektów — [I]',12,1105,648,cfg.MUTED)
                 if u.owner==0:
                     reason=inactive_card_reason(self.game,card_id) or attack_display(self.game,card_id).reason
+                    target=self.target_under(self.mouse_pos())
+                    legal=self.game.legal_attacks(card_id)
+                    blocked=(target=='hero:1' or target in self.game.players[1].board) and target not in legal
+                    if blocked:
+                        issue=self._attack_issue(card_id,target)
+                        reason=('CEL: PROWOKACJA — ATAKUJ OBROŃCĘ'
+                                if issue.startswith('PROWOKACJA') else
+                                'CEL NIEDOSTĘPNY — '+reason)
                     self._text(self.cards_view.clip('ATAK: '+reason,
                                                    self.fonts[13],316),
-                               13,1105,667,cfg.GREEN if reason=='GOTOWA' else cfg.MUTED)
+                               13,1105,667,
+                               cfg.RED if blocked else cfg.GREEN if reason=='GOTOWA' else cfg.MUTED)
                 else:
                     self._text('JEDNOSTKA RYWALA — MOŻLIWY CEL ATAKU',
                                12,1105,667,cfg.RED)
@@ -2767,27 +2776,51 @@ class SoloApp:
             pygame.draw.rect(self.screen,(238,187,83),rect.inflate(8,8),
                              3,border_radius=13)
 
+    @staticmethod
+    def _pixel_attack_corners(screen,rect,color,length=11):
+        """Four short 8-bit corner brackets; leave art/stat labels unobscured."""
+        x1,y1,x2,y2=rect.left,rect.top,rect.right-1,rect.bottom-1
+        for x,dx in ((x1,1),(x2,-1)):
+            for y,dy in ((y1,1),(y2,-1)):
+                pygame.draw.line(screen,color,(x,y),(x+dx*length,y),2)
+                pygame.draw.line(screen,color,(x,y),(x,y+dy*length),2)
+
     def _draw_attack_targets(self):
         pointer=self.mouse_pos()
         for rect in self._attack_target_rects():
-            # Immediate pointer response on engine-confirmed legal targets.
-            # The hover style is cosmetic: clicking still uses legal_attacks.
+            # Only Match.legal_attacks makes a unit/hero target actionable.
             hovered=rect.collidepoint(pointer)
             area=rect.inflate(9 if hovered else 7,9 if hovered else 7)
             pygame.draw.rect(self.screen,
                              (170,250,255) if hovered else (115,223,238),
-                             area,4 if hovered else 3,border_radius=14)
+                             area,3 if hovered else 2)
             if hovered:
+                self._pixel_attack_corners(self.screen,area,
+                                           (226,245,224),length=13)
                 label=self.fonts_bold[13].render('ATAKUJ',True,(170,250,255))
                 tx=rect.centerx-label.get_width()//2
-                # Keep the cue inside an enemy card's artwork: above its
-                # effect/stat zones, below the opponent hero bar, and clear of
-                # the phase HUD between both board rows.
                 ty=(rect.y+53 if rect.height>=100 else rect.y-24)
                 backdrop=pygame.Rect(tx-5,ty-2,label.get_width()+10,
                                      label.get_height()+4)
-                pygame.draw.rect(self.screen,(20,34,45),backdrop,border_radius=5)
+                pygame.draw.rect(self.screen,(20,34,45),backdrop)
                 self.screen.blit(label,(tx,ty))
+
+    def _draw_attack_source_feedback(self):
+        """Highlight the selected attacker without predicting combat results."""
+        if (self.game.phase!='turn' or self.game.active!=0
+                or self.game.pending is not None):
+            return
+        drag=self._attack_drag_state()
+        uid=drag[0] if drag is not None else self.selected
+        if uid not in self.game.players[0].board:
+            return
+        if not self.game.legal_attacks(uid):
+            return
+        source=self.slot_rect(0,self.game.slot_of(uid)).inflate(8,8)
+        # Pixel-art gold brackets distinguish 'the one that will attack'
+        # from cyan engine-confirmed legal targets.
+        self._pixel_attack_corners(self.screen,source,(245,192,116),length=13)
+
 
     def _draw_choices(self):
         """Highlight legal ability targets without covering information."""
@@ -3540,6 +3573,7 @@ class SoloApp:
                     self.screen,self.game,self.cards_view,pygame.time.get_ticks())
             self._draw_play_targets()
             self._draw_attack_targets()
+            self._draw_attack_source_feedback()
             self._draw_sidebar()
             self._draw_log()
             self._draw_choices()
