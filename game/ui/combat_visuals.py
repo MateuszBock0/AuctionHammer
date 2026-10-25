@@ -288,9 +288,16 @@ class CombatVisuals:
         """Short highlight around both participants, without covering stats."""
         if age<0 or age>=430:return
         opacity=max(0,int(210*(1-age/430)))
+        # Eight hard-edged 2px strokes, never a rounded glowing halo.
+        # Draw only outside the card so ATK/HP plates stay legible.
         halo=pygame.Surface((rect.w+14,rect.h+14),pygame.SRCALPHA)
-        pygame.draw.rect(halo,(255,217,125,opacity),
-                         halo.get_rect().inflate(-7,-7),3,border_radius=13)
+        color=(255,217,125,opacity)
+        left,top=5,5
+        right,bottom=rect.w+8,rect.h+8
+        for x,dx in ((left,1),(right,-1)):
+            for y,dy in ((top,1),(bottom,-1)):
+                pygame.draw.line(halo,color,(x,y),(x+dx*14,y),2)
+                pygame.draw.line(halo,color,(x,y),(x,y+dy*14),2)
         screen.blit(halo,(rect.x-7,rect.y-7))
 
     def draw_cards(self,screen,game,card_view,now):
@@ -344,16 +351,25 @@ class CombatVisuals:
                 x=pulse.origin[0]+(pulse.at[0]-pulse.origin[0])*eased
                 y=pulse.origin[1]+(pulse.at[1]-pulse.origin[1])*eased
                 radius=4+int(7*(1-travel))
+                # Crisp 8-bit projectile: a compact square with a stepped
+                # border and four small rectangular trail fragments.
+                # No radial gradient, circles, blur or smooth scaling.
                 glow=pygame.Surface((60,60),pygame.SRCALPHA)
-                pygame.draw.circle(glow,(*color,max(0,int(alpha*.25))),
-                                   (30,30),radius*3)
-                pygame.draw.circle(glow,(*color,alpha),(30,30),radius)
+                pygame.draw.rect(glow,(*color,max(0,int(alpha*.24))),
+                                 (30-radius-3,30-radius-3,
+                                  2*radius+6,2*radius+6),2)
+                pygame.draw.rect(glow,(*color,alpha),
+                                 (30-radius//2,30-radius//2,
+                                  max(2,radius),max(2,radius)))
                 for i in range(4):
                     u=max(0.,eased-(i+1)*.055)
                     tx=pulse.origin[0]+(pulse.at[0]-pulse.origin[0])*u
                     ty=pulse.origin[1]+(pulse.at[1]-pulse.origin[1])*u
-                    pygame.draw.circle(screen,tuple(int(c*(.53+.11*i)) for c in color),
-                                       (int(tx),int(ty)),max(1,4-i))
+                    size=max(2,6-i)
+                    pygame.draw.rect(screen,
+                                     tuple(int(c*(.53+.11*i)) for c in color),
+                                     (int(tx)-size//2,int(ty)-size//2,
+                                      size,size))
                 screen.blit(glow,(int(x)-30,int(y)-30))
                 continue
             if pulse.kind=='turn':
