@@ -64,7 +64,7 @@ class AttackDragAndLevel0972(unittest.TestCase):
                    rel=(to[0]-start[0],to[1]-start[1]))
         return start
 
-    def test_target_arrow_tracks_cursor_without_changing_game(self):
+    def test_invisible_attack_drag_tracks_cursor_without_changing_game(self):
         uid=self.ready_attacker()
         app=self.app
         app.selected=next(iter(app.game.players[0].hand),None)
@@ -74,14 +74,36 @@ class AttackDragAndLevel0972(unittest.TestCase):
         state=app._attack_drag_state()
         self.assertEqual((state[0],state[1],state[2]),(uid,target,'hero:1'))
         self.assertIn(app.hero_rect(1),app._attack_target_rects())
-        with patch.object(app,"_draw_attack_drag",wraps=app._draw_attack_drag) as drawn:
-            app.draw()
-        drawn.assert_called_once()
+        # No aiming-arrow renderer at all; only legal-target outlines survive.
+        self.assertFalse(hasattr(app,'_draw_attack_drag'))
+        app.draw()
         self.assertEqual(digest(state_snapshot(app.game)),before)
         other=(570,390)
         self.event(pygame.MOUSEMOTION,other,buttons=(1,0,0),rel=(1,1))
         self.assertEqual(app._attack_drag_state()[1],other)
         self.assertIsNone(app._attack_drag_state()[2])
+        self.assertEqual(digest(state_snapshot(app.game)),before)
+
+    def test_drag_render_does_not_draw_old_arrow_stroke_or_head(self):
+        """A drag still highlights legal targets; no line/grot follows cursor."""
+        uid=self.ready_attacker()
+        app=self.app
+        app.selected=None  # Drag must work without having clicked an attacker.
+        target=app.hero_rect(1).center
+        self.drag(uid,target)
+        before=digest(state_snapshot(app.game))
+        with patch("game.ui.app.pygame.draw.line",
+                   wraps=pygame.draw.line) as lines:
+            with patch("game.ui.app.pygame.draw.polygon",
+                       wraps=pygame.draw.polygon) as polygons:
+                app.draw()
+        forbidden={(109,244,225),(233,177,100),(17,29,38)}
+        # Distinctive colors of the removed arrow's shaft, border and tip.
+        for mock in (lines,polygons):
+            for call in mock.call_args_list:
+                if len(call.args)>=2:
+                    self.assertNotIn(call.args[1],forbidden)
+        self.assertIn(app.hero_rect(1),app._attack_target_rects())
         self.assertEqual(digest(state_snapshot(app.game)),before)
 
     def test_release_on_hero_attacks_once(self):

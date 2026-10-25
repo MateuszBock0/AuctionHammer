@@ -2,7 +2,6 @@
 from __future__ import annotations
 import os
 import re
-import math
 import subprocess
 from pathlib import Path
 import pygame
@@ -405,37 +404,6 @@ class SoloApp:
             return None
         hovered=self.target_under(point)
         return (uid,point,hovered if hovered in targets else None)
-
-    def _draw_attack_drag(self):
-        """Draw a targeting arrow following the logical cursor on every frame."""
-        state=self._attack_drag_state()
-        if state is None:
-            return
-        uid,point,valid=state
-        src=self.slot_rect(0,self.game.slot_of(uid))
-        dx,dy=point[0]-src.centerx,point[1]-src.centery
-        length=math.hypot(dx,dy)
-        if length<1:
-            return
-        ux,uy=dx/length,dy/length
-        offset=min(src.width,src.height)*0.32
-        start=(round(src.centerx+ux*offset),round(src.centery+uy*offset))
-        color=(109,244,225) if valid is not None else (233,177,100)
-        pygame.draw.line(self.screen,(17,29,38),start,point,9)
-        pygame.draw.line(self.screen,color,start,point,4)
-        base=(point[0]-ux*20,point[1]-uy*20)
-        side=(-uy*9,ux*9)
-        points=[point,(round(base[0]+side[0]),round(base[1]+side[1])),
-                      (round(base[0]-side[0]),round(base[1]-side[1]))]
-        pygame.draw.polygon(self.screen,(17,29,38),points)
-        points=[point,(round(base[0]+side[0]*0.68),round(base[1]+side[1]*0.68)),
-                      (round(base[0]-side[0]*0.68),round(base[1]-side[1]*0.68))]
-        pygame.draw.polygon(self.screen,color,points)
-        if valid is not None:
-            rect=(self.hero_rect(1) if valid=='hero:1' else
-                  self.slot_rect(1,self.game.slot_of(valid)))
-            pygame.draw.rect(self.screen,color,rect.inflate(9,9),4,
-                             border_radius=13)
 
     def _reset_hand_growth_tracking(self):
         """Loading/new games establish baseline; no artificial level-up."""
@@ -3488,7 +3456,6 @@ class SoloApp:
             self._draw_choices()
             self._draw_hover_guidance()
             self._draw_drag_overlay()
-            self._draw_attack_drag()
             self._draw_gameover()
             self._draw_auction()
             if self.replay_index is None and self.animations_enabled:

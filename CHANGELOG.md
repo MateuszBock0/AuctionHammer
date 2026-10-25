@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.81] — 2026-10-25
+
+### Uproszczono
+- Usunięto dużą strzałkę z grotem podążającą za kursorem podczas przeciągania ataku własną jednostką na przeciwnika lub wrogiego bohatera. Nie zasłania ona już kart ani planszy.
+- Zachowano wyraźne ramki podświetlające **rzeczywiście legalne cele** oraz etykietę `ATAKUJ`. Ataki działają zarówno przez kliknięcie jednostki i celu, jak i przeciągnięcie jednostki na cel i puszczenie przycisku myszy.
+- Zaktualizowano przewodnik i testy renderowania ataku; strzałki wskazujące aktywne aury są osobną funkcją i pozostały bez zmian.
+
+**Bez zmian** mechaniki ataku, AI, logiki kart, RNG, ekonomii, schematów zapisu i audytów.
+
 ## [0.9.80] — 2026-10-24
 
 ### Naprawiono
