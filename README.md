@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.89</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.90</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 

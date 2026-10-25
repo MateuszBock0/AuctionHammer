@@ -1,10 +1,21 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.89 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Data aktualizacji:** 25 października 2026  
+**Wersja gałęzi:** MVP 0.9.90 (patch balansu v24, sześć zatwierdzonych buffów aukcji; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.90 (patch balansu v24, wyłącznie buffy)
+
+- **Legenda ma być OP:** zachowano wszystkie silne zdolności, nie zastosowano żadnych nerfów. Aukcje pozostają kluczową atrakcją meczu.
+- **A014:** R co turę regeneracja 2 PŻ przez 2 tury losowej własnej jednostce; L to samo wszystkim własnym jednostkom, porcje się nakładają. Wcześniejsza kontrola wrogiego leczenia pozostaje.
+- **A003:** gdy brak legalnej podstawowej karty cmentarnej, przywołanie Szkieleta bez umiejętności min. 6/6, 7/7, 8/8; statystyki mogą wzrosnąć według mocniejszej karty na ręce.
+- **A004/A016:** przy pełnej planszy bonus Tarcza / Tarcza plus połowa statystyk / Tarcza plus pełne statystyki wskazanej jednostki. Legalny dobór u Kartografa zachowany.
+- **A009:** po wymianie +1/+1, +2/+2 albo +3/+3 dla wszystkich kart w nowej własnej ręce, na stałe.
+- **A002:** na wejściu Tarcza, R +2 pancerza, L +4 pancerza; awans przyznaje tylko brakującą różnicę.
+- Reguły włączone tylko dla nowych meczów (`balance_patch_v24`). Historyczny audyt v24 to źródło projektowe, nie automatycznie wdrożona specyfikacja.
+- Wersja i dokumentacja: `VERSION.json`, `docs/BALANCE_PATCH_V24_0990.md`, `docs/CHATGPT_PROJECT_CONTEXT_0990.md`; testy regresyjne i fizyczny odbiór Windows wymagają zatwierdzenia.
 
 ### Etap — 0.9.89 (ciche efekty działań, niezależne od muzyki)
 

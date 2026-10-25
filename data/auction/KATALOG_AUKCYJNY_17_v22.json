@@ -1,6 +1,6 @@
 {
   "project": "AuctionHammer",
-  "version": "v22_live_0.9.32",
+  "version": "v24-buff-live-0.9.90",
   "status": "LIVE_V22",
   "reference": "GAME_MASTER_v19 + DRAFT_AUCTION_12_v2 + user revisions 2026-10-18",
   "count_archetypes": 17,
@@ -91,9 +91,9 @@
         "hp": 8
       },
       "variants": {
-        "basic": "Gdy Generał jest na polu bitwy, wszystkie jednostki na obu planszach (także wrogie i sam Generał) mają +1 ATK. Premia znika po opuszczeniu przez Generała planszy.",
-        "rare": "Gdy Generał jest na polu bitwy, jedna wybrana własna jednostka otrzymuje Podwójny atak i zadaje podwójne obrażenia swoimi atakami. Premia działa tylko, gdy Generał jest na planszy.",
-        "legendary": "Gdy Generał jest na polu bitwy, każda NOWO zagrana przez Ciebie jednostka otrzymuje Podwójny atak i zadaje podwójne obrażenia swoimi atakami. Premia działa tylko, gdy Generał jest na planszy."
+        "basic": "Gdy Generał jest na polu bitwy, wszystkie jednostki na obu planszach (także wrogie i sam Generał) mają +1 ATK. Premia znika po opuszczeniu przez Generała planszy. Przy wystawieniu Generał otrzymuje Tarczę.",
+        "rare": "Gdy Generał jest na polu bitwy, jedna wybrana własna jednostka otrzymuje Podwójny atak i zadaje podwójne obrażenia swoimi atakami. Premia działa tylko, gdy Generał jest na planszy. Przy wystawieniu Generał otrzymuje Tarczę i 2 trwałego pancerza.",
+        "legendary": "Gdy Generał jest na polu bitwy, każda NOWO zagrana przez Ciebie jednostka otrzymuje Podwójny atak i zadaje podwójne obrażenia swoimi atakami. Premia działa tylko, gdy Generał jest na planszy. Przy wystawieniu Generał otrzymuje Tarczę i 4 trwałego pancerza."
       },
       "limits_and_counterplay": "Zgodnie z dosłownym „wszystkie” podstawowa premia obejmuje obie strony. Rzadka i legendarna dotyczą własnej armii (interpretacja robocza). Podwójny atak nadal daje maksymalnie 2 ataki, nie 4; podwojenie obrażeń dotyczy normalnych obrażeń z ataku, nie efektów trucizny ani umiejętności. Nowa rzadka wersja wybiera beneficjenta przy pojawieniu się Generała lub jego ewolucji; zmiana celu po śmierci beneficjenta jest jeszcze do zatwierdzenia.",
       "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
@@ -128,9 +128,9 @@
         "hp": 9
       },
       "variants": {
-        "basic": "Wybierz jedną inną własną podstawową jednostkę z cmentarza. Przenieś ją na rękę.",
-        "rare": "Wybierz efekt podstawowy ALBO przywróć jedną inną własną podstawową jednostkę z cmentarza bezpośrednio na prawe wolne pole planszy z 1 HP, bez aktywowania „Przy wystawieniu”; jeśli brak pola, przenieś ją na rękę.",
-        "legendary": "Wybierz efekt podstawowy, rzadki ALBO przywróć do dwóch różnych innych własnych podstawowych jednostek z cmentarza: pierwszą na wolne prawe pole z pełnym MAX HP, drugą na rękę. Jeśli brak pola, obie na rękę. Nie uruchamiaj „Przy wystawieniu”."
+        "basic": "Wybierz jedną inną własną podstawową jednostkę z cmentarza. Przenieś ją na rękę. Gdy brak własnych podstawowych kart w cmentarzu, przywołaj bezumiejętnościowego Szkieleta min. 6/6 lub wyższe statystyki najlepszej karty ręki.",
+        "rare": "Wybierz efekt podstawowy ALBO przywróć jedną inną własną podstawową jednostkę z cmentarza bezpośrednio na prawe wolne pole planszy z 1 HP, bez aktywowania „Przy wystawieniu”; jeśli brak pola, przenieś ją na rękę. Gdy brak własnych podstawowych kart w cmentarzu, przywołaj bezumiejętnościowego Szkieleta min. 7/7 lub wyższe statystyki najlepszej karty ręki.",
+        "legendary": "Wybierz efekt podstawowy, rzadki ALBO przywróć do dwóch różnych innych własnych podstawowych jednostek z cmentarza: pierwszą na wolne prawe pole z pełnym MAX HP, drugą na rękę. Jeśli brak pola, obie na rękę. Nie uruchamiaj „Przy wystawieniu”. Gdy brak własnych podstawowych kart w cmentarzu, przywołaj bezumiejętnościowego Szkieleta min. 8/8 lub wyższe statystyki najlepszej karty ręki."
       },
       "limits_and_counterplay": "Nie wskrzesza samej siebie, kart wykluczonych z mulliganu ani kopii efemerycznych. Zdolności śmierci wskrzeszonych kart działają dopiero przy kolejnej rzeczywistej śmierci.",
       "stats_change_v3_to_v4": null,
@@ -154,9 +154,9 @@
         "hp": 7
       },
       "variants": {
-        "basic": "Wskaż jedną inną własną jednostkę na planszy. Stwórz jej efemeryczną kopię i od razu zagraj ją na swoją planszę.",
-        "rare": "Wskaż dowolną inną jednostkę na dowolnej planszy. Stwórz jej efemeryczną kopię i od razu zagraj ją na swoją planszę.",
-        "legendary": "Wskaż dowolną inną jednostkę na dowolnej planszy. Stwórz jej efemeryczną kopię, zachowując jej bieżące bonusy i efekty, nadaj kopii Tarczę i od razu zagraj ją na swoją planszę."
+        "basic": "Wskaż jedną inną własną jednostkę na planszy. Stwórz jej efemeryczną kopię i od razu zagraj ją na swoją planszę. Gdy brak pola na kopię, Regent zyskuje Tarczę.",
+        "rare": "Wskaż dowolną inną jednostkę na dowolnej planszy. Stwórz jej efemeryczną kopię i od razu zagraj ją na swoją planszę. Gdy brak pola na kopię, Regent zyskuje Tarczę i połowę ATK/MAX PŻ wskazanej innej jednostki (zaokrąglenie w górę).",
+        "legendary": "Wskaż dowolną inną jednostkę na dowolnej planszy. Stwórz jej efemeryczną kopię, zachowując jej bieżące bonusy i efekty, nadaj kopii Tarczę i od razu zagraj ją na swoją planszę. Gdy brak pola na kopię, Regent zyskuje Tarczę i pełne ATK/MAX PŻ wskazanej innej jednostki."
       },
       "limits_and_counterplay": "Kopia trafia na wolne pole (maks. 5); brak wolnego pola = brak przywołania. To dodatkowe zagranie poza limitem jednej zwykłej karty na turę; jej zdolność „Przy wystawieniu” uruchamia się, chyba że została ogłuszona albo wyciszona. Podstawowa i rzadka kopia zachowują bazowy archetyp/statystyki/zdolność, ale nie przejmują dotychczasowych buffów i statusów celu. Legendarna przenosi także stan i modyfikatory bieżące. Kopie mają unikalny identyfikator, nie można kopiować kopii; po opuszczeniu planszy znikają z meczu. Źródła i czasy wygaśnięcia skopiowanych efektów należy poprawnie przypisać nowej instancji.",
       "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
@@ -305,9 +305,9 @@
         "hp": 9
       },
       "variants": {
-        "basic": "Wymień jedną wskazaną kartę ze swojej ręki na jedną losową kartę z ręki przeciwnika.",
-        "rare": "Podejrzyj rękę przeciwnika i wymień jedną wskazaną kartę ze swojej ręki na jedną wybraną kartę przeciwnika.",
-        "legendary": "Zamień całe aktualne ręce obu graczy miejscami, łącznie z własnością fizycznych egzemplarzy. Następnie przeciwnik wybiera i odrzuca 2 karty ze swojej nowej ręki (lub wszystkie, jeśli ma mniej niż 2)."
+        "basic": "Wymień jedną wskazaną kartę ze swojej ręki na jedną losową kartę z ręki przeciwnika. Po wymianie wszystkie karty w nowej własnej ręce zyskują trwale +1 ATK/+1 MAX PŻ; gdy wymiana niemożliwa, wzmacnia obecną rękę.",
+        "rare": "Podejrzyj rękę przeciwnika i wymień jedną wskazaną kartę ze swojej ręki na jedną wybraną kartę przeciwnika. Po wymianie wszystkie karty w nowej własnej ręce zyskują trwale +2 ATK/+2 MAX PŻ; gdy wymiana niemożliwa, wzmacnia obecną rękę.",
+        "legendary": "Zamień całe aktualne ręce obu graczy miejscami, łącznie z własnością fizycznych egzemplarzy. Następnie przeciwnik wybiera i odrzuca 2 karty ze swojej nowej ręki (lub wszystkie, jeśli ma mniej niż 2). Po wymianie całych rąk wszystkie karty w nowej własnej ręce zyskują trwale +3 ATK/+3 MAX PŻ."
       },
       "limits_and_counterplay": "Odrzucone po legendarnej wymianie karty trafiają do prywatnego cmentarza przeciwnika, NIE do strefy EXCLUDED_FROM_MATCH z mulliganu; mogą później wrócić w cyklu talii. Przy wymianie zachowują się aktualne ulepszenia i premie przypisane do egzemplarzy. Nowy właściciel otrzymuje kontrolę nad tymi kartami.",
       "review_status": "USER_PROPOSED_RULES_RECORDED_IMPLEMENTATION_DETAILS_PROVISIONAL",
@@ -450,8 +450,8 @@
       },
       "variants": {
         "basic": "Dopóki Kapłan jest na polu bitwy, przeciwnik nie może leczyć swojego bohatera ani własnych jednostek.",
-        "rare": "Dopóki Kapłan jest na polu bitwy, połowa każdego leczenia wrogiego bohatera lub wrogiej jednostki zamienia się w obrażenia zadawane temu samemu celowi; pozostała połowa nadal leczy.",
-        "legendary": "Dopóki Kapłan jest na polu bitwy, całe leczenie wrogiego bohatera i jego jednostek zamiast leczyć zamienia się w obrażenia dla celu, który miał być leczony."
+        "rare": "Dopóki Kapłan jest na polu bitwy, połowa każdego leczenia wrogiego bohatera lub wrogiej jednostki zamienia się w obrażenia zadawane temu samemu celowi; pozostała połowa nadal leczy. Co koniec własnej tury przyznaj regenerację 2 PŻ przez 2 własne tury jednej losowej własnej jednostce, także Kapłanowi.",
+        "legendary": "Dopóki Kapłan jest na polu bitwy, całe leczenie wrogiego bohatera i jego jednostek zamiast leczyć zamienia się w obrażenia dla celu, który miał być leczony. Co koniec własnej tury przyznaj regenerację 2 PŻ przez 2 własne tury wszystkim własnym jednostkom, także Kapłanowi. Porcje się nakładają."
       }
     },
     {
@@ -479,9 +479,9 @@
         "hp": 8
       },
       "variants": {
-        "basic": "Obejrzyj do trzech wierzchnich kart własnej talii i dobierz jedną z nich na rękę.",
-        "rare": "Dodatkowo obejrzyj do trzech wierzchnich kart własnej talii i wierzchnią kartę talii przeciwnika, a następnie wybierz jedną z tych obejrzanych kart i od razu ją zagraj.",
-        "legendary": "Wybierz jedną spośród do trzech wierzchnich kart własnej talii i do trzech wierzchnich kart talii przeciwnika. Przejmij ją (jeżeli należy do przeciwnika) i natychmiast zagraj."
+        "basic": "Obejrzyj do trzech wierzchnich kart własnej talii i dobierz jedną z nich na rękę. Przy pełnej planszy zyskuje Tarczę, nadal może dobierać kartę.",
+        "rare": "Dodatkowo obejrzyj do trzech wierzchnich kart własnej talii i wierzchnią kartę talii przeciwnika, a następnie wybierz jedną z tych obejrzanych kart i od razu ją zagraj. Przy pełnej planszy zamiast dodatkowego zagrania zyskuje Tarczę i połowę ATK/MAX PŻ innej wskazanej jednostki, zachowując dobór.",
+        "legendary": "Wybierz jedną spośród do trzech wierzchnich kart własnej talii i do trzech wierzchnich kart talii przeciwnika. Przejmij ją (jeżeli należy do przeciwnika) i natychmiast zagraj. Przy pełnej planszy zamiast dodatkowego zagrania zyskuje Tarczę i pełne ATK/MAX PŻ innej wskazanej jednostki."
       }
     },
     {
@@ -617,5 +617,17 @@
     "rule_activation_costs": "not_set_in_this_draft",
     "rule_integration_scope": "0.9.21 implements the v3 auction foundation (offers, bids, rarities, rewards); v4 ability execution and proposed v4 stats formula remain inactive."
   },
-  "rules_interpretations": "docs/auction/RELEASE_V22_0931.md"
+  "rules_interpretations": "docs/auction/RELEASE_V22_0931.md",
+  "balance_patch_v24": {
+    "applies": "new games",
+    "origin": "user approved six auction buffs",
+    "no_nerfs": true,
+    "legendary_OP": true,
+    "regen_A014": {
+      "heal_per_tick": 2,
+      "ticks": 2,
+      "stack": true
+    },
+    "source_audit": "historical unchanged"
+  }
 }

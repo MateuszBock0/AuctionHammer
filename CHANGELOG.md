@@ -4,6 +4,19 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.90] — 2026-10-25
+
+### Święto aukcji: sześć dodatkowych wzmocnień (buff-only)
+- **A014 Kapłan:** rzadka daje losowemu sojusznikowi regenerację 2 PŻ przez 2 tury; legendarna nadaje ją wszystkim własnym jednostkom co turę. Porcje kumulują się, wszystkie dotychczasowe aury antyleczenia pozostają.
+- **A003 Matka Kości:** gdy brak karty na cmentarzu, tworzy bezumiejętnościowego Szkieleta 6/6, 7/7 lub 8/8, zależnie od rzadkości, ewentualnie z większymi statystykami wskazanymi przez najsilniejszą kartę na ręce.
+- **A004 Regent oraz A016 Kartograf:** przy pełnej planszy otrzymują Tarczę (podstawowa), Tarczę + połowę statystyk innej jednostki (rzadka) albo Tarczę + pełne statystyki (legendarna) zamiast niemożliwej kopii lub dodatkowego wystawienia.
+- **A009 Złodziej Wspomnień:** po wymianie wszystkie karty na nowej własnej ręce otrzymują trwale +1/+1, +2/+2 lub +3/+3.
+- **A002 Generał:** Tarcza i dodatkowo 0/2/4 trwałego pancerza zależnie od rzadkości; przy awansie uzupełnienie różnicy, bez podwójnego naliczania.
+- Bez osłabiania wcześniejszych mocnych kart. Legendarne pozostają celowo OP; warianty historycznego audytu D-01–D-05 zachowano jako osobną dokumentację, nie jako automatyczny zestaw zmian.
+- Nowe reguły v24 dotyczą nowych meczów; starsze zapisy i podpisane audyty pozostają w poprzednich zasadach.
+
+**Testy i szczegóły:** [Patch v24](docs/BALANCE_PATCH_V24_0990.md) i `tests/test_balance_buff_v24_0990.py`. Fizyczna akceptacja Windows jest nadal wymagana.
+
 ## [0.9.89] — 2026-10-25
 
 ### Dyskretna warstwa dźwiękowa (40% muzyka / 10% efekty)

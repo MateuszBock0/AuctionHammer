@@ -25,6 +25,65 @@ def pick_choices(game,mode,ids,label):
     return [Choice(mode,x,f'{label} — {game.label(x)}') for x in ids]
 
 
+def _v24(game):
+    return getattr(game,'balance_patch_v24',False) and game.auction_catalog=='v22'
+
+
+def _v24_shield_options(game,uid,tier):
+    own=game.players[game.cards[uid].owner]
+    enemy=game.players[1-own.idx]
+    if tier==0:
+        return [Choice('v24_shield_only',None,'Tarcza: pełna plansza')]
+    targets=[x for x in own.board+enemy.board if x!=uid and x in game.units]
+    return (pick_choices(game,'v24_shield_stats',targets,'Tarcza i statystyki')
+            if targets else [Choice('v24_shield_only',None,'Tarcza: brak innej jednostki')])
+
+
+def _v24_shield_buff(game,uid,tier,target):
+    if uid not in game.units:return
+    u=game.units[uid]
+    u.shield=1;u.shield_source=uid
+    if tier and target in game.units and target!=uid:
+        chosen=game.units[target]
+        atk=max(0,chosen.atk);hp=max(0,chosen.max_hp)
+        if tier==1:
+            atk=(atk+1)//2;hp=(hp+1)//2
+        if atk:game._add_effect(uid,'atk',atk,source=uid,positive=True)
+        if hp:game._add_effect(uid,'max_hp',hp,source=uid,positive=True)
+    game._log(f'{game.label(uid)}: pełna plansza — Tarcza i alternatywne wzmocnienie.')
+
+
+def grant_general_defense(game,uid):
+    """Shield + durable 0/2/4 armor, grant only missing armor at evolution."""
+    if not _v24(game) or uid not in game.units or kind(game,uid)!='A002':return
+    u=game.units[uid]
+    u.shield=1;u.shield_source=uid
+    wanted=(0,2,4)[rarity(game,uid)]
+    # armor_perm_grants tracks REMAINING armor and shrinks after hits.
+    # Track awarded tiers separately to prevent replenishing spent armor.
+    prior=max((int(tag.rsplit('_',1)[-1]) for tag in u.passives_triggered
+               if tag.startswith('v24_a002_armor_')),default=0)
+    delta=max(0,wanted-prior)
+    if delta:
+        u.armor_perm+=delta
+        u.armor_perm_source=uid
+        u.armor_perm_grants[uid]=u.armor_perm_grants.get(uid,0)+delta
+        u.passives_triggered.add(f'v24_a002_armor_{wanted}')
+    game._log(f'Generał: Tarcza i {wanted} pancerza (v24).')
+
+
+def _v24_hand_buff(game,uid,tier):
+    """Apply permanent +stats to ALL cards in owner's new physical hand."""
+    amount=tier+1
+    own=game.players[game.cards[uid].owner]
+    for cid in list(own.hand):
+        card=game.cards[cid]
+        card.definition=replace(card.definition,atk=card.definition.atk+amount,
+                                hp=card.definition.hp+amount)
+        game.defs[cid]=card.definition
+    game._log(f'Złodziej Wspomnień: {len(own.hand)} kart w nowej ręce +{amount}/+{amount}.')
+
+
 def options(game,uid,context,attacked=None):
     aid=kind(game,uid)
     if not aid and uid not in game.auction_death_grants:return []
@@ -33,6 +92,8 @@ def options(game,uid,context,attacked=None):
     myboard=[x for x in own.board if x!=uid]
     opponents=list(enemy.board)
     tier=rarity(game,uid)
+    if context=='auction_v24_fallback' and _v24(game) and aid=='A016':
+        return _v24_shield_options(game,uid,tier)
     if context=='auction_cart_play':
         if tier==1:
             candidates=list(reversed(own.deck[-3:]))+list(reversed(enemy.deck[-1:]))
@@ -66,8 +127,10 @@ def options(game,uid,context,attacked=None):
                 result+=pick_choices(game,'capture_chain',opponents,'Przejmij i nadaj łańcuch')
         return result
     if aid=='A002' and (context=='play' or context=='auction_evolve'):
-        if tier==1:return pick_choices(game,'general_target',myboard,'Daj dwa ataki i x2 obrażeń')
-        return [Choice('auto',None,'Aura')] if tier==0 else []
+        if tier==1:
+            targets=pick_choices(game,'general_target',myboard,'Daj dwa ataki i x2 obrażeń')
+            return targets or ([Choice('auto',None,'Ochrona Generała')] if _v24(game) else [])
+        return [Choice('auto',None,'Aura / ochrona')] if (tier==0 or _v24(game)) else []
     if aid=='A003' and context=='death':
         available=[x for x in own.grave if x.startswith('S')]
         result=pick_choices(game,'to_hand',available,'Na rękę')
@@ -75,9 +138,12 @@ def options(game,uid,context,attacked=None):
             result+=pick_choices(game,'revive_one',available,'Wskrześ z 1 PŻ')
         if tier==2:
             result+=pick_choices(game,'revive_pair',available,'Wskrześ + zwróć inną')
+        if not available and _v24(game):
+            return [Choice('v24_skeleton',None,'Przywołaj Szkieleta')]
         return result
     if aid=='A004' and context=='play':
-        if len(own.board)>=5:return []
+        if len(own.board)>=5:
+            return _v24_shield_options(game,uid,tier) if _v24(game) else []
         ids=myboard + (opponents if tier>=1 else [])
         return pick_choices(game,'copy',[x for x in ids if x in game.units],
                             'Utwórz efemeryczną kopię')
@@ -94,6 +160,8 @@ def options(game,uid,context,attacked=None):
                             if tier>=1 and enemy.hand else [])
     if aid=='A009' and context=='play':
         if tier==2:return [Choice('swap_all',None,'Wymień obie ręce')]
+        if _v24(game) and (not own.hand or not enemy.hand):
+            return [Choice('v24_no_exchange',None,'Wzmocnij całą swoją rękę')]
         return pick_choices(game,'exchange_own',own.hand,'Wymień własną') if enemy.hand else []
     if aid=='A010' and context=='end':
         result=[]
@@ -114,13 +182,19 @@ def options(game,uid,context,attacked=None):
         return [Choice('auto',None,'Manipuluj PŻ bohaterów')]
     if aid=='A013' and context=='play':
         return pick_choices(game,'bastion',opponents,'Przebij MAX PŻ')
+    if aid=='A014' and context=='end' and tier>=1 and _v24(game):
+        return [Choice('auto',None,'Nadaj regenerację')]
     if aid in ('A014','A015'):
         return []
     if aid=='A016' and context=='play':
+        if _v24(game) and len(own.board)>=5 and tier==2:
+            return _v24_shield_options(game,uid,tier)
         if tier<2:
             choices=pick_choices(game,'cart_draw',list(reversed(own.deck[-3:])),
                                  'Dobierz jedną z własnej talii')
             if choices:return choices
+            if _v24(game) and len(own.board)>=5:
+                return _v24_shield_options(game,uid,tier)
             # The rare second effect is independent of the basic draw.
             # Even with no own cards, it may play the opponent's top card.
             if tier==1 and len(own.board)<5 and enemy.deck:
@@ -408,12 +482,12 @@ def _copy(game,uid,target,legendary=False,ephemeral_silent=False):
     return new_uid
 
 
-def _spawn(game,uid,atk,hp,taunt=False):
+def _spawn(game,uid,atk,hp,taunt=False,name='Żołnierz Królowej'):
     owner=game.cards[uid].owner;p=game.players[owner]
     if len(p.board)>=5:return None
     game.serial+=1
     cid=f'SUM{game.serial:07d}'
-    d=CardDefinition(cid,'Żołnierz Królowej','Ludzie',
+    d=CardDefinition(cid,name,'Ludzie',
                      'Prowokacja' if taunt else 'Bez zdolności','Pasywna',
                      atk,hp,'Prowokacja' if taunt else 'Bez zdolności',
                      'Jednostka efemeryczna',0,0)
@@ -423,7 +497,7 @@ def _spawn(game,uid,atk,hp,taunt=False):
     game.units[cid]=unit;game.ephemeral_ids.add(cid);game._place_on_board(cid,owner)
     if taunt:
         game._add_effect(cid,'taunt',source=uid,positive=True)
-    game._log(f'{game.label(uid)} przywołuje Żołnierza {atk}/{hp}.')
+    game._log(f'{game.label(uid)} przywołuje {name} {atk}/{hp}.')
     mark_general_new_ally(game,cid)
     return cid
 
@@ -547,6 +621,8 @@ def execute(game,uid,context,choice,attacked=None):
             foe.hand[foe.hand.index(target)]=first
             game.cards[first].owner=1-owner;game.cards[target].owner=owner
             game._log(f'{game.label(uid)} wymienia karty: {first} ⇄ {target}.')
+            if _v24(game) and aid=='A009':
+                _v24_hand_buff(game,uid,tier)
         return
     if context=='auction_discard':
         if target in foe.hand:
@@ -586,6 +662,8 @@ def execute(game,uid,context,choice,attacked=None):
         elif mode in ('capture','capture_chain'):
             game.auction_wave_ops.append(('capture',uid,target,mode=='capture_chain'))
     elif aid=='A002':
+        if context in ('play','auction_evolve') and _v24(game):
+            grant_general_defense(game,uid)
         if mode=='general_target' and target in own.board:
             game.auction_general_targets[uid]=target
             if getattr(game,'_replay_verbose_general_0958',False):
@@ -594,14 +672,19 @@ def execute(game,uid,context,choice,attacked=None):
             else:
                 game._log(f'Generał wybiera {game.label(target)} do podwójnych ataków.')
     elif aid=='A003' and context=='death':
-        if mode=='to_hand':
+        if mode=='v24_skeleton' and _v24(game):
+            game.auction_wave_ops.append(('v24_skeleton',uid,owner,tier))
+        elif mode=='to_hand':
             game.auction_wave_ops.append(('to_hand',owner,target,False))
         elif mode=='revive_one':
             game.auction_wave_ops.append(('revive',owner,target,False))
         elif mode=='revive_pair':
             game.auction_wave_ops.append(('revive_pair',uid,owner,target))
     elif aid=='A004' and context=='play':
-        _copy(game,uid,target,legendary=tier==2)
+        if mode.startswith('v24_shield_') and _v24(game):
+            _v24_shield_buff(game,uid,tier,target)
+        else:
+            _copy(game,uid,target,legendary=tier==2)
     elif aid=='A005' and context=='play':
         money=foe.coins
         stolen=(min(3,money) if tier==0 else
@@ -645,8 +728,11 @@ def execute(game,uid,context,choice,attacked=None):
                     game.auction_pending_targets.pop(uid,None)
                     _exile_random_hand(game,uid)
     elif aid=='A009' and context=='play':
-        if mode=='swap_all':
+        if mode=='v24_no_exchange' and _v24(game):
+            _v24_hand_buff(game,uid,tier)
+        elif mode=='swap_all':
             _swap_hands(game)
+            if _v24(game):_v24_hand_buff(game,uid,tier)
             # Opponent discards up to two from their NEW hand.
             game.auction_pending_targets[uid]=['discard']*min(2,len(foe.hand))
             if foe.hand:
@@ -661,6 +747,14 @@ def execute(game,uid,context,choice,attacked=None):
             else:
                 _prepare_pending(game,uid,'auction_exchange_enemy',
                                  options(game,uid,'auction_exchange_enemy'))
+    elif aid=='A014' and context=='end' and _v24(game) and tier>=1:
+        allies=[x for x in own.board if x in game.units]
+        selected=([game.rng.choice(allies)] if tier==1 and allies else
+                  allies if tier==2 else [])
+        if tier==1 and selected:game.rng_draw_index+=1
+        for x in selected:
+            game._add_effect(x,'regen',2,2,source=uid,positive=True)
+        game._log(f'Kapłan Odwróconej Łaski: regeneracja 2 PŻ przez 2 tury — {len(selected)} sojusznik(ów).')
     elif aid=='A010' and context=='end':
         if mode=='summon':
             if tier==0:
@@ -724,19 +818,28 @@ def execute(game,uid,context,choice,attacked=None):
                 game._log(f'Łamacz Bastionów: Tarcza pochłania {value} obrażeń.')
                 return
             game._damage(target,value,ignore_defense=True)
-    elif aid=='A016' and context=='play':
-        if mode=='cart_draw' and target in own.deck:
+    elif aid=='A016' and context in ('play','auction_v24_fallback'):
+        if mode.startswith('v24_shield_') and _v24(game):
+            _v24_shield_buff(game,uid,tier,target)
+        elif mode=='cart_draw' and target in own.deck:
             own.deck.remove(target)
             own.hand.append(target)
             game.cards[target].zone='hand'
             game._log(f'Kartograf: {game.label(target)} dobrano do ręki.')
-        if tier==1:
+        if (tier==0 and context=='play' and mode=='cart_draw'
+                and _v24(game) and len(own.board)>=5):
+            # Basic draws normally, but still gets its fallback shield.
+            _v24_shield_buff(game,uid,tier,None)
+        if tier==1 and context=='play' and not mode.startswith('v24_shield_'):
             # First choice can empty the deck; recycle again for the
             # optional second selection only when a board slot remains.
             if len(own.board)<5:
                 game._refill_deck_from_grave(owner)
             choices=options(game,uid,'auction_cart_play')
             if choices:_prepare_pending(game,uid,'auction_cart_play',choices)
+            elif _v24(game) and len(own.board)>=5:
+                _prepare_pending(game,uid,'auction_v24_fallback',
+                                 _v24_shield_options(game,uid,tier))
         elif tier==2 and mode=='cart_play':
             execute(game,uid,'auction_cart_play',choice)
     elif aid=='A018' and context=='play':
@@ -783,6 +886,16 @@ def resolve_wave_ops(game):
         if op=='capture':
             _,uid,target,chain=item
             _capture(game,uid,target,chain)
+        elif op=='v24_skeleton':
+            _,source,owner,tier=item
+            hand=game.players[owner].hand
+            best=(max(hand,key=lambda x:(game.cards[x].attack+game.cards[x].max_hp,
+                                         game.cards[x].attack,game.cards[x].max_hp,x))
+                  if hand else None)
+            floor=6+tier
+            atk=max(floor,game.cards[best].attack) if best else floor
+            hp=max(floor,game.cards[best].max_hp) if best else floor
+            _spawn(game,source,atk,hp,name='Szkielet Matki Kości')
         elif op=='to_hand':
             _,owner,target,_=item
             _return_to_hand(game,owner,target)

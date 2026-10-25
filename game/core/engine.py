@@ -21,7 +21,8 @@ class Match:
                  auction_catalog: str = "v3",
                  vacant_income_enabled: bool | None = None,
                  starting_compensation: str = "coins",
-                 fixed_board_slots: bool = False):
+                 fixed_board_slots: bool = False,
+                 balance_patch_v24: bool | None = None):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -77,6 +78,11 @@ class Match:
         self.ephemeral_ids=set()
         self.auction_death_grants=set()
         self.auction_rescue_spent=set()
+        # New v22 games default to v24 buffs; explicit False reconstructs
+        # archived balance for deterministic comparisons and replay tests.
+        self.balance_patch_v24=(
+            auctions_enabled and auction_catalog=='v22'
+            if balance_patch_v24 is None else bool(balance_patch_v24))
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -649,7 +655,10 @@ class Match:
                         if uid in self.units and not self._disabled(self.units[uid]):
                             if (self.cards[uid].definition.faction=='Krasnoludy'
                                 or (self.auction_catalog in ('v4','v22') and
-                                    self.cards[uid].definition.id=='A010')):
+                                    (self.cards[uid].definition.id=='A010' or
+                                     (getattr(self,'balance_patch_v24',False) and
+                                      self.auction_catalog=='v22' and
+                                      self.cards[uid].definition.id=='A014')))):
                                 self._queue(uid,'end')
                         continue
                     self.end_queue=None
