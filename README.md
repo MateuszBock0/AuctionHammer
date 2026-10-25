@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.80</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.81</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -75,7 +75,7 @@ Po pierwszym pobraniu gra nie wymaga logowania, konta ani serwera. Zapisy pozost
 1. **Wybierz bonus startowy**, jeżeli zaczynasz jako drugi: trzy monety albo specjalnego Chorążego.
 2. **Wymień do trzech kart** z początkowej ręki (możesz też zostawić wszystkie).
 3. **Zagraj kartę** na jedno z pięciu własnych pól. Możesz przeciągnąć ją z ręki.
-4. **Wybierz jednostkę i zaatakuj** legalny cel — kliknięciem albo przeciągnięciem strzałki.
+4. **Wybierz jednostkę i zaatakuj** legalny cel — klikając jednostkę, a potem cel, lub przeciągając jednostkę bez zasłaniającej planszę strzałki.
 5. **Zakończ turę [SPACJA]**. Gdy jeszcze możesz coś zrobić, gra ostrzeże Cię przed pominięciem tych akcji.
 6. **Zdobądź przewagę** dzięki zdolnościom, aurze jednostek i aukcjom. Wygrywa gracz, który sprowadzi PŻ wrogiego bohatera do zera.
 
@@ -97,6 +97,8 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 ## Co nowego?
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
+
+- **0.9.81** — usunięto nieestetyczną strzałkę prowadzącą od atakującej jednostki do kursora. Legalne cele nadal są podświetlane, a oba sposoby atakowania działają.
 
 - **0.9.80** — trasy aur poza kartami, kompletne dokumenty w ZIP i bramki CI przed publikacją.
 
