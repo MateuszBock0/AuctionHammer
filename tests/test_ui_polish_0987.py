@@ -87,8 +87,6 @@ class UIPolish0987(unittest.TestCase):
                  if len(call.args)>2 and call.args[2]==(116,116)]
         self.assertEqual(len(squares),3)
         self.assertTrue(all(call.kwargs.get('mode')=='cover' for call in squares))
-        pygame.quit()
-
     def test_square_cover_preserves_real_top_and_bottom_rows(self):
         with TemporaryDirectory() as dirname:
             root=Path(dirname)

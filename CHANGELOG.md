@@ -4,6 +4,16 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.87] — 2026-10-25
+
+### Czytelniejsze podglądy i kwadratowe portrety aukcji
+- Statusy i napisy `ATAKI 1/1` na ilustracjach powiększonych kart nie są ponownie skalowane nearest-neighbour razem z postacią; ich prostokąty są wyłączane z ostrej warstwy i zachowują czytelne wygładzone glify z 0.9.86.
+- Na dużych podglądach większa typografia płytek statusów, informacji o gotowości oraz podpisu maksymalnych PŻ; rozmiar kart na planszy i hitboxy pozostają dotychczasowe.
+- Jedynie kwadratowe fotografie trzech ofert aukcyjnych używają kadrowania `cover`, bez poziomej granicy między ilustracją a sztucznie przedłużonym tłem. Oryginalny pionowy zakres postaci pozostaje w kadrze, przycinane są boczne fragmenty scenerii. Pełne podglądy, powiększenia oraz paski na kartach nadal używają `contain`.
+- Testy 0.9.87 pilnują geometrii wyłączeń tekstu, 51 prawdziwych wariantów aukcyjnych i braku poziomych obcięć w square art.
+
+**Bez zmian:** mechanika gry, balans, RNG, katalogi, zapisy, audyty i pliki PNG. Ręczna akceptacja Windows 100/125/150% nadal wymagana.
+
 ## [0.9.86] — 2026-10-25
 
 ### Czytelność fontów bez rozmywania ilustracji

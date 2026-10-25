@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.86 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.87 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.87 (dopracowanie podglądów i kwadratowych ofert)
+
+- Oddzielone są rejonówki tekstowych nakładek na portretach (statusy, gotowość, znaczki), aby wygładzone napisy nie traciły kresek podczas nearest-neighbour obrazu.
+- Typografia małych napisów w dużej karcie 255×380 jest nieco większa; geometria planszy, menu i hitboxów bez zmian.
+- Ilustracja w kwadratowych ofertach aukcji korzysta z `cover`, w pełni w pionie, bez ostrych poziomych pasów przedłużania; w kartach i pełnym podglądzie nadal `contain`.
+- Odbiór manualny fizycznego Windows nadal otwarty.
 
 ### Etap — 0.9.86 (czytelne czcionki przy ułamkowym skalowaniu)
 
