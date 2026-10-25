@@ -27,7 +27,9 @@ from game.ui.card_view import (CardView, FACTION_COLORS, ART, PIXEL_ART_IDS,
                                standard_hit_damage,
                                CHORAZY_ART_LEVELS, status_display_priority)
 from game.ui.assets import ROOT_DIR
-from game.ui.card_infographics import card_cue, highlighted_numeric_ranges
+from game.ui.card_infographics import (card_cue, highlighted_numeric_ranges,
+                                       AUCTION_MECHANIC_LABELS)
+from game.ui.auction_badges import draw_trigger_icon, TRIGGER_NAMES
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
 from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
@@ -979,6 +981,13 @@ class SoloApp:
         return pygame.Rect(271+index*318,254,278,364)
 
     @staticmethod
+    def auction_badge_rects(index):
+        """Two small, fixed pixel-art tiles outside each offer title."""
+        rect=SoloApp.auction_offer_rect(index)
+        return (pygame.Rect(rect.x+9,rect.y+5,23,23),
+                pygame.Rect(rect.right-32,rect.y+5,23,23))
+
+    @staticmethod
     def auction_control_rect(action):
         return {
             'pass':pygame.Rect(528,753,210,49),
@@ -1192,6 +1201,22 @@ class SoloApp:
             adef=catalog_for(self.game.auction_catalog).get(off.archetype)
             self._text(f'OFERTA {i+1} · {off.archetype or "ARCHIWALNA"}',14,
                        rect.centerx,rect.y+17,cfg.GOLD,center=True)
+            hint=None
+            if adef is not None:
+                trigger_icon,family_icon=self.auction_badge_rects(i)
+                draw_trigger_icon(self.screen,trigger_icon,adef.trigger)
+                pygame.draw.rect(self.screen,(29,38,43),family_icon)
+                pygame.draw.rect(self.screen,tier_accent,family_icon,1)
+                icon=self.cards_view.icons.get(adef.family,'families',19)
+                if icon is not None:
+                    self.screen.blit(icon,icon.get_rect(center=family_icon.center))
+                pointer=self.mouse_pos()
+                if trigger_icon.collidepoint(pointer):
+                    hint='AKTYWACJA: '+TRIGGER_NAMES.get(adef.trigger,'INNA')
+                elif family_icon.collidepoint(pointer):
+                    hint=('MECHANIKA: '+
+                          AUCTION_MECHANIC_LABELS.get(off.archetype,adef.family.upper()))
+
             name=adef.name if adef else f'Strażnik aukcji {off.hp} PŻ'
             self._text(self.cards_view.clip(name,self.fonts[16],rect.width-20),16,
                        rect.centerx,rect.y+53,cfg.TEXT,center=True)
@@ -1235,6 +1260,11 @@ class SoloApp:
             if adef is not None and self.game.auction_catalog=='v22':
                 description=preview_auction_copy(off.archetype,off.rarity,rules,
                                                  description)
+            if adef is not None:
+                family_name=AUCTION_MECHANIC_LABELS.get(off.archetype,adef.family.upper())
+                label=(TRIGGER_NAMES.get(adef.trigger,'ZDOLNOŚĆ')+'  ·  '+family_name)
+                self._text(self.cards_view.clip(label,self.fonts[12],rect.width-32),
+                           12,rect.centerx,rect.y+176,tier_accent,center=True)
             lines=wrap_pixels(description,self.fonts[13],
                               rect.width-36,max_lines=4)
             for j,line in enumerate(lines):
@@ -1242,7 +1272,10 @@ class SoloApp:
                            cfg.TEXT,center=True)
             inspect=self.auction_inspection_rect(i)
             self._button(inspect,'PEŁNA ZDOLNOŚĆ',small=True)
-            if claimed:
+            if hint is not None:
+                self._text(self.cards_view.clip(hint,self.fonts[12],rect.width-20),
+                           12,rect.centerx,rect.y+322,cfg.GOLD,center=True)
+            elif claimed:
                 selected_by=next(p for p,card in a.picks.items() if card==off.uid)
                 self._text(f'WYBRANO: {self.game.players[selected_by].name}',13,
                            rect.centerx,rect.y+322,cfg.MUTED,center=True)
@@ -1260,17 +1293,29 @@ class SoloApp:
             leader=('BRAK' if a.highest_bidder is None
                     else self.game.players[a.highest_bidder].name)
             bonus=a.bid_bonus[0] if self.game.auction_catalog=='v22' else 0
-            self._text(f'OFERUJE PRZECIWNIK: {leader}  ·  '
-                       f'NAJWYŻSZA OFERTA SKUTECZNA: {a.highest_effective}  ·  '
-                       f'NASZ BONUS A018: +{bonus}',14,741,644,cfg.TEXT,center=True)
             self._sync_auction_slider()
             chosen=self.auction_slider_value
-            self._text(
-                f'MINIMUM DO ZAPŁATY: {minimum}  ·  '
-                f'WYBRANA OFERTA: {chosen if chosen is not None else "BRAK"}  ·  '
-                f'SKUTECZNA WARTOŚĆ: {(chosen+bonus) if chosen is not None else "—"}  ·  '
-                f'MONETY PO WYGRANEJ: {(coins-chosen) if chosen is not None else "—"}',
-                13,741,678,cfg.MUTED,center=True)
+            # Two large scan-friendly 8-bit price tiles. The bonus changes
+            # bid effectiveness, NOT the actual coins spent.
+            current_box=pygame.Rect(271,631,452,69)
+            own_box=pygame.Rect(736,631,452,69)
+            for tile in (current_box,own_box):
+                pygame.draw.rect(self.screen,(36,44,46),tile)
+                pygame.draw.rect(self.screen,TAVERN_BRASS,tile,2)
+            self._text(f'PROWADZI: {leader}   ·   SKUTECZNA OFERTA',12,
+                       current_box.centerx,638,cfg.MUTED,center=True)
+            self._text(str(a.highest_effective),24,current_box.centerx,657,
+                       cfg.GOLD,center=True)
+            self._text('TWOJA OFERTA   /   MINIMUM '+str(minimum),12,
+                       own_box.centerx,638,cfg.MUTED,center=True)
+            self._text(str(chosen) if chosen is not None else 'BRAK MONET',
+                       24,own_box.centerx,657,
+                       cfg.GREEN if chosen is not None else cfg.RED,center=True)
+            after_bid=(str(coins-chosen) if chosen is not None else '—')
+            effective=(str(chosen+bonus) if chosen is not None else '—')
+            self._text(f'BONUS A018 +{bonus}   ·   SKUTECZNA {effective}   ·   '
+                       f'MONETY PO WYGRANEJ {after_bid}',12,741,703,
+                       cfg.MUTED,center=True)
             if a.turn==0:
                 affordable=minimum<=coins
                 track=self.auction_slider_rect()
