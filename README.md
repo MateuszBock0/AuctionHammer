@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.87</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.88</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -98,6 +98,7 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 
+- **0.9.88** — subtelne kadrowanie kwadratowych portretów ofert wyżej: 8% powiększenia, górny priorytet kompozycji, bez zmiany ostrości i pozostałych obrazów.
 - **0.9.87** — poprawione małe oznaczenia statusów i PŻ w podglądach kart oraz pełniejsze kadrowanie kwadratowych ilustracji ofert aukcyjnych bez poziomych pasków; źródłowe PNG i zasady gry bez zmian.
 - **0.9.86** — poprawka uszkodzonych małych liter przy skalowaniu okna i DPI Windows: antyaliasowane UI oraz ostre portrety kart i ofert aukcyjnych.
 - **0.9.85** — wyższe karty w aukcji: obraz, rzadkość, aktywacja i zdolność nie nachodzą na siebie; odświeżony, czytelny panel licytacji.
@@ -119,7 +120,7 @@ Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 - **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
 - **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
 
-Wersja **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+Wersja **0.9.88** ustawia wyższy kadr kwadratowych ofert aukcyjnych. **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Pomoc, bezpieczeństwo i rozwój
 
