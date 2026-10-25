@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.82 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.83 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.83 (pixel art — czytelniejsza aukcja i feedback ataku)
+
+- Grafiki wszystkich 51 wariantów aukcyjnych otrzymują prosty `edge bleed`: czteropikselowe, ostre kafelki przedłużające kolory i teksturę **z faktycznej krawędzi** finalnego PNG. Postać i cały oryginalny obraz pozostają nienaruszone, bez cropu, rozciągania twarzy, gradientu, blur lub tworzenia nowych assetów.
+- Ikony atlasu frakcji i rodzin zdolności korzystają z najbliższego sąsiada (`pygame.transform.scale`), bez `smoothscale`. W ofertach aukcyjnych dwa 5-bitowe symbole pokazują rzeczywisty wyzwalacz i rodzinę zdolności; hover ujawnia ich znaczenie, a etykieta mechaniki pochodzi z danych archetypu (np. A003 WSKRZESZ.).
+- Aukcja oddziela **aktualną skuteczną ofertę** od **Twojej faktycznej ceny**, minimum, bonusu A018 i liczby monet po wygranej; bez zmian komend i ekonomii.
+- Legalne cele ataku i wybrany atakujący otrzymują małe, ostre pikselowe narożniki; nad nielegalnym wrogiem panel boczny pokazuje informację o blokadzie (np. Prowokacja) ze źródła Match. Subtelna czerwona strzałka 0.9.82 pozostaje.
+- Testy `tests/test_ui_pixel_polish_0983.py` sprawdzają ostre skalowanie, zachowanie centralnej ilustracji, przedłużenie krawędzi, autorytatywne wskazówki i brak mutacji audytowanego stanu. Reguły, RNG, AI, save/replay i ekonomia bez zmian.
 
 ### Etap — 0.9.82 (subtelna strzałka ataku i poprawa kadrowania aukcji)
 
