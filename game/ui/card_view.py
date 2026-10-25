@@ -148,6 +148,12 @@ class CardView:
             self.fonts[(size,True)]=pygame.font.SysFont('segoeui',size,bold=True)
         self.font_title=self.fonts[(14,True)]
         self.artcache={}
+        # Logical-space rectangles of portraits actually drawn this frame.
+        self.pixel_art_regions=[]
+
+    @staticmethod
+    def card_art_region(rect):
+        return card_zones(rect)['art'].copy()
 
     def font(self,size,bold=False):
         return self.fonts[(size,bold)]
@@ -340,6 +346,7 @@ class CardView:
             self.theme.legendary_underlay(screen,rect)
         # IMAGE: never contains stats or descriptive text.
         art=zone['art']
+        self.pixel_art_regions.append(art.copy())
         artwork=self.art(d.id,d.faction,art.size,d.family,d.name,
                          rarity=tier,level=card.ability_level,
                          guard_kills=guard_kills)

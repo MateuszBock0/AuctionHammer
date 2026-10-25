@@ -83,6 +83,8 @@ class SoloApp:
         self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (11,12,13,14,15,16,18,20,22,28,34,46)}
         self.theme=VisualTheme()
         self.cards_view=CardView()
+        self.auction_art_regions=[]
+        self.detail_art_regions=[]
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
         self.ai=ComputerOpponent()
         self.bg=self._create_background()
@@ -688,15 +690,49 @@ class SoloApp:
                    else 'PRAWY KLIK / [I] — PEŁNY OPIS',12,
                    box.x+13,box.bottom-20,TAVERN_MUTED)
 
+    def _visible_pixel_art_regions(self):
+        """Restore only images belonging to the visible layer, not hidden UI."""
+        if (self.menu_open or self.help_open or self.history_open
+                or self.confirm_action or self.tutorial_welcome_open
+                or self.replay_index is not None or self._bonus_selection_due()
+                or self.game.phase=='finished'):
+            return ()
+        if self.details_card is not None:
+            return tuple(self.detail_art_regions)
+        if self.game.phase=='auction':
+            return tuple(self.auction_art_regions[-1:]
+                         if self.auction_inspect_index is not None
+                         else self.auction_art_regions)
+        return tuple(self.cards_view.pixel_art_regions)
+
     def _present(self):
         viewport=self._viewport()
         self.window.fill((5,9,14))
         if viewport.size==self.screen.get_size():
             self.window.blit(self.screen,viewport.topleft)
         else:
-            # Pixel-art-first display at any window/DPI scale: never blur.
-            scaled=pygame.transform.scale(self.screen,viewport.size)
-            self.window.blit(scaled,viewport.topleft)
+            # Fractional nearest-neighbour resizing deletes thin Segoe UI
+            # strokes. Smooth the finished text/UI but preserve original
+            # portraits with an exact nearest-neighbour image-only composite.
+            # All logical hitboxes remain unchanged.
+            ui=pygame.transform.smoothscale(self.screen,viewport.size)
+            self.window.blit(ui,viewport.topleft)
+            regions=self._visible_pixel_art_regions()
+            if regions:
+                pixel=pygame.transform.scale(self.screen,viewport.size)
+                logical=self.screen.get_rect()
+                for rect in regions:
+                    src=pygame.Rect(rect).clip(logical)
+                    if not src:
+                        continue
+                    left=round(src.left*viewport.width/logical.width)
+                    top=round(src.top*viewport.height/logical.height)
+                    right=round(src.right*viewport.width/logical.width)
+                    bottom=round(src.bottom*viewport.height/logical.height)
+                    if right<=left or bottom<=top:
+                        continue
+                    area=pygame.Rect(left,top,right-left,bottom-top)
+                    self.window.blit(pixel,(viewport.x+left,viewport.y+top),area)
         pygame.display.flip()
 
     def _open_details(self,uid=None):
@@ -1188,6 +1224,7 @@ class SoloApp:
                 pygame.draw.rect(self.screen,dominant,
                                  portrait.inflate(12,12),border_radius=10)
             self.screen.blit(sprite,portrait)
+            self.auction_art_regions.append(portrait.copy())
             pygame.draw.rect(self.screen,rarity_accent,portrait,2,border_radius=7)
         self._text('PEŁNY OPIS ZDOLNOŚCI',18,296,335,cfg.GOLD)
         lines=self._wrap(description,18,853)
@@ -1264,6 +1301,7 @@ class SoloApp:
             portrait=self.cards_view.images.get_auction_image(
                 off.archetype,off.rarity,artbox.size,mode='contain')
             if portrait is not None:
+                self.auction_art_regions.append(artbox.copy())
                 dominant=self.cards_view.images.get_auction_color(
                     off.archetype,off.rarity)
                 if dominant is not None:
@@ -3039,8 +3077,10 @@ class SoloApp:
                         d.id,d.faction,(276,520),d.family,d.name,
                         rarity=current_rarity)
             self.screen.blit(artwork,(184,164))
+            self.detail_art_regions.append(pygame.Rect(184,164,276,520))
             self._text('POWIĘKSZONA ORYGINALNA ILUSTRACJA',13,186,697,cfg.MUTED)
         else:
+            self.detail_art_regions.append(self.cards_view.card_art_region(pygame.Rect(194,164,255,380)))
             self.cards_view.draw(self.screen,card,pygame.Rect(194,164,255,380),
                                  unit=u,selected=True,
                                  rarity=self.game.auction_awards.get(uid,{}).get('rarity'),
@@ -3626,6 +3666,9 @@ class SoloApp:
         self._button(pygame.Rect(829,764,218,55),'POMIŃ  [ESC]')
 
     def draw(self):
+        self.cards_view.pixel_art_regions.clear()
+        self.auction_art_regions.clear()
+        self.detail_art_regions.clear()
         # W powtórce renderujemy kopię, bez kierowania do niej jakichkolwiek
         # komend. Po każdej klatce przywracamy żywy Match.
         live=self.game
