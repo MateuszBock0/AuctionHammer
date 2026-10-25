@@ -281,7 +281,15 @@ class AuctionV22EdgeCollisions(unittest.TestCase):
         src=award(g,'A016',2)
         original=list(g.players[0].deck)
         g.play(src)
-        self.assertIsNone(g.pending)
+        # v24: full-board legendary gains Shield + full selected stats
+        # instead of silently losing its triggered ability.
+        self.assertIsNotNone(g.pending)
+        before=g.units[src].atk
+        target=next(c.target for c in g.pending.choices if c.mode=='v24_shield_stats')
+        target_atk=g.units[target].atk
+        choose(g,'v24_shield_stats',target)
+        self.assertEqual(g.units[src].shield,1)
+        self.assertEqual(g.units[src].atk,before+target_atk)
         self.assertEqual(len(g.players[0].board),5)
         self.assertEqual(g.players[0].deck,original)
         g.assert_integrity()
