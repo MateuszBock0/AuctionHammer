@@ -103,7 +103,10 @@ class SoundPolish0989(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertGreater(sound.get_length(),0.1)
                 self.assertLess(sound.get_length(),0.7)
-                self.assertAlmostEqual(sound.get_volume(),.1,places=2)
+                # SDL_mixer stores per-Sound gain in discrete 1/128 steps.
+                # 10% is represented as 12/128 = 0.09375 on these runners;
+                # exact floating-point equality is not a valid audio test.
+                self.assertAlmostEqual(sound.get_volume(),.1,delta=1/128)
 
     def test_audio_device_failure_keeps_game_running(self):
         with patch.object(pygame.mixer,'get_init',return_value=None), \
