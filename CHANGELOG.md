@@ -4,6 +4,16 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.88] — 2026-10-25
+
+### Kadrowanie ku górze w kwadratowych ofertach aukcji
+- Oryginalne portrety 295×209 przy zwykłym `cover` do 116×116 nie mają żadnego pionowego zapasu; samo ustawienie `focus_y` niczego by nie zmieniło.
+- Wyłącznie w trzech kwadratowych miniportretach aukcji dodano delikatne **powiększenie 1,08×** i **zakotwiczenie u góry**. Twarz i górny fragment postaci pozostają w kadrze, a niewielki fragment dolnego tła jest przycinany. Kadr poziomy pozostaje centralny.
+- W pamięci podręcznej grafik rozróżniane są parametry powiększenia i punktu kadrowania. Ilustracje na ręce, podglądy pełnej zdolności, karty i napisy pozostają bez zmian.
+- Nowe testy sprawdzają rzeczywistą zmianę kadru (nie no-op), pierwszą linię obrazu, cache, zgodność pozostałych widoków oraz wszystkie 51 wariantów aukcyjnych.
+
+**Bez zmian:** pliki źródłowe PNG, zasady gry, silnik, balans, AI, RNG, zapisy i układ interfejsu. Fizyczna kontrola na Windows nadal wymagana.
+
 ## [0.9.87] — 2026-10-25
 
 ### Czytelniejsze podglądy i kwadratowe portrety aukcji
