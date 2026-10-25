@@ -1304,12 +1304,12 @@ class SoloApp:
                 pygame.draw.rect(self.screen,TAVERN_BRASS,tile,2)
             self._text(f'PROWADZI: {leader}   ·   SKUTECZNA OFERTA',12,
                        current_box.centerx,638,cfg.MUTED,center=True)
-            self._text(str(a.highest_effective),24,current_box.centerx,657,
+            self._text(str(a.highest_effective),22,current_box.centerx,657,
                        cfg.GOLD,center=True)
             self._text('TWOJA OFERTA   /   MINIMUM '+str(minimum),12,
                        own_box.centerx,638,cfg.MUTED,center=True)
             self._text(str(chosen) if chosen is not None else 'BRAK MONET',
-                       24,own_box.centerx,657,
+                       22,own_box.centerx,657,
                        cfg.GREEN if chosen is not None else cfg.RED,center=True)
             after_bid=(str(coins-chosen) if chosen is not None else '—')
             effective=(str(chosen+bonus) if chosen is not None else '—')
