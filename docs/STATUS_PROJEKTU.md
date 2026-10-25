@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 24 października 2026  
-**Wersja gałęzi:** MVP 0.9.88 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.89 (naprzemienna kolejność graczy w aplikacji solo; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.89 (ciche efekty działań, niezależne od muzyki)
+
+- Domyślne poziomy: muzyka **40%**, osiem autorskich, delikatnych efektów **10%**. Każde ustawienie reguluje się osobno w menu USTAWIENIA (0–100%, krok 10%); 0% oznacza wyciszenie.
+- Poziomy pozostają w osobnym pliku `audio_settings.json` w katalogu użytkownika; nie wchodzą do savegame, podpisanego replay lub RNG.
+- Efekty uruchamiane jedynie z rzeczywiście zatwierdzonych działań i efektów `CombatVisuals`; nielegalne akcje nie generują triumfalnych sygnałów. Dźwięki są ograniczane czasowo i pozostają opcjonalne przy braku urządzenia audio.
+- Oryginalne pliki graficzne, muzyka i zasady bez zmian. Fizyczna walidacja głośności i odbioru na Windows do wykonania.
 
 ### Etap — 0.9.88 (górny kadr kwadratowych ofert aukcyjnych)
 

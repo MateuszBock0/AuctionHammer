@@ -26,7 +26,7 @@ class TrackedMusicIntegration(unittest.TestCase):
             self.assertEqual(len(player.tracks),1)
             self.assertIsNone(player.end_event)
             self.assertTrue(pygame.mixer.music.get_busy())
-            self.assertAlmostEqual(pygame.mixer.music.get_volume(),.3,places=2)
+            self.assertAlmostEqual(pygame.mixer.music.get_volume(),.4,places=2)
             before=pygame.mixer.music.get_pos()
             self.assertFalse(player.handle_event(pygame.event.Event(pygame.USEREVENT)))
             self.assertTrue(pygame.mixer.music.get_busy())
