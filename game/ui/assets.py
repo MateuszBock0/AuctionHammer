@@ -210,7 +210,8 @@ class ImageAssets:
         if key not in self._scaled:
             self._scaled[key] = self.fit_art(
                 self._original[original_key], size, mode,
-                background=self._auction_colors[original_key])
+                background=self._auction_colors[original_key],
+                pixelated=True)
         return self._scaled[key]
 
     @staticmethod
