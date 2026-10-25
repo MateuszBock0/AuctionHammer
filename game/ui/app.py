@@ -1341,7 +1341,7 @@ class SoloApp:
             hint=self.tutorial.hint(self.game)
             if hint is not None:
                 self._text(self.cards_view.clip(hint.detail,self.fonts[13],934),
-                           13,741,608,cfg.GOLD,center=True)
+                           13,741,832,cfg.GOLD,center=True)
         who=self.game.players[a.turn].name
         if a.phase=='bidding':
             minimum,coins=self.auction_slider_bounds()
@@ -1383,8 +1383,11 @@ class SoloApp:
             summary=tiles['summary']
             caption=(f'BONUS A018 +{bonus}  ·  SKUTECZNA {effective}  ·  '
                      f'MONETY PO WYGRANEJ {after_bid}')
+            if minimum>coins:
+                caption='BRAK MONET NA PRZEBICIE — PASUJ'
             self._text(self.cards_view.clip(caption,self.fonts[12],summary.width-20),
-                       12,summary.centerx,summary.centery,cfg.MUTED,center=True)
+                       12,summary.centerx,summary.centery,
+                       cfg.RED if minimum>coins else cfg.MUTED,center=True)
             if a.turn==0:
                 affordable=minimum<=coins
                 track=self.auction_slider_rect()
@@ -1399,26 +1402,23 @@ class SoloApp:
                                        (handle_x,track.centery),12)
                 self._text(f'{minimum}',13,track.left-37,track.y-4,cfg.TEXT)
                 self._text(f'{coins}',13,track.right+14,track.y-4,cfg.TEXT)
-                if not affordable:
-                    self._text('BRAK MONET NA PRZEBICIE — PASUJ',13,
-                               741,746,cfg.RED,center=True)
                 for action,label in (('pass','PASUJ'),('bid','LICYTUJ [ENTER]')):
                     enabled=action=='pass' or affordable
                     self._button(self.auction_control_rect(action),label,
                                  active=enabled,accent=action=='bid' and enabled,
                                  small=True)
             else:
-                self._text('RUCH KOMPUTERA...',16,741,753,cfg.GOLD,center=True)
+                self._text('RUCH KOMPUTERA...',16,741,786,cfg.GOLD,center=True)
         else:
             self._text(f'WYBIERA: {who}  ·  ZWYCIĘZCA LICYTACJI: '
                        f'{self.game.players[a.winner].name}  ·  CENA: {a.price}',16,
-                       741,656,cfg.TEXT,center=True)
+                       741,671,cfg.TEXT,center=True)
             self._text('Kliknij jedną z dostępnych ofert' if a.turn==0
-                       else 'Komputer wybiera kartę...',16,741,757,
+                       else 'Komputer wybiera kartę...',16,741,786,
                        cfg.GOLD,center=True)
         if self.auction_status:
             self._text(self.cards_view.clip(self.auction_status,self.fonts[13],920),
-                       13,741,810,cfg.RED,center=True)
+                       13,741,832,cfg.RED,center=True)
 
     def _play_replacement_targets(self):
         """Only highlight friendly units eligible for replacement."""
