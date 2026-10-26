@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.95 (Karczemna Burda: etap 1, weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.96 (Karczemna Burda: etap 2, animacje i oszczędne AI; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.96 (płynne nalewanie i zakup piwa przez trudne AI)
+
+- Efekty krótkie, wyłącznie wizualne: do 600 ms nalewania po potwierdzonej transakcji, wychylenie tylko ognia o maks. 2 px, brak przesuwania planszy/kart, klikania w złym miejscu, dodatkowych obrazów czy nowych zasobów.
+- Zegar oparty o `pygame.time.get_ticks()`, wyłączenie klawiszem A; jeden istniejący rysunek dekoracji. Działanie gry jest niezależne od animacji, a powtórki/historyczne zapisy bez efektu live.
+- Na trudnym AI deterministiczna ocena najwyżej 10 jednostek wyłącznie jawnej planszy; zakup następuje tylko przy przewidywanej przewadze, realnej cenie i zachowaniu małego zapasu na aukcję. Bez zmiany zachowania poziomów łatwego i normalnego, podglądania ręki, RNG czy kopiowania silnika.
+- Zasady i podpisane reguły z 0.9.95 NIEZMIENIONE; rozdzielne bramki CI i ręczny odbiór Windows nadal wymagany. Testy `tests/test_tavern_visual_ai_0996.py`.
 
 ### Etap — 0.9.95 (Karczemna Burda — fundament i działający zakup)
 - Własny, podpisany rozkaz `order_beer(player)`; koszt **max(10 + łączna liczba rozpoczętych tur obu graczy, ceil(10% monet kupującego))**. Każdy zakup: płatność, +3 tury czasu globalnego efektu. Bez zwiększania siły uszkodzeń i arbitralnych limitów liczby zamówień.

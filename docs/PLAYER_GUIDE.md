@@ -49,6 +49,12 @@ Gdy zadziała potwierdzony efekt, gra krótko podświetla jego źródło i rzecz
 
 W menu **USTAWIENIA** są dwa niezależne przyciski: **MUZYKA** (domyślnie **40%**) oraz **EFEKTY** (domyślnie **10%**). Każde kliknięcie podnosi poziom o 10 punktów procentowych; po 100% następuje 0%, czyli wyciszenie. Wartości są zapamiętywane lokalnie, także po zamknięciu gry. Dźwięki nie wpływają na wynik meczu.
 
+## Karczemna Burda — wizualizacje i zakupy komputera (od 0.9.96)
+
+Po zamówieniu piwa, jeśli animacje są włączone, przez chwilę nalewane jest piwo, a dwa boczne ognie delikatnie drgają. **[A]** wyłącza animacje. Karty i pola kliknięcia nie obracają się ani nie przesuwają, więc nadal można grać w swoim tempie.
+
+Komputer na poziomie **TRUDNYM** potrafi zamówić piwo, gdy przewidywane szkody po stronie gracza są wyraźnie większe niż szkody w jego własnych jednostkach. Wydaje jedynie dostępne monety, zostawia rezerwę na aukcję i nie stosuje ukrytych informacji. Na poziomie łatwym i normalnym nie dokonuje automatycznych zakupów.
+
 ## Karczemna Burda — zamawianie piwa (od 0.9.95)
 Po obu stronach planszy są ognie i kufle. W swojej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**.
 - Każde zamówienie kosztuje więcej z: **10 + suma rozpoczętych tur obu graczy** lub **10% posiadanych monet, zaokrąglone w górę**. Przykład: po 12 turach z 300 monetami zapłacisz 30 (bo 10+12=22).

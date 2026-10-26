@@ -337,6 +337,15 @@ class ComputerOpponent:
             return
         if game.active!=self.player or game.phase!='turn':return
         p=game.players[self.player]
+        # Paid tavern brawl is optional for HARD only in this first pass.
+        # Easy and normal preserve their proven historical decision policies.
+        # A visible finishing attack always outranks wasting coins.
+        if getattr(game,'tavern_beer_enabled',False) and self.difficulty=='trudny':
+            from .beer_strategy import should_ai_order_beer
+            if (self.hard_combo_finish(game) is None
+                    and should_ai_order_beer(game,self.player,self.difficulty)):
+                game.order_beer(self.player)
+                return  # Exactly one recorded action, just like other AI steps.
         # A guaranteed lethal sequence outranks playing another card;
         # this also avoids accidentally triggering a rescue/death effect
         # before landing the decisive attack.
