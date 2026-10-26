@@ -270,6 +270,18 @@ def load_match(path: Path | None = None) -> Match:
             or len(data['death_counts'])!=2
             or any(type(n) is not int or n<0 for n in data['death_counts'])):
         raise ValueError('Nieprawidłowy licznik zgonów jednostek')
+    # 0.9.94 and earlier saves did not have the tavern hazard.
+    data.setdefault('tavern_beer_enabled',False)
+    data.setdefault('beer_turns_remaining',0)
+    data.setdefault('beer_orders',0)
+    if (type(data['tavern_beer_enabled']) is not bool
+            or type(data['beer_turns_remaining']) is not int
+            or type(data['beer_orders']) is not int
+            or min(data['beer_turns_remaining'],data['beer_orders'])<0):
+        raise ValueError('Nieprawidłowe dane Karczemnej Burdy')
+    if not data['tavern_beer_enabled'] and (
+            data['beer_turns_remaining'] or data['beer_orders']):
+        raise ValueError('Nieaktywna Karczemna Burda ma nieprawidłowy stan')
     # Old saved matches predate friendly-only A002 rule.
     data.setdefault('general_friendly_only',False)
     if type(data['general_friendly_only']) is not bool:
