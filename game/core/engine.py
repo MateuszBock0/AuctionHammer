@@ -25,7 +25,8 @@ class Match:
                  balance_patch_v24: bool | None = None,
                  general_friendly_only: bool | None = None,
                  tavern_beer_enabled: bool | None = None,
-                 tavern_price_v2_enabled: bool = False):
+                 tavern_price_v2_enabled: bool = False,
+                 tavern_scaled_damage_enabled: bool = False):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -101,6 +102,9 @@ class Match:
         # New matches explicitly opt in; old signed matches keep their price.
         self.tavern_price_v2_enabled=bool(tavern_price_v2_enabled and self.tavern_beer_enabled)
         self.beer_orders_by_player=[0,0]
+        # 0.9.100 opt-in; pre-0.9.100 games and replays remain 1 DMG/tick.
+        self.tavern_scaled_damage_enabled=bool(
+            tavern_scaled_damage_enabled and self.tavern_beer_enabled)
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -525,7 +529,7 @@ class Match:
 
     @audit_action('order_beer')
     def order_beer(self,player):
-        """Pay immediately. Each order extends an existing 1-DMG hazard +3."""
+        """Pay immediately. Each order adds 3 turns to the symmetric hazard."""
         self._check(self.phase=='turn' and self.active==player
                     and self.pending is None and self.end_queue is None
                     and self.deferred_attack is None
@@ -538,9 +542,12 @@ class Match:
         self.beer_turns_remaining+=3
         self.beer_orders+=1
         self.beer_orders_by_player[player]+=1
+        info=(f'{self.beer_turns_remaining} DMG na następny koniec tury; '
+              'potem o 1 mniej co turę' if self.tavern_scaled_damage_enabled
+              else 'na koniec każdej tury obie plansze otrzymają po 1 obrażeniu')
         self._log(f'{self.players[player].name} zamawia kufel za {price} monet: '
                   f'KARCZEMNA BURDA trwa jeszcze {self.beer_turns_remaining} tur; '
-                  'na koniec każdej tury obie plansze otrzymają po 1 obrażeniu.')
+                  f'{info}.')
 
     def _tick_tavern_brawl(self):
         """One symmetric tick after completed turn effects, before next turn.
@@ -552,15 +559,19 @@ class Match:
         if not (getattr(self,'tavern_beer_enabled',False)
                 and self.beer_turns_remaining>0):
             return
+        # Read damage BEFORE decrementing the timer. Another paid mug adds
+        # +3 turns and immediately increases the next tick in new matches.
+        damage=(self.beer_turns_remaining
+                if getattr(self,'tavern_scaled_damage_enabled',False) else 1)
         self.beer_turns_remaining-=1
         affected=[uid for pl in self.players for uid in list(pl.board)
                   if uid in self.units]
-        self._log('KARCZEMNA BURDA: obie plansze otrzymują po 1 obrażeniu '
+        self._log(f'KARCZEMNA BURDA: {damage} DMG dla jednostek obu plansz '
                   f'({len(affected)} jednostek). '
                   f'Pozostało tur: {self.beer_turns_remaining}.')
         for uid in affected:
             if uid in self.units:
-                self._damage(uid,1,defer_death=True)
+                self._damage(uid,damage,defer_death=True)
         dead=[uid for uid in affected if uid in self.units
               and self.units[uid].hp<=0]
         if dead:
@@ -1432,6 +1443,9 @@ class Match:
 
     def assert_integrity(self):
         assert type(getattr(self,'tavern_beer_enabled',False)) is bool
+        assert type(getattr(self,'tavern_scaled_damage_enabled',False)) is bool
+        if getattr(self,'tavern_scaled_damage_enabled',False):
+            assert self.tavern_beer_enabled
         assert type(getattr(self,'tavern_price_v2_enabled',False)) is bool
         assert (isinstance(self.beer_orders_by_player,list)
                 and len(self.beer_orders_by_player)==2
