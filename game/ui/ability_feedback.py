@@ -201,13 +201,16 @@ class AbilityFeedback:
             return
         fresh=actions[self.read_actions:]
         self.read_actions=len(actions)
-        self.cues=[c for c in self.cues if 0<=now-c.born<c.lifetime]
+        # Scheduled follow-up messages in a multi-effect chain must survive
+        # before their start time. Never resurrect them after expiration.
+        self.cues=[c for c in self.cues if -1400<now-c.born<c.lifetime]
         if not allowed:
             self.cues.clear()
             return
         traces=getattr(game,'audit_internal',()) or ()
         if not traces:
             return
+        sequence=0
         for action in fresh[-8:]:
             start=_integer(action.get('internal_seq_start'),1)
             end=_integer(action.get('internal_seq_end'))
@@ -226,8 +229,12 @@ class AbilityFeedback:
                 if target not in groups[key]:
                     groups[key].append(target)
             for (source,label,kind),targets in list(groups.items())[:4]:
+                # A chain can trigger several separate effects in one frame.
+                # Read them in order instead of showing only the final one.
+                start=int(now)+min(sequence,5)*230
+                sequence+=1
                 self.cues.append(AbilityCue(
-                    source,tuple(targets),label,kind,int(now),
+                    source,tuple(targets),label,kind,start,
                     self._name(game,source),
                     tuple(self._name(game,x) for x in targets)))
         self.cues=self.cues[-self.MAX_CUES:]
@@ -256,11 +263,13 @@ class AbilityFeedback:
 
     def draw(self,screen,now,font):
         """Board-safe corners/path plus one compact cue in the empty hand gap."""
-        self.cues=[cue for cue in self.cues if 0<=now-cue.born<cue.lifetime]
-        if not self.cues:
+        self.cues=[cue for cue in self.cues
+                   if -1400<now-cue.born<cue.lifetime]
+        active=[cue for cue in self.cues if 0<=now-cue.born<cue.lifetime]
+        if not active:
             return
-        # Show the latest verified trigger; never put labels over stat plates.
-        cue=self.cues[-1]
+        # Show the latest *active* effect; later ones start in short order.
+        cue=active[-1]
         age=now-cue.born
         alpha=max(0,int(205*(1-age/cue.lifetime)))
         tint=PALETTE.get(cue.kind,PALETTE['buff'])
