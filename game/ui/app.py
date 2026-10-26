@@ -2455,14 +2455,15 @@ class SoloApp:
             now,getattr(self,'_beer_fx_started_ms',None),animate)
         splash=beer_overflow_state(
             now,getattr(self,'_beer_fx_started_ms',None),animate)
-        flicker=(now//180)%3 if animate else 0
         for x,owner in ((57,0),(1020,1)):
             fill=min(36,10+ticks*3) if active and ticks else 6
             own_pour=(pouring and owner==getattr(self,'_beer_fx_owner',None))
             if own_pour:
                 fill=6+round((fill-6)*progress)
-            draw_tavern_rail(self.screen,x,fill,sway,flicker,
-                             own_pour,progress,splash)
+            # Four tiny candle frames loop independently of purchased beer.
+            # Both wall sconces flare together when either mug is full.
+            draw_tavern_rail(self.screen,x,fill,own_pour,progress,splash,
+                             now_ms=now,animate=animate)
             self._text('TWÓJ KUFEL' if owner==0 else 'KUFEL AI',
                        11,x,443,cfg.GOLD,center=True)
         if not active:
