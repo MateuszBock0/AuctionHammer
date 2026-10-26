@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 
 from game.core.ai import ComputerOpponent
+from tools.simulate_bounded_hard_0994 import PreviousExpert
 from game.core.engine import Match
 from tools.simulate_v22 import choose_actor
 
@@ -54,7 +55,9 @@ def run_one(seed,swap,max_steps=3000):
                starting_compensation='choice_2_5_or_coins')
     if not game.general_friendly_only:
         raise AssertionError('General own-board rule missing')
-    levels=(ReferenceHard(0,'trudny'),ComputerOpponent(1,'trudny'))
+    # Freeze the historical 0.9.93 policy: after 0.9.94, bare
+    # ComputerOpponent is no longer the old reference implementation.
+    levels=(ReferenceHard(0,'trudny'),PreviousExpert(1,'trudny'))
     if swap:
         levels=levels[::-1]
         for index,bot in enumerate(levels):
@@ -73,7 +76,7 @@ def run_one(seed,swap,max_steps=3000):
     if game.phase!='finished':
         raise AssertionError(f'Game not completed: {seed}')
     winner=game.winner
-    is_new=isinstance(levels[winner],ComputerOpponent) and not isinstance(levels[winner],ReferenceHard)
+    is_new=isinstance(levels[winner],PreviousExpert)
     return is_new, len(game.auction_history),len(game.audit_actions)
 
 
