@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.99",
+  "mvp": "0.9.100",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,6 +27,7 @@
     "engine_unchanged": true,
     "windows_manual_acceptance": "pending"
   },
+  "tavern_scaled_brawl_09100": {"new_client_only":true,"signed_opt_in":"tavern_scaled_damage_enabled","damage":"damage per unit on both boards equals beer_turns_remaining BEFORE decrement","first_mug":"3+2+1 = 6 damage total per unit across three turns","additional_mugs":"each adds +3 remaining turns; next hit increases accordingly","shields_and_armor":"normal damage path and simultaneous death batch unchanged","old_saved_games":"missing flag = original 1 damage on end turn","old_signed_replays":"historical journals and rules unchanged","ui":"subtle 4-frame independently phased slot flamelets; 3+ turns bright, 2 medium, 1 embers, 0 none","manual_windows_acceptance":"pending"},
   "tavern_slot_fire_0999": {"mug_visible":"only during a paid pour, beside the rightmost player card slot; removed after 1450ms","left_mug":"not drawn","ale":"spills on lower right board trim, never left HUD","slot_flames":"10 occupied or empty battlefield positions, subtle moving 8-bit corners, right-to-left ignition","lifetime":"authoritative beer_turns_remaining, zero means off, each additional paid mug adds 3 turns","old_saves_and_replays":"gameplay unchanged, UI derives fire from match state","animation_toggle":"A","manual_windows_acceptance":"pending"},
   "tavern_board_spill_0998": {"sprite_asset":"assets/ui/tavern_board_props.pxart","art_source":"approved game-board candle and beer visual","palette_colors":48,"sprite_pixels":"86x216 atlas","mount":"two candles attached to playable board frame","mug":"four nearest-neighbor tilt poses","animation":"0-600ms fill; 600-930ms tilt; 690-1390ms flowing ale; 950-2150ms board ignition; embers while brawl is active","two_sides_synchronized":true,"toggle_A_disables":true,"gameplay_rules_unchanged":true,"manual_windows_acceptance":"pending"},
   "tavern_auction_0997": {"pricing":"10 + 10 * own previous mugs + floor(sum started turns / 2)", "per_player_count":true, "older_replays":"original formula", "normal_ai":"higher baseline bid while preserving auction reserve", "overflow":"four animated pixel candles, two per rail (130ms x 4 frames, 1px sway); shared fire/overflow 600-1050ms, decorative only", "manual_windows_acceptance":"pending"},
