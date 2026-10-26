@@ -279,9 +279,11 @@ class AbilityFeedback:
             if own_src!=own_dst:
                 continue
             path=self._friendly_path(src,dest,0 if own_src else 1)
-            stroke=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
-            pygame.draw.lines(stroke,(*tint,min(alpha,116)),False,path,2)
-            screen.blit(stroke,(0,0))
+            # A tiny corridor stroke, not a full-screen alpha surface on
+            # every 60-FPS frame. Dim the tint instead of allocating 6 MB.
+            strength=min(.52,alpha/400)
+            faded=tuple(int(component*strength) for component in tint)
+            pygame.draw.lines(screen,faded,False,path,2)
         if len(cue.targets)>1:
             dest=f'{len(cue.targets)} CELE'
         else:
