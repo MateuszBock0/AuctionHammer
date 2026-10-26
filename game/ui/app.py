@@ -44,8 +44,8 @@ from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
-from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline
-from game.ui.tavern_art import draw_tavern_rail,draw_board_spill
+from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline,slot_flame_strength
+from game.ui.tavern_art import draw_tavern_rail,draw_board_spill,draw_slot_flamelets
 
 # Auction-only accent colors: brown, silver, gold.
 # Keep rarity colors on hand cards and the battlefield unchanged.
@@ -2437,13 +2437,14 @@ class SoloApp:
         self._beer_fx_started_ms=pygame.time.get_ticks()
 
     def _draw_tavern_beer(self):
-        """Approved tavern art: candles bolted to the board's carved frame.
+        """Board-mounted candles, one right-side mug during a paid pour, and fire.
 
-        A bought mug physically tips inwards, spills onto the board rim, then
-        ignites there on BOTH sides. Decorations never mutate Match or hitboxes.
+        There is no permanent left-side mug: it blocked the little tavern HUD.
+        After the mug spills it leaves the board. The 10 card-position flames
+        follow Match.beer_turns_remaining, NOT wall-clock time or saved UI state.
         """
-        active=getattr(self.game,'tavern_beer_enabled',False)
-        ticks=getattr(self.game,'beer_turns_remaining',0)
+        active=bool(getattr(self.game,'tavern_beer_enabled',False))
+        ticks=max(0,getattr(self.game,'beer_turns_remaining',0)) if active else 0
         now=pygame.time.get_ticks()
         animate=(getattr(self,'animations_enabled',False)
                  and getattr(self,'replay_index',None) is None
@@ -2451,29 +2452,40 @@ class SoloApp:
                  and not getattr(self,'history_open',False)
                  and not getattr(self,'help_open',False)
                  and getattr(self,'details_card',None) is None)
-        progress,sway,pouring=beer_fx_state(
-            now,getattr(self,'_beer_fx_started_ms',None),animate)
-        splash=beer_overflow_state(
-            now,getattr(self,'_beer_fx_started_ms',None),animate)
-        tilt,stream,burn=board_spill_timeline(
-            now,getattr(self,'_beer_fx_started_ms',None),animate)
-        # As long as the tavern brawl lasts, the timber retains faint embers.
-        # This is visual only; engine end-turn damage remains authoritative.
-        if animate and active and ticks:
-            burn=max(burn,0.17)
-        for x,owner in ((57,0),(1020,1)):
-            fill=min(36,10+ticks*3) if active and ticks else 6
-            own_pour=(pouring and owner==getattr(self,'_beer_fx_owner',None))
-            if own_pour:
-                fill=6+round((fill-6)*progress)
-            # Finished pixel sprites follow the real board edge, not a HUD rail.
-            draw_tavern_rail(self.screen,x,fill,own_pour,progress,splash,
-                             now_ms=now,animate=animate,tilt=tilt)
-            # Both board edges share one authoritative purchase timeline.
-            if animate:
-                draw_board_spill(self.screen,x,stream,burn,now_ms=now)
-            self._text('TWÓJ KUFEL' if owner==0 else 'KUFEL AI',
-                       11,x,443,cfg.GOLD,center=True)
+        started=getattr(self,'_beer_fx_started_ms',None)
+        progress,_sway,pouring=beer_fx_state(now,started,animate)
+        splash=beer_overflow_state(now,started,animate)
+        tilt,stream,burn=board_spill_timeline(now,started,animate)
+        age=(now-started if started is not None else None)
+        # A new, actually paid mug exists only while its pour is in progress.
+        # On resumed games there is no transient mug, just the real turn state.
+        show_mug=(bool(ticks) and animate and age is not None
+                  and 0<=age<1450)
+        # Keep the original wax candle art on BOTH sides of the board frame.
+        for x in (57,1020):
+            draw_tavern_rail(self.screen,x,0,
+                             pouring and show_mug and x==1020,
+                             progress,splash if ticks else 0.0,
+                             now_ms=now,animate=animate,tilt=tilt,
+                             show_mug=show_mug and x==1020,
+                             mug_anchor=(1021,565))
+        if ticks and animate:
+            # Only the mug at the RIGHT spills. No mysterious left-side ale.
+            draw_board_spill(self.screen,1020,stream,burn,now_ms=now,
+                             lower_right=True)
+            # Delicate 8-bit flamelets rim each of the 10 board positions.
+            # The paid fire visibly travels right-to-left, then remains lit
+            # until the authoritative brawl counter reaches zero.
+            for owner in (0,1):
+                for slot in range(5):
+                    power=slot_flame_strength(ticks,now,started,animate,
+                                              owner,slot)
+                    if power>0.0:
+                        draw_slot_flamelets(self.screen,
+                                           self.slot_rect(owner,slot),
+                                           now_ms=now,owner=owner,
+                                           index=slot,strength=power)
+        # The purchase HUD stays accessible and unmoved in the left gutter.
         if not active:
             return
         panel=pygame.Rect(8,475,97,115)
