@@ -203,6 +203,10 @@ def state_snapshot(game):
             state['ruleset_state']['tavern_beer_enabled']=True
             state['ruleset_state']['beer_turns_remaining']=game.beer_turns_remaining
             state['ruleset_state']['beer_orders']=game.beer_orders
+            if getattr(game,'tavern_price_v2_enabled',False):
+                state['ruleset_state']['tavern_price_v2_enabled']=True
+                state['ruleset_state']['beer_orders_by_player']=list(
+                    game.beer_orders_by_player)
         # The friendly-only A002 rule is signed ONLY for newly created
         # matches; previous archives retain their exact hash/layout.
         if getattr(game,'general_friendly_only',False):
@@ -645,6 +649,17 @@ def verify_replay(payload,match_factory):
     game.tavern_beer_enabled=beer_flag
     game.beer_turns_remaining=0
     game.beer_orders=0
+    pricing_v2=(isinstance(signed_rule,dict) and
+                signed_rule.get('tavern_price_v2_enabled') is True)
+    if pricing_v2 and (not beer_flag or
+                       signed_rule.get('beer_orders_by_player') != [0,0]):
+        raise ValueError('Nieprawidłowy początkowy licznik kufli w audycie')
+    if (isinstance(signed_rule,dict) and
+            ('tavern_price_v2_enabled' in signed_rule or
+             'beer_orders_by_player' in signed_rule) and not pricing_v2):
+        raise ValueError('Nieznany wariant cennika piwa w audycie')
+    game.tavern_price_v2_enabled=pricing_v2
+    game.beer_orders_by_player=[0,0]
     # A replay's rules come from its signed initial snapshot, NEVER from today's
     # default Match constructor. Old signed archives did not carry this bit.
     # The old bronze General aura applied across both sides; missing

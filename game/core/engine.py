@@ -24,7 +24,8 @@ class Match:
                  fixed_board_slots: bool = False,
                  balance_patch_v24: bool | None = None,
                  general_friendly_only: bool | None = None,
-                 tavern_beer_enabled: bool | None = None):
+                 tavern_beer_enabled: bool | None = None,
+                 tavern_price_v2_enabled: bool = False):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -97,6 +98,9 @@ class Match:
             if tavern_beer_enabled is None else bool(tavern_beer_enabled))
         self.beer_turns_remaining=0
         self.beer_orders=0
+        # New matches explicitly opt in; old signed matches keep their price.
+        self.tavern_price_v2_enabled=bool(tavern_price_v2_enabled and self.tavern_beer_enabled)
+        self.beer_orders_by_player=[0,0]
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -506,8 +510,10 @@ class Match:
         The displayed preview is identical to the amount actually paid.
         """
         owner=self.active if player is None else player
-        coins=self.players[owner].coins
         turns=sum(p.turn_count for p in self.players)
+        if getattr(self,'tavern_price_v2_enabled',False):
+            return 10+10*self.beer_orders_by_player[owner]+turns//2
+        coins=self.players[owner].coins
         return max(10+turns,(coins+9)//10)
 
     def can_order_beer(self,player):
@@ -531,6 +537,7 @@ class Match:
         self.players[player].coins-=price
         self.beer_turns_remaining+=3
         self.beer_orders+=1
+        self.beer_orders_by_player[player]+=1
         self._log(f'{self.players[player].name} zamawia kufel za {price} monet: '
                   f'KARCZEMNA BURDA trwa jeszcze {self.beer_turns_remaining} tur; '
                   'na koniec każdej tury obie plansze otrzymają po 1 obrażeniu.')
@@ -1425,6 +1432,13 @@ class Match:
 
     def assert_integrity(self):
         assert type(getattr(self,'tavern_beer_enabled',False)) is bool
+        assert type(getattr(self,'tavern_price_v2_enabled',False)) is bool
+        assert (isinstance(self.beer_orders_by_player,list)
+                and len(self.beer_orders_by_player)==2
+                and all(type(n) is int and n>=0 for n in self.beer_orders_by_player))
+        if self.tavern_price_v2_enabled:
+            assert self.tavern_beer_enabled
+            assert sum(self.beer_orders_by_player)==self.beer_orders
         assert (type(getattr(self,'beer_turns_remaining',0)) is int
                 and getattr(self,'beer_turns_remaining',0)>=0)
         assert (type(getattr(self,'beer_orders',0)) is int

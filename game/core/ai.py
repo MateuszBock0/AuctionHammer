@@ -104,11 +104,12 @@ class ComputerOpponent:
         future=tuple(getattr(game,'auction_bag',()) or ())
         future_auctions=len(future)>=3
         if self.difficulty!='trudny':
-            # Normal: reasonable first-choice price plus a modest denial
-            # factor; retains a tiny reserve for later auctions.
-            value=1.75*own_gain+.35*opponent_denial
+            # 0.9.97: the normal AI competes for first pick even when two
+            # cards have similar value. Still protects a future-auction reserve.
+            value=2.6*own_gain+.85*opponent_denial
+            baseline=3+min(6,state.number)
             reserve=2 if future_auctions and coins>=9 else 0
-            return max(0,min(coins-reserve,int(value+.5)))
+            return max(0,min(coins-reserve,max(baseline,int(value+2.5))))
 
         # Hard: use opponent's public position AND the identities of the
         # unpurchased, still-eligible catalog archetypes, whose availability
