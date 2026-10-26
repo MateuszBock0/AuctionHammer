@@ -203,6 +203,8 @@ def state_snapshot(game):
             state['ruleset_state']['tavern_beer_enabled']=True
             state['ruleset_state']['beer_turns_remaining']=game.beer_turns_remaining
             state['ruleset_state']['beer_orders']=game.beer_orders
+            if getattr(game,'tavern_scaled_damage_enabled',False):
+                state['ruleset_state']['tavern_scaled_damage_enabled']=True
             if getattr(game,'tavern_price_v2_enabled',False):
                 state['ruleset_state']['tavern_price_v2_enabled']=True
                 state['ruleset_state']['beer_orders_by_player']=list(
@@ -649,6 +651,14 @@ def verify_replay(payload,match_factory):
     game.tavern_beer_enabled=beer_flag
     game.beer_turns_remaining=0
     game.beer_orders=0
+    # Old signed matches have no scaled-damage bit and retain 1 DMG/tick.
+    scaled=(isinstance(signed_rule,dict) and
+            signed_rule.get('tavern_scaled_damage_enabled') is True)
+    if isinstance(signed_rule,dict) and 'tavern_scaled_damage_enabled' in signed_rule:
+        if (not scaled or not beer_flag or catalog!='v22'
+                or signed_rule.get('version')!='v23'):
+            raise ValueError('Nieprawidłowa podpisana reguła obrażeń Burdy')
+    game.tavern_scaled_damage_enabled=scaled
     pricing_v2=(isinstance(signed_rule,dict) and
                 signed_rule.get('tavern_price_v2_enabled') is True)
     if pricing_v2 and (not beer_flag or

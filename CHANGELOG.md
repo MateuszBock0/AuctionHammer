@@ -4,6 +4,14 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.100] — 2026-10-27
+
+### Karczemna Burda — płomienie reagują na czas, obrażenia 3→2→1
+- **Nowe partie:** na koniec każdej tury każda jednostka obu plansz otrzymuje tyle **zwykłych obrażeń**, ile pozostało tur Burdy **przed zmniejszeniem licznika**. Jeden kufel: kolejno 3, 2 i 1 (łącznie 6 na jednostkę). Dwa kufle od razu: 6, 5, 4, 3, 2, 1 (łącznie 21). Dodatkowe kufle zwiększają licznik o 3 tak jak dotąd. Tarcza pochłania pojedyncze uderzenie, pancerz przyjmuje normalne obrażenia, a zgon wielu jednostek jest rozstrzygany jedną falą.
+- **Historyczne mecze, zapisy i podpisane powtórki** bez znacznika `tavern_scaled_damage_enabled` zachowują dokładnie stare 1 obrażenie na zakończoną turę, wraz z dawnym zapisem zdarzeń. Nowa reguła jest jawnie podpisana w audycie nowych partii i zachowana przy zapisie/odczycie.
+- **Grafika:** cztery niezależnie przesunięte w fazie klatki maleńkich płomieni przy wszystkich 10 slotach; różne wysokości i iskry. Przy 3+ turach ogień żywszy, przy 2 średni, przy 1 pojedynczy żar, przy 0 gaśnie. Karty, opisy, hitboxy i przyciski bez zmian; klawisz A wyłącza animację. Lewy kufel nadal usunięty (0.9.99).
+- Licznik i panel pokazują bieżące DMG na nadchodzący koniec tury. Testy dla 3→2→1, 6 tur, Tarcz/pancerza, nowych i starych podpisanych audytów, zapisów oraz płomieni.
+
 ## [0.9.99] — 2026-10-26
 
 ### Karczemna Burda — kufel po prawej, płomyki wokół wszystkich pól

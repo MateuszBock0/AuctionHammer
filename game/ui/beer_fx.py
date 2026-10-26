@@ -91,3 +91,14 @@ def slot_flame_strength(remaining_turns,now_ms,started_ms,enabled,
     # Spread over all 10 positions in ~0.7 seconds, right -> left.
     ignition=935+(4-slot)*155+owner*45
     return min(1.0,max(0.0,(age-ignition)/175.0))
+
+
+def tavern_flame_intensity(remaining_turns):
+    """Visual 1-turn embers, 2-turn medium fire, 3+ intense fire.
+
+    Deliberately capped to keep cards readable if multiple mugs stack.
+    Engine damage uses its own exact counter, never this visual multiplier.
+    """
+    if remaining_turns<=0:
+        return 0.0
+    return (0.32,0.62,1.0)[min(int(remaining_turns),3)-1]

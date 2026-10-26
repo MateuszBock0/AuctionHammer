@@ -287,9 +287,8 @@ def draw_slot_flamelets(screen,rect,now_ms=0,owner=0,index=0,strength=1.0):
     if level<=0.0:
         return
     frame=((max(0,int(now_ms))//135+index+owner*2)%4)
-    intensity=round(level*3)
-    if intensity<1:
-        return
+    # Always one dim ember for the final turn, stronger at 2 and 3+ turns.
+    intensity=max(1,min(3,int(level*3+0.65)))
     # All strokes hug slot outer rim, not icons/labels inside card art.
     x1,y1=rect.left-4,rect.top+5
     x2,y2=rect.right+1,rect.bottom-7
@@ -298,11 +297,16 @@ def draw_slot_flamelets(screen,rect,now_ms=0,owner=0,index=0,strength=1.0):
         (2,(x1,y2),-1),(3,(x2,y2),1)
     ):
         sway=(-1,0,1,0)[(frame+corner)%4]
-        length=5+(corner+index)%3
-        # Short glowing seam followed by a 2-7px rising candle-like tongue.
+        # Each slot and corner has a distinct deterministic 4-frame loop.
+        # Tiny 2..10px flames stay outside card artwork and readable text.
+        flicker=(0,2,-1,1)[(frame+corner+index)%4]
+        length=max(2,2+intensity*2+(corner+index)%2+flicker)
         _sq(screen,(113,45,24),px,py-2,3,length)
         _sq(screen,_EMBER,px+sign*sway,py-2,2,length-1)
-        _sq(screen,_GOLD,px,py-2-(intensity+frame+corner)%4,2,2)
+        if intensity>1:
+            _sq(screen,_GOLD,px,py-2-(intensity+frame+corner)%4,2,2)
+        else:
+            _sq(screen,(181,78,31),px,py-2-(frame%2),2,2)
         if intensity>1 and (frame+corner)%2==0:
             _sq(screen,(255,224,131),px+sign*2,py+2,1,2)
         if intensity==3 and (frame+corner+index)%4==0:

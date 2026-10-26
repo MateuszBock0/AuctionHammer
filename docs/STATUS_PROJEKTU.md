@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 26 października 2026  
-**Wersja gałęzi:** MVP 0.9.99 (tymczasowy kufel po prawej, płomyki przy 10 polach, wygaśnięcie z końcem Burdy; weryfikacja CI)  
+**Data aktualizacji:** 27 października 2026  
+**Wersja gałęzi:** MVP 0.9.100 (żywsze 10 płomieni i podpisane skalowane obrażenia Burdy w nowych meczach; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.100 (skalowane obrażenia i żywe płomienie)
+
+- Nowe partie solo: na koniec każdej tury obrażenia każdej jednostki obu plansz = liczba pozostałych tur Burdy przed ich odliczeniem. Za jeden kufel 3, 2 i 1; za dwa kupione od razu 6, 5, 4, 3, 2 i 1. Zwykłe Tarcze, pancerz i wspólna fala śmierci pozostają bez zmian.
+- Nowa mechanika `tavern_scaled_damage_enabled` w audycie i zapisach jest opt-in tylko w nowych partiach. Wczytane stare partie i podpisane replays 0.9.99 oraz wcześniejsze nadal mają 1 DMG/turę i historyczny dziennik zdarzeń.
+- Dziesięć małych ognisk na ramkach slotów ma indywidualne fazy, wzrost płomieni i iskry. Moc: 3+ tury wysoka, 2 średnia, 1 żar i 0 brak. Po każdym ticku natychmiast aktualizowane.
+- Panel piwa wyświetla następne DMG, nie tylko czas. Zmiana nie przesuwa kart, przycisków ani hitboxów.
 
 ### Etap — 0.9.99 (kufel znika, ogień wokół pól do końca Burdy)
 
