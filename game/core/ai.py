@@ -133,6 +133,99 @@ class ComputerOpponent:
                  and not emergency else 0)
         return max(0,min(coins-reserve,int(strategic_value/risk_multiplier+.5)))
 
+    def hard_attack_choice(self,game):
+        """Pick an attack across ALL ready allies using public board state.
+
+        No speculative Match commands, RNG, hidden hands or search on live
+        state. Shield/armor and General's actual double-hit bonus are taken
+        from resolved units. Multi-hit lethal is prioritized across allies.
+        Returns (source, target) or None if every attack is a bad trade.
+        """
+        if self.difficulty!='trudny' or game.phase!='turn':
+            return None
+        from . import auction_abilities
+        own=game.players[self.player]
+        foe=game.players[1-self.player]
+        options=[]
+        face=[]
+        for uid in own.board:
+            if uid not in game.units:
+                continue
+            attacker=game.units[uid]
+            targets=game.legal_attacks(uid)
+            if not targets:
+                continue
+            raw=attacker.atk*(2 if game.auction_catalog in ('v4','v22')
+                                  and auction_abilities.boosted_attack(game,uid) else 1)
+            for target_id in targets:
+                if target_id==f'hero:{1-self.player}':
+                    damage=(0 if foe.hero_shield else
+                            max(0,raw-foe.hero_armor))
+                    face.append((uid,target_id,raw,damage))
+                    continue
+                defender=game.units[target_id]
+                defender_raw=defender.atk*(2 if game.auction_catalog in ('v4','v22')
+                        and auction_abilities.boosted_attack(game,target_id) else 1)
+                harm=(0 if defender.shield else max(0,raw-defender.armor))
+                retaliation=(0 if attacker.shield else max(0,defender_raw-attacker.armor))
+                kill=harm>=defender.hp
+                lost=retaliation>=attacker.hp
+                definition=game.cards[target_id].definition
+                own_def=game.cards[uid].definition
+                enemy_aura=definition.id in ('A002','S34','S35','S105')
+                ally_aura=own_def.id in ('A002','S34','S35','S105')
+                # Killing a death-trigger creature can be costly; don't
+                # overvalue the removal without seeing its ability choices.
+                death_risk=(7.0 if kill and definition.faction=='Potwory'
+                            else 6.0 if kill and definition.id in ('A001','A003')
+                            else 0.0)
+                if definition.id=='S103':
+                    # S103 damages the attacker BEFORE normal combat.
+                    retaliation+=2+defender.ability_level
+                    lost=retaliation>=attacker.hp
+                enemy_threat=(defender.atk*.65+defender.hp*.12
+                              + (8.0 if enemy_aura else 0.0))
+                attacker_value=(attacker.atk*.65+attacker.hp*.15
+                                + (10.0 if ally_aura else 0.0))
+                score=(harm*.53+ (15+enemy_threat if kill else 0.0)
+                       + (5 if harm and not lost else 0.0)
+                       - (attacker_value*.77+6 if lost else retaliation*.49)
+                       - death_risk)
+                if defender.shield:
+                    score-=2.2  # a shield-clearing attack isn't a kill
+                # Only compare legal actions; earliest source breaks ties.
+                options.append((score,uid,target_id))
+        if face:
+            # The hero can be finished with multiple ready attacks. With a
+            # shield, sacrifice the smallest hit first to absorb it, then
+            # measure remaining real damage vs public armor and HP.
+            raw_hits=sorted(x[2] for x in face)
+            remaining=raw_hits[1:] if foe.hero_shield else raw_hits
+            potential=max(0,sum(remaining)-foe.hero_armor)
+            if potential>=foe.hp and foe.hp>0:
+                if foe.hero_shield:
+                    sacrificial=min(face,key=lambda v:(v[2],own.board.index(v[0])))
+                    return sacrificial[0],sacrificial[1]
+                # Lowest adequate hit first: preserve stronger moves if the
+                # hero survives from a scripted rescue.
+                viable=sorted(face,key=lambda v:(v[2],own.board.index(v[0])))
+                hit=next((x for x in viable if x[3]>=foe.hp),viable[0])
+                return hit[0],hit[1]
+            for uid,target_id,raw,damage in face:
+                unit=game.units[uid]
+                # Hero hits do not provoke a standard counterattack.
+                value=(damage*.9 + (5 if not foe.board else 2.5)
+                       + (8 if foe.hp<=35 else 0)
+                       + (2 if unit.hp<=3 else 0))
+                if foe.hero_shield:
+                    value=1.5 - raw*.06
+                options.append((value,uid,target_id))
+        if not options:
+            return None
+        # Stable board order: no RNG use and no dependence on dictionary hash.
+        score,uid,tgt=max(options,key=lambda x:(x[0],-own.board.index(x[1])))
+        return (uid,tgt) if score>=0 else None
+
     def choose(self,game):
         p=game.pending
         if p is None:return
@@ -208,6 +301,21 @@ class ComputerOpponent:
             return
         if game.active!=self.player or game.phase!='turn':return
         p=game.players[self.player]
+        # A guaranteed lethal sequence outranks playing another card;
+        # this also avoids accidentally triggering a rescue/death effect
+        # before landing the decisive attack.
+        if self.difficulty=='trudny':
+            plan=self.hard_attack_choice(game)
+            if plan is not None and plan[1]==f'hero:{1-self.player}':
+                enemy=game.players[1-self.player]
+                current=game.units[plan[0]]
+                raw=current.atk
+                from . import auction_abilities
+                if game.auction_catalog in ('v4','v22') and auction_abilities.boosted_attack(game,plan[0]):
+                    raw*=2
+                if (raw>=enemy.hp+enemy.hero_armor and not enemy.hero_shield):
+                    game.attack(*plan)
+                    return
         # Prefer a good unit; basic creature scaling is included in attack and hp.
         candidates=[cid for cid in p.hand if game.can_play(self.player,cid)]
         if candidates:
@@ -257,6 +365,15 @@ class ComputerOpponent:
                 if quality(best)>quality(worst)+1.75 and game.can_play(self.player,best,worst):
                     game.play(best,worst)
                     return
+        # Expert considers *every* source/target pair before choosing.
+        # Normal and easy retain their previously tested behavior.
+        if self.difficulty=='trudny':
+            plan=self.hard_attack_choice(game)
+            if plan is not None:
+                game.attack(*plan)
+            else:
+                game.end_turn()
+            return
         # Attack legal opponents: prioritize kills and otherwise enemy hero if favorable.
         for uid in list(p.board):
             targets=game.legal_attacks(uid)
@@ -271,18 +388,6 @@ class ComputerOpponent:
                 return kill+survive+defender.atk*.7-defender.armor*.2
             if self.difficulty=='łatwy':
                 tgt=targets[0]
-            elif self.difficulty=='trudny':
-                def expert_score(t):
-                    basic=target_score(t)
-                    if t.startswith('hero:'):
-                        hero=game.players[1-self.player]
-                        return (10000 if hero.hp<=attacker.atk else 0) + basic + (11 if hero.hp<35 else 0)
-                    target=game.units[t]
-                    effective=max(0,attacker.atk-target.armor)
-                    kill=(target.hp<=effective and not target.shield)
-                    survive=attacker.hp>target.atk
-                    return basic+(13 if kill else 0)+(4 if survive else -4)-(3 if target.shield or target.armor else 0)
-                tgt=max(targets,key=expert_score)
             else:
                 tgt=max(targets,key=target_score)
             game.attack(uid,tgt)
