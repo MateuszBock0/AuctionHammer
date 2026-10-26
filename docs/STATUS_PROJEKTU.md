@@ -1,10 +1,16 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.90 (patch balansu v24, sześć zatwierdzonych buffów aukcji; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.91 (Smart Auction AI, zależne od zaakceptowania v24 w 0.9.90; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.91 (inteligentna licytacja AI na bazie v24)
+
+- Łatwy bot zachowuje zawsze co najmniej połowę swoich monet przy składaniu ofert (zaokrąglenie w dół limitu wydatków); normalny szacuje wartość **pierwszego wyboru względem darmowej drugiej karty**, trudny dodatkowo analizuje ryzyko finansowe, sytuację rywala i pozostające mocne archetypy.
+- Wycena ofert uwzględnia sześć buffów v24 jedynie gdy `balance_patch_v24` jest aktywny. Nie używa zakrytej ręki ani talii rywala, nie zmienia zasad i nie zużywa RNG.
+- Testy poziomów obejmują pełne partie, dwa ustawienia miejsc dla każdego seeda, raport empirycznych wyników. Nie wymusza porażek słabszego bota.
 
 ### Etap — 0.9.90 (patch balansu v24, wyłącznie buffy)
 

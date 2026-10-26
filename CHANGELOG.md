@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.91] — 2026-10-25
+
+### Smart Auction AI — pierwszeństwo wyboru, limity i ocena ryzyka
+- **Łatwy:** nigdy nie licytuje więcej niż `floor(własne_monety/2)`, także w obecności bonusu do skutecznej oferty; dodatkowo zachowuje zachowawczy limit związany z numerem aukcji.
+- **Normalny:** wycenia korzyść z pierwszego wyboru względem darmowej karty pozostałej po pierwszym wyborze przeciwnika; umiarkowanie uwzględnia pozbawienie rywala jego preferowanej oferty i przyszłe aukcje.
+- **Trudny:** uwzględnia publiczne preferencje i planszę obu graczy, ryzyko pozostania bez monet, silne archetypy w puli oraz krytyczne zagrożenie zdrowia.
+- Uwzględnia sześć buffów v24 obowiązujących w nowych partiach. Nie osłabia kart, nie zmienia reguł ani RNG, nie zagląda do ukrytej ręki lub talii przeciwnika.
+- Symulator `tools/simulate_smart_auction_0990.py` porównuje pełne mecze łatwy/normalny i normalny/trudny na wspólnych seedach, z zamienianiem stron. Nie wymusza 100% zwycięstw; raportuje statystykę empiryczną.
+
 ## [0.9.90] — 2026-10-25
 
 ### Święto aukcji: sześć dodatkowych wzmocnień (buff-only)

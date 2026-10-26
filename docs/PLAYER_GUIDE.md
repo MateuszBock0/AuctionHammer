@@ -45,6 +45,10 @@ Rzadkość kupionej karty może awansować w miarę upływu kolejnych pełnych r
 
 W menu **USTAWIENIA** są dwa niezależne przyciski: **MUZYKA** (domyślnie **40%**) oraz **EFEKTY** (domyślnie **10%**). Każde kliknięcie podnosi poziom o 10 punktów procentowych; po 100% następuje 0%, czyli wyciszenie. Wartości są zapamiętywane lokalnie, także po zamknięciu gry. Dźwięki nie wpływają na wynik meczu.
 
+## Jak licytuje komputer? (0.9.91)
+
+Na poziomie **łatwym** komputer wydaje na jedną aukcję najwyżej połowę monet, które ma w chwili licytacji (zaokrąglenie w dół). Na **normalnym** wycenia korzyść z pierwszego wyboru, pamiętając, że przy przegranej aukcji nadal dostanie drugą kartę za darmo. Na **trudnym** uwzględnia dodatkowo publiczny stan planszy przeciwnika, wartość zachowania monet i to, jakie archetypy pozostają w puli. AI nie podgląda ręki ani talii gracza. Żaden poziom nie gwarantuje zwycięstwa lub porażki w każdej partii.
+
 ## Najważniejsze skróty
 
 | Klawisz | Znaczenie |

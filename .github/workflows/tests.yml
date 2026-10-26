@@ -20,6 +20,13 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -v
+      - name: Symulacja inteligentnych aukcji — 128 pełnych meczów, wspólne seedy, zamiana miejsc
+        run: python -m tools.simulate_smart_auction_0990 --pairs 32 --output reports/auction-ai-0990.json --min-stronger-winrate 0.50
+      - name: Raport empirycznych pojedynków AI
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-0990-Smart-Auction-AI
+          path: reports/auction-ai-0990.json
       - name: Rzeczywisty render Pygame wszystkich ikon i ekranów
         env:
           SDL_VIDEODRIVER: dummy

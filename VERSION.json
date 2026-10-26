@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.90",
+  "mvp": "0.9.91",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,6 +27,7 @@
     "engine_unchanged": true,
     "windows_manual_acceptance": "pending"
   },
+  "smart_auction_ai_0991": {"easy_cap":"floor(coins / 2)", "normal":"first pick advantage versus free second pick", "hard":"public board, v24 card buffs, future archetypes and coin risk", "hidden_opponent_information":false, "rng_changed":false, "rules_changed":false, "verification":"mirrored-seat full-match simulation"},
   "quiet_sfx_0989": {
     "music_default": 0.4,
     "sfx_default": 0.1,
