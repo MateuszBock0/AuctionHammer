@@ -104,8 +104,10 @@ class GeneralOwnerOnly0993(unittest.TestCase):
         self.assertIn('obu planszach',old)
         self.assertNotEqual(old,new)
         self.assertNotIn('wrogie',new)
-        for rarity in RARITIES[1:]:
-            self.assertIn('włas',v23_variant('v22','A002',rarity,'v23',True))
+        rare=v23_variant('v22','A002','rzadka','v23',True)
+        legendary=v23_variant('v22','A002','legendarna','v23',True)
+        self.assertIn('własna jednostka',rare)
+        self.assertIn('zagrana przez Ciebie',legendary)
 
     def test_legacy_save_without_marker_restores_old_behavior(self):
         g=ready(99351)
@@ -150,7 +152,7 @@ class HardCombat0993(unittest.TestCase):
         g.units[actor].base_attack=8
         g.units[actor].hp=3
         scary=starter(g,'S12',1)
-        easy=starter(g,'S13',1)
+        easy=starter(g,'S09',1)
         g.units[scary].hp=7
         g.units[scary].base_attack=13
         g.units[easy].hp=5
