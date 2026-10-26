@@ -166,6 +166,37 @@ class AuctionScreenLayout0985(unittest.TestCase):
                         app.auction_offer_zones(n)['art']),
                         (tier,text,rect,'art',n))
 
+    def test_auction_rarity_labels_use_brown_silver_gold_without_layout_changes(self):
+        from game.ui.app import AUCTION_RARITY_COLORS
+        from game import config as cfg
+
+        app=self.app
+        for offer,tier in zip(app.game.auction.offers,
+                              ('podstawowa','rzadka','legendarna')):
+            offer.rarity=tier
+
+        labels=[]
+        draw=app._text
+        def capture(text,size,x,y,color=None,center=False):
+            rect=draw(text,size,x,y,color,center)
+            labels.append((str(text),color,rect))
+            return rect
+
+        with patch.object(app,'_text',side_effect=capture):
+            app._draw_auction()
+
+        for i,offer in enumerate(app.game.auction.offers):
+            stripe=app.auction_offer_zones(i)['rarity']
+            rarity=[(color,rect) for text,color,rect in labels
+                    if text==offer.rarity.upper() and stripe.contains(rect)]
+            level=[(color,rect) for text,color,rect in labels
+                   if text==f'POZIOM {offer.level}' and stripe.contains(rect)]
+            self.assertEqual(len(rarity),1,(offer.rarity,rarity))
+            self.assertEqual(len(level),1,(offer.rarity,level))
+            self.assertEqual(rarity[0][0],AUCTION_RARITY_COLORS[offer.rarity])
+            self.assertEqual(level[0][0],cfg.MUTED)
+            self.assertLess(rarity[0][1].right,level[0][1].left)
+
     def test_inspection_button_is_in_new_position_and_remains_clickable(self):
         app=self.app
         for i in range(3):
