@@ -58,8 +58,10 @@ class CandlePixelArt0997(unittest.TestCase):
             for x in (107,120,950,972,980,1080-1):
                 if x==107 or x==120 or x==950 or x==972 or x==980:
                     self.assertEqual(image.get_at((x,310)),back)
-            self.assertEqual(image.get_at((107,407)),back)
-            self.assertEqual(image.get_at((980,407)),back)
+            # v0.9.98 fixture bolts touch the board frame on purpose.
+            # Gameplay controls and card text areas must remain clear.
+            self.assertEqual(image.get_at((300,407)),back)
+            self.assertEqual(image.get_at((900,407)),back)
 
 
 if __name__=='__main__':

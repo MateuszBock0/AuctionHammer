@@ -4,6 +4,14 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.98] — 2026-10-26
+
+### Karczemna Burda — świeca na ramie planszy, rozlane piwo i ogień
+- W miejsce prostokątnych, przyklejonych do boków symboli trafiają bogato cieniowane, przezroczyste **sprite’y pixel art** świecy, płomienia i kufla, opracowane na podstawie zaakceptowanego wyglądu. Wosk, metal i piana mają spójną, 48-kolorową paletę i ostre, niewygładzone krawędzie.
+- Świece są **zamocowane na drewniano-mosiężnym obrzeżu samej planszy**, w tej samej projekcji co pole gry. Kufle są tuż przy nim; po autorytatywnym zakupie widać nalewanie (600 ms), przechylanie się kufli, spływanie piwa na powierzchnię planszy, pianę, zapłon wzdłuż krawędzi i dogasający żar.
+- Obie strony pokazują tę samą sekwencję. Ogień dociera do powierzchni planszy, ale nie zasłania wartości ATK/PŻ, kart ani przycisków; po naciśnięciu **A** dynamiczne efekty znikają. Nie zmieniono hitboxów i nie dodano obrażeń: Karczemna Burda nadal zadaje **1 zwykłe obrażenie obu stronom na koniec każdej tury**, zgodnie z 0.9.95.
+- Tylko warstwa wizualna: istniejące zapisy, podpisane replaye, ekonomia 0.9.97, aukcje, AI i bilans kart bez zmian. Dodane regresje dla atlasu sprite’ów, czasu animacji i obu krawędzi; ręczne sprawdzenie na fizycznym Windows pozostaje wymagane.
+
 ## [0.9.97] — 2026-10-26
 
 ### Karczma: przystępniejsze piwo, mocniejsze licytacje i wyraźniejsze dekoracje

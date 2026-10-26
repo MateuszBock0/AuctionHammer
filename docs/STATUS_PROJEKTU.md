@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.97 (cennik piwa, aukcje normalnego AI, widoczniejsze dekoracje; weryfikacja CI)  
+**Data aktualizacji:** 26 października 2026  
+**Wersja gałęzi:** MVP 0.9.98 (pixel-artowa świeca na ramie planszy, animowany przechył kufla, spływające piwo i zapłon; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.98 (zatwierdzona wizualizacja: świeca i piwo na planszy)
+
+- Nowe przezroczyste sprite’y świecy, płomienia i kufla, ręcznie wydzielone z zatwierdzonej ilustracji, 48 kolorów palety, zero wygładzania i niezależność od dodatkowych bibliotek.
+- Świece są przybite do drewniano-mosiężnej ramy planszy zamiast wisieć w bocznym HUD-zie. Kufel przechyla się do środka, piwo fizycznie spływa na róg i obrzeże planszy, zapala się od świecy, a na brzegu zostaje słaby żar.
+- Jedna oś czasu po potwierdzonym opłaceniu, obie strony jednocześnie, animacje wyłączane [A]. Wylewka nie zasłania statystyk kart ani przycisków. Bez zmian obrażeń, aukcji, AI, zapisów i replayów.
+- Nowe testy dekodera sprite’ów, osi czasu i obu krawędzi planszy. Ręczna akceptacja Windows pozostaje otwarta.
 
 ### Etap — 0.9.97 (normalne AI i pełniejsza karczma)
 

@@ -1,4 +1,4 @@
-"""AuctionHammer MVP 0.9.97 · ruleset v23 + aukcje v22 — konfiguracja klienta pygame-ce."""
+"""AuctionHammer MVP 0.9.98 · ruleset v23 + aukcje v22 — konfiguracja klienta pygame-ce."""
 WINDOW_WIDTH = 1480
 WINDOW_HEIGHT = 980
 WINDOW_TITLE = "AuctionHammer | Gra z komputerem — MVP 0.9.97 · reguły v23"
