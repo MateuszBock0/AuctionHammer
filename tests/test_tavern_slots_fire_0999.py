@@ -62,7 +62,7 @@ class FireBrawl0999(TestCase):
 
     def test_right_only_mug_and_spill_during_paid_animation(self):
         class FakeApp:
-            FIRST_X,SLOT_W,SLOT_GAP,OWN_Y,OPP_Y=107,148,26,431,152
+            FIRST_X,SLOT_W,SLOT_H,SLOT_GAP,OWN_Y,OPP_Y=107,148,220,26,431,152
             animations_enabled=True
             replay_index=None
             menu_open=False
