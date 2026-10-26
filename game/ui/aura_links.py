@@ -79,9 +79,11 @@ def live_aura_links(game, focus_uid: str | None) -> tuple[AuraLink, ...]:
                                               f'PANC. +{armor}'))
         elif (cid=='A002' and game.auction_catalog in ('v4','v22')
               and source in game.auction_awards and rarity(game,source)==0):
-            # Bronze General strengthens every unit on BOTH boards, including
-            # itself. Self-link is shown as a self badge, not a zero-length arrow.
-            for target in sorted(on_board):
+            # Current 0.9.93 games: General strengthens own board.
+            # Display matches the signed legacy global behavior on old saves.
+            recipients=(friendly if getattr(game,'general_friendly_only',False)
+                        else sorted(on_board))
+            for target in recipients:
                 all_links.append(AuraLink(source,target,'atk',1,'ATK +1'))
 
     outgoing=tuple(link for link in all_links if link.source==focus_uid)

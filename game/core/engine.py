@@ -22,7 +22,8 @@ class Match:
                  vacant_income_enabled: bool | None = None,
                  starting_compensation: str = "coins",
                  fixed_board_slots: bool = False,
-                 balance_patch_v24: bool | None = None):
+                 balance_patch_v24: bool | None = None,
+                 general_friendly_only: bool | None = None):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -83,6 +84,11 @@ class Match:
         self.balance_patch_v24=(
             auctions_enabled and auction_catalog=='v22'
             if balance_patch_v24 is None else bool(balance_patch_v24))
+        # Signed 0.9.93 opt-in: only own board receives A002 bonuses.
+        # Missing flag in older saved/replayed games keeps their rules.
+        self.general_friendly_only=(
+            bool(auctions_enabled and auction_catalog=='v22')
+            if general_friendly_only is None else bool(general_friendly_only))
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -1243,7 +1249,11 @@ class Match:
             cid=self.cards[uid].definition.id
             friend=self.players[u.owner].board;enemy=self.players[1-u.owner].board
             if self.auction_catalog in ('v4','v22') and cid=='A002' and auction_ability_rules.rarity(self,uid)==0:
-                for target in desired_atk:desired_atk[target]+=1
+                # Current rules: own board, including the General himself.
+                # Legacy signed games retain the original global aura.
+                recipients=(friend if getattr(self,'general_friendly_only',False)
+                            else desired_atk)
+                for target in recipients:desired_atk[target]+=1
             if cid=='S34':
                 position=self.slot_of(uid)
                 value=1+u.ability_level

@@ -199,6 +199,10 @@ def state_snapshot(game):
             'pending_vacant_income':getattr(game,'pending_vacant_income',None),
             'vacant_income_enabled':getattr(game,'vacant_income_enabled',False),
         }
+        # The friendly-only A002 rule is signed ONLY for newly created
+        # matches; previous archives retain their exact hash/layout.
+        if getattr(game,'general_friendly_only',False):
+            state['ruleset_state']['general_friendly_only']=True
         # New 0.9.90 buffs are signed opt-in; older audit hashes stay byte-identical.
         if getattr(game,'balance_patch_v24',False):
             state['ruleset_state']['balance_patch_v24']=True
@@ -624,6 +628,14 @@ def verify_replay(payload,match_factory):
         game=match_factory(payload["seed"])
     # A replay's rules come from its signed initial snapshot, NEVER from today's
     # default Match constructor. Old signed archives did not carry this bit.
+    # The old bronze General aura applied across both sides; missing
+    # signed rule means historical global mechanics even for v24 archives.
+    game.general_friendly_only=(isinstance(signed_rule,dict)
+                                and signed_rule.get('general_friendly_only') is True)
+    if isinstance(signed_rule,dict) and 'general_friendly_only' in signed_rule:
+        if (not game.general_friendly_only or catalog!='v22'
+                or signed_rule.get('version')!='v23'):
+            raise ValueError('Nieprawidłowa flaga premii Generała')
     game.balance_patch_v24=(isinstance(signed_rule,dict)
                             and signed_rule.get('balance_patch_v24') is True)
     if isinstance(signed_rule,dict) and 'balance_patch_v24' in signed_rule and not game.balance_patch_v24:
