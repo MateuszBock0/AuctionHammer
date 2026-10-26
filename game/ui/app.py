@@ -44,8 +44,8 @@ from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
-from game.ui.beer_fx import beer_fx_state,beer_overflow_state
-from game.ui.tavern_art import draw_tavern_rail
+from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline
+from game.ui.tavern_art import draw_tavern_rail,draw_board_spill
 
 # Auction-only accent colors: brown, silver, gold.
 # Keep rarity colors on hand cards and the battlefield unchanged.
@@ -2437,10 +2437,10 @@ class SoloApp:
         self._beer_fx_started_ms=pygame.time.get_ticks()
 
     def _draw_tavern_beer(self):
-        """Two compact pixel torches and beer mugs in existing board gutters.
+        """Approved tavern art: candles bolted to the board's carved frame.
 
-        No new assets, no per-frame allocations beyond primitive draw calls,
-        and no rotation of gameplay hitboxes. Gameplay effects live in Match.
+        A bought mug physically tips inwards, spills onto the board rim, then
+        ignites there on BOTH sides. Decorations never mutate Match or hitboxes.
         """
         active=getattr(self.game,'tavern_beer_enabled',False)
         ticks=getattr(self.game,'beer_turns_remaining',0)
@@ -2455,15 +2455,23 @@ class SoloApp:
             now,getattr(self,'_beer_fx_started_ms',None),animate)
         splash=beer_overflow_state(
             now,getattr(self,'_beer_fx_started_ms',None),animate)
+        tilt,stream,burn=board_spill_timeline(
+            now,getattr(self,'_beer_fx_started_ms',None),animate)
+        # As long as the tavern brawl lasts, the timber retains faint embers.
+        # This is visual only; engine end-turn damage remains authoritative.
+        if animate and active and ticks:
+            burn=max(burn,0.17)
         for x,owner in ((57,0),(1020,1)):
             fill=min(36,10+ticks*3) if active and ticks else 6
             own_pour=(pouring and owner==getattr(self,'_beer_fx_owner',None))
             if own_pour:
                 fill=6+round((fill-6)*progress)
-            # Four tiny candle frames loop independently of purchased beer.
-            # Both wall sconces flare together when either mug is full.
+            # Finished pixel sprites follow the real board edge, not a HUD rail.
             draw_tavern_rail(self.screen,x,fill,own_pour,progress,splash,
-                             now_ms=now,animate=animate)
+                             now_ms=now,animate=animate,tilt=tilt)
+            # Both board edges share one authoritative purchase timeline.
+            if animate:
+                draw_board_spill(self.screen,x,stream,burn,now_ms=now)
             self._text('TWÓJ KUFEL' if owner==0 else 'KUFEL AI',
                        11,x,443,cfg.GOLD,center=True)
         if not active:
