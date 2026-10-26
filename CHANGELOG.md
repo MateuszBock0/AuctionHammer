@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.94] — 2026-10-26
+
+### Lekkie planowanie walki (Hard AI) — bez wydłużania tury
+- Wyłącznie **trudny** komputer: przegląd **maksymalnie 3 ciosów** z pięcioma zachowywanymi wariantami na poziom, najwięcej pięć dostępnych jednostek i pięć celów. Używa jawnej planszy, legalnych ataków oraz policzonych obrażeń przez osłony i pancerz, w tym podwójnych ataków.
+- Plan wykrywa zakończenie gry kilkoma kolejnymi uderzeniami (np. słaby atak konsumuje Tarczę bohatera przed silniejszym) oraz tanie usunięcie Tarczy jednostki umożliwiające dobitkę. Nie przewiduje ukrytych kart ani reakcji uruchamiających nieznane wybory.
+- **Bez klonowania Match, bez wirtualnych komend silnika i bez RNG**. Gdy nie można wiarygodnie ustalić korzystnej sekwencji, zostaje stara, sprawdzona ocena 0.9.93. Łatwy i normalny pozostają nietknięci.
+- Izolowany pomiar wydajności i p95 na GitHub runnerze (akceptacja poniżej 100 ms na decyzję), 64 pełne audytowane partie z zamianą stron na wspólnych seedach przeciw dokładnej polityce 0.9.93, raport JSON. Wyniki pomiarów i skuteczności muszą być faktycznie potwierdzone przed scaleniem.
+- Bez zmian zasad, statystyk, AI aukcji, premiowania Generała A002, legacy audytów, UI ani dźwięków. Wizualny test na fizycznym Windows pozostaje osobnym etapem.
+
 ## [0.9.93] — 2026-10-26
 
 ### Mocniejsze AI w trybie trudnym oraz premia Generała wyłącznie dla własnej planszy

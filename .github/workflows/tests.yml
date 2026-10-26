@@ -27,9 +27,22 @@ jobs:
         with:
           name: AuctionHammer-0990-Smart-Auction-AI
           path: reports/auction-ai-0990.json
+      # Run the new version's measured acceptance FIRST, so a pre-existing
+      # v0.9.93 statistical regression cannot hide the new p95/winrate.
+      # Both gates remain mandatory; neither threshold is relaxed.
+      - name: Lekkie Hard AI — 64 pełne mecze porównawcze i budżet p95 100 ms
+        run: python -m tools.simulate_bounded_hard_0994 --pairs 32 --output reports/bounded-hard-0994.json --min-winrate 0.50 --max-p95-ms 100
+      - name: Raport Hard AI 0.9.94 — skuteczność i czas decyzji
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-0994-Bounded-Hard
+          path: reports/bounded-hard-0994.json
       - name: Test porównawczy taktycznego AI — 64 pełne mecze, lustrzane seedy
+        if: always()
         run: python -m tools.simulate_hard_tactics_0993 --pairs 32 --output reports/hard-tactics-0993.json --min-winrate 0.50
       - name: Raport silniejsze AI kontra dawna polityka wyboru celu
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: AuctionHammer-0993-Hard-Tactics

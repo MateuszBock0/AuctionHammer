@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.93 (trudniejsza taktyka AI; właściciel premii Generała; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.94 (ograniczony budżet planowania AI, weryfikacja czasu decyzji w CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.94 (ograniczony i szybki mikroplan najtrudniejszego AI)
+
+- Maksymalnie 3 kroki mikroplanowania, 5 ścieżek na poziom, 5 własnych atakujących, 5 wrogich celów. Analiza tylko jawnego stanu: osłony bohatera/jednostek, pancerz, pozostałe ataki; bez klonowania silnika, nowych zasobów sprzętowych i przeszukiwania całej gry.
+- Przed zagraniem karty wykrywa pewne, proste kombinacje ataków prowadzące do zwycięstwa. Inaczej najpierw stosuje sprawdzoną punktację z 0.9.93; ewentualna tania kombinacja z usunięciem wrogiej Tarczy jest tylko wyraźnie ograniczonym wyjątkiem.
+- Symulator `tools/simulate_bounded_hard_0994.py` porównuje z oryginalną polityką 0.9.93 na wspólnych seedach i z zamianą stron oraz podaje izolowaną medianę/p95 czasu decyzji. Bramką CI jest p95 <100ms i dodatni wynik względem starszego AI; pomiar nie dotyczy całego interfejsu Windows.
+- Poziomy łatwy/normalny, reguły walki, Generał, audyty, RNG, muzyka i SFX bez zmian. Fizyczny odbiór Windows jeszcze niewykonany.
 
 ### Etap — 0.9.93 (trudniejsza taktyka i Generał wyłącznie po własnej stronie)
 
