@@ -138,6 +138,8 @@ class AbilityFeedback0992(unittest.TestCase):
 
     def test_self_shield_and_armor_report_exact_committed_gain(self):
         g=self.game
+        # Put A002 on the visible board; only on-board cards have anchors.
+        g.players[0].board[0]='A002'
         source_before={'A002':{'hp':7,'shield':0,'armor':0}}
         source_after={'A002':{'hp':7,'shield':1,'armor':2}}
         g.audit_internal=[cast('A002','play',source_before,source_after)]
