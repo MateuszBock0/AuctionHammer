@@ -133,6 +133,13 @@ class ComputerOpponent:
                  and not emergency else 0)
         return max(0,min(coins-reserve,int(strategic_value/risk_multiplier+.5)))
 
+    def hard_combo_finish(self,game):
+        """Cheap, read-only bounded finish check; overridable for A/B tests."""
+        if self.difficulty!='trudny' or game.phase!='turn':
+            return None
+        from .hard_tactics import forced_hero_finish
+        return forced_hero_finish(game,self.player)
+
     def hard_attack_choice(self,game):
         """Use a bounded 3-step micro-plan, otherwise original 0.9.93 AI.
 
@@ -141,8 +148,8 @@ class ComputerOpponent:
         """
         if self.difficulty!='trudny' or game.phase!='turn':
             return None
-        from .hard_tactics import forced_hero_finish,shield_break_setup
-        win=forced_hero_finish(game,self.player)
+        from .hard_tactics import shield_break_setup
+        win=self.hard_combo_finish(game)
         if win is not None:
             return win
         # Keep the established 0.9.93 general-purpose valuation. The new
@@ -336,8 +343,7 @@ class ComputerOpponent:
         if self.difficulty=='trudny':
             # A bounded plan can set up a genuine 2–3 hit finish
             # (e.g. use a weak hit to remove hero shield first).
-            from .hard_tactics import forced_hero_finish
-            combo=forced_hero_finish(game,self.player)
+            combo=self.hard_combo_finish(game)
             if combo is not None:
                 game.attack(*combo)
                 return
