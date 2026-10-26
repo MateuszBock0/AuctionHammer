@@ -44,7 +44,8 @@ from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
-from game.ui.beer_fx import beer_fx_state
+from game.ui.beer_fx import beer_fx_state,beer_overflow_state
+from game.ui.tavern_art import draw_tavern_rail
 
 # Auction-only accent colors: brown, silver, gold.
 # Keep rarity colors on hand cards and the battlefield unchanged.
@@ -143,7 +144,8 @@ class SoloApp:
             candidate=Match(audit_enabled=True,auctions_enabled=True,
                             auction_catalog='v22',
                             starting_compensation='choice_2_5_or_coins',
-                            fixed_board_slots=True)
+                            fixed_board_slots=True,
+                            tavern_price_v2_enabled=True)
             if candidate.first==first:
                 return candidate
         raise RuntimeError('Nie znaleziono losowania właściwej kolejności')
@@ -2451,42 +2453,18 @@ class SoloApp:
                  and getattr(self,'details_card',None) is None)
         progress,sway,pouring=beer_fx_state(
             now,getattr(self,'_beer_fx_started_ms',None),animate)
+        splash=beer_overflow_state(
+            now,getattr(self,'_beer_fx_started_ms',None),animate)
         flicker=(now//180)%3 if animate else 0
         for x,owner in ((57,0),(1020,1)):
-            # Only the ornamental flame dances by <=2 pixels.
-            torch_x=x+sway
-            pygame.draw.rect(self.screen,(51,35,24),(x-15,311,30,49))
-            pygame.draw.rect(self.screen,(140,95,52),(x-11,315,22,41),2)
-            pygame.draw.rect(self.screen,(114,71,38),(x-3,297,6,38))
-            fire=[(torch_x-15,302),(torch_x-10,292-flicker),
-                  (torch_x-4,296),(torch_x,278+flicker),
-                  (torch_x+5,294),(torch_x+12,286),
-                  (torch_x+15,306),(torch_x+5,314),(torch_x-9,313)]
-            pygame.draw.polygon(self.screen,(232,119,51),fire)
-            pygame.draw.polygon(self.screen,(248,198,86),
-                [(torch_x-7,305),(torch_x-2,298),
-                 (torch_x+1,289+flicker),(torch_x+6,302),
-                 (torch_x+8,311),(torch_x-7,311)])
-            # A little glass mug: amount tracks global brawl duration.
-            mug=pygame.Rect(x-18,377,37,45)
-            pygame.draw.rect(self.screen,(85,118,119),mug,border_radius=5)
             fill=min(36,10+ticks*3) if active and ticks else 6
-            if pouring and owner==getattr(self,'_beer_fx_owner',None):
+            own_pour=(pouring and owner==getattr(self,'_beer_fx_owner',None))
+            if own_pour:
                 fill=6+round((fill-6)*progress)
-                # Small pouring stream, no surface allocation or alpha layer.
-                pygame.draw.rect(self.screen,(245,189,75),
-                                 (x-1,364+round(progress*5),3,12))
-                pygame.draw.rect(self.screen,(250,229,182),
-                                 (x-4,367,8,3))
-            pygame.draw.rect(self.screen,(217,158,68),
-                             (mug.x+5,mug.bottom-4-fill,27,fill))
-            pygame.draw.rect(self.screen,(241,222,178),
-                             (mug.x+4,mug.bottom-7-fill,29,5))
-            pygame.draw.rect(self.screen,(174,204,210),mug,3,border_radius=5)
-            pygame.draw.rect(self.screen,(153,192,199),
-                             (mug.right,mug.y+10,10,24),3,border_radius=5)
+            draw_tavern_rail(self.screen,x,fill,sway,flicker,
+                             own_pour,progress,splash)
             self._text('TWÓJ KUFEL' if owner==0 else 'KUFEL AI',
-                       11,x,437,cfg.GOLD,center=True)
+                       11,x,443,cfg.GOLD,center=True)
         if not active:
             return
         panel=pygame.Rect(8,475,97,115)

@@ -17,3 +17,13 @@ def beer_fx_state(now_ms,started_ms,enabled=True):
     # remain physically and visually fixed.
     sway=(0,1,2,1,0,-1,-2,-1)[min(7,age//100)]
     return fraction,sway,age<600
+
+
+def beer_overflow_state(now_ms,started_ms,enabled=True):
+    """Fades a shared decorative fire/splash after the mug is full."""
+    if not enabled or started_ms is None or now_ms<started_ms:
+        return 0.0
+    age=now_ms-started_ms
+    if age<600 or age>=1050:
+        return 0.0
+    return 1.0-(age-600)/450.0
