@@ -2461,6 +2461,11 @@ class SoloApp:
         # On resumed games there is no transient mug, just the real turn state.
         show_mug=(bool(ticks) and animate and age is not None
                   and 0<=age<1450)
+        # The spent mug rolls off the right-hand timber, rather than abruptly
+        # blinking away: four pixel-snapped exit poses over the last 250 ms.
+        exit_step=(min(4,max(0,(age-1200)//62))
+                   if show_mug else 0)
+        mug_anchor=(1021+5*exit_step,565+4*exit_step)
         # Keep the original wax candle art on BOTH sides of the board frame.
         for x in (57,1020):
             draw_tavern_rail(self.screen,x,0,
@@ -2468,7 +2473,7 @@ class SoloApp:
                              progress,splash if ticks else 0.0,
                              now_ms=now,animate=animate,tilt=tilt,
                              show_mug=show_mug and x==1020,
-                             mug_anchor=(1021,565))
+                             mug_anchor=mug_anchor)
         if ticks and animate:
             # Only the mug at the RIGHT spills. No mysterious left-side ale.
             draw_board_spill(self.screen,1020,stream,burn,now_ms=now,

@@ -99,6 +99,10 @@ class FireBrawl0999(TestCase):
         self.assertTrue(props[1020]['show_mug'])
         self.assertEqual(props[1020]['mug_anchor'],(1021,565))
         self.assertEqual(len(flames),0)
+        props,spills,flames=draw(6350,3)  # roll off right during exit
+        self.assertTrue(props[1020]['show_mug'])
+        self.assertGreater(props[1020]['mug_anchor'][0],1021)
+        self.assertGreater(props[1020]['mug_anchor'][1],565)
         props,spills,flames=draw(7600,3)
         self.assertFalse(props[57]['show_mug'])
         self.assertFalse(props[1020]['show_mug'])
