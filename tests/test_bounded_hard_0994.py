@@ -109,7 +109,7 @@ class BoundedHard0994(unittest.TestCase):
         g=ready(99408)
         for cid in ('S01','S02','S03','S04','S05'):
             starter(g,cid)
-        for cid in ('S09','S12','S22','S23','S24'):
+        for cid in ('S09','S12','S70','S11','S15'):
             starter(g,cid,1)
         bot=ComputerOpponent(0,'trudny')
         elapsed=[]
