@@ -153,6 +153,10 @@ class AbilityFeedback:
             if target not in before or target not in after or before[target]==after[target]:
                 continue
             if op=='_add_effect':
+                # A negated status may heal the target via an immunity
+                # reaction, yet the attempted status itself was NOT applied.
+                if trace.get('result') is not True:
+                    continue
                 actual_source=kwargs.get('source')
                 if not isinstance(actual_source,str) or not actual_source:
                     # Some base effects are invoked by _execute without a
