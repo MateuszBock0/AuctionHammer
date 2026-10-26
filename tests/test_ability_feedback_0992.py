@@ -158,6 +158,22 @@ class AbilityFeedback0992(unittest.TestCase):
         self.assertEqual({c.label for c in self.fx.cues},
                          {'TARCZA +1','PANCERZ +2'})
 
+    def test_multi_effect_activation_is_presented_in_order(self):
+        g=self.game
+        g.players[0].board[0]='A002'
+        before={'A002':{'hp':7,'shield':0,'armor':0}}
+        after={'A002':{'hp':7,'shield':1,'armor':2}}
+        g.audit_internal=[cast('A002','play',before,after)]
+        g.audit_actions.append(action(operation='play',end=1))
+        self.fx.observe(g,rect_for,hero_for,1000)
+        self.assertEqual(len(self.fx.cues),2)
+        self.assertEqual([x.born for x in self.fx.cues],[1000,1230])
+        pygame.font.init()
+        screen=pygame.Surface((1480,980))
+        self.fx.draw(screen,1100,pygame.font.Font(None,18))
+        # The later cue has not displaced the first before its start.
+        self.assertEqual(len(self.fx.cues),2)
+
     def test_modal_consumes_feedback_without_old_event_after_resume(self):
         g=self.game
         g.audit_internal=[cast(),regen('S01')]
