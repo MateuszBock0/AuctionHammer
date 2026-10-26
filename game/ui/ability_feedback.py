@@ -64,8 +64,8 @@ def _status_deltas(before,after):
     changes=[]
     for prop,label in (('shield','TARCZA'),('armor','PANCERZ')):
         old,new=before.get(prop),after.get(prop)
-        if type(old) is int and type(new) is int and new>old:
-            changes.append((f'{label} +{new-old}','defense'))
+        if type(old) is int and type(new) is int and new!=old:
+            changes.append((f'{label} {new-old:+d}','defense'))
     old,new=before.get('hp'),after.get('hp')
     if type(old) is int and type(new) is int and new!=old:
         changes.append((f'PŻ {new-old:+d}','heal' if new>old else 'damage'))
