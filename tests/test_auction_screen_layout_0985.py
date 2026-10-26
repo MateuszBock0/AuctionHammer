@@ -170,10 +170,14 @@ class AuctionScreenLayout0985(unittest.TestCase):
         from game.ui.app import AUCTION_RARITY_COLORS
         from game import config as cfg
 
+        from dataclasses import replace
+
         app=self.app
-        for offer,tier in zip(app.game.auction.offers,
-                              ('podstawowa','rzadka','legendarna')):
-            offer.rarity=tier
+        app.game.auction.offers=[
+            replace(offer,rarity=tier)
+            for offer,tier in zip(app.game.auction.offers,
+                                  ('podstawowa','rzadka','legendarna'))
+        ]
 
         labels=[]
         draw=app._text
