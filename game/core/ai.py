@@ -134,6 +134,35 @@ class ComputerOpponent:
         return max(0,min(coins-reserve,int(strategic_value/risk_multiplier+.5)))
 
     def hard_attack_choice(self,game):
+        """Use a bounded 3-step micro-plan, otherwise original 0.9.93 AI.
+
+        Fast constant-work path: at most five ready sources, five targets,
+        beam width five, three plies; never mutates the live Match.
+        """
+        if self.difficulty!='trudny' or game.phase!='turn':
+            return None
+        from .hard_tactics import forced_hero_finish,shield_break_setup
+        win=forced_hero_finish(game,self.player)
+        if win is not None:
+            return win
+        # Keep the established 0.9.93 general-purpose valuation. The new
+        # setup is used only if there is no immediate valuable takedown or
+        # an already-unblocked lethal hero action.
+        baseline=self._hard_attack_choice_093(game)
+        if baseline is not None:
+            uid,target=baseline
+            if target.startswith('hero:'):
+                foe=game.players[1-self.player]
+                attacker=game.units[uid]
+                if not foe.hero_shield and attacker.atk>=foe.hp+foe.hero_armor:
+                    return baseline
+            elif target in game.units:
+                unit=game.units[target]
+                if not unit.shield:
+                    return baseline
+        return shield_break_setup(game,self.player) or baseline
+
+    def _hard_attack_choice_093(self,game):
         """Pick an attack across ALL ready allies using public board state.
 
         No speculative Match commands, RNG, hidden hands or search on live
@@ -305,6 +334,13 @@ class ComputerOpponent:
         # this also avoids accidentally triggering a rescue/death effect
         # before landing the decisive attack.
         if self.difficulty=='trudny':
+            # A bounded plan can set up a genuine 2–3 hit finish
+            # (e.g. use a weak hit to remove hero shield first).
+            from .hard_tactics import forced_hero_finish
+            combo=forced_hero_finish(game,self.player)
+            if combo is not None:
+                game.attack(*combo)
+                return
             plan=self.hard_attack_choice(game)
             if plan is not None and plan[1]==f'hero:{1-self.player}':
                 enemy=game.players[1-self.player]
