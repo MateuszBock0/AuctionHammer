@@ -2424,9 +2424,12 @@ class SoloApp:
         active=getattr(self.game,'tavern_beer_enabled',False)
         ticks=getattr(self.game,'beer_turns_remaining',0)
         now=pygame.time.get_ticks()
-        animate=(self.animations_enabled and self.replay_index is None
-                 and not self.menu_open and not self.history_open
-                 and not self.help_open and self.details_card is None)
+        animate=(getattr(self,'animations_enabled',False)
+                 and getattr(self,'replay_index',None) is None
+                 and not getattr(self,'menu_open',False)
+                 and not getattr(self,'history_open',False)
+                 and not getattr(self,'help_open',False)
+                 and getattr(self,'details_card',None) is None)
         progress,sway,pouring=beer_fx_state(
             now,getattr(self,'_beer_fx_started_ms',None),animate)
         flicker=(now//180)%3 if animate else 0
