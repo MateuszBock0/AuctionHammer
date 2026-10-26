@@ -43,3 +43,26 @@ def candle_frame(now_ms,enabled=True,phase=0):
     if not enabled:
         return _CANDLE_FRAMES[0]
     return _CANDLE_FRAMES[(max(0,now_ms)//130+phase)%4]
+
+
+def board_spill_timeline(now_ms,started_ms,enabled=True):
+    """Pure staged cosmetic sequence after a verified paid beer order.
+
+    0..600ms mug fills, 600..930ms tips, 700..1300ms beer crosses the frame,
+    950..2100ms it catches fire and dies down into embers. Both sides reuse
+    ONE timestamp: no new rule, combat RNG, additional damage or saved state.
+    Returns (tilt, pour, burn), all in [0,1].
+    """
+    if not enabled or started_ms is None or now_ms<started_ms:
+        return 0.0,0.0,0.0
+    age=now_ms-started_ms
+    if age>=2150:
+        return 0.0,0.0,0.0
+    tilt=min(1.0,max(0.0,(age-600)/240))
+    if age>1260:
+        tilt*=max(0.0,(1590-age)/330)
+    pour=(min(1.0,max(0.0,(age-690)/150))
+          * min(1.0,max(0.0,(1390-age)/290)))
+    burn=(min(1.0,max(0.0,(age-950)/180))
+          * min(1.0,max(0.0,(2150-age)/850)))
+    return tilt,pour,burn

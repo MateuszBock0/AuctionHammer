@@ -1,148 +1,226 @@
-"""Small pixel-art candle sconces and beer tankards along the tavern rails.
+"""Board-mounted candle and overturned ale sprite art, v0.9.98.
 
-All drawing uses integer-aligned Pygame primitives at the fixed logical canvas
-size. No new textures, alpha surfaces, blocking delays or gameplay changes.
-The decoration never moves a card, a button or its clickable hitbox.
+The pixel atlas is hand-isolated from the approved 0.9.98 tavern-board image,
+indexed to a 48-colour pixel palette, with hard transparent edges. It is stored
+as a small compressed ASCII asset so the Python/Windows release bundles it
+without image format plugins, external dependencies or a new download.
+
+All flame, pour and spread are decorative pixel-aligned draws using the
+existing fixed Pygame board projection and are NEVER gameplay actions.
 """
 from __future__ import annotations
+
+import base64
+from functools import lru_cache
+from pathlib import Path
+import zlib
 
 import pygame
 
 from game.ui.beer_fx import candle_frame
 
+_ATLAS = Path(__file__).resolve().parents[2] / 'assets/ui/tavern_board_props.pxart'
+# Source regions of the (86x216) RGBA pixel sheet, in logical pixels.
+_CANDLE=pygame.Rect(0,0,70,64)
+_FLAME=pygame.Rect(53,71,32,44)
+_MUG=pygame.Rect(4,139,76,75)
 
-def _pixel(screen,color,x,y,w,h):
-    """A square pixel-art color block, deliberately not antialiased."""
-    pygame.draw.rect(screen,color,(int(x),int(y),int(w),int(h)))
-
-
-def _wooden_rail(screen,x):
-    # A warm, carved oak inset matches the tavern board; squared pixel joints.
-    _pixel(screen,(27,22,19),x-33,263,66,203)
-    _pixel(screen,(91,57,34),x-30,266,60,197)
-    _pixel(screen,(122,77,43),x-26,270,52,189)
-    _pixel(screen,(48,33,24),x-22,274,44,181)
-    _pixel(screen,(77,49,31),x-19,276,38,176)
-    for y in (276,350,367,439,455):
-        _pixel(screen,(153,101,55),x-27,y,54,2)
-        _pixel(screen,(60,36,25),x-26,y+3,52,2)
-    for y,offset in ((291,-2),(327,3),(398,-4),(447,1)):
-        _pixel(screen,(109,67,39),x-15+offset,y,22,2)
-        _pixel(screen,(133,81,44),x-8+offset,y+5,14,2)
-    # Riveted brass edge, corners use distinct staircase-style pixels.
-    for sign in (-1,1):
-        bx=x+sign*28
-        _pixel(screen,(225,170,96),bx-1,279,3,157)
-        for y in (273,459):
-            _pixel(screen,(226,176,94),bx-4,y-3,7,7)
-            _pixel(screen,(91,56,32),bx-1,y,2,2)
-    _pixel(screen,(230,184,106),x-26,269,52,3)
-    _pixel(screen,(230,184,106),x-26,458,52,3)
+# White foam, bright beer, and candlelit 16/32-bit tavern palette.
+_DARK=(34,20,14)
+_WOOD=(89,45,24)
+_WOOD_LIGHT=(148,78,35)
+_BRASS=(187,116,48)
+_GOLD=(250,191,76)
+_BEER=(220,128,35)
+_BEER_LIGHT=(252,187,64)
+_FOAM=(255,232,178)
+_EMBER=(248,100,29)
 
 
-def _candle_flame(screen,cx,wick_top,frame,splash):
-    """Blocky four-frame flame; brief shared flare after the beer fills."""
-    dx,dy,delta=frame
-    flare=round(4*max(0.0,min(1.0,splash)))
-    tip=cx+dx
-    peak=wick_top-19+dy-delta-flare
-    # Two thin colored halo steps; not an expensive translucent glow surface.
-    _pixel(screen,(96,57,35),tip-7,peak+5,15,13+flare)
-    _pixel(screen,(151,76,35),tip-5,peak+3,11,14+flare)
-    _pixel(screen,(217,110,37),tip-4,peak+2,9,13+flare)
-    _pixel(screen,(251,161,48),tip-2,peak+1,6,11+flare)
-    _pixel(screen,(255,219,108),tip-1,peak+5,4,7+flare)
-    _pixel(screen,(255,243,169),tip,peak+8,2,4+flare)
-    _pixel(screen,(255,199,75),tip,peak,2,3)
-    if splash>0.0:
-        # Same tick and same magnitude for the candles of BOTH side rails.
-        _pixel(screen,(231,143,56),tip-9,peak+6,2,5)
-        _pixel(screen,(250,184,72),tip+9,peak+8,2,4)
+@lru_cache(maxsize=1)
+def load_tavern_sprites():
+    """Decode the trusted, versioned RGBA pixel atlas once, before draw loops."""
+    lines=_ATLAS.read_text(encoding='ascii').splitlines()
+    magic,w,h,colors=lines[0].split()
+    if magic!='PXART-1' or (int(w),int(h),int(colors))!=(86,216,48):
+        raise ValueError('Invalid AuctionHammer pixel tavern atlas header')
+    raw=zlib.decompress(base64.b85decode(lines[1]))
+    palette_size=int(colors)*3
+    palette=raw[:palette_size]
+    indices=raw[palette_size:]
+    if len(indices)!=int(w)*int(h) or len(palette)!=palette_size:
+        raise ValueError('Invalid pixel tavern atlas payload')
+    rgba=bytearray(len(indices)*4)
+    for i,index in enumerate(indices):
+        if index==255:
+            continue
+        j=i*4
+        rgba[j:j+3]=palette[index*3:index*3+3]
+        rgba[j+3]=255
+    sheet=pygame.image.fromstring(bytes(rgba),(int(w),int(h)),'RGBA')
+    return tuple(sheet.subsurface(r).copy() for r in (_CANDLE,_FLAME,_MUG))
 
 
-def _candle(screen,cx,top,height,frame,splash):
-    # A visible wick, two shades of beeswax, three chunky wax drips.
-    _pixel(screen,(49,38,29),cx-1,top-5,3,7)
-    _candle_flame(screen,cx,top-5,frame,splash)
-    _pixel(screen,(105,73,45),cx-8,top-1,16,height+2)
-    _pixel(screen,(224,192,130),cx-6,top,13,height)
-    _pixel(screen,(247,224,167),cx-3,top+2,5,height-5)
-    _pixel(screen,(187,143,90),cx+4,top+2,3,height-3)
-    # Uneven, blocky dripping wax makes the object a candle not a torch.
-    _pixel(screen,(252,228,179),cx-7,top+5,3,10)
-    _pixel(screen,(246,218,159),cx+5,top+6,3,13)
-    _pixel(screen,(244,218,169),cx-2,top+13,3,9)
-    _pixel(screen,(255,238,196),cx-6,top-1,12,3)
+def _sq(screen,c,x,y,w,h):
+    pygame.draw.rect(screen,c,(int(x),int(y),int(w),int(h)))
 
 
-def _candle_sconce(screen,x,now_ms,animate,splash):
-    # Brass fixture below two different-height candles; no moving mount.
-    _pixel(screen,(35,36,33),x-23,334,46,19)
-    _pixel(screen,(168,111,60),x-22,335,44,4)
-    _pixel(screen,(239,182,102),x-22,339,44,3)
-    _pixel(screen,(89,65,43),x-17,342,34,7)
-    _pixel(screen,(206,150,80),x-19,350,38,4)
-    _pixel(screen,(65,53,39),x-4,353,8,10)
-    _pixel(screen,(184,125,63),x-7,358,14,4)
-    # Separate phases make a gentle "living tavern" rather than a flashing icon.
-    left=candle_frame(now_ms,animate,phase=0)
-    right=candle_frame(now_ms,animate,phase=2)
-    _candle(screen,x-12,310,27,left,splash)
-    _candle(screen,x+11,317,20,right,splash)
+def _poly(screen,c,points):
+    pygame.draw.polygon(screen,c,[(int(px),int(py)) for px,py in points])
 
 
-def _beer_mug(screen,x,fill,pouring,progress,splash):
-    # A simple wall shelf connects the tankard physically to the wooden rail.
-    _pixel(screen,(41,32,25),x-29,425,58,11)
-    _pixel(screen,(209,148,81),x-30,423,60,4)
-    _pixel(screen,(122,78,44),x-27,429,54,3)
-    top=416-max(1,min(37,int(fill)))
-    # Black-square silhouette with a distinct stepped handle.
-    _pixel(screen,(30,31,30),x-19,373,40,50)
-    _pixel(screen,(70,57,41),x-16,377,34,43)
-    _pixel(screen,(161,111,62),x-13,378,29,40)
-    _pixel(screen,(66,52,37),x+19,386,11,4)
-    _pixel(screen,(198,142,81),x+27,387,4,27)
-    _pixel(screen,(204,150,86),x+20,412,11,4)
-    _pixel(screen,(52,44,34),x+20,391,7,20)
-    # Amber beer rises with the exact paid fill animation.
-    _pixel(screen,(171,105,35),x-13,top,28,416-top)
-    _pixel(screen,(232,160,48),x-10,top+1,24,max(1,415-top))
-    _pixel(screen,(255,199,69),x-9,top+1,4,max(1,413-top))
-    _pixel(screen,(245,225,168),x-15,top-2,31,4)
-    for px,dy in ((-12,0),(-6,-3),(2,1),(9,-2)):
-        _pixel(screen,(255,242,209),x+px,top-3+dy,7,5)
-    # Brass rim and hammer marks: deliberately square and chunky.
-    _pixel(screen,(233,179,107),x-19,375,38,3)
-    _pixel(screen,(216,166,105),x-19,374,3,47)
-    _pixel(screen,(221,170,105),x+16,377,3,43)
-    _pixel(screen,(229,176,105),x-18,418,37,4)
-    _pixel(screen,(85,57,38),x-14,402,31,7)
-    _pixel(screen,(245,186,106),x-10,404,22,3)
-    _pixel(screen,(110,73,42),x-2,406,6,2)
-    if pouring:
-        stream_y=352+round(5*progress)
-        _pixel(screen,(255,188,68),x-2,stream_y,5,17)
-        _pixel(screen,(255,231,156),x-4,stream_y+11,9,3)
-    if splash>0.0:
-        # Small 8-bit drops after the mug fills; confined to the empty gutter.
-        travel=round((1-splash)*13)
-        rise=round(6*splash)
-        for sign in (-1,1):
-            dx=sign*(23+travel)
-            _pixel(screen,(247,178,60),x+dx-2,top-8-rise,5,5)
-            _pixel(screen,(255,223,119),x+dx+sign*5,top-12,3,3)
-        _pixel(screen,(255,210,105),x-21,top-5,42,3)
+def _mount(screen,x):
+    """Wedge/bronze frame is bolted TO the board edge, not a floating torch HUD.
+
+    Side X=57/1020 comes from the existing 1480x980 logical board. A shaded
+    bevel bridges the recessed side to the board while cards remain untouched.
+    """
+    left=x<500
+    d=1 if left else -1
+    center=x+(11 if left else 0)
+    def pt(a,y):
+        return (center+d*a,y)
+    # Quarter-view wood rim protrudes INWARDS; fine grain & stepped shadows.
+    _poly(screen,(29,22,18),[pt(-32,350),pt(28,349),pt(48,357),
+                            pt(48,433),pt(31,443),pt(-30,438)])
+    _poly(screen,(79,42,23),[pt(-28,353),pt(24,352),pt(41,361),
+                            pt(41,431),pt(28,437),pt(-27,434)])
+    _poly(screen,(124,67,30),[pt(-24,354),pt(20,353),pt(38,362),
+                             pt(38,368),pt(-24,363)])
+    _poly(screen,(52,34,23),[pt(35,369),pt(43,361),pt(43,433),
+                            pt(33,441)])
+    for offset in (-15,0,15):
+        _sq(screen,(114,66,33),*pt(offset,384),2,20)
+        _sq(screen,(145,88,44),*pt(offset+3,393),2,12)
+    # Real board corner: a continuous brass edge reaches towards its field.
+    pygame.draw.lines(screen,(245,172,70),False,
+                      [pt(-27,352),pt(21,352),pt(41,361)],3)
+    pygame.draw.lines(screen,(69,42,27),False,
+                      [pt(42,368),pt(42,434),pt(29,442)],4)
+    for yy in (359,436):
+        cx,cy=pt(30,yy)
+        pygame.draw.circle(screen,(59,38,26),(cx,cy),5)
+        pygame.draw.circle(screen,(235,161,72),(cx-1,cy-1),3)
+        _sq(screen,(255,207,119),cx-2,cy-3,2,2)
+    return center,d
+
+
+def _draw_candle(screen,center,d,now_ms,animate,splash):
+    candle,flame,_=load_tavern_sprites()
+    # One fairly large wax candle, *on the board's brass corner cup*.
+    # 48 colours, crisp RGBA pixels; no flat polygon candle silhouettes.
+    cimg=candle if d==-1 else pygame.transform.flip(candle,True,False)
+    screen.blit(cimg,(center-34,295))
+    fx,fy,fh=candle_frame(now_ms,animate,phase=0 if d==1 else 2)
+    boost=round(7*max(0.0,min(1.0,splash))) if animate else 0
+    if boost:
+        # NEAREST: sprite stays pixel art, even during the flare.
+        fire=pygame.transform.scale(flame,(32+boost,44+boost))
+    else:
+        fire=flame
+    screen.blit(fire,(center-fire.get_width()//2+fx,
+                      263-fire.get_height()+44+fy-fh))
+    if boost:
+        for i in range(3):
+            px=center+d*(4+i*9)
+            _sq(screen,(252,176,62),px,263-i*6,3,3)
+
+
+def _draw_mug(screen,center,d,tilt):
+    _,_,mug=load_tavern_sprites()
+    # Sprite was composed facing left. Flip to face INTO the left board.
+    original=mug if d==-1 else pygame.transform.flip(mug,True,False)
+    # 4 quantised poses, no subpixel interpolation and no continuous wobble.
+    pose=min(3,max(0,int(tilt*3.999)))
+    deg=(24,16,8,0)[pose]
+    image=pygame.transform.rotate(original,deg if d==-1 else -deg)
+    pos=image.get_rect(center=(center-3*d,402))
+    screen.blit(image,pos)
 
 
 def draw_tavern_rail(screen,x,fill,pouring,progress,splash,
-                     now_ms=0,animate=True):
-    """Paint a pixel-art rail; both sides react to one confirmed paid mug.
+                     now_ms=0,animate=True,tilt=0.0):
+    """Paint paired board-mounted props. Historical callers remain compatible."""
+    center,d=_mount(screen,x)
+    _draw_candle(screen,center,d,now_ms,animate,
+                 splash if animate else 0.0)
+    _draw_mug(screen,center,d,tilt if animate else 0.0)
+    if pouring and animate:
+        # A short foamy filler stream appears above the mug before tipping.
+        fx=center+d*6
+        top=367+round(5*progress)
+        _sq(screen,_BEER_LIGHT,fx-2,top,4,10)
+        _sq(screen,_FOAM,fx-2,top+10,6,3)
 
-    x is one of the preexisting decorative gutter centers (57 or 1020).
-    All effects are visual. They cannot add damage, alter Match or move cards.
+
+def _side_points(x):
+    """Rim contact and inward flow, mirrored in real board coordinates."""
+    # X=57 -> contact 105, flow to 105+150. X=1020 -> contact 992,
+    # flow to 992-150. Both lie on the existing TOP edge of own card row.
+    if x<500:
+        return 105,1
+    return 992,-1
+
+
+def draw_board_spill(screen,x,pour,burn,now_ms=0):
+    """Foam falls from the tipped mug and catches alight ON the board surface.
+
+    Confined to 2D board bevel (y=427..441), first-card top art edge and outer
+    margins. Never reaches health/status text, UI controls or combat hitboxes.
+    Draws even during active burda as low embers. Can be fully disabled with A.
     """
-    _wooden_rail(screen,x)
-    _candle_sconce(screen,x,now_ms,animate,splash if animate else 0.0)
-    _beer_mug(screen,x,fill,pouring and animate,progress,
-              splash if animate else 0.0)
+    if pour<=0.0 and burn<=0.0:
+        return
+    rim,d=_side_points(x)
+    phase=(max(0,int(now_ms))//125)%4
+    if pour>0.0:
+        extent=round(20+125*min(1.0,pour))
+        # Animated visible pour FALLS from the mug to the board frame.
+        startx=rim-d*19
+        starty=391
+        endx=rim+d*9
+        yy=429
+        pygame.draw.lines(screen,(94,49,22),False,
+                          [(startx,starty),(rim-d*8,411),(endx,yy)],9)
+        pygame.draw.lines(screen,_BEER,False,
+                          [(startx,starty),(rim-d*8,411),(endx,yy)],6)
+        pygame.draw.lines(screen,_BEER_LIGHT,False,
+                          [(startx-d*2,starty),(rim-d*10,411),(endx-d*2,yy)],2)
+        for step in range(0,extent,7):
+            px=rim+d*step
+            y=429+(step//14)%3
+            # Flat angular puddle following the real board's horizontal edge.
+            _sq(screen,(112,65,27),px,y,6,9)
+            _sq(screen,_BEER,px,y+1,6,5)
+            _sq(screen,_BEER_LIGHT,px+d*2,y+1,2,2)
+            if step%28==0:
+                _sq(screen,_FOAM,px,y+5,5,3)
+        for i in range(7):
+            offset=(i*29+phase*9)%max(20,extent)
+            px=rim+d*offset
+            py=422+(i*7+phase*3)%15
+            _sq(screen,_FOAM if i%2 else _GOLD,px,py,3,3)
+    if burn>0.0:
+        # Fire is present at the candle's side board mount first, then runs
+        # inward along the beer. Embers keep the effect alive for brawl turns.
+        count=max(3,round(12*burn))
+        for i in range(count):
+            step=i*12
+            px=rim+d*step
+            base=435+(i%2)
+            ht=3+round(burn*(5+(i*7+phase*3)%11))
+            # Entire flame strip stays above the first card's *title/stat*
+            # zones (all y<=438); its luminous tips are visible over board.
+            _poly(screen,(105,38,19),[(px-d*6,base),(px-d*2,base-ht),
+                                     (px+d*3,base-ht//2),(px+d*7,base)])
+            _poly(screen,_EMBER,[(px-d*3,base),(px,base-ht),
+                                (px+d*4,base)])
+            if burn>0.5 and i%3==0:
+                _sq(screen,(255,224,97),px,base-max(3,ht//2),3,4)
+        # A few sparks rise ABOVE the board bevel, but never across hero HP.
+        for i in range(3):
+            sx=rim+d*(12+i*25+phase*3)
+            sy=417-((i+phase)%3)*5
+            _sq(screen,(242,118,43),sx,sy,2,3)
+        # Right and left side trim remain visibly smouldering after the pour.
+        _sq(screen,(162,73,32),rim-d*4,427,6,9)
