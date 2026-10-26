@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.96] — 2026-10-26
+
+### Karczemna Burda — etap 2: lekkie nalewanie i mądre zakupy komputera
+- Po faktycznie opłaconym kuflu przez maksymalnie 600 ms pojawia się złoty strumień nalewanego piwa i napełnianie kufla, a płomienie na bocznych dekoracjach kołyszą się maksymalnie o 2 px. Komendy gry ani rysowanie kart nigdy nie czekają na zakończenie animacji.
+- Warstwa dekoracyjna zachowuje wszystkie hitboxy, statystyki, pozycje, kolejność i skalowanie kart. Żadnego obracania sceny ani kosztownego tworzenia powierzchni w każdej klatce. Wyłączenie animacji klawiszem **A** natychmiast pokazuje widok statyczny.
+- **Tylko trudne AI** może kupić piwo automatycznie, opierając się na najwyżej 10 jawnych jednostkach obu plansz. Ostrożnie porównuje trzy spodziewane obrażenia przez Tarcze/pancerz, unika kupowania przy braku wrogich jednostek, zostawia monety na przyszłą aukcję, nie kupuje kolejnego kufla dopóki globalny efekt ma więcej niż 1 turę i priorytetyzuje pewny śmiertelny atak. Łatwy i normalny nie zmieniają zachowania.
+- **Wszystkie reguły 0.9.95 bez zmian:** cena max(10 + suma rozpoczętych tur obu graczy, ceil(10% bieżących monet)), +3 tury za każdą dolewkę, 1 zwykłe obrażenie obu plansz co zakończoną turę, brak limitu zakupów dla gracza. Zero nerfów legend i zmian signed replay/save.
+- Testy: `tests/test_tavern_visual_ai_0996.py` (czas i zakres animacji, brak RNG i mutacji, kupno opłacalne i nieopłacalne, ochrona budżetu, CPU p95 <20 ms dla samej heurystyki). Przed scaleniem wymagane wszystkie poprzednie bramki CI oraz zatwierdzone 0.9.95 na gałęzi main.
+
 ## [0.9.95] — 2026-10-26
 
 ### Karczemna Burda — etap 1: ognie, kufle i grywalny efekt
