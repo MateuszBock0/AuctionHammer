@@ -92,7 +92,7 @@ class NormalBid0997(unittest.TestCase):
           players=[SimpleNamespace(coins=20),SimpleNamespace(coins=20)],
           auction_catalog='v22',auction_bag=['A001','A002','A003'])
         ai=ComputerOpponent(0,'normalny')
-        ai.auction_first_pick_advantage=lambda _: (0.,0.)
+        ai.auction_first_pick_advantage=lambda _: (0.2,0.)
         self.assertGreaterEqual(ai.auction_bid_ceiling(game),4)
         self.assertLess(ai.auction_bid_ceiling(game),20)
         game.players[0].coins=3

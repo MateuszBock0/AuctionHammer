@@ -123,7 +123,8 @@ class AlternatingSeatSessionTests(unittest.TestCase):
             cloned=Match(game.seed,audit_enabled=True,auctions_enabled=True,
                          auction_catalog='v22',
                          starting_compensation='choice_2_5_or_coins',
-                         fixed_board_slots=True)
+                         fixed_board_slots=True,
+                         tavern_price_v2_enabled=True)
             self.assertEqual(cloned.first,game.first)
             self.assertEqual(digest(cloned.audit_initial),
                              digest(game.audit_initial))

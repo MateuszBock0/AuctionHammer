@@ -104,6 +104,9 @@ class ComputerOpponent:
         future=tuple(getattr(game,'auction_bag',()) or ())
         future_auctions=len(future)>=3
         if self.difficulty!='trudny':
+            # Paying for identical first/second choices has no strategic value.
+            if own_gain<=0 and opponent_denial<=0:
+                return 0
             # 0.9.97: the normal AI competes for first pick even when two
             # cards have similar value. Still protects a future-auction reserve.
             value=2.6*own_gain+.85*opponent_denial
