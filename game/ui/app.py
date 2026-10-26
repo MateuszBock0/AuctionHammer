@@ -35,7 +35,7 @@ from game.ui.auction_badges import draw_trigger_icon, TRIGGER_NAMES
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
 from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
-from game.ui.rarity_view import rarity_color, card_rarity
+from game.ui.rarity_view import card_rarity
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
 from game.ui.decision_clarity import economy_cue, positional_cues
@@ -44,6 +44,14 @@ from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
+
+# Auction-only accent colors: brown, silver, gold.
+# Keep rarity colors on hand cards and the battlefield unchanged.
+AUCTION_RARITY_COLORS = {
+    'podstawowa': (196, 148, 99),
+    'rzadka': (215, 222, 230),
+    'legendarna': (255, 213, 111),
+}
 
 class SoloApp:
     SIDEBAR_X=1082
@@ -1209,7 +1217,7 @@ class SoloApp:
         shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA)
         shade.fill((*TAVERN_SCRIM,240));self.screen.blit(shade,(0,0))
         rect=pygame.Rect(255,190,972,593)
-        rarity_accent=rarity_color(offer.rarity)
+        rarity_accent=AUCTION_RARITY_COLORS[offer.rarity]
         self._panel(rect,TAVERN_PANEL_INNER,rarity_accent,18)
         if offer.rarity=='legendarna':
             self.theme.legendary_offer_ornament(
@@ -1267,15 +1275,20 @@ class SoloApp:
             rect=self.auction_offer_rect(i)
             claimed=off.uid in a.picks.values()
             selectable=a.phase=='picking' and a.turn==0 and not claimed
-            tier_accent=rarity_color(off.rarity)
+            tier_accent=AUCTION_RARITY_COLORS[off.rarity]
             self._panel(rect,(52,37,26) if not claimed else (38,34,29),
                         tier_accent if not claimed else cfg.PANEL_BORDER,14)
-            # Rarity is more prominent than the generic "selectable" gold.
+            # Rarity framing belongs to auction offers only.
             pygame.draw.rect(self.screen,tier_accent,rect.inflate(-3,-3),
                              4 if off.rarity=='legendarna' else
-                             2 if off.rarity=='rzadka' else 1,border_radius=13)
+                             3 if off.rarity=='rzadka' else 2,border_radius=13)
             self.theme.carved_panel(self.screen,rect.inflate(-8,-8),opacity=72)
-            if off.rarity=='legendarna':
+            if off.rarity=='rzadka':
+                pygame.draw.rect(self.screen,(112,124,139),
+                                 rect.inflate(-9,-9),1,border_radius=11)
+            elif off.rarity=='legendarna':
+                pygame.draw.rect(self.screen,(251,223,145),
+                                 rect.inflate(-10,-10),1,border_radius=11)
                 self.theme.legendary_offer_ornament(
                     self.screen,rect,animate=self.animations_enabled)
             adef=catalog_for(self.game.auction_catalog).get(off.archetype)
@@ -1334,10 +1347,16 @@ class SoloApp:
 
             rarity=zones['rarity']
             pygame.draw.rect(self.screen,(42,32,26),rarity)
-            pygame.draw.rect(self.screen,(110,82,54),rarity,1)
-            tier_text=f'{off.rarity.upper()} · POZIOM {off.level}'
-            self._text(self.cards_view.clip(tier_text,self.fonts[13],rarity.width-12),
-                       13,rarity.centerx,rarity.centery,tier_accent,center=True)
+            pygame.draw.rect(self.screen,tier_accent,rarity,1)
+            tier_text=off.rarity.upper()
+            level_text=f'POZIOM {off.level}'
+            tier_width=self.fonts[16].size(tier_text)[0]
+            level_width=self.fonts[12].size(level_text)[0]
+            left=rarity.centerx-(tier_width+12+level_width)//2
+            self._text(tier_text,16,left,
+                       rarity.centery-self.fonts[16].get_height()//2,tier_accent)
+            self._text(level_text,12,left+tier_width+12,
+                       rarity.centery-self.fonts[12].get_height()//2,cfg.MUTED)
 
             trigger=zones['trigger']
             pygame.draw.rect(self.screen,(36,31,27),trigger)
