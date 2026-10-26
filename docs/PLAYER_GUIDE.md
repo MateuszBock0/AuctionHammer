@@ -49,6 +49,13 @@ Gdy zadziała potwierdzony efekt, gra krótko podświetla jego źródło i rzecz
 
 W menu **USTAWIENIA** są dwa niezależne przyciski: **MUZYKA** (domyślnie **40%**) oraz **EFEKTY** (domyślnie **10%**). Każde kliknięcie podnosi poziom o 10 punktów procentowych; po 100% następuje 0%, czyli wyciszenie. Wartości są zapamiętywane lokalnie, także po zamknięciu gry. Dźwięki nie wpływają na wynik meczu.
 
+## Karczemna Burda — zamawianie piwa (od 0.9.95)
+Po obu stronach planszy są ognie i kufle. W swojej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**.
+- Każde zamówienie kosztuje więcej z: **10 + suma rozpoczętych tur obu graczy** lub **10% posiadanych monet, zaokrąglone w górę**. Przykład: po 12 turach z 300 monetami zapłacisz 30 (bo 10+12=22).
+- Każdy kufel dodaje **3 tury** do licznika Burdy. Na końcu każdej tury **wszystkie jednostki obu plansz** otrzymują po **1 normalnym obrażeniu**; osłony i pancerze absorbują je według standardowych zasad. Efekty po śmierci działają normalnie. Bohaterowie i karty na ręce nie są ranne.
+- Kolejne piwo wydłuża efekt o 3 tury; nie zwiększa liczby obrażeń. Nie ma dopłaty za kolejny kufel.
+- Historyczne zapisy bez nowej reguły działają po staremu. Animowany przechył planszy i zakupy komputera będą rozważane w kolejnych etapach.
+
 ## Jak działa Generał A002? (od 0.9.93)
 
 **Generał Oddziału Natarcia zawsze premiuje wyłącznie własną planszę:**
@@ -80,6 +87,7 @@ Na poziomie **łatwym** komputer wydaje na jedną aukcję najwyżej połowę mon
 | `M` | Menu |
 | `R` | Nowy mecz |
 | `A` | Animacje |
+| `B` | Zamów piwo za wyświetloną cenę podczas swojej tury |
 | `F8` | Szybkość prezentacji ruchów AI |
 | `F11` | Tryb pełnoekranowy |
 

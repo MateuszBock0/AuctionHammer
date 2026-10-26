@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.94 (ograniczony budżet planowania AI, weryfikacja czasu decyzji w CI)  
+**Wersja gałęzi:** MVP 0.9.95 (Karczemna Burda: etap 1, weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.95 (Karczemna Burda — fundament i działający zakup)
+- Własny, podpisany rozkaz `order_beer(player)`; koszt **max(10 + łączna liczba rozpoczętych tur obu graczy, ceil(10% monet kupującego))**. Każdy zakup: płatność, +3 tury czasu globalnego efektu. Bez zwiększania siły uszkodzeń i arbitralnych limitów liczby zamówień.
+- Na koniec każdej tury obie plansze otrzymują 1 normalne obrażenie na jednostkę (nie bohaterowie/ręka), z Tarczą, pancerzem i wyzwalaniem fali zgonów przez oryginalny silnik.
+- UI: dwie małe pochodnie i dwa kufle w istniejących marginesach, cena i licznik, kliknięcie lub [B]. Bez obracania klikalnych kart, nowych plików graficznych czy wymagań GPU.
+- `tavern_beer_enabled` w podpisanych regułach nowych meczów v22; brak flagi w starym save/replay nie zmienia wcześniejszych reguł i hashy.
+- Etap 2 (później): lekki, wyłącznie wizualny ruch i rozsądne kupowanie przez komputer. Etap 3 (później): dopracowane animacje po realnym teście Windows.
+- Testy: `tests/test_tavern_beer_0995.py`. Ręczny odbiór Windows: oczekuje.
 
 ### Etap — 0.9.94 (ograniczony i szybki mikroplan najtrudniejszego AI)
 

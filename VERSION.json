@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.94",
+  "mvp": "0.9.95",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,6 +27,7 @@
     "engine_unchanged": true,
     "windows_manual_acceptance": "pending"
   },
+  "tavern_brawl_0995": {"stage":1, "price":"MAX(10 + started turns of both players, CEIL(10% of current coins))", "damage":"1 normal damage to every board unit on both sides at end of each player turn", "duration":"3 turns per purchase, added to remaining duration", "damage_stacks":false, "torches":2, "beer_mugs":2, "keyboard":"B", "rotation":"stage 2 visual only", "ai_purchases":"stage 2", "historical_replays":"opt-in signed marker new v22; old unchanged", "manual_windows_acceptance":"pending"},
   "bounded_hard_0994": {"difficulty":"hard-only", "search_depth":3, "beam_width":5, "max_attackers":5, "max_targets":5, "state_clone":false, "lookahead_scope":"public hero finish, shield break setup", "fallback":"v0.9.93 attack scoring", "hidden_information":false, "rng_changes":false, "rules_changes":false, "performance_acceptance":"p95 under 100ms measured on CI runner", "paired_simulation":"32 common seeds x swapped seats"},
   "hard_tactics_general_0993": {"hard_only":"evaluates all public legal attack pairs with shields, armor, retaliation and death risks", "general_basic":"own board ATK +1, including General", "general_rare":"one chosen ally only, double attack and damage", "general_legendary":"newly summoned friendly units only, double attack and damage", "historical_replay_rules":"signed general_friendly_only true opt-in; old saves and hashes unchanged", "validation":"mirrored full matches new hard vs previous targeting; all signed replay tests", "manual_windows_acceptance":"pending"},
   "ability_feedback_0992": {"source":"audited successful actions + traced concrete internal effects", "source_to_target_to_outcome":true, "mass_effects":"bounded grouped recipient markers", "duration_ms":1180, "drawing":"board-safe endpoint corners and corridor-only routes", "replay_and_modal":"suppressed; no stale backlog", "mutates_match":false, "changes_audit_rng_or_balancing":false, "manual_windows_acceptance":"pending"},

@@ -4,6 +4,16 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.95] — 2026-10-26
+
+### Karczemna Burda — etap 1: ognie, kufle i grywalny efekt
+- Dwie lekkie pochodnie i dwa kufle w istniejących bocznych marginesach planszy. Pikselowe figury Pygame bez nowych assetów, bibliotek i przebudowy hitboxów. Własny przycisk **KUP [B]**.
+- Cena KAŻDEGO kufla wynosi `max(10 + T, ceil(M / 10))`, gdzie `T` oznacza łączną liczbę **rozpoczętych tur obu graczy**, nie pełne rundy aukcyjne, a `M` to posiadane monety kupującego przed płatnością. Brak dodatkowej dopłaty za kolejne zamówienia.
+- Każdy zakup dodaje dokładnie **3 zakończenia tur** do wspólnej Karczemnej Burdy. Na końcu każdej tury 1 zwykłe obrażenie otrzymuje każda **jednostka obu plansz**, nie bohaterowie ani karty na ręce. Tarcza/pancerz chronią normalnie, zgony zachowują wspólną falę efektów. Kolejne zamówienia wydłużają czas, nie zwiększają obrażeń.
+- Mechanika podpisana tylko dla nowych meczów v22; wszystkie stare podpisane audyty, zapisy i replaye bez znacznika odtwarzają dotychczasowe reguły. Nie zmieniono kart, legend, statystyk, aukcji ani AI.
+- Następny etap: wizualny przechył/chwianie otoczenia i rozsądne zakupy AI; na razie bez obrotu hitboxów, kosztownego renderingu i nowych animowanych assetów.
+- Testy ceny i zaokrąglenia, obu stron, wspólnej fali śmierci, Tarcz/pancerza, wielokrotnego kupowania, zapisów i odmowy zakupu. Ręczny odbiór na fizycznym Windows: oczekuje.
+
 ## [0.9.94] — 2026-10-26
 
 ### Lekkie planowanie walki (Hard AI) — bez wydłużania tury
