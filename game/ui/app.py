@@ -44,7 +44,7 @@ from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
-from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline,slot_flame_strength
+from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline,slot_flame_strength,tavern_flame_intensity
 from game.ui.tavern_art import draw_tavern_rail,draw_board_spill,draw_slot_flamelets
 
 # Auction-only accent colors: brown, silver, gold.
@@ -145,7 +145,8 @@ class SoloApp:
                             auction_catalog='v22',
                             starting_compensation='choice_2_5_or_coins',
                             fixed_board_slots=True,
-                            tavern_price_v2_enabled=True)
+                            tavern_price_v2_enabled=True,
+                            tavern_scaled_damage_enabled=True)
             if candidate.first==first:
                 return candidate
         raise RuntimeError('Nie znaleziono losowania właściwej kolejności')
@@ -2483,8 +2484,9 @@ class SoloApp:
             # until the authoritative brawl counter reaches zero.
             for owner in (0,1):
                 for slot in range(5):
-                    power=slot_flame_strength(ticks,now,started,animate,
-                                              owner,slot)
+                    power=(slot_flame_strength(ticks,now,started,animate,
+                                               owner,slot)
+                           * tavern_flame_intensity(ticks))
                     if power>0.0:
                         draw_slot_flamelets(self.screen,
                                            self.slot_rect(owner,slot),
@@ -2502,8 +2504,10 @@ class SoloApp:
         enabled=self.game.can_order_beer(0)
         self._button(self.beer_buy_rect(),'KUP [B]',active=enabled,small=True)
         if ticks:
-            self._text('1 DMG / TURA',11,1018,486,cfg.GOLD,center=True)
-            self._text(f'+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
+            next_damage=(ticks if getattr(self.game,'tavern_scaled_damage_enabled',False)
+                         else 1)
+            self._text(f'{next_damage} DMG / TURA',11,1018,486,cfg.GOLD,center=True)
+            self._text('+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
 
     def _draw_board(self):
         self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
