@@ -274,6 +274,18 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('tavern_beer_enabled',False)
     data.setdefault('beer_turns_remaining',0)
     data.setdefault('beer_orders',0)
+    # Archived matches stay on the 0.9.95 pricing rules.
+    data.setdefault('tavern_price_v2_enabled',False)
+    data.setdefault('beer_orders_by_player',[0,0])
+    if (type(data['tavern_price_v2_enabled']) is not bool
+            or not isinstance(data['beer_orders_by_player'],list)
+            or len(data['beer_orders_by_player'])!=2
+            or any(type(n) is not int or n<0
+                   for n in data['beer_orders_by_player'])
+            or (data['tavern_price_v2_enabled'] and
+                (not data['tavern_beer_enabled'] or
+                 sum(data['beer_orders_by_player'])!=data['beer_orders']))):
+        raise ValueError('Nieprawidłowy cennik piwa w zapisie')
     if (type(data['tavern_beer_enabled']) is not bool
             or type(data['beer_turns_remaining']) is not int
             or type(data['beer_orders']) is not int

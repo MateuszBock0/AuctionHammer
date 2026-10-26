@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.96 (Karczemna Burda: etap 2, animacje i oszczędne AI; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.97 (cennik piwa, aukcje normalnego AI, widoczniejsze dekoracje; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.97 (normalne AI i pełniejsza karczma)
+
+- W nowych meczach niezależne ceny kufli: 10 na start, +10 za kolejny własny zakup i +1 co dwie rozpoczęte tury łącznie. Poprzednia ekonomia pozostaje historyczna w starych zapisach/replayach.
+- Normalne AI częściej przebija na aukcjach, z rezerwą monet i bez zmian dla pozostałych poziomów trudności.
+- Nowe drewniano-mosiężne dekoracje obu boków planszy: cztery pikselowe świece (po dwie w oprawie), 4 klatki co 130 ms i ruch płomieni do 1 px, pixel-artowe kufle, animowane rozlanie i jednoczesny rozbłysk po 600 ms. Tylko rysowanie; obrażenia wciąż na koniec tury.
+- Testy regresyjne i ręczna akceptacja fizycznego Windows nadal wymagane.
 
 ### Etap — 0.9.96 (płynne nalewanie i zakup piwa przez trudne AI)
 
