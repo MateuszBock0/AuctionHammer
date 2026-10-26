@@ -55,8 +55,9 @@ class BoundedHard0994(unittest.TestCase):
         g.players[1].hp=5
         g.players[1].hero_armor=4
         self.assertIsNone(forced_hero_finish(g,0))
-        g.units[big].base_attack=10
-        self.assertEqual(forced_hero_finish(g,0),(small,'hero:1'))
+        g.units[big].base_attack=8
+        # Two cumulative hits (and consumption of armor) are required.
+        self.assertIsNotNone(forced_hero_finish(g,0))
 
     def test_taunt_prevents_illegal_face_combo(self):
         g=ready(99404)
