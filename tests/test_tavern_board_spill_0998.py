@@ -60,8 +60,8 @@ class BoardMountedBeer0998(unittest.TestCase):
         for xx in (150,940):
             self.assertNotEqual(b.get_at((xx,430)),(9,11,13,255))
         # Both hero/status areas and central card hitboxes remain untouched.
-        for px,py in ((300,310),(600,430),(400,500),(600,440),
-                      (140,480),(900,480),(1085-6,500)):
+        for px,py in ((300,310),(600,430),(400,465),(600,440),
+                      (140,465),(900,465),(1079,460)):
             self.assertEqual(b.get_at((px,py)),(9,11,13,255))
 
     def test_idle_props_static_with_animations_disabled(self):
