@@ -4,6 +4,14 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.97] — 2026-10-26
+
+### Karczma: przystępniejsze piwo, mocniejsze licytacje i wyraźniejsze dekoracje
+- W **nowych meczach** cena pierwszego kufla u każdego gracza zaczyna się od 10 monet. Każdy kolejny własny kufel podnosi cenę o 10 monet, a co dwie rozpoczęte tury łącznie cena zwiększa się o 1 monetę: `10 + 10 × wcześniejsze własne kufle + floor(tury obu graczy/2)`. Saldo monet przestaje wpływać na cenę. Stare zapisane mecze oraz podpisane replaye używają starego wzoru.
+- **Normalne AI** wyraźniej walczy o pierwszeństwo wyboru kart podczas aukcji, również gdy dwie oferty są podobne. Zachowuje niewielką rezerwę na przyszłe aukcje. Łatwe i trudne AI w licytacji bez zmian.
+- Zintegrowane z bocznymi drewnianymi listwami nowe pochodnie i kufle z mosiężną oprawą, pianą i animacją nalewania. Po napełnieniu (600 ms) obie strony pokazują jednocześnie rozlanie piwa i większy ogień. Rozbłysk trwa krótko, wyłącza się klawiszem A i nie dotyka kart, hitboxów ani obrażeń na koniec tury.
+- Nowe regresje w `tests/test_tavern_price_visual_0997.py`, w tym zgodność podpisanych powtórek i wczytywania starszych zapisów. Ręczny przegląd na fizycznym Windows pozostaje wymagany.
+
 ## [0.9.96] — 2026-10-26
 
 ### Karczemna Burda — etap 2: lekkie nalewanie i mądre zakupy komputera

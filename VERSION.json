@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.96",
+  "mvp": "0.9.97",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,6 +27,7 @@
     "engine_unchanged": true,
     "windows_manual_acceptance": "pending"
   },
+  "tavern_auction_0997": {"pricing":"10 + 10 * own previous mugs + floor(sum started turns / 2)", "per_player_count":true, "older_replays":"original formula", "normal_ai":"higher baseline bid while preserving auction reserve", "overflow":"both rails simultaneously 600-1050ms, decorative only", "manual_windows_acceptance":"pending"},
   "tavern_fx_ai_0996": {"stage":2, "beer_pour_ms":600, "torch_sway_px_max":2, "board_or_card_rotation":false, "clickable_hitboxes_unchanged":true, "animations_off":true, "autonomous_buy":"hard AI only, public boards, <=10 units, reserve for auction, near-expiry only", "pricing_rule":"unchanged exact v0.9.95 max(10 + turns, ceil(10% coins))", "audits_and_saves":"same v0.9.95 signed mechanics", "windows_manual_test":"pending"},
   "tavern_brawl_0995": {"stage":1, "price":"MAX(10 + started turns of both players, CEIL(10% of current coins))", "damage":"1 normal damage to every board unit on both sides at end of each player turn", "duration":"3 turns per purchase, added to remaining duration", "damage_stacks":false, "torches":2, "beer_mugs":2, "keyboard":"B", "rotation":"stage 2 visual only", "ai_purchases":"stage 2", "historical_replays":"opt-in signed marker new v22; old unchanged", "manual_windows_acceptance":"pending"},
   "bounded_hard_0994": {"difficulty":"hard-only", "search_depth":3, "beam_width":5, "max_attackers":5, "max_targets":5, "state_clone":false, "lookahead_scope":"public hero finish, shield break setup", "fallback":"v0.9.93 attack scoring", "hidden_information":false, "rng_changes":false, "rules_changes":false, "performance_acceptance":"p95 under 100ms measured on CI runner", "paired_simulation":"32 common seeds x swapped seats"},
