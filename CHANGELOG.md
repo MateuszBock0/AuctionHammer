@@ -4,6 +4,16 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.92] — 2026-10-26
+
+### Czytelne aktywacje zdolności — źródło → cel → rezultat
+- Pokazuj przez około 1,2 sekundy **kto aktywował zdolność, kogo dotknęła i co rzeczywiście się zmieniło**: regeneracja (także A014 v24), statusy, wzmocnienie ATK/MAX PŻ, leczenie, strata PŻ lub zużycie ochrony, jeżeli źródło jest jednoznacznie potwierdzone.
+- Źródło i odbiorcy otrzymują krótkie, pikselowe znaczniki narożne; po tej samej stronie cienka linia przebiega wyłącznie przez wolną szczelinę przy pasku bohatera. Między przeciwnymi stronami nie rysuje się połączenia przez centralny HUD.
+- Napis pojawia się w wolnym pasku między dolnym paskiem bohatera a ręką (y=710–741), a nie na kartach; w przypadku efektów na kilku sojusznikach pokazuje liczbę **rzeczywistych odbiorców**, bez kilku nakładających się etykiet.
+- Dane pochodzą z **poprawnie zakończonych komend audytu** i rzeczywistych zmian w śladach wewnętrznych. Nie wyświetlają się niepotwierdzone decyzje, przewidywane obrażenia ani mylone z atakiem zwykłe uderzenia broni.
+- Wyłączenie animacji [A], historia, replay i modalne okna wyłączają wizualizację oraz konsumują zdarzenia bez opóźnionego odtwarzania. Bez nowych zasobów, dźwięków lub zależności. Bez zmian `Match`, RNG, kart, balansu v24, AI, zapisów i historycznych audytów.
+- Testy jednostkowe oraz Pygame dla źródła, grupowania, negatywnych prób, ochrony statystyk i resetu po załadowaniu. Odbiór wizualny na fizycznym Windows nadal wymagany.
+
 ## [0.9.91] — 2026-10-25
 
 ### Smart Auction AI — pierwszeństwo wyboru, limity i ocena ryzyka
