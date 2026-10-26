@@ -2176,14 +2176,17 @@ class SoloApp:
         # Synchronize committed snapshots BEFORE classifying their journal.
         # The newest attack recap must appear on the very next rendered frame.
         self.combat_visuals.sync(g,self.slot_rect,self.hero_rect,pygame.time.get_ticks())
-        self.ability_feedback.observe(
-            g,self.slot_rect,self.hero_rect,pygame.time.get_ticks(),
-            allowed=(self.animations_enabled and g.phase=='turn' and
-                     not (self.menu_open or self.help_open or self.history_open
-                          or self.replay_index is not None
-                          or self.confirm_action is not None
-                          or self.details_card is not None
-                          or self.tutorial_welcome_open)))
+        # Some archived UI tests instantiate SoloApp without __init__.
+        # Real sessions always have an observer; sparse tests remain valid.
+        if hasattr(self,'ability_feedback'):
+            self.ability_feedback.observe(
+                g,self.slot_rect,self.hero_rect,pygame.time.get_ticks(),
+                allowed=(self.animations_enabled and g.phase=='turn' and
+                         not (self.menu_open or self.help_open or self.history_open
+                              or self.replay_index is not None
+                              or self.confirm_action is not None
+                              or self.details_card is not None
+                              or self.tutorial_welcome_open)))
         self.sfx.observe(g,self.combat_visuals,pygame.time.get_ticks(),
                          allowed=not (self.menu_open or self.help_open
                                      or self.history_open or self.replay_index is not None
@@ -3757,7 +3760,7 @@ class SoloApp:
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw(self.screen,pygame.time.get_ticks(),
                                          self.fonts_bold[16])
-                if self.game.phase=='turn':
+                if self.game.phase=='turn' and hasattr(self,'ability_feedback'):
                     self.ability_feedback.draw(
                         self.screen,pygame.time.get_ticks(),self.fonts_bold[14])
             if self.replay_index is None:
