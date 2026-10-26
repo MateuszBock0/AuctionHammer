@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.92",
+  "mvp": "0.9.93",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,6 +27,7 @@
     "engine_unchanged": true,
     "windows_manual_acceptance": "pending"
   },
+  "hard_tactics_general_0993": {"hard_only":"evaluates all public legal attack pairs with shields, armor, retaliation and death risks", "general_basic":"own board ATK +1, including General", "general_rare":"one chosen ally only, double attack and damage", "general_legendary":"newly summoned friendly units only, double attack and damage", "historical_replay_rules":"signed general_friendly_only true opt-in; old saves and hashes unchanged", "validation":"mirrored full matches new hard vs previous targeting; all signed replay tests", "manual_windows_acceptance":"pending"},
   "ability_feedback_0992": {"source":"audited successful actions + traced concrete internal effects", "source_to_target_to_outcome":true, "mass_effects":"bounded grouped recipient markers", "duration_ms":1180, "drawing":"board-safe endpoint corners and corridor-only routes", "replay_and_modal":"suppressed; no stale backlog", "mutates_match":false, "changes_audit_rng_or_balancing":false, "manual_windows_acceptance":"pending"},
   "smart_auction_ai_0991": {"easy_cap":"floor(coins / 2)", "normal":"first pick advantage versus free second pick", "hard":"public board, v24 card buffs, future archetypes and coin risk", "hidden_opponent_information":false, "rng_changed":false, "rules_changed":false, "verification":"mirrored-seat full-match simulation"},
   "quiet_sfx_0989": {

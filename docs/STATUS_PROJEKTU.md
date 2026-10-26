@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.92 (czytelne aktywacje zdolności; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.93 (trudniejsza taktyka AI; właściciel premii Generała; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.93 (trudniejsza taktyka i Generał wyłącznie po własnej stronie)
+
+- Najtrudniejsze AI wybiera akcje spośród wszystkich legalnych par atakujący–cel; potrafi rozpoznać bezpieczne eliminacje, mocny odwet oraz potencjalnie śmiertelną serię obrażeń bohatera.
+- Podstawowy A002 daje +1 ATK tylko własnej planszy; rzadki wskazuje wyłącznie własną jednostkę; legendarny premiuje wyłącznie nowych własnych sojuszników. Bez nerfów i bez wzmacniania wrogów. Pozostają przyznane w v24 Tarcze i pancerz 0/2/4.
+- `general_friendly_only` jest podpisanym wyborem nowych partii v22. Brak flagi w starych save/audit zachowuje historyczne reguły (w tym dawną globalną aurę podstawowego Generała); nie wolno zmieniać archiwalnych hashy.
+- Pełne mecze porównawcze, testy właściciela i historyczne replays: `tests/test_general_hard_ai_0993.py`, `tools/simulate_hard_tactics_0993.py`. Aktualny katalog źródłowy sprzed 0.9.93 pozostaje niezmieniony, by nie przepisać historycznych definicji.
 
 ### Etap — 0.9.92 (źródło → cel → potwierdzony rezultat)
 

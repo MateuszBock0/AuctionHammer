@@ -27,6 +27,13 @@ jobs:
         with:
           name: AuctionHammer-0990-Smart-Auction-AI
           path: reports/auction-ai-0990.json
+      - name: Test porównawczy taktycznego AI — 64 pełne mecze, lustrzane seedy
+        run: python -m tools.simulate_hard_tactics_0993 --pairs 32 --output reports/hard-tactics-0993.json --min-winrate 0.50
+      - name: Raport silniejsze AI kontra dawna polityka wyboru celu
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-0993-Hard-Tactics
+          path: reports/hard-tactics-0993.json
       - name: Rzeczywisty render Pygame wszystkich ikon i ekranów
         env:
           SDL_VIDEODRIVER: dummy
