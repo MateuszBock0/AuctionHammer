@@ -270,6 +270,10 @@ def load_match(path: Path | None = None) -> Match:
             or len(data['death_counts'])!=2
             or any(type(n) is not int or n<0 for n in data['death_counts'])):
         raise ValueError('Nieprawidłowy licznik zgonów jednostek')
+    # Old saved matches predate friendly-only A002 rule.
+    data.setdefault('general_friendly_only',False)
+    if type(data['general_friendly_only']) is not bool:
+        raise ValueError('Nieprawidłowa flaga premii Generała')
     match=Match.__new__(Match)
     match.__dict__.update(data)
     return match

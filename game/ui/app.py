@@ -1198,7 +1198,8 @@ class SoloApp:
         offer=a.offers[index]
         definition=catalog_for(self.game.auction_catalog).get(offer.archetype)
         raw=(v23_variant(self.game.auction_catalog,offer.archetype,
-                         offer.rarity,getattr(self.game,'ruleset_version','v22'))
+                         offer.rarity,getattr(self.game,'ruleset_version','v22'),
+                         getattr(self.game,'general_friendly_only',False))
              if definition is not None and self.game.auction_catalog in ('v4','v22')
              else definition.abilities[RARITIES.index(offer.rarity)]
              if definition is not None else 'Nie znaleziono definicji.')
@@ -1351,7 +1352,8 @@ class SoloApp:
                        12,trigger.centerx,trigger.centery,cfg.GOLD,center=True)
 
             description=(v23_variant(self.game.auction_catalog,off.archetype,
-                                       off.rarity,getattr(self.game,'ruleset_version','v22'))
+                                       off.rarity,getattr(self.game,'ruleset_version','v22'),
+                                       getattr(self.game,'general_friendly_only',False))
                          if adef and self.game.auction_catalog in ('v4','v22') else
                          'PLANOWANA: '+adef.abilities[RARITIES.index(off.rarity)]
                          if adef else 'Prowokacja i 1 Tarcza po wystawieniu')

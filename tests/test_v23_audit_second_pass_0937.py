@@ -24,7 +24,8 @@ def complete_report(seed,schema,mode='v23'):
     # would contain modern v24 actions that replay validation correctly
     # refuses to reinterpret as historical actions.
     game=Match(seed,audit_enabled=True,auctions_enabled=True,
-               auction_catalog='v22',balance_patch_v24=(schema>=2))
+               auction_catalog='v22',balance_patch_v24=(schema>=2),
+               general_friendly_only=(schema>=2))
     game.ruleset_version=mode
     game.audit_state_schema=schema
     initialize_audit(game)

@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.93] — 2026-10-26
+
+### Mocniejsze AI w trybie trudnym oraz premia Generała wyłącznie dla własnej planszy
+- **Trudny komputer** ocenia pary wszystkich gotowych atakujących i legalnych celów, zamiast wybierać pierwszego gotowego atakującego. Priorytet mają rozpoznane ciosy kończące partię, także z kombinacji kilku gotowych jednostek. Uwzględnia aktualny pancerz, Tarczę, podwojenie obrażeń od Generała, odwet, utratę własnej ważnej aury i zagrożenie zgonowymi zdolnościami wroga. Bez ukrytej ręki, zaglądania do RNG lub mutowania planszy podczas oceny. Poziomy łatwy i normalny bez zmian.
+- **Generał Oddziału Natarcia A002**: podstawowy stale dodaje **+1 ATK tylko każdej jednostce na swojej planszy** (w tym samemu Generałowi), nigdy wrogom. Rzadki wskazuje tylko jedną jednostkę własnej armii, nadając podwójny atak i podwójne standardowe obrażenia. Legendarny premiuje tylko **nowych własnych** sojuszników na swojej planszy, bez udzielania premii przeciwnikowi. Tarcza i zatwierdzone trwałe 0/2/4 pancerza zostają; legendy bez nerfów.
+- Reguła Generała jest **podpisanym opt-in nowych meczów v22**. Historyczne savegame i signed replays zachowują swoją autentyczną dawną logikę oraz SHA; oryginalny katalog tekstowy pozostaje nienaruszony, a opisy karty nowych meczów oraz podgląd aukcji odzwierciedlają nowe działanie.
+- Testy regresyjne jednostek Generała obu graczy, rzadkiej i legendarnej premii, starych zapisów, podglądu, audytów oraz pełnych parowanych meczów porównujących trudne AI z wcześniejszą polityką ataków. Próg przewagi jest sprawdzany empirycznie (nie ma gwarancji wygranej każdej partii).
+- Statystyki i zdolności samych kart, historie starych meczów, dźwięki i oprawa wizualna pozostają bez innych zmian.
+
 ## [0.9.92] — 2026-10-26
 
 ### Czytelne aktywacje zdolności — źródło → cel → rezultat

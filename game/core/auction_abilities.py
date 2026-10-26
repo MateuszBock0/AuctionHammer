@@ -551,8 +551,12 @@ def mark_general_new_ally(game,uid):
     """Only units entering after an active legendary general receive its flag."""
     if uid not in game.units:return
     owner=game.units[uid].owner
+    if getattr(game,'general_friendly_only',False) and uid not in game.players[owner].board:
+        return
     for src,leader in list(game.units.items()):
         if (src!=uid and leader.owner==owner and kind(game,src)=='A002'
+            and (not getattr(game,'general_friendly_only',False)
+                 or src in game.players[owner].board)
             and rarity(game,src)==2 and not game._disabled(leader)):
             # Signed audits from the short-lived 0.9.58 (#82) build
             # contain an additional event. Reproduce it ONLY when replaying
@@ -571,11 +575,17 @@ def boosted_attack(game,uid):
     for src,target in game.auction_general_targets.items():
         if (target==uid and src in game.units and rarity(game,src)==1
             and game.units[src].owner==unit.owner
+            and (not getattr(game,'general_friendly_only',False)
+                 or (src in game.players[unit.owner].board
+                     and uid in game.players[unit.owner].board))
             and not game._disabled(game.units[src])):
             return True
     for src,recipients in game.auction_general_grants.items():
         if (uid in recipients and src in game.units and rarity(game,src)==2
             and game.units[src].owner==unit.owner
+            and (not getattr(game,'general_friendly_only',False)
+                 or (src in game.players[unit.owner].board
+                     and uid in game.players[unit.owner].board))
             and not game._disabled(game.units[src])):
             return True
     return False

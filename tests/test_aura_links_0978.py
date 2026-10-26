@@ -129,7 +129,7 @@ class AuraLinkRules0978(unittest.TestCase):
                 self.assertEqual(live_aura_links(g,'S35'),())
                 self.assertEqual(live_aura_links(g,'S01'),())
 
-    def test_bronze_general_global_bonus_including_self_no_upgrade_guess(self):
+    def test_bronze_general_owner_only_with_legacy_audit_mode(self):
         g=Match(978009,auctions_enabled=True,auction_catalog='v22',
                 fixed_board_slots=True,starting_compensation='coins')
         g.finish_mulligan(0,[])
@@ -142,6 +142,14 @@ class AuraLinkRules0978(unittest.TestCase):
         g._update_auras()
         items=live_aura_links(g,'TEST_GENERAL')
         self.assertEqual({(l.target,l.amount) for l in items},
+                         {('S01',1),('TEST_GENERAL',1)})
+        self.assertEqual(g.units['S09'].aura_atk,0)
+        # An explicitly replayed old game has no signed opt-in and must
+        # preserve the historical both-boards interpretation.
+        g.general_friendly_only=False
+        g._update_auras()
+        self.assertEqual({(l.target,l.amount) for l in
+                          live_aura_links(g,'TEST_GENERAL')},
                          {('S01',1),('S09',1),('TEST_GENERAL',1)})
         self.assertEqual(g.units['S09'].aura_atk,1)
         g.auction_awards['TEST_GENERAL']['rarity']='rzadka'

@@ -49,7 +49,19 @@ Gdy zadziała potwierdzony efekt, gra krótko podświetla jego źródło i rzecz
 
 W menu **USTAWIENIA** są dwa niezależne przyciski: **MUZYKA** (domyślnie **40%**) oraz **EFEKTY** (domyślnie **10%**). Każde kliknięcie podnosi poziom o 10 punktów procentowych; po 100% następuje 0%, czyli wyciszenie. Wartości są zapamiętywane lokalnie, także po zamknięciu gry. Dźwięki nie wpływają na wynik meczu.
 
+## Jak działa Generał A002? (od 0.9.93)
+
+**Generał Oddziału Natarcia zawsze premiuje wyłącznie własną planszę:**
+- Podstawowy: +1 ATK wszystkim własnym jednostkom na planszy, w tym Generałowi, dopóki pozostaje aktywny.
+- Rzadki: tylko jedna wybrana własna jednostka otrzymuje możliwość do dwóch ataków i podwójne obrażenia swoich standardowych ataków.
+- Legendarny: tylko NOWO zagrani/przywołani sojusznicy po jego awansie lub wystawieniu otrzymują podwójny atak i podwójne obrażenia standardowe. Nie obejmuje wrogów ani starszych sojuszników.
+- Każdy wariant v24 przy wejściu dostaje Tarczę; rzadki +2, legendarny +4 trwałego pancerza.
+
+Starsze podpisane partie, których reguły miały premię podstawowego Generała na obu planszach, są nadal odtwarzane według **oryginalnej** wersji. W nowych partiach taka premia nie wzmacnia przeciwnika.
+
 ## Jak licytuje komputer? (0.9.91)
+
+Na poziomie **trudnym**, od 0.9.93, komputer dodatkowo ocenia wszystkie legalne pary atakujący–cel, planuje potencjalne zakończenie meczu, porównuje odwet i ryzyko uruchomienia zdolności śmierci.
 
 Na poziomie **łatwym** komputer wydaje na jedną aukcję najwyżej połowę monet, które ma w chwili licytacji (zaokrąglenie w dół). Na **normalnym** wycenia korzyść z pierwszego wyboru, pamiętając, że przy przegranej aukcji nadal dostanie drugą kartę za darmo. Na **trudnym** uwzględnia dodatkowo publiczny stan planszy przeciwnika, wartość zachowania monet i to, jakie archetypy pozostają w puli. AI nie podgląda ręki ani talii gracza. Żaden poziom nie gwarantuje zwycięstwa lub porażki w każdej partii.
 
