@@ -274,6 +274,11 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('tavern_beer_enabled',False)
     data.setdefault('beer_turns_remaining',0)
     data.setdefault('beer_orders',0)
+    data.setdefault('tavern_scaled_damage_enabled',False)
+    if type(data['tavern_scaled_damage_enabled']) is not bool:
+        raise ValueError('Nieprawidłowa flaga skalowanych obrażeń Burdy')
+    if data['tavern_scaled_damage_enabled'] and not data['tavern_beer_enabled']:
+        raise ValueError('Skalowane obrażenia wymagają mechaniki Burdy')
     # Archived matches stay on the 0.9.95 pricing rules.
     data.setdefault('tavern_price_v2_enabled',False)
     data.setdefault('beer_orders_by_player',[0,0])
