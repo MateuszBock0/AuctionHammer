@@ -44,6 +44,7 @@ from game.ui.onboarding import TutorialProgress, HELP_PAGES, attack_reason_help
 from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
+from game.ui.beer_fx import beer_fx_state
 
 class SoloApp:
     SIDEBAR_X=1082
@@ -2177,6 +2178,7 @@ class SoloApp:
 
     def update(self):
         g=self.game
+        self._sync_tavern_fx()
         if g.phase!='auction':
             self.auction_inspect_index=None
         self._export_finished_audit_once()
@@ -2393,6 +2395,26 @@ class SoloApp:
         except IllegalMove as exc:
             self.last_error=str(exc)
 
+    def _sync_tavern_fx(self):
+        """React only to AUTHORITATIVE paid orders, not to mouse clicks."""
+        game=self.game
+        identity=id(game)
+        count=getattr(game,'beer_orders',0)
+        if getattr(self,'_beer_fx_match_identity',None)!=identity:
+            self._beer_fx_match_identity=identity
+            self._beer_fx_last_orders=count
+            self._beer_fx_started_ms=None
+            self._beer_fx_owner=None
+            return
+        if count<=getattr(self,'_beer_fx_last_orders',0):
+            return
+        self._beer_fx_last_orders=count
+        entries=(e for e in reversed(game.event_journal[-20:])
+                 if 'zamawia kufel za' in e.get('text',''))
+        event=next(entries,None)
+        self._beer_fx_owner=event['active'] if event is not None else None
+        self._beer_fx_started_ms=pygame.time.get_ticks()
+
     def _draw_tavern_beer(self):
         """Two compact pixel torches and beer mugs in existing board gutters.
 
@@ -2401,22 +2423,39 @@ class SoloApp:
         """
         active=getattr(self.game,'tavern_beer_enabled',False)
         ticks=getattr(self.game,'beer_turns_remaining',0)
-        flicker=(pygame.time.get_ticks()//180)%3 if self.animations_enabled else 0
+        now=pygame.time.get_ticks()
+        animate=(self.animations_enabled and self.replay_index is None
+                 and not self.menu_open and not self.history_open
+                 and not self.help_open and self.details_card is None)
+        progress,sway,pouring=beer_fx_state(
+            now,getattr(self,'_beer_fx_started_ms',None),animate)
+        flicker=(now//180)%3 if animate else 0
         for x,owner in ((57,0),(1020,1)):
+            # Only the ornamental flame dances by <=2 pixels.
+            torch_x=x+sway
             pygame.draw.rect(self.screen,(51,35,24),(x-15,311,30,49))
             pygame.draw.rect(self.screen,(140,95,52),(x-11,315,22,41),2)
             pygame.draw.rect(self.screen,(114,71,38),(x-3,297,6,38))
-            fire=[(x-15,302),(x-10,292-flicker),(x-4,296),
-                  (x,278+flicker),(x+5,294),(x+12,286),
-                  (x+15,306),(x+5,314),(x-9,313)]
+            fire=[(torch_x-15,302),(torch_x-10,292-flicker),
+                  (torch_x-4,296),(torch_x,278+flicker),
+                  (torch_x+5,294),(torch_x+12,286),
+                  (torch_x+15,306),(torch_x+5,314),(torch_x-9,313)]
             pygame.draw.polygon(self.screen,(232,119,51),fire)
             pygame.draw.polygon(self.screen,(248,198,86),
-                [(x-7,305),(x-2,298),(x+1,289+flicker),
-                 (x+6,302),(x+8,311),(x-7,311)])
+                [(torch_x-7,305),(torch_x-2,298),
+                 (torch_x+1,289+flicker),(torch_x+6,302),
+                 (torch_x+8,311),(torch_x-7,311)])
             # A little glass mug: amount tracks global brawl duration.
             mug=pygame.Rect(x-18,377,37,45)
             pygame.draw.rect(self.screen,(85,118,119),mug,border_radius=5)
             fill=min(36,10+ticks*3) if active and ticks else 6
+            if pouring and owner==getattr(self,'_beer_fx_owner',None):
+                fill=6+round((fill-6)*progress)
+                # Small pouring stream, no surface allocation or alpha layer.
+                pygame.draw.rect(self.screen,(245,189,75),
+                                 (x-1,364+round(progress*5),3,12))
+                pygame.draw.rect(self.screen,(250,229,182),
+                                 (x-4,367,8,3))
             pygame.draw.rect(self.screen,(217,158,68),
                              (mug.x+5,mug.bottom-4-fill,27,fill))
             pygame.draw.rect(self.screen,(241,222,178),
