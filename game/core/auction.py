@@ -169,7 +169,8 @@ def pick(game,player,uid):
         family=archetype.family
         if game.auction_catalog in ('v4','v22'):
             text=v23_variant(game.auction_catalog,offer.archetype,offer.rarity,
-                             getattr(game,'ruleset_version','v22'))
+                             getattr(game,'ruleset_version','v22'),
+                             getattr(game,'general_friendly_only',False))
         else:
             text="NIEAKTYWNA (planowana): "+archetype.abilities[RARITIES.index(offer.rarity)]
         definition_id=archetype.id
@@ -255,7 +256,8 @@ def advance_rarity(game,completed_round):
         from dataclasses import replace
         card.definition=replace(old_def,
                                 effect=(v23_variant(game.auction_catalog,archetype,new,
-                                                     getattr(game,'ruleset_version','v22'))
+                                                     getattr(game,'ruleset_version','v22'),
+                                                     getattr(game,'general_friendly_only',False))
                                         if game.auction_catalog in ('v4','v22')
                                         else "NIEAKTYWNA (planowana): "+
                                         catalog_for(game.auction_catalog)[archetype].abilities[RARITIES.index(new)]),

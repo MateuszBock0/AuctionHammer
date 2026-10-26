@@ -155,11 +155,18 @@ def active_auction_cards(mode):
 def live_variant(mode,archetype,rarity):
     return active_auction_cards(mode)[archetype]['variants'][_V4_RARITIES[rarity]]
 
-def v23_variant(mode,archetype,rarity,ruleset='v22'):
+def v23_variant(mode,archetype,rarity,ruleset='v22',general_friendly_only=False):
     """Explicit v23 clarifications without rewriting the immutable v22 data."""
     original=live_variant(mode,archetype,rarity)
     if mode!='v22' or ruleset!='v23':
         return original
+    # The source catalog remains immutable for signed 0.9.92-and-earlier
+    # archives. ONLY newly signed matches display the actual fixed A002
+    # bronze aura. Rare and legendary already say 'własne' correctly.
+    if archetype=='A002' and rarity=='podstawowa' and general_friendly_only:
+        return original.replace(
+            'wszystkie jednostki na obu planszach (także wrogie i sam Generał)',
+            'wszystkie jednostki na własnej planszy (w tym sam Generał)')
     # Place the important exception FIRST: auction modal previews show
     # only four lines. Appending this after the old long text silently
     # hid the v23 meaning of A014/A015/A018 from buyers.
