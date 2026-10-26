@@ -23,7 +23,7 @@ FORMAT="AuctionHammer.MatchAudit"
 SCHEMA=1
 FILENAME="AuctionHammer-OSTATNI-MECZ.json"
 ACTIONS=("choose_starting_compensation","mulligan_toggle","finish_mulligan","play","attack","end_turn","choose",
-         "auction_bid","auction_pass","auction_pick")
+         "auction_bid","auction_pass","auction_pick","order_beer")
 
 
 def audit_path() -> Path:
@@ -199,6 +199,10 @@ def state_snapshot(game):
             'pending_vacant_income':getattr(game,'pending_vacant_income',None),
             'vacant_income_enabled':getattr(game,'vacant_income_enabled',False),
         }
+        if getattr(game,'tavern_beer_enabled',False):
+            state['ruleset_state']['tavern_beer_enabled']=True
+            state['ruleset_state']['beer_turns_remaining']=game.beer_turns_remaining
+            state['ruleset_state']['beer_orders']=game.beer_orders
         # The friendly-only A002 rule is signed ONLY for newly created
         # matches; previous archives retain their exact hash/layout.
         if getattr(game,'general_friendly_only',False):
@@ -626,6 +630,21 @@ def verify_replay(payload,match_factory):
             raise ValueError("Odtwarzanie aukcji wymaga fabryki z trybem katalogu") from exc
     else:
         game=match_factory(payload["seed"])
+    # 0.9.95 tavern brawl is opt-in for freshly signed matches.
+    # Missing flag on 0.9.94 and earlier => do NOT reinterpret old matches.
+    beer_flag=(isinstance(signed_rule,dict)
+               and signed_rule.get('tavern_beer_enabled') is True)
+    if isinstance(signed_rule,dict) and any(
+            key in signed_rule for key in (
+                'tavern_beer_enabled','beer_turns_remaining','beer_orders')):
+        if (not beer_flag or catalog!='v22'
+                or signed_rule.get('version')!='v23'
+                or signed_rule.get('beer_turns_remaining')!=0
+                or signed_rule.get('beer_orders')!=0):
+            raise ValueError('Nieprawidłowe reguły Karczemnej Burdy w audycie')
+    game.tavern_beer_enabled=beer_flag
+    game.beer_turns_remaining=0
+    game.beer_orders=0
     # A replay's rules come from its signed initial snapshot, NEVER from today's
     # default Match constructor. Old signed archives did not carry this bit.
     # The old bronze General aura applied across both sides; missing

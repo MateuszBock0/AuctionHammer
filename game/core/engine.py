@@ -23,7 +23,8 @@ class Match:
                  starting_compensation: str = "coins",
                  fixed_board_slots: bool = False,
                  balance_patch_v24: bool | None = None,
-                 general_friendly_only: bool | None = None):
+                 general_friendly_only: bool | None = None,
+                 tavern_beer_enabled: bool | None = None):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -89,6 +90,13 @@ class Match:
         self.general_friendly_only=(
             bool(auctions_enabled and auction_catalog=='v22')
             if general_friendly_only is None else bool(general_friendly_only))
+        # 0.9.95 opt-in: new live v22 games allow paid tavern brawls.
+        # Historical saves/replays retain exact signed rules and hashes.
+        self.tavern_beer_enabled=(
+            bool(auctions_enabled and auction_catalog=='v22')
+            if tavern_beer_enabled is None else bool(tavern_beer_enabled))
+        self.beer_turns_remaining=0
+        self.beer_orders=0
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -491,6 +499,66 @@ class Match:
                   f'— +1 ATK i +2 MAX/bieżącego PŻ. '
                   f'Teraz {u.atk} ATK i {u.hp}/{u.max_hp} PŻ.')
 
+    def beer_price(self,player=None):
+        """Strict price: MAX(10 + started player turns, CEIL(10% coins)).
+
+        Both seats' started turns count, not completed auction rounds.
+        The displayed preview is identical to the amount actually paid.
+        """
+        owner=self.active if player is None else player
+        coins=self.players[owner].coins
+        turns=sum(p.turn_count for p in self.players)
+        return max(10+turns,(coins+9)//10)
+
+    def can_order_beer(self,player):
+        return (getattr(self,'tavern_beer_enabled',False)
+                and self.phase=='turn' and self.pending is None
+                and self.end_queue is None and self.deferred_attack is None
+                and self.active==player and player in (0,1)
+                and self.players[player].coins>=self.beer_price(player))
+
+    @audit_action('order_beer')
+    def order_beer(self,player):
+        """Pay immediately. Each order extends an existing 1-DMG hazard +3."""
+        self._check(self.phase=='turn' and self.active==player
+                    and self.pending is None and self.end_queue is None
+                    and self.deferred_attack is None
+                    and getattr(self,'tavern_beer_enabled',False),
+                    'Piwo można zamówić tylko we własnej aktywnej turze')
+        price=self.beer_price(player)
+        self._check(self.players[player].coins>=price,
+                    f'Za mało monet na piwo (potrzeba {price})')
+        self.players[player].coins-=price
+        self.beer_turns_remaining+=3
+        self.beer_orders+=1
+        self._log(f'{self.players[player].name} zamawia kufel za {price} monet: '
+                  f'KARCZEMNA BURDA trwa jeszcze {self.beer_turns_remaining} tur; '
+                  'na koniec każdej tury obie plansze otrzymają po 1 obrażeniu.')
+
+    def _tick_tavern_brawl(self):
+        """One symmetric tick after completed turn effects, before next turn.
+
+        Use the authoritative normal damage path (shields and armor absorb),
+        and one common death batch so simultaneous monster deaths keep
+        the existing death-wave guarantees.
+        """
+        if not (getattr(self,'tavern_beer_enabled',False)
+                and self.beer_turns_remaining>0):
+            return
+        self.beer_turns_remaining-=1
+        affected=[uid for pl in self.players for uid in list(pl.board)
+                  if uid in self.units]
+        self._log('KARCZEMNA BURDA: obie plansze otrzymują po 1 obrażeniu '
+                  f'({len(affected)} jednostek). '
+                  f'Pozostało tur: {self.beer_turns_remaining}.')
+        for uid in affected:
+            if uid in self.units:
+                self._damage(uid,1,defer_death=True)
+        dead=[uid for uid in affected if uid in self.units
+              and self.units[uid].hp<=0]
+        if dead:
+            self._kill_batch(dead)
+
     @audit_action('end_turn')
     def end_turn(self):
         self._check(self.phase=='turn' and self.pending is None and self.end_queue is None and self.deferred_attack is None,'Nie można zakończyć tury')
@@ -766,6 +834,9 @@ class Match:
             if c.quick_next_turn is not None and c.quick_next_turn<=p.turn_count:c.quick_next_turn=None
         fallen=[uid for uid in p.board if self.units[uid].hp<=0]
         self._kill_batch(fallen)
+        # End-turn active skill waves have already been consumed by _drain.
+        # Beer is symmetrical: hits BOTH boards once per completed player turn.
+        self._tick_tavern_brawl()
         if p.idx!=self.first:
             self.round+=1
             for pl in self.players:pl.coins+=1
@@ -1353,6 +1424,11 @@ class Match:
         auction_rules.pick(self,player,uid)
 
     def assert_integrity(self):
+        assert type(getattr(self,'tavern_beer_enabled',False)) is bool
+        assert (type(getattr(self,'beer_turns_remaining',0)) is int
+                and getattr(self,'beer_turns_remaining',0)>=0)
+        assert (type(getattr(self,'beer_orders',0)) is int
+                and getattr(self,'beer_orders',0)>=0)
         all_ids=list(self.bank)
         for p in self.players:all_ids+=p.hand+p.deck+p.grave+p.board
         all_ids+=self.excluded

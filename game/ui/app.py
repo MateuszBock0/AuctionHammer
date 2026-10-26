@@ -992,6 +992,9 @@ class SoloApp:
                 except IllegalMove as e:self.last_error=str(e)
                 self.selected=None
             return
+        if self.beer_buy_rect().collidepoint(pos) and g.phase=='turn':
+            self._order_tavern_beer()
+            return
         if pygame.Rect(1201,816,221,52).collidepoint(pos):
             self._request_end_turn()
             return
@@ -2047,6 +2050,8 @@ class SoloApp:
             elif event.key==pygame.K_RETURN and self.game.phase=='mulligan':
                 try:self.game.finish_mulligan(0)
                 except IllegalMove as e:self.last_error=str(e)
+            elif event.key==pygame.K_b and self.game.phase=='turn' and self.game.active==0 and not self.game.pending:
+                self._order_tavern_beer()
             elif event.key==pygame.K_SPACE and self.game.phase=='turn' and self.game.active==0 and not self.game.pending:
                 self._request_end_turn()
             elif event.key==pygame.K_LEFT:
@@ -2394,6 +2399,65 @@ class SoloApp:
                 and self.game.cards[uid].definition.name=='Chorąży'):
             return min(3,getattr(self.game,'starter_guard_kills',0))
         return None
+
+    @staticmethod
+    def beer_buy_rect():
+        # Decorative left gutter; never overlaps cards or the hero HUD.
+        return pygame.Rect(10,544,94,38)
+
+    def _order_tavern_beer(self):
+        try:
+            self.game.order_beer(0)
+            self.last_error=''
+        except IllegalMove as exc:
+            self.last_error=str(exc)
+
+    def _draw_tavern_beer(self):
+        """Two compact pixel torches and beer mugs in existing board gutters.
+
+        No new assets, no per-frame allocations beyond primitive draw calls,
+        and no rotation of gameplay hitboxes. Gameplay effects live in Match.
+        """
+        active=getattr(self.game,'tavern_beer_enabled',False)
+        ticks=getattr(self.game,'beer_turns_remaining',0)
+        flicker=(pygame.time.get_ticks()//180)%3 if self.animations_enabled else 0
+        for x,owner in ((57,0),(1020,1)):
+            pygame.draw.rect(self.screen,(51,35,24),(x-15,311,30,49))
+            pygame.draw.rect(self.screen,(140,95,52),(x-11,315,22,41),2)
+            pygame.draw.rect(self.screen,(114,71,38),(x-3,297,6,38))
+            fire=[(x-15,302),(x-10,292-flicker),(x-4,296),
+                  (x,278+flicker),(x+5,294),(x+12,286),
+                  (x+15,306),(x+5,314),(x-9,313)]
+            pygame.draw.polygon(self.screen,(232,119,51),fire)
+            pygame.draw.polygon(self.screen,(248,198,86),
+                [(x-7,305),(x-2,298),(x+1,289+flicker),
+                 (x+6,302),(x+8,311),(x-7,311)])
+            # A little glass mug: amount tracks global brawl duration.
+            mug=pygame.Rect(x-18,377,37,45)
+            pygame.draw.rect(self.screen,(85,118,119),mug,border_radius=5)
+            fill=min(36,10+ticks*3) if active and ticks else 6
+            pygame.draw.rect(self.screen,(217,158,68),
+                             (mug.x+5,mug.bottom-4-fill,27,fill))
+            pygame.draw.rect(self.screen,(241,222,178),
+                             (mug.x+4,mug.bottom-7-fill,29,5))
+            pygame.draw.rect(self.screen,(174,204,210),mug,3,border_radius=5)
+            pygame.draw.rect(self.screen,(153,192,199),
+                             (mug.right,mug.y+10,10,24),3,border_radius=5)
+            self._text('TWÓJ KUFEL' if owner==0 else 'KUFEL AI',
+                       11,x,437,cfg.GOLD,center=True)
+        if not active:
+            return
+        panel=pygame.Rect(8,475,97,115)
+        pygame.draw.rect(self.screen,(35,29,23),panel,border_radius=7)
+        pygame.draw.rect(self.screen,(143,100,47),panel,1,border_radius=7)
+        price=self.game.beer_price(0)
+        self._text(f'PIWO {price} M',12,56,485,cfg.GOLD,center=True)
+        self._text(f'BURDA: {ticks} TUR',11,56,507,cfg.TEXT,center=True)
+        enabled=self.game.can_order_beer(0)
+        self._button(self.beer_buy_rect(),'KUP [B]',active=enabled,small=True)
+        if ticks:
+            self._text('1 DMG / TURA',11,1018,486,cfg.GOLD,center=True)
+            self._text(f'+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
 
     def _draw_board(self):
         self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
@@ -3763,6 +3827,7 @@ class SoloApp:
             self.screen.blit(self.bg,(0,0))
             self._draw_header()
             self._draw_board()
+            self._draw_tavern_beer()
             self._draw_phase_guidance()
             if self.replay_index is None and self.animations_enabled:
                 self.combat_visuals.draw_cards(
