@@ -52,7 +52,8 @@ def run_one(seed,swap,max_steps=3000):
     game=Match(seed,audit_enabled=True,auctions_enabled=True,
                auction_catalog='v22',
                fixed_board_slots=True,
-               starting_compensation='choice_2_5_or_coins')
+               starting_compensation='choice_2_5_or_coins',
+               tavern_beer_enabled=False)  # Historical pure-combat A/B.
     if not game.general_friendly_only:
         raise AssertionError('General own-board rule missing')
     # Freeze the historical 0.9.93 policy: after 0.9.94, bare

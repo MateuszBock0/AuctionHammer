@@ -32,7 +32,8 @@ class PreviousExpert(ComputerOpponent):
 def run_one(seed,swapped,max_steps=3000):
     game=Match(seed,audit_enabled=True,auctions_enabled=True,
                auction_catalog='v22',fixed_board_slots=True,
-               starting_compensation='choice_2_5_or_coins')
+               starting_compensation='choice_2_5_or_coins',
+               tavern_beer_enabled=False)  # Historical pure-combat A/B.
     assert game.general_friendly_only
     agents=(ComputerOpponent(0,'trudny'),PreviousExpert(1,'trudny')) if not swapped else (
         PreviousExpert(0,'trudny'),ComputerOpponent(1,'trudny'))

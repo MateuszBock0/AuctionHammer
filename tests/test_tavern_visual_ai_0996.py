@@ -75,6 +75,9 @@ class BeerBuyingExpert0996(unittest.TestCase):
         g=self._advantage(seed=99623)
         for uid in tuple(g.players[1].board):
             g.units[uid].hp=g.units[uid].max_hp
+            g.units[uid].shield=1
+            g.units[uid].armor_temp=3
+        # Protected healthy enemies cannot be harmed by three 1-dmg ticks.
         self.assertFalse(should_ai_order_beer(g,0,'trudny'))
         g.players[1].board.clear()
         self.assertFalse(should_ai_order_beer(g,0,'trudny'))
