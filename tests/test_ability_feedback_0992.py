@@ -186,7 +186,7 @@ class AbilityFeedback0992(unittest.TestCase):
         self.fx.draw(screen,1100,pygame.font.Font(None,18))
         self.assertEqual(screen.get_at((400,485)),before)
         # A truthful cue is visible in the empty strip, not the cards.
-        self.assertNotEqual(screen.get_at((112,710)),before)
+        self.assertNotEqual(screen.get_at((130,725)),before)
 
     def test_ui_wires_observer_before_ai_acts(self):
         app=SoloApp.__new__(SoloApp)
