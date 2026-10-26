@@ -124,6 +124,51 @@ class TavernBeer0995(unittest.TestCase):
         g.phase='turn'
         self.assertFalse(g.can_order_beer(1))
 
+    def test_signed_replay_with_real_paid_beer_and_three_ticks(self):
+        # A genuine seed-driven, public-command-only game. Never fabricate
+        # starting coins or reset the audit seed's initial state.
+        from game.core.audit import verify_replay
+        game=Match(99570,audit_enabled=True,auctions_enabled=True,
+                   auction_catalog='v22',starting_compensation='coins')
+        game.finish_mulligan(0,[])
+        game.finish_mulligan(1,[])
+        bought=False
+        ticks=0
+        for _ in range(90):
+            if game.phase=='auction':
+                state=game.auction
+                if state.phase=='bidding':
+                    game.auction_pass(state.turn)
+                else:
+                    remaining=[x for x in state.offers
+                               if x.uid not in state.picks.values()]
+                    game.auction_pick(state.turn,remaining[0].uid)
+                continue
+            if game.phase!='turn':
+                break
+            if not bought and game.can_order_beer(game.active):
+                game.order_beer(game.active)
+                bought=True
+            before=game.beer_turns_remaining
+            game.end_turn()
+            if bought and before>game.beer_turns_remaining:
+                ticks+=1
+            if bought and ticks>=3:
+                break
+        self.assertTrue(bought,'Fresh audited game never afforded beer')
+        self.assertEqual(ticks,3)
+        self.assertEqual(game.beer_turns_remaining,0)
+        payload={'complete_from_start':True,'seed':game.seed,
+                 'version':'0.9.95',
+                 'initial_state':game.audit_initial,
+                 'actions':game.audit_actions,
+                 'internal_events':game.audit_internal,
+                 'event_journal':game.event_journal,
+                 'final_state':state_snapshot(game),
+                 'summary':{'vacant_slot_income_enabled':game.vacant_income_enabled,
+                            'ruleset_version':game.ruleset_version}}
+        self.assertTrue(verify_replay(payload,Match))
+
     def test_old_save_and_old_signed_state_not_changed(self):
         g=ready(99507)
         g.tavern_beer_enabled=False
