@@ -22,7 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.93</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.94</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
 
 ---
 
@@ -98,6 +98,7 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 
+- **0.9.94** — lekkie planowanie walki na trudnym poziomie: do 3 ataków do przodu, 5 wariantów na poziom, możliwe śmiertelne kombinacje, usuwanie tarczy przed ciosem; bez kopiowania silnika/RNG. Pomiar czasu namysłu w CI i pojedynki z 0.9.93.
 - **0.9.93** — trudniejsze AI na poziomie TRUDNYM: globalna ocena atakujących/celów, śmiertelnych sekwencji, odwetu i zdolności po śmierci. Generał A002 na wszystkich rzadkościach wzmacnia wyłącznie własną planszę (podstawowy +1 ATK, rzadki wybrany sojusznik, legendarny nowi sojusznicy); historyczne audyty zachowują stare zasady.
 - **0.9.92** — czytelne aktywacje zdolności: krótkie podświetlenie źródła i celów oraz komunikat ŹRÓDŁO → CEL → rzeczywisty rezultat. Zweryfikowane z wykonanych komend i audytu, grupowane masowe premie, bez zasłaniania ilustracji; można wyłączyć [A].
 - **0.9.91** — inteligentne licytowanie: łatwy bot wydaje najwyżej 50% monet, normalny wycenia prawo pierwszego wyboru, a trudny uwzględnia publiczny stan przeciwnika, ryzyko wydatku oraz buffy v24; symulacje na wspólnych seedach.
@@ -125,7 +126,7 @@ Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 - **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
 - **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
 
-Wersja **0.9.93** poprawia taktyczne AI na poziomie trudnym i pilnuje, aby Generał A002 wspierał tylko własną planszę. **0.9.92** dodaje czytelne wskazanie źródła i skutków uruchomionej zdolności, bez zmian zasad. **0.9.91** rozwija licytowanie AI, uwzględniając buffy **v24 z 0.9.90**. **0.9.89** dodaje dyskretną warstwę dźwiękową oraz niezależne poziomy muzyki i SFX. **0.9.88** ustawia wyższy kadr kwadratowych ofert aukcyjnych. **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+Wersja **0.9.94** dodaje niedrogi obliczeniowo plan 2–3 ciosów wyłącznie na trudnym poziomie. **0.9.93** poprawia taktyczne AI na poziomie trudnym i pilnuje, aby Generał A002 wspierał tylko własną planszę. **0.9.92** dodaje czytelne wskazanie źródła i skutków uruchomionej zdolności, bez zmian zasad. **0.9.91** rozwija licytowanie AI, uwzględniając buffy **v24 z 0.9.90**. **0.9.89** dodaje dyskretną warstwę dźwiękową oraz niezależne poziomy muzyki i SFX. **0.9.88** ustawia wyższy kadr kwadratowych ofert aukcyjnych. **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Pomoc, bezpieczeństwo i rozwój
 

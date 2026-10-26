@@ -34,6 +34,13 @@ jobs:
         with:
           name: AuctionHammer-0993-Hard-Tactics
           path: reports/hard-tactics-0993.json
+      - name: Lekkie Hard AI — 64 pełne mecze porównawcze i budżet p95 100 ms
+        run: python -m tools.simulate_bounded_hard_0994 --pairs 32 --output reports/bounded-hard-0994.json --min-winrate 0.50 --max-p95-ms 100
+      - name: Raport Hard AI 0.9.94 — skuteczność i czas decyzji
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-0994-Bounded-Hard
+          path: reports/bounded-hard-0994.json
       - name: Rzeczywisty render Pygame wszystkich ikon i ekranów
         env:
           SDL_VIDEODRIVER: dummy

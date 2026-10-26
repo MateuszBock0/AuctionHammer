@@ -61,6 +61,8 @@ Starsze podpisane partie, których reguły miały premię podstawowego Generała
 
 ## Jak licytuje komputer? (0.9.91)
 
+Na poziomie **trudnym**, od 0.9.94, dodatkowa szybka analiza kilku ataków potrafi wykorzystać kombinację zdjęcia Tarczy i zadania końcowego ciosu, bez długiego namysłu lub podglądania ręki gracza. 
+
 Na poziomie **trudnym**, od 0.9.93, komputer dodatkowo ocenia wszystkie legalne pary atakujący–cel, planuje potencjalne zakończenie meczu, porównuje odwet i ryzyko uruchomienia zdolności śmierci.
 
 Na poziomie **łatwym** komputer wydaje na jedną aukcję najwyżej połowę monet, które ma w chwili licytacji (zaokrąglenie w dół). Na **normalnym** wycenia korzyść z pierwszego wyboru, pamiętając, że przy przegranej aukcji nadal dostanie drugą kartę za darmo. Na **trudnym** uwzględnia dodatkowo publiczny stan planszy przeciwnika, wartość zachowania monet i to, jakie archetypy pozostają w puli. AI nie podgląda ręki ani talii gracza. Żaden poziom nie gwarantuje zwycięstwa lub porażki w każdej partii.
