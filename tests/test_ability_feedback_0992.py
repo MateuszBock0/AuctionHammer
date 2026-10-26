@@ -133,8 +133,7 @@ class AbilityFeedback0992(unittest.TestCase):
         g.audit_internal=[cast('A014','play'),damage]
         g.audit_actions.append(action(operation='play'))
         self.fx.observe(g,rect_for,hero_for,1000)
-        self.assertEqual(self.fx.cues[0].label,'TARCZA -1' if False else
-                         'TARCZA -1')  # emitted by actual before/after
+        self.assertEqual(self.fx.cues[0].label,'TARCZA -1')
         self.assertNotIn('PŻ -',self.fx.cues[0].label)
 
     def test_self_shield_and_armor_report_exact_committed_gain(self):
