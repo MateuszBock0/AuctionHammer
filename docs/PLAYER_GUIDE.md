@@ -61,7 +61,7 @@ Po obu stronach planszy są ognie i kufle. W swojej turze możesz kliknąć **KU
 - Stare mecze rozpoczęte w 0.9.95–0.9.96 zachowują poprzedni cennik `max(10 + rozpoczęte tury, ceil(monety/10))`.
 - Każdy kufel dodaje **3 tury** do licznika Burdy. Na końcu każdej tury **wszystkie jednostki obu plansz** otrzymują po **1 normalnym obrażeniu**; osłony i pancerze absorbują je według standardowych zasad. Efekty po śmierci działają normalnie. Bohaterowie i karty na ręce nie są ranne.
 - Kolejne piwo wydłuża efekt o 3 tury; nie zwiększa liczby obrażeń. Nie ma dopłaty za kolejny kufel.
-- Historyczne zapisy i podpisane powtórki zachowują swoje oryginalne reguły. Po 600 ms nalewania obie pochodnie rozbłyskują, a piwo i piana rozlewają się po bokach. To efekt wizualny, bez dodatkowego natychmiastowego obrażenia. Trudne AI może kupować piwo od 0.9.96.
+- Historyczne zapisy i podpisane powtórki zachowują swoje oryginalne reguły. Po 600 ms nalewania po dwie pixelowe świece po każdej stronie rozbłyskują, a piwo i piana rozlewają się po bokach. Świece migają stale w czterech klatkach (co 130 ms), a naciśnięcie A zatrzymuje ich animację. To efekt wizualny, bez dodatkowego natychmiastowego obrażenia. Trudne AI może kupować piwo od 0.9.96.
 
 ## Jak działa Generał A002? (od 0.9.93)
 

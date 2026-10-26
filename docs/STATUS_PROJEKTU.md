@@ -10,7 +10,7 @@
 
 - W nowych meczach niezależne ceny kufli: 10 na start, +10 za kolejny własny zakup i +1 co dwie rozpoczęte tury łącznie. Poprzednia ekonomia pozostaje historyczna w starych zapisach/replayach.
 - Normalne AI częściej przebija na aukcjach, z rezerwą monet i bez zmian dla pozostałych poziomów trudności.
-- Nowe drewniano-mosiężne dekoracje obu boków planszy, animowane rozlanie i jednoczesny rozbłysk po 600 ms. Tylko rysowanie; obrażenia wciąż na koniec tury.
+- Nowe drewniano-mosiężne dekoracje obu boków planszy: cztery pikselowe świece (po dwie w oprawie), 4 klatki co 130 ms i ruch płomieni do 1 px, pixel-artowe kufle, animowane rozlanie i jednoczesny rozbłysk po 600 ms. Tylko rysowanie; obrażenia wciąż na koniec tury.
 - Testy regresyjne i ręczna akceptacja fizycznego Windows nadal wymagane.
 
 ### Etap — 0.9.96 (płynne nalewanie i zakup piwa przez trudne AI)

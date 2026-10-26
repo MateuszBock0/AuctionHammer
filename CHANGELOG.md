@@ -9,7 +9,7 @@ Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](d
 ### Karczma: przystępniejsze piwo, mocniejsze licytacje i wyraźniejsze dekoracje
 - W **nowych meczach** cena pierwszego kufla u każdego gracza zaczyna się od 10 monet. Każdy kolejny własny kufel podnosi cenę o 10 monet, a co dwie rozpoczęte tury łącznie cena zwiększa się o 1 monetę: `10 + 10 × wcześniejsze własne kufle + floor(tury obu graczy/2)`. Saldo monet przestaje wpływać na cenę. Stare zapisane mecze oraz podpisane replaye używają starego wzoru.
 - **Normalne AI** wyraźniej walczy o pierwszeństwo wyboru kart podczas aukcji, również gdy dwie oferty są podobne. Zachowuje niewielką rezerwę na przyszłe aukcje. Łatwe i trudne AI w licytacji bez zmian.
-- Zintegrowane z bocznymi drewnianymi listwami nowe pochodnie i kufle z mosiężną oprawą, pianą i animacją nalewania. Po napełnieniu (600 ms) obie strony pokazują jednocześnie rozlanie piwa i większy ogień. Rozbłysk trwa krótko, wyłącza się klawiszem A i nie dotyka kart, hitboxów ani obrażeń na koniec tury.
+- Dwie stylizowane pixel-artowe świece na każdej z dwóch drewniano-mosiężnych listew (łącznie cztery): knot, wosk, krople wosku, delikatna poświata i niezależne 4 klatki animacji po 130 ms, przesunięcie płomienia do 1 px. Kanciaste retro kufle z pianą, uchwytem i animacją nalewania. Po napełnieniu (600 ms) obie strony pokazują jednocześnie rozlanie piwa i mocniejszy płomień świec. Rozbłysk trwa krótko, wyłącza się klawiszem A i nie dotyka kart, hitboxów ani obrażeń na koniec tury.
 - Nowe regresje w `tests/test_tavern_price_visual_0997.py`, w tym zgodność podpisanych powtórek i wczytywania starszych zapisów. Ręczny przegląd na fizycznym Windows pozostaje wymagany.
 
 ## [0.9.96] — 2026-10-26

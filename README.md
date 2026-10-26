@@ -98,7 +98,7 @@ Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewo
 
 Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
 
-- **0.9.97** — tańszy pierwszy kufel (10 monet u obu graczy), kolejny własny kufel +10 i +1 moneta co dwie rozpoczęte tury; mocniejsze licytacje normalnego AI, ozdobne pochodnie/kufle oraz wspólny rozbłysk i rozlanie po nalaniu. Obrażenia Burdy wciąż są rozliczane na koniec tury.
+- **0.9.97** — tańszy pierwszy kufel (10 monet u obu graczy), kolejny własny kufel +10 i +1 moneta co dwie rozpoczęte tury; mocniejsze licytacje normalnego AI, cztery ruchome pixelowe świece (po dwie na stronie), dopracowane kufle oraz wspólny rozbłysk i rozlanie po nalaniu. Obrażenia Burdy wciąż są rozliczane na koniec tury.
 - **0.9.96** — Karczemna Burda, etap 2: krótkie nalewanie piwa (0,6 s) i delikatne chwianie tylko dekoracji (do 2 px); bez ruchu kart/hitboxów, wyłączane [A]. Trudne AI może ostrożnie kupić kufel na podstawie jawnej planszy, bez szukania w drzewie gry, z zapasem monet na aukcję. Cena, obrażenia i podpisane reguły bez zmian.
 - **0.9.95** — Karczemna Burda, etap 1: dwa ognie i dwa kufle po bokach; zamów piwo [B] za większą z wartości (10 + liczba rozpoczętych tur obu graczy) lub 10% aktualnych monet (w górę). Po zakupie przez 3 tury na końcu każdej tury jednostki obu plansz otrzymują 1 zwykłe obrażenie. Każdy kolejny kufel +3 tury, bez zwiększenia obrażeń. Stare zapisy/replaye bez zmian.
 - **0.9.94** — lekkie planowanie walki na trudnym poziomie: do 3 ataków do przodu, 5 wariantów na poziom, możliwe śmiertelne kombinacje, usuwanie tarczy przed ciosem; bez kopiowania silnika/RNG. Pomiar czasu namysłu w CI i pojedynki z 0.9.93.
