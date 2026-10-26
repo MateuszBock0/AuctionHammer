@@ -101,6 +101,16 @@ class AbilityFeedback0992(unittest.TestCase):
         self.fx.observe(g,rect_for,hero_for,1000)
         self.assertEqual(self.fx.cues,[])
 
+    def test_rejected_status_never_claimed_even_when_immunity_heals(self):
+        g=self.game
+        attempted=regen('S01')
+        attempted['result']=False
+        attempted['after']={'S01':{'hp':4,'effects':[]}}
+        g.audit_internal=[cast(),attempted]
+        g.audit_actions.append(action())
+        self.fx.observe(g,rect_for,hero_for,1000)
+        self.assertEqual(self.fx.cues,[])
+
     def test_regular_weapon_damage_is_not_misattributed_to_ability(self):
         g=self.game
         hurt={'operation':'_damage','args':['S05',4],'kwargs':{},
