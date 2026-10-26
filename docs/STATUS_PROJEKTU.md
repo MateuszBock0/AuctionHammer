@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 25 października 2026  
-**Wersja gałęzi:** MVP 0.9.91 (Smart Auction AI, zależne od zaakceptowania v24 w 0.9.90; walidacja CI)  
+**Wersja gałęzi:** MVP 0.9.92 (czytelne aktywacje zdolności; walidacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.92 (źródło → cel → potwierdzony rezultat)
+
+- Read-only `game/ui/ability_feedback.py` wyprowadza krótkie karty informacji z **zatwierdzonych komend** i **śladów rzeczywistych efektów**; jednoznaczne źródło jest warunkiem pokazania połączenia. Nie zgaduje przyszłych efektów.
+- Krótkie narożniki na jednostce aktywującej oraz odbiorcach; lokalne trasy w wolnych szczelinach, brak długich linii przez HUD lub statystyki. Czytelna etykieta w wolnym pasku y=710–741 między bohaterem a ręką.
+- Masowe regeneracje i premie (np. legendarna A014 v24) grupowane do jednego komunikatu z liczbą faktycznych celów; ochrona przed starymi zdarzeniami w modalu, replay, menu, przy wyłączonych animacjach i po wczytaniu.
+- Silnik rozgrywki, RNG, efekty zdolności, reguły v24, AI, zapisy, podpisane audyty oraz pliki audio bez zmian. Testy: `tests/test_ability_feedback_0992.py` i zwykłe bramki CI; fizyczny odbiór na Windows wymagany.
 
 ### Etap — 0.9.91 (inteligentna licytacja AI na bazie v24)
 

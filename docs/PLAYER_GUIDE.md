@@ -41,6 +41,10 @@ ATK to siła ataku, PŻ to bieżące zdrowie, a MAX PŻ określa maksymalne zdro
 
 Rzadkość kupionej karty może awansować w miarę upływu kolejnych pełnych rund. O wyborach i potencjalnych skutkach czytaj bezpośrednio na ekranie aukcji; dłuższe opisy znajdziesz przez **PEŁNA ZDOLNOŚĆ**.
 
+## Czytelne aktywacje zdolności (0.9.92)
+
+Gdy zadziała potwierdzony efekt, gra krótko podświetla jego źródło i rzeczywistych odbiorców. W wolnym pasku między własnym bohaterem a ręką pokazuje **ŹRÓDŁO → CEL → SKUTEK** (np. `Kapłan → 5 celów · REGEN 2/2`). Regeneracja, wzrost ATK, wzmocnienia MAX PŻ, statusy i potwierdzone zmiany zdrowia nie są prognozą — pochodzą z zatwierdzonych działań. Gdy gra nie potrafi jednoznacznie przypisać skutku do konkretnej zdolności, nie rysuje mylącego powiązania. Przy wzmocnieniu wszystkich sojuszników pokazuje jedną zbiorczą etykietę. Naciskając **A**, wyłączasz te animacje razem z innymi efektami wizualnymi; nie zmienia to wyniku partii.
+
 ## Głośność muzyki i efektów
 
 W menu **USTAWIENIA** są dwa niezależne przyciski: **MUZYKA** (domyślnie **40%**) oraz **EFEKTY** (domyślnie **10%**). Każde kliknięcie podnosi poziom o 10 punktów procentowych; po 100% następuje 0%, czyli wyciszenie. Wartości są zapamiętywane lokalnie, także po zamknięciu gry. Dźwięki nie wpływają na wynik meczu.
