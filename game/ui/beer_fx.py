@@ -66,3 +66,28 @@ def board_spill_timeline(now_ms,started_ms,enabled=True):
     burn=(min(1.0,max(0.0,(age-950)/180))
           * min(1.0,max(0.0,(2150-age)/850)))
     return tilt,pour,burn
+
+
+def slot_flame_strength(remaining_turns,now_ms,started_ms,enabled,
+                        owner,slot):
+    """Visible intensity of one card-position ember frame, never game state.
+
+    Global 3-turn brawl counter is the *only* condition for ongoing fire.
+    Immediately after a paid mug, flame spreads from the rightmost slot of
+    both rows across the board. Loading a saved active match shows the steady
+    state, because the purchase timestamp is intentionally not persisted.
+    Every purchase restarts the short ignition wave without extending rules.
+    """
+    if not enabled or remaining_turns<=0 or owner not in (0,1):
+        return 0.0
+    if not 0<=slot<5:
+        return 0.0
+    if started_ms is None:
+        return 1.0
+    age=now_ms-started_ms
+    if age<0:
+        return 0.0
+    # The first flames start after the purchased beer hits the board.
+    # Spread over all 10 positions in ~0.7 seconds, right -> left.
+    ignition=935+(4-slot)*155+owner*45
+    return min(1.0,max(0.0,(age-ignition)/175.0))

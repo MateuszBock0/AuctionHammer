@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 26 października 2026  
-**Wersja gałęzi:** MVP 0.9.98 (pixel-artowa świeca na ramie planszy, animowany przechył kufla, spływające piwo i zapłon; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.99 (tymczasowy kufel po prawej, płomyki przy 10 polach, wygaśnięcie z końcem Burdy; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.99 (kufel znika, ogień wokół pól do końca Burdy)
+
+- Usunięto dekoracyjny lewy kufel kolidujący z bocznym HUD-em; na planszy bez opłaconego piwa pozostają same świece na ramie. Tylko podczas zakupu widoczny jest kufel po PRAWEJ, przy dolnych kartach, z piwem spadającym na dolny brzeg planszy. Po 1450 ms znika.
+- Subtelne migoczące pixelowe płomyki przy zewnętrznych narożnikach wszystkich 10 pól kart. Fala zapłonu idzie od prawej do lewej; nie zasłania ATK, PŻ, opisów ani hitboxów.
+- Źródłem wyłączenia ognia jest licznik beer_turns_remaining: 0 tur gasi wszystkie płomyki i rozlewisko niezależnie od czasu. Ponowne zamówienie przedłuża licznik i odnawia animację. Wczytana aktywna gra pokazuje ogień bez zapisywania czasu efektu UI.
+- Bez zmian zasad, cennika, AI, podpisanych zapisów i replayów. Testy położenia, wygaszenia i renderingu.
 
 ### Etap — 0.9.98 (zatwierdzona wizualizacja: świeca i piwo na planszy)
 

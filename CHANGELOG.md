@@ -4,6 +4,14 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.99] — 2026-10-26
+
+### Karczemna Burda — kufel po prawej, płomyki wokół wszystkich pól
+- Usunięto nierówny, dziwnie wyglądający kufel po lewej. Świece pozostają na ramie planszy; jeden kufel pojawia się tylko podczas rzeczywiście opłaconego nalewania przy prawym końcu dolnego rzędu kart, przewraca się, rozlewa piwo na dolne obrzeże i znika po 1450 ms.
+- Ogień idzie od prawej do lewej i delikatnie migocze przy zewnętrznych narożnikach **10 pól jednostek**, także zajętych. Nie zasłania statystyk i nie zmienia hitboxów.
+- **Gdy BURDA ma 0 tur, ogień całkowicie znika**. Pierwszy kufel daje 3 końce tur, każdy następny dodaje kolejne 3 na dotychczasowych zasadach. Wczytana aktywna partia pokazuje ogień z samego stanu gry. Klawisz A wyłącza animacje.
+- Wyłącznie wizualna poprawka: bez zmian obrażeń, cen, kart, AI, zapisów i audytów. Osobne testy limitu tur, lewej pustej dekoracji i obu rzędów pól.
+
 ## [0.9.98] — 2026-10-26
 
 ### Karczemna Burda — świeca na ramie planszy, rozlane piwo i ogień

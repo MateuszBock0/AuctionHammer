@@ -51,12 +51,12 @@ W menu **USTAWIENIA** są dwa niezależne przyciski: **MUZYKA** (domyślnie **40
 
 ## Karczemna Burda — wizualizacje i zakupy komputera (od 0.9.96)
 
-Po zamówieniu piwa, jeśli animacje są włączone, przez 600 ms nalewa się piwo. Od 0.9.98 świeczki stoją na ramie planszy: kufel przechyla się nad krawędzią, piwo spływa na powierzchnię, rozlewa się wzdłuż brzegu i zapala od świecy. Efekt pojawia się z obu stron, a po wygaśnięciu animacji można dostrzec słaby żar, dopóki trwa Burda. **[A]** wyłącza animacje. Karty i pola kliknięcia nie obracają się ani nie przesuwają, więc nadal można grać w swoim tempie.
+Po zamówieniu piwa, jeśli animacje są włączone, przez 600 ms nalewa się piwo. Od 0.9.99 świeczki stoją na ramie planszy, ale nie ma już wiszącego kufla po lewej. Opłacony kufel pojawia się na prawo od dolnego rzędu kart, przechyla się i wylewa piwo na dolne obrzeże planszy. Po około 1,45 sekundy znika. Ogień dociera do wszystkich 10 pól jednostek (pustych i zajętych) jako dyskretne, migoczące płomyki. Gasną one dokładnie, gdy licznik Burdy wynosi zero. Kolejny zakup przedłuża Burdę o 3 tury. **[A]** wyłącza animacje. Karty i pola kliknięcia nie obracają się ani nie przesuwają, więc nadal można grać w swoim tempie.
 
 Komputer na poziomie **TRUDNYM** potrafi zamówić piwo, gdy przewidywane szkody po stronie gracza są wyraźnie większe niż szkody w jego własnych jednostkach. Wydaje jedynie dostępne monety, zostawia rezerwę na aukcję i nie stosuje ukrytych informacji. Na poziomie łatwym i normalnym nie dokonuje automatycznych zakupów. Od 0.9.97 normalne AI jest za to bardziej zdecydowane podczas licytowania kart aukcyjnych.
 
 ## Karczemna Burda — zamawianie piwa (od 0.9.95)
-Po obu stronach planszy są ognie i kufle. W swojej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**.
+Po obu stronach ramy planszy stoją świece. Kufel pojawia się tylko podczas animacji zakupu, po prawej krawędzi planszy. W swojej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**.
 - W nowych partiach od **0.9.97** pierwszy kufel kosztuje każdego gracza **10 monet**, drugi jego własny kufel **20**, trzeci **30** itd. Do tego dolicz **1 monetę za każde 2 rozpoczęte tury obu graczy łącznie**: `10 + 10 × (wcześniejsze własne kufle) + floor(rozpoczęte tury obu graczy/2)`. Przykład: po 12 turach pierwszy kufel kosztuje 16, a drugi 26 monet, niezależnie od posiadanego salda.
 - Stare mecze rozpoczęte w 0.9.95–0.9.96 zachowują poprzedni cennik `max(10 + rozpoczęte tury, ceil(monety/10))`.
 - Każdy kufel dodaje **3 tury** do licznika Burdy. Na końcu każdej tury **wszystkie jednostki obu plansz** otrzymują po **1 normalnym obrażeniu**; osłony i pancerze absorbują je według standardowych zasad. Efekty po śmierci działają normalnie. Bohaterowie i karty na ręce nie są ranne.
