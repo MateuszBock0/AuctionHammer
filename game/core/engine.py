@@ -566,9 +566,15 @@ class Match:
         self.beer_turns_remaining-=1
         affected=[uid for pl in self.players for uid in list(pl.board)
                   if uid in self.units]
-        self._log(f'KARCZEMNA BURDA: {damage} DMG dla jednostek obu plansz '
-                  f'({len(affected)} jednostek). '
-                  f'Pozostało tur: {self.beer_turns_remaining}.')
+        if getattr(self,'tavern_scaled_damage_enabled',False):
+            self._log(f'KARCZEMNA BURDA: {damage} DMG dla jednostek obu plansz '
+                      f'({len(affected)} jednostek). '
+                      f'Pozostało tur: {self.beer_turns_remaining}.')
+        else:
+            # Historical audit event wording is byte-for-byte compatible.
+            self._log('KARCZEMNA BURDA: obie plansze otrzymują po 1 obrażeniu '
+                      f'({len(affected)} jednostek). '
+                      f'Pozostało tur: {self.beer_turns_remaining}.')
         for uid in affected:
             if uid in self.units:
                 self._damage(uid,damage,defer_death=True)
