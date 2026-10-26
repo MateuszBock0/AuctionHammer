@@ -24,7 +24,7 @@ class ScaledTavernBrawl09100(unittest.TestCase):
         a=starter(game,'S01',0)
         b=starter(game,'S12',1)
         for uid in (a,b):
-            game.units[uid].max_hp=60
+            game.units[uid].base_max_hp=60
             game.units[uid].hp=60
         return game,a,b
 
