@@ -167,7 +167,12 @@ class TavernBeer0995(unittest.TestCase):
                  'final_state':state_snapshot(game),
                  'summary':{'vacant_slot_income_enabled':game.vacant_income_enabled,
                             'ruleset_version':game.ruleset_version}}
-        self.assertTrue(verify_replay(payload,Match))
+        # Restore the same journal/audit mode used by the real GUI:
+        # Match(seed) alone defaults to audit_enabled=False and omits
+        # action_seq/internal_seq from journal messages.
+        self.assertTrue(verify_replay(
+            payload,lambda seed,**kwargs: Match(
+                seed,audit_enabled=True,**kwargs)))
 
     def test_old_save_and_old_signed_state_not_changed(self):
         g=ready(99507)
