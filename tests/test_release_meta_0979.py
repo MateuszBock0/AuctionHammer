@@ -145,7 +145,18 @@ class ReleaseMetadata0979(unittest.TestCase):
     def test_semver_major_rollforward_without_truncation(self):
         bump_version(self.root,'2.0.0',date(2027,1,1))
         self.assertEqual(current_version(self.root),'2.0.0')
-        self.assertIn('## [2.0.0]',current_changelog_section(self.root))
+        self.assertIn('## [2.0.0]',
+                      (self.root/'CHANGELOG.md').read_text(encoding='utf-8'))
+        # The TODO gate also applies to later major releases.
+        with self.assertRaisesRegex(ReleaseMetadataError,'TODO'):
+            current_changelog_section(self.root)
+        changelog=self.root/'CHANGELOG.md'
+        changelog.write_text(changelog.read_text(encoding='utf-8').replace(
+            'TODO: Opisz konkretne zmiany dla graczy.',
+            'Drugie wydanie główne.'
+        ),encoding='utf-8')
+        self.assertIn('Drugie wydanie główne.',
+                      current_changelog_section(self.root))
         # A lower version cannot replace the already promoted major.
         with self.assertRaises(ReleaseMetadataError):
             bump_version(self.root,'1.99.99',date(2027,1,1))
