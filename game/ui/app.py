@@ -2553,10 +2553,15 @@ class SoloApp:
         enabled=self.game.can_order_beer(0)
         self._button(self.beer_buy_rect(),'KUP [B]',active=enabled,small=True)
         if ticks:
-            next_damage=(ticks if getattr(self.game,'tavern_scaled_damage_enabled',False)
-                         else 1)
-            self._text(f'{next_damage} DMG / TURA',11,1018,486,cfg.GOLD,center=True)
-            self._text('+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
+            if getattr(self.game,'tavern_min_hp_damage_enabled',False):
+                # Per-target minimum cannot be represented by one DMG count.
+                self._text('MIN. 10% MAX PŻ',11,1018,486,cfg.GOLD,center=True)
+                self._text(f'BAZA {ticks} DMG',11,1018,509,cfg.TEXT,center=True)
+            else:
+                next_damage=(ticks if getattr(self.game,'tavern_scaled_damage_enabled',False)
+                             else 1)
+                self._text(f'{next_damage} DMG / TURA',11,1018,486,cfg.GOLD,center=True)
+                self._text('+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
 
     def _draw_board(self):
         self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
