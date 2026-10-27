@@ -1,0 +1,42 @@
+name: Directed gameplay scene - Brawl 1HP quick attack
+
+on:
+  pull_request:
+    paths:
+      - 'tools/native_staged_brawl_scene.py'
+      - 'tools/native_trailer.py'
+      - '.github/workflows/staged-brawl-video.yml'
+  workflow_dispatch:
+
+jobs:
+  stage-native-mp4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install original Pygame and bundled FFmpeg
+        run: |
+          python -m pip install -r requirements.txt imageio-ffmpeg
+          BIN="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          sudo ln -sf "$BIN" /usr/local/bin/ffmpeg
+          ffmpeg -version | head -n 1
+      - name: Simulate authentic rules and capture cinematic scene
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m tools.native_staged_brawl_scene
+      - name: Verify MP4 and report
+        run: |
+          ffmpeg -v error -t 3 -i preview/AuctionHammer_BURDA_1HP_SZYBKI_ATAK.mp4 -f null -
+          test -s preview/AuctionHammer_BURDA_1HP_SZYBKI_ATAK.timeline.json
+      - name: Upload video and scene verification trace
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-BURDA-1HP-SZYBKI-ATAK
+          path: |
+            preview/AuctionHammer_BURDA_1HP_SZYBKI_ATAK.mp4
+            preview/AuctionHammer_BURDA_1HP_SZYBKI_ATAK.timeline.json
+          if-no-files-found: error
