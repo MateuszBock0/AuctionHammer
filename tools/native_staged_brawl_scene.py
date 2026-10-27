@@ -47,6 +47,11 @@ def stage_game():
     game.active = 0
     game.phase = "turn"
     game.round = 4
+    # In this staged late-game position, the ordinary round-3 auction
+    # is already completed; do not interrupt the two-turn flashback.
+    game.auction_history.append({'number':1, 'completed_round':3,
+                                 'offers':[], 'winner':0, 'price':0,
+                                 'picks':{}, 'unpicked':None})
     game.players[0].turn_count = 4
     game.players[1].turn_count = 3
     game.players[0].hp = 12
