@@ -13,7 +13,7 @@ from types import SimpleNamespace
 import sys
 
 from game.core.auction_catalog import CATALOG_V22, TRIGGER, V22_CARDS, v23_variant
-from game.ui.auction_copy import display_auction_copy
+from game.ui.auction_copy import display_auction_copy, full_preview_auction_copy
 from game.ui.card_infographics import card_cue
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note,v23_base_card_short_note
@@ -63,7 +63,7 @@ def rows():
                 'engine_module':'game/core/auction_abilities.py',
                 'trigger':definition.trigger,'family':definition.family,
                 'short_description':summary.short,
-                'full_description':display_auction_copy(definition),
+                'full_description':full_preview_auction_copy(aid,tier,'v23',display_auction_copy(definition)),
                 'visual_cue':cue.base,
                 'coverage_test':'tests/test_card_copy_matrix_0949.py',
             })
