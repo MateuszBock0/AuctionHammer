@@ -45,6 +45,7 @@ from game.core.status_view import active_statuses, hand_grants, STATUS_COLORS
 from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_size
 from game.ui.text_fit import wrap_pixels
 from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline,slot_flame_strength,tavern_flame_intensity
+from game.ui.tavern_help import brawl_help_lines
 from game.ui.tavern_art import draw_tavern_rail,draw_board_spill,draw_slot_flamelets
 
 # Auction-only accent colors: brown, silver, gold.
@@ -621,11 +622,13 @@ class SoloApp:
         """Context-only tooltips over the finished board, not inside modals."""
         if (self.menu_open or self.history_open or self.replay_index is not None
                 or self.details_card is not None or self.confirm_action
-                or self.game.phase in ('auction','finished')
+                or self.help_open or self.game.phase in ('auction','finished')
                 or self._bonus_selection_due() or self.drag_start is not None
                 or self.game.pending is not None):
             return
         pos=self.mouse_pos()
+        if self._draw_brawl_hover_help(pos):
+            return
         # Optional larger combat reading area, accessible even after the
         # transient two-line ticker expires. Entirely read-only.
         last=getattr(self,'attack_outcome_latest',None)
@@ -2409,6 +2412,43 @@ class SoloApp:
     def beer_buy_rect():
         # Decorative left gutter; never overlaps cards or the hero HUD.
         return pygame.Rect(10,544,94,38)
+
+    @staticmethod
+    def brawl_status_rect():
+        """The existing BURDA label only, NOT the KUP [B] button."""
+        return pygame.Rect(11,498,91,27)
+
+    def _draw_brawl_hover_help(self,pos):
+        """Highlight BURDA and draw help in the SIDE panel, not over cards.
+
+        Called by the standard hover guidance after modal/replay checks.
+        No click handling or gameplay data is modified by this read-only UI.
+        """
+        if not getattr(self.game,'tavern_beer_enabled',False):
+            return False
+        label=self.brawl_status_rect()
+        if not label.collidepoint(pos):
+            return False
+        pygame.draw.rect(self.screen,(64,47,27),label,border_radius=5)
+        pygame.draw.rect(self.screen,cfg.GOLD,label,2,border_radius=5)
+        ticks=max(0,getattr(self.game,'beer_turns_remaining',0))
+        self._text(f'BURDA: {ticks} TUR',11,56,507,cfg.GOLD,center=True)
+        # The centre board holds 10 active card slots. Never obscure them
+        # with a 350px-wide help popup; temporarily use the card sidebar.
+        rows=[]
+        for sentence in brawl_help_lines(self.game):
+            rows.extend(self._wrap(sentence,13,310))
+        rows=rows[:12]
+        area=pygame.Rect(1099,300,338,61+22*len(rows))
+        self._panel(area,TAVERN_TOOLTIP_BG,TAVERN_GOLD,10)
+        self._text('KARCZEMNA BURDA  [?]',16,area.x+12,area.y+10,cfg.GOLD)
+        pygame.draw.line(self.screen,TAVERN_BRASS,
+                         (area.x+12,area.y+38),
+                         (area.right-12,area.y+38),1)
+        for index,line in enumerate(rows):
+            self._text(self.cards_view.clip(line,self.fonts[13],314),
+                       13,area.x+12,area.y+47+22*index,TAVERN_TEXT)
+        return True
 
     def _order_tavern_beer(self):
         try:
