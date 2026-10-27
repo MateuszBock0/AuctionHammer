@@ -92,8 +92,12 @@ class NormalBid0997(unittest.TestCase):
           players=[SimpleNamespace(coins=20),SimpleNamespace(coins=20)],
           auction_catalog='v22',auction_bag=['A001','A002','A003'])
         ai=ComputerOpponent(0,'normalny')
+        # 0.9.102: no automatic 4-coin baseline for a negligible edge.
         ai.auction_first_pick_advantage=lambda _: (0.2,0.)
-        self.assertGreaterEqual(ai.auction_bid_ceiling(game),4)
+        self.assertEqual(ai.auction_bid_ceiling(game),0)
+        # A truly valuable first choice still justifies competitive bidding.
+        ai.auction_first_pick_advantage=lambda _: (7.,2.)
+        self.assertGreater(ai.auction_bid_ceiling(game),6)
         self.assertLess(ai.auction_bid_ceiling(game),20)
         game.players[0].coins=3
         self.assertLessEqual(ai.auction_bid_ceiling(game),3)

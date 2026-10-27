@@ -1,6 +1,6 @@
 {
   "app": "AuctionHammer",
-  "mvp": "0.9.101",
+  "mvp": "0.9.102",
   "specification": "GAME_MASTER_v19",
   "mode": "solo-vs-AI",
   "auctions": "v22-17-archetypes-51-live-abilities",
@@ -27,6 +27,7 @@
     "engine_unchanged": true,
     "windows_manual_acceptance": "pending"
   },
+  "normal_auction_ai_09102": {"normal_difficulty":"pay for incremental benefit of first choice relative to free second card, plus denying an important rival first pick","no_auction_number_baseline":"remove automatic 4..9 coin floor","near_ties":"decline bidding when first-pick value below strategic threshold","high_value":"strong premium auction lots receive higher budget","future_auctions":"reserve up to one sixth current purse and up to one third for future bidding","low_coins":"liquidity discount","legacy_catalogs":"unchanged auction strategy","easy_and_hard":"unchanged","signed_replays":"unchanged match rules, command audit compatible","manual_windows_acceptance":"pending"},
   "tavern_ai_flames_09101": {"ai_policy":"all three difficulties in newly scaled brawl matches; board-only 3-turn marginal damage model, normal shield/armor, kill value, cost and auction reserve","easy":"clear advantage required","normal":"good advantage required","hard":"responds to smaller proven advantage","anti_stack":"no automatic repeat purchase while brawl has 2 or more remaining turns","historical_games":"retain 0.9.96 purchase policy for fixed 1-DMG games","visuals":"brighter high-contrast 4-frame pixel flames on outside of 10 slots; no stat occlusion","gameplay_mechanics_unchanged":true,"manual_windows_acceptance":"pending"},
   "tavern_scaled_brawl_09100": {"new_client_only":true,"signed_opt_in":"tavern_scaled_damage_enabled","damage":"damage per unit on both boards equals beer_turns_remaining BEFORE decrement","first_mug":"3+2+1 = 6 damage total per unit across three turns","additional_mugs":"each adds +3 remaining turns; next hit increases accordingly","shields_and_armor":"normal damage path and simultaneous death batch unchanged","old_saved_games":"missing flag = original 1 damage on end turn","old_signed_replays":"historical journals and rules unchanged","ui":"subtle 4-frame independently phased slot flamelets; 3+ turns bright, 2 medium, 1 embers, 0 none","manual_windows_acceptance":"pending"},
   "tavern_slot_fire_0999": {"mug_visible":"only during a paid pour, beside the rightmost player card slot; removed after 1450ms","left_mug":"not drawn","ale":"spills on lower right board trim, never left HUD","slot_flames":"10 occupied or empty battlefield positions, subtle moving 8-bit corners, right-to-left ignition","lifetime":"authoritative beer_turns_remaining, zero means off, each additional paid mug adds 3 turns","old_saves_and_replays":"gameplay unchanged, UI derives fire from match state","animation_toggle":"A","manual_windows_acceptance":"pending"},
