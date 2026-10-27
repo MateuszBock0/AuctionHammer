@@ -145,6 +145,7 @@ class DecisionPreviewCanvas09104(TestCase):
             _draw_brawl_risk_badges=SoloApp._draw_brawl_risk_badges
             _draw_decision_preview=SoloApp._draw_decision_preview
             slot_rect=SoloApp.slot_rect
+            hero_rect=SoloApp.hero_rect
             target_under=SoloApp.target_under
             mouse_pos=lambda self:self.pointer
             _bonus_selection_due=lambda self:False
