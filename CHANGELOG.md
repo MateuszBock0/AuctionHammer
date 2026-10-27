@@ -4,6 +4,14 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.103] — 2026-10-27
+
+### Karczemna Burda — podświetlany licznik i czytelna podpowiedź
+- Po **najechaniu na napis BURDA: N TUR** etykieta otrzymuje złotą ramkę i przyciemnione tło, a na prawym bocznym panelu pojawia się objaśnienie zasad. Dymek celowo nie leży na polach jednostek, nie przesuwa żadnego elementu gry i znika po odsunięciu kursora.
+- Informacja pochodzi z **autorytatywnego stanu Match**, pokazuje pozostałe tury i obrażenia na **następny ukończony koniec tury** (w nowych grach N obrażeń, w starszych 1). Opisuje obrażenia wszystkich jednostek obu stron, pochłanianie przez Tarcze/pancerz, ochronę bohaterów i kart na ręce oraz wydłużenie Burdy o +3 tury po zakupie.
+- Dymek działa także przy **BURDA: 0 TUR**, pomagając przed kupnem piwa, i rozpoznaje historyczne zapisy 1 DMG/turę. Ukrywa się przy aukcji, menu, pomocy, powtórkach i modalnych wyborach. Jedynie UI; żadne zasady, zapisy, kliknięcia i sztuczna inteligencja nie zostały zmienione.
+- Testy: 3→2→1→0, historyczny licznik 6 tur z 1 DMG, odporność na zamknięte i otwarte okna, granice hitboxów, brak zmiany stanu, brak zasłaniania pól kart.
+
 ## [0.9.102] — 2026-10-27
 
 ### Normalne AI — realna wartość aukcji zamiast automatycznego podbijania

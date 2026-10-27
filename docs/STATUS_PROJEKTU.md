@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 27 października 2026  
-**Wersja gałęzi:** MVP 0.9.102 (normalne AI licytuje według wartości pierwszego wyboru, bez rosnącej sztywnej bazy; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.103 (hover BURDA ze złotym podświetleniem i kontekstowym opisem w bocznym panelu; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.103 (objaśnienie Burdy po najechaniu)
+
+- Przy napisach **BURDA: N TUR** po lewej stronie planszy działa osobny precyzyjny hitbox. Najechanie (bez kliknięcia) podświetla etykietę i rysuje opis po prawej stronie, w panelu statusu karty, nigdy bezpośrednio na jednostkach. Przy zakupie przycisk [B] pozostaje w pełni funkcjonalny.
+- Podpowiedź odczytuje pozostałe tury i sposób liczenia obrażeń z silnika. W nowych meczach pokazuje N DMG na koniec najbliższej tury, w historycznych 1 DMG; objaśnia jednostki obu plansz, Tarcze, pancerz, brak obrażeń bohaterów i kart w ręce, +3 tury za kufel. Dostępna też przy stanie 0.
+- Nie koliduje z aukcją, powtórkami, menu, szczegółami karty, kartami przeciąganymi ani oczekującymi wyborami. UI-only: bez modyfikacji Match, RNG, trwałych zapisów i podpisanych powtórek.
+- Testy stanu żywego/historycznego, zmiany 3→2→1→0, stref hitboxów, renderingu tylko z boku i automatycznego ukrywania przy modalach.
 
 ### Etap — 0.9.102 (normalne AI — bardziej ekonomiczne licytacje)
 

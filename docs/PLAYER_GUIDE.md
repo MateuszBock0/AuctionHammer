@@ -55,6 +55,10 @@ Po zamówieniu piwa, jeśli animacje są włączone, przez 600 ms nalewa się pi
 
 Od 0.9.101 **każdy poziom AI w nowych grach ze skalowaną Burdą** może kupić kufel: porównuje dodatkowe obrażenia jednostek na obu planszach po dodaniu 3 tur, liczy Tarcze i pancerz, uwzględnia cenę oraz rezerwę na aukcję. Łatwe AI potrzebuje większej przewagi niż normalne, a trudne wykorzystuje nawet mniejsze okazje. AI nie patrzy w rękę ani talię przeciwnika, nie kupuje piwa w nieskończoność i oszczędza na licytacje. Stare wczytane partie z 1 DMG na turę zachowują wcześniejszą politykę AI (tylko trudne kupuje automatycznie). Od 0.9.97 normalne AI jest też bardziej zdecydowane podczas licytowania kart aukcyjnych.
 
+## Karczemna Burda — podpowiedź po najechaniu (od 0.9.103)
+
+**Najedź kursorem na napis `BURDA: N TUR` po lewej stronie planszy.** Zostanie podświetlony złotą ramką, a w panelu karty po prawej pojawi się informacja, co oznacza Burda. Wskazuje ona aktualną liczbę tur, obrażenia na najbliższy koniec tury, które jednostki zostaną trafione, jak działają Tarcze i pancerz, dlaczego bohaterowie i karty w ręce są bezpieczne, oraz co się stanie po kolejnym kuflu. Etykieta działa również, gdy efekt wygasł (`0 TUR`). Przy wczytaniu starej partii podpowiedź prawidłowo podaje starą regułę **1 DMG na koniec tury**. Dymek nie zasłania kart i znika po odsunięciu kursora.
+
 ## Karczemna Burda — zamawianie piwa (od 0.9.95)
 Po obu stronach ramy planszy stoją świece. Kufel pojawia się tylko podczas animacji zakupu, po prawej krawędzi planszy. W swojej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**.
 - W nowych partiach od **0.9.97** pierwszy kufel kosztuje każdego gracza **10 monet**, drugi jego własny kufel **20**, trzeci **30** itd. Do tego dolicz **1 monetę za każde 2 rozpoczęte tury obu graczy łącznie**: `10 + 10 × (wcześniejsze własne kufle) + floor(rozpoczęte tury obu graczy/2)`. Przykład: po 12 turach pierwszy kufel kosztuje 16, a drugi 26 monet, niezależnie od posiadanego salda.
