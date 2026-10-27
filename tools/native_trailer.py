@@ -32,9 +32,20 @@ def default_highlights(payload, limit=7):
                    for m in re.finditer(r'otrzymuje (\d+) obrażeń w PŻ', text)]
         deaths = sum(text.startswith('Zgon ') for text in messages)
         finisher = any('KONIEC MECZU' in text for text in messages)
-        if damages:
-            score = sum(sorted(damages, reverse=True)[:2]) * 1.5 + deaths * 6 + (50 if finisher else 0)
-            ranked.append((score, action['seq']))
+        # An authentic engine attack is still worth capturing if an older
+        # ruleset does not log direct HP loss with the modern text format.
+        score = sum(sorted(damages, reverse=True)[:2]) * 1.5 + deaths * 6 + (50 if finisher else 0)
+        if not damages:
+            changes = action.get('changes', {})
+            for section in ('players', 'units'):
+                for entity in (changes.get(section) or {}).values():
+                    before, after = entity.get('before'), entity.get('after')
+                    if isinstance(before, dict):
+                        old_hp = before.get('hp')
+                        new_hp = after.get('hp') if isinstance(after, dict) else 0
+                        if isinstance(old_hp, int) and isinstance(new_hp, int):
+                            score += max(0, old_hp - new_hp)
+        ranked.append((score, action['seq']))
     top = {seq for _, seq in sorted(ranked, reverse=True)[:limit]}
     return sorted(top)
 
