@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.105] — 2026-10-27
+
+### Karczemna Burda: minimum 10% MAX PŻ jednostki, opis i audyt
+- W **nowych meczach** każdy końcowy tick Burdy zadaje każdej jednostce z obu plansz `max(liczba pozostałych tur Burdy, ceil(MAX PŻ jednostki / 10))` surowych obrażeń. Każda jednostka ma własne minimum; bazą jest jej bieżące **maksymalne**, nie aktualne PŻ. Nawet przy 1 turze Burda trafia dużą jednostkę za co najmniej 10% MAX PŻ. Osłony, pancerz i wspólne fale śmierci działają standardowo. Bohaterowie oraz karty na ręce pozostają bezpieczne.
+- Zasada jest jawnie podpisana flagą `tavern_min_hp_damage_enabled`; zapis gry i deterministyczny replay zachowują ją. **Starsze partie** bez tej flagi nadal mają obrażenia 3→2→1 albo historyczne stałe 1 DMG — bez przepisywania audytów.
+- Podpowiedź przy BURDA wyjaśnia wzór, zaokrąglenie i oba rodzaje ochrony. Prognoza zagrożenia wykorzystuje prawdziwe obrażenia każdej jednostki, a wszystkie trzy poziomy AI uwzględniają nowe minimum przy decyzji o zakupie piwa.
+- Prawy panel karty pokazuje **pełny tekst działania zdolności** na wydzielonej powierzchni z przewijaniem kółkiem i wskaźnikiem pozycji; `[I]` otwiera nadal pełną kartę. Znikają urwane trzywierszowe opisy i nakładanie na sekcję rozwoju.
+- Podpisany `MatchAudit` obejmuje regułę, ticki i indywidualne surowe obrażenia oraz rzeczywistą zmianę PŻ. Księga Starć HTML ma osobną przeszukiwalną sekcję Burdy i licznik ticków. Starsze audyty są nadal czytelne.
+
 ## [0.9.104] — 2026-10-27
 
 ### Trzy kontekstowe poprawki UI/UX i dodatkowa bramka Windows
