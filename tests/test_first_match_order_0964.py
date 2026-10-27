@@ -125,7 +125,8 @@ class AlternatingSeatSessionTests(unittest.TestCase):
                          starting_compensation='choice_2_5_or_coins',
                          fixed_board_slots=True,
                          tavern_price_v2_enabled=True,
-                         tavern_scaled_damage_enabled=True)
+                         tavern_scaled_damage_enabled=True,
+                         tavern_min_hp_damage_enabled=True)
             self.assertEqual(cloned.first,game.first)
             self.assertEqual(digest(cloned.audit_initial),
                              digest(game.audit_initial))

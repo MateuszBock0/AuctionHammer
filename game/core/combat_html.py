@@ -119,14 +119,21 @@ def _battle(item):
 def _brawl_records(payload):
     """Visible brawl ticks, sourced only from the signed event journal."""
     groups={}
+    last_brawl=None
     for event in payload.get('event_journal',[]):
         message=event.get('text','')
         if not (message.startswith('KARCZEMNA BURDA:') or
                 message.startswith('BURDA — ')):
             continue
         key=event.get('action_seq')
-        if key is None:
-            key=event.get('seq') if message.startswith('KARCZEMNA BURDA:') else None
+        if message.startswith('KARCZEMNA BURDA:'):
+            if key is None:
+                key=('journal',event.get('seq',len(groups)+1))
+            last_brawl=key
+        elif key is None:
+            # In-memory diagnostics may not have action_seq; attach only
+            # to the last explicit brawl tick. Signed audits carry the ID.
+            key=last_brawl
         if key is None:
             continue
         group=groups.setdefault(key,{'round':event.get('round',0),
@@ -210,7 +217,7 @@ ol li{margin:6px 0}li details summary{cursor:pointer;color:#e8ce9b}pre{white-spa
 o=document.getElementById('owner');function update(){let n=0;for(const x of cards){
 const ok=x.dataset.search.includes(q.value.toLocaleLowerCase('pl').trim())&&
 (o.value==='all'||(o.value==='death'?x.dataset.death==='1':x.dataset.owner===o.value));
-x.hidden=!ok;if(ok)n++;}document.getElementById('visible').textContent='Widoczne wpisy: '+n+' / '+cards.length;}
+x.hidden=!ok;if(ok)n++;}document.getElementById('visible').textContent='Widoczne walki: '+[...document.querySelectorAll('#battles .battle')].filter(x=>!x.hidden).length+' · Burda: '+[...document.querySelectorAll('#brawls .battle')].filter(x=>!x.hidden).length;}
 q.addEventListener('input',update);o.addEventListener('change',update);
 document.getElementById('expand').onclick=()=>cards.filter(x=>!x.hidden).forEach(x=>x.open=true);
 document.getElementById('close').onclick=()=>cards.forEach(x=>x.open=false);update();})();
