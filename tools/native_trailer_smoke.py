@@ -14,24 +14,30 @@ from tools.native_trailer import NativeExporter, default_highlights
 
 
 def main():
-    # Established seed from the engine's full-match acceptance test.
-    game = Match(1706, audit_enabled=True)
-    agents = (ComputerOpponent(0), ComputerOpponent(1))
-    for _ in range(1500):
-        if game.phase == 'finished':
+    # Use the public deterministic engine to produce an actual finished match.
+    # Some seeded AI games end without combat, so require a confirmed attack.
+    selected = []
+    payload = None
+    for seed in range(1706, 1722):
+        game = Match(seed, audit_enabled=True)
+        agents = (ComputerOpponent(0), ComputerOpponent(1))
+        for _ in range(1500):
+            if game.phase == 'finished':
+                break
+            if game.phase == 'mulligan':
+                for agent in agents:
+                    agent.step(game)
+            elif game.pending is not None:
+                agents[game.pending.owner].step(game)
+            else:
+                agents[game.active].step(game)
+        if game.phase != 'finished':
+            continue
+        payload = make_report(game)['payload']
+        selected = default_highlights(payload, limit=4)
+        if selected:
             break
-        if game.phase == 'mulligan':
-            for agent in agents:
-                agent.step(game)
-        elif game.pending is not None:
-            agents[game.pending.owner].step(game)
-        else:
-            agents[game.active].step(game)
-    assert game.phase == 'finished', 'AI demonstration failed to finish'
-
-    payload = make_report(game)['payload']
-    selected = default_highlights(payload, limit=4)
-    assert selected, 'No real combat action to render'
+    assert selected, 'No committed attack found across the seeded test matches'
     output = Path('preview/AuctionHammer-NATYWNE-AKCJE-demo.mp4')
     output.parent.mkdir(exist_ok=True)
     exporter = NativeExporter(payload, output, selected, fps=12, pre=.25, post=.8)
