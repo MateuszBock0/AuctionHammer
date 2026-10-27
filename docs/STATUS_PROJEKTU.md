@@ -1,10 +1,18 @@
 # AuctionHammer — status projektu
 
-**Data aktualizacji:** 27 października 2026  
-**Wersja gałęzi:** MVP 0.9.105 (minimalne obrażenia Burdy = 10% MAX PŻ jednostki, pełny przewijany panel opisu, Burda w Księdze Starć; testy CI do potwierdzenia)  
+**Data aktualizacji:** 28 października 2026  
+**Wersja gałęzi:** kandydat stabilnej 1.0.0 (przygotowanie PR; publikacja i ręczna akceptacja Windows niepotwierdzone)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Kandydat wydania 1.0.0 — stabilizacja bez zmiany mechaniki
+
+- Numer wersji produktu 1.0.0 przygotowany na gałęzi wydawniczej. Wersja stabilna oznacza lokalną grę **solo przeciw AI na Windows** — multiplayer ani serwery nie wchodzą w zakres premiery.
+- Wprowadzone przed kandydatem: landing page README dla gracza (PR #132), krótsze opisy 21 kart w interfejsie (PR #133), obsługa SemVer 1.0.0 i komplet obecnych mechanik 0.9.105.
+- Do kwalifikacji: `python -m tools.release_meta check`, komplet testów Linux/Windows, audytowane replaye, finalny ZIP oraz suma SHA-256 ze **wskazanego commita**.
+- **Osobny odbiór ręczny nadal otwarty:** fizyczny Windows 10/11, ekran 1366×768 i Full HD, DPI 100%/125%/150%, klawiatura/mysz, dźwięk, pełny ekran, zapis/wczytanie, offline, aktualizacja i rollback. CI uruchamia EXE headless, lecz nie potwierdza wyglądu na prawdziwym monitorze.
+- **Status publikacji:** ta sekcja opisuje kandydata; dopóki odpowiednie wydanie GitHub Release nie zawiera ZIP oraz SHA-256, numer 1.0.0 nie jest potwierdzonym wydaniem.
 
 ### Etap — 0.9.105 (Burda liczona od MAX PŻ i pełny audyt)
 
