@@ -55,6 +55,14 @@ Po zamówieniu piwa, jeśli animacje są włączone, przez 600 ms nalewa się pi
 
 Od 0.9.101 **każdy poziom AI w nowych grach ze skalowaną Burdą** może kupić kufel: porównuje dodatkowe obrażenia jednostek na obu planszach po dodaniu 3 tur, liczy Tarcze i pancerz, uwzględnia cenę oraz rezerwę na aukcję. Łatwe AI potrzebuje większej przewagi niż normalne, a trudne wykorzystuje nawet mniejsze okazje. AI nie patrzy w rękę ani talię przeciwnika, nie kupuje piwa w nieskończoność i oszczędza na licytacje. Stare wczytane partie z 1 DMG na turę zachowują wcześniejszą politykę AI (tylko trudne kupuje automatycznie). Od 0.9.97 normalne AI jest też bardziej zdecydowane podczas licytowania kart aukcyjnych.
 
+## Podgląd decyzji w walce i przy wymianie (od 0.9.104)
+
+Po zaznaczeniu jednostki zdolnej do ataku najedź na **legalny, podświetlony cel** (możesz także przeciągać atakującego). Panel po prawej pokaże **szacunek zwykłego ataku i odwetu**, z obecną Tarczą, pancerzem i pozostałymi PŻ. Nie jest to gwarancja wyniku: zdolności, ataki wyzwalane i skutki po śmierci mogą zmienić rozstrzygnięcie.
+
+Gdy wszystkie pięć Twoich pól jest zajętych, wybierz kartę z ręki i wskaż legalną jednostkę do zastąpienia. Zobaczysz **porównanie bieżących ATK/PŻ starej jednostki i startowych ATK/PŻ nowej karty**. Gra ostrzeże przed utratą aury i przypomni, że zastąpienie nie wyzwala efektu śmierci. Wystawienie nowej karty może aktywować aury i zdolności, więc porównanie nie jest ostatecznym wynikiem zagranej karty.
+
+Gdy Burda jest aktywna, **mały czerwony wykrzyknik poza ramką pola** oznacza jednostkę na której obecnym zdrowiu następne obrażenia Burdy *mogą* okazać się śmiertelne. Uwaga: efekty na koniec tury mogą wcześniej zmienić PŻ lub obronę. Ostrzeżenia działają na obu planszach i pozostają widoczne przy wyłączonych animacjach.
+
 ## Karczemna Burda — podpowiedź po najechaniu (od 0.9.103)
 
 **Najedź kursorem na napis `BURDA: N TUR` po lewej stronie planszy.** Zostanie podświetlony złotą ramką, a w panelu karty po prawej pojawi się informacja, co oznacza Burda. Wskazuje ona aktualną liczbę tur, obrażenia na najbliższy koniec tury, które jednostki zostaną trafione, jak działają Tarcze i pancerz, dlaczego bohaterowie i karty w ręce są bezpieczne, oraz co się stanie po kolejnym kuflu. Etykieta działa również, gdy efekt wygasł (`0 TUR`). Przy wczytaniu starej partii podpowiedź prawidłowo podaje starą regułę **1 DMG na koniec tury**. Dymek nie zasłania kart i znika po odsunięciu kursora.

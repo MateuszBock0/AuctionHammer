@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 27 października 2026  
-**Wersja gałęzi:** MVP 0.9.103 (hover BURDA ze złotym podświetleniem i kontekstowym opisem w bocznym panelu; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.104 (podgląd ataku, wymiany, zagrożenia Burdą + obowiązkowa końcowa bramka Windows; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.104 (proste wskaźniki decyzji, bez ingerencji w mechanikę)
+
+- Prawy panel pokazuje krótkie, czytelne porównanie zwykłego ataku i odwetu dla aktualnego legalnego celu oraz z rozbiciem na Tarczę/pancerz. Nie wykonuje akcji silnika, nie podgląda ukrytych informacji ani nie obiecuje skutków zdolności lub fali zgonów.
+- Na pełnej planszy wybór legalnej jednostki do zastąpienia kartą z ręki pokazuje różnicę ATK/PŻ starej jednostki z nową kartą, informuje o braku wywołania śmierci i o utracie aktywnej wychodzącej aury. Statystyki nowej karty są z ręki, bez prognozowania przyszłych zdolności.
+- Wykrzyknik w zewnętrznym marginesie pola oznacza aktualne ryzyko śmiertelnego ticku Burdy na obu planszach, przy uwzględnieniu osłon. Także starsza reguła 1 DMG/turę, bez zmiany statystyk, kart, hitboxów i animacji.
+- Bramka Windows dodatkowo uruchamia klienta headless, testuje kliknięcia, podgląd, zapis/wczytanie. Oddzielnie weryfikuje rzeczywisty ZIP, SHA-256, offline, aktualizację i rollback. Fizyczny Windows DPI 100/125/150% pozostaje do manualnego odbioru.
 
 ### Etap — 0.9.103 (objaśnienie Burdy po najechaniu)
 
