@@ -29,7 +29,7 @@ def default_highlights(payload, limit=7):
                                               action['event_seq_end'] + 1)
                     if i in journal]
         damages = [int(m.group(1)) for text in messages
-                   for m in re.finditer(r'otrzymuje (\\d+) obrażeń w PŻ', text)]
+                   for m in re.finditer(r'otrzymuje (\d+) obrażeń w PŻ', text)]
         deaths = sum(text.startswith('Zgon ') for text in messages)
         finisher = any('KONIEC MECZU' in text for text in messages)
         if damages:
