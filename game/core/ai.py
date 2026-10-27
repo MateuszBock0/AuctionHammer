@@ -104,15 +104,22 @@ class ComputerOpponent:
         future=tuple(getattr(game,'auction_bag',()) or ())
         future_auctions=len(future)>=3
         if self.difficulty!='trudny':
-            # Paying for identical first/second choices has no strategic value.
-            if own_gain<=0 and opponent_denial<=0:
+            # 0.9.102: pay for the actual advantage of choosing FIRST, not
+            # automatically for every auction. The losing side still receives
+            # a free second card. Avoid the old 4..9-coin baseline that made
+            # normal AI overbid for near-interchangeable offers.
+            strategic_value=1.75*own_gain+0.60*opponent_denial
+            if strategic_value<2.5:
                 return 0
-            # 0.9.97: the normal AI competes for first pick even when two
-            # cards have similar value. Still protects a future-auction reserve.
-            value=2.6*own_gain+.85*opponent_denial
-            baseline=3+min(6,state.number)
-            reserve=2 if future_auctions and coins>=9 else 0
-            return max(0,min(coins-reserve,max(baseline,int(value+2.5))))
+            # Retain a meaningful fraction of coins for later auctions;
+            # do not reserve money when the current auction is the last one.
+            reserve=(min(coins//3,max(4,coins//6))
+                     if future_auctions else 0)
+            # Liquidity matters more with a thin purse. Neither the auction
+            # number nor the rival's current bid can inflate this valuation.
+            liquidity=(1.16 if coins<12 else 1.08 if coins<24 else 1.0)
+            willingness=int(max(0.0,(strategic_value-1.25)/liquidity))
+            return max(0,min(coins-reserve,willingness))
 
         # Hard: use opponent's public position AND the identities of the
         # unpurchased, still-eligible catalog archetypes, whose availability
