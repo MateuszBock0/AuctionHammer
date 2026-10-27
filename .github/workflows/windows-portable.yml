@@ -148,6 +148,11 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -v
+      - name: Final Windows readiness - launch, mouse clicks, previews, save/load
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m unittest discover -s tests -p test_windows_readiness_09104.py -v
       - name: Test verified SHA256 updater and atomic rollback on Windows PowerShell 5.1
         shell: powershell
         run: |
