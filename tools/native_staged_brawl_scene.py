@@ -46,9 +46,9 @@ def stage_game():
     game.first = 0
     game.active = 0
     game.phase = "turn"
-    game.round = 5
-    game.players[0].turn_count = 5
-    game.players[1].turn_count = 4
+    game.round = 4
+    game.players[0].turn_count = 4
+    game.players[1].turn_count = 3
     game.players[0].hp = 12
     game.players[1].hp = 1
     game.players[0].coins = 80
