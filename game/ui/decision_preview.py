@@ -97,10 +97,13 @@ def preview_replacement(game,new_uid,old_uid):
         any(link.source==old_uid for link in links))
 
 
-def next_brawl_damage(game):
+def next_brawl_damage(game,uid=None):
+    """Return exact raw hit for a target (or baseline without a target)."""
     if not getattr(game,'tavern_beer_enabled',False):
         return 0
     remaining=max(0,int(getattr(game,'beer_turns_remaining',0)))
+    if uid is not None and hasattr(game,'tavern_damage_for'):
+        return game.tavern_damage_for(uid)
     return (remaining if getattr(game,'tavern_scaled_damage_enabled',False)
             else int(remaining>0))
 
@@ -109,7 +112,7 @@ def brawl_at_risk(game,uid):
     """Lethal RISK at next tick on current board (before end-turn triggers)."""
     if not any(uid in p.board for p in game.players) or uid not in game.units:
         return False
-    hit=next_brawl_damage(game)
+    hit=next_brawl_damage(game,uid)
     if hit<=0:
         return False
     proj=hit_projection(game.units[uid],hit)

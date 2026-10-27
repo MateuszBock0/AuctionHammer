@@ -205,6 +205,8 @@ def state_snapshot(game):
             state['ruleset_state']['beer_orders']=game.beer_orders
             if getattr(game,'tavern_scaled_damage_enabled',False):
                 state['ruleset_state']['tavern_scaled_damage_enabled']=True
+            if getattr(game,'tavern_min_hp_damage_enabled',False):
+                state['ruleset_state']['tavern_min_hp_damage_enabled']=True
             if getattr(game,'tavern_price_v2_enabled',False):
                 state['ruleset_state']['tavern_price_v2_enabled']=True
                 state['ruleset_state']['beer_orders_by_player']=list(
@@ -659,6 +661,12 @@ def verify_replay(payload,match_factory):
                 or signed_rule.get('version')!='v23'):
             raise ValueError('Nieprawidłowa podpisana reguła obrażeń Burdy')
     game.tavern_scaled_damage_enabled=scaled
+    min_hp=(isinstance(signed_rule,dict) and
+            signed_rule.get('tavern_min_hp_damage_enabled') is True)
+    if isinstance(signed_rule,dict) and 'tavern_min_hp_damage_enabled' in signed_rule:
+        if not min_hp or not scaled or not beer_flag or catalog!='v22':
+            raise ValueError('Nieprawidłowa podpisana reguła minimum PŻ Burdy')
+    game.tavern_min_hp_damage_enabled=min_hp
     pricing_v2=(isinstance(signed_rule,dict) and
                 signed_rule.get('tavern_price_v2_enabled') is True)
     if pricing_v2 and (not beer_flag or

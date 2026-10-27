@@ -15,13 +15,25 @@ def brawl_help_lines(game):
         return ()
     remaining=max(0,int(getattr(game,'beer_turns_remaining',0)))
     scaled=bool(getattr(game,'tavern_scaled_damage_enabled',False))
+    min_hp=bool(getattr(game,'tavern_min_hp_damage_enabled',False))
     if remaining:
         damage=remaining if scaled else 1
         first=(f'AKTYWNA: {remaining} tur do wygaśnięcia.',
-               f'NASTĘPNY KONIEC TURY: {damage} DMG na jednostkę.')
+               (f'NASTĘPNY TICK: max({damage} DMG, 10% MAX PŻ celu).'
+                if min_hp else
+                f'NASTĘPNY KONIEC TURY: {damage} DMG na jednostkę.'))
     else:
         first=('NIEAKTYWNA: 0 pozostałych tur.',
                'Kup kufel [B], aby uruchomić Burdę.')
+    if min_hp:
+        return first+(
+            'MINIMUM: 10% całkowitego MAX PŻ każdej jednostki,',
+            'zaokrąglone W GÓRĘ; nie od aktualnego PŻ.',
+            'Trafia jednostki obu graczy, także własne.',
+            'Tarcza blokuje cios, pancerz pochłania DMG.',
+            'Bohaterowie i karty na ręce są bezpieczne.',
+            'Licznik maleje co turę; kolejny kufel: +3 tury.',
+        )
     rule=('W nowych grach obrażenia maleją o 1 z każdą turą.'
           if scaled else
           'Ta starsza partia: zawsze 1 DMG na koniec tury.')
