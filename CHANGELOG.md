@@ -4,6 +4,15 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.104] — 2026-10-27
+
+### Trzy kontekstowe poprawki UI/UX i dodatkowa bramka Windows
+- **Podgląd zwykłego ataku:** po najechaniu na **legalny** cel wybraną (także przeciąganą) jednostką prawy panel pokazuje szacowane obrażenia w PŻ, pochłanianie przez Tarczę/pancerz, przewidywane pozostałe PŻ celu, odwet i PŻ atakującego. Liczby pochodzą wyłącznie z jawnych statystyk i mechaniki normalnego ciosu; komunikat wyraźnie uprzedza, że zdolności przy ataku/przed ciosem i efekty po śmierci mogą zmienić wynik. Nie symuluje ani nie wykonuje komend silnika.
+- **Legalna wymiana na planszy 5/5:** po wskazaniu jednostki do zastąpienia wybraną/przeciąganą kartą z ręki panel porównuje aktualne ATK i PŻ usuwanej jednostki ze statystykami początkowymi nowej karty. Informuje, że zastąpienie **nie jest śmiercią**, że zniknie aktywna wychodząca aura (jeżeli taką wykryto), i że nowe zdolności/aury mogą zmienić statystyki. Bez okna potwierdzenia.
+- **Ostrzeżenia Burdy:** niewielki czerwony znak przy **zewnętrznej krawędzi pola** oznacza jednostkę której następny tick Burdy grozi śmiercią według aktualnych PŻ, jednorazowej Tarczy i pancerza. Obie plansze, nowe i historyczne zapisy (1 DMG), także gdy animacje wyłączone. Oznaczenie to ryzyko na obecnym stanie — koniec tury może dodać inne efekty.
+- **Końcowe testy Windows:** workflow publikacji ma nowy niezależnie nazwany etap sprawdzający uruchomienie klienta w trybie testowym, legalne kliknięcie i zagranie karty, render podpowiedzi i pełny zapis/wczytanie. Pozostają istniejące obowiązkowe testy PowerShell 5.1 aktualizatora, instalacji rzeczywistej paczki ZIP, offline, rollbacku i SHA-256. Fizyczne DPI/monitor jest osobnym ręcznym odbiorem.
+- Bez zmian reguł walki, ilości kart, AI, aukcji, ceny Burdy, zapisów i podpisanych odtworzeń.
+
 ## [0.9.103] — 2026-10-27
 
 ### Karczemna Burda — podświetlany licznik i czytelna podpowiedź

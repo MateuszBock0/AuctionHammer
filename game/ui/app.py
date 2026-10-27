@@ -46,6 +46,8 @@ from game.ui.layout import fitted_viewport, window_to_canvas, preferred_window_s
 from game.ui.text_fit import wrap_pixels
 from game.ui.beer_fx import beer_fx_state,beer_overflow_state,board_spill_timeline,slot_flame_strength,tavern_flame_intensity
 from game.ui.tavern_help import brawl_help_lines
+from game.ui.decision_preview import (preview_standard_attack,preview_replacement,
+                                      brawl_at_risk,next_brawl_damage)
 from game.ui.tavern_art import draw_tavern_rail,draw_board_spill,draw_slot_flamelets
 
 # Auction-only accent colors: brown, silver, gold.
@@ -2592,6 +2594,7 @@ class SoloApp:
                                      2,border_radius=13)
         self._draw_positional_cues()
         self._draw_aura_links()
+        self._draw_brawl_risk_badges()
         note=('STAŁE POZYCJE  ·  WYBIERZ WOLNE POLE  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI'
               if self.game.fixed_board_slots else
               'WYSTAWIANIE OD PRAWEJ  ·  ATAKI W DOWOLNEJ KOLEJNOŚCI')
@@ -2652,6 +2655,103 @@ class SoloApp:
             self._button(pygame.Rect(42,861,40,37),'‹',active=self.scroll>0,small=True)
             self._button(pygame.Rect(1016,861,40,37),'›',active=self.scroll+6<len(self.game.players[0].hand),small=True)
             self._text(f'{self.scroll+1}–{min(self.scroll+6,len(self.game.players[0].hand))} / {len(self.game.players[0].hand)}',13,866,721,cfg.MUTED)
+
+    def _draw_brawl_risk_badges(self):
+        """Small warning outside the card edge; does not move/select any unit."""
+        if next_brawl_damage(self.game)<=0 or self.game.phase!='turn':
+            return
+        for owner in (0,1):
+            for index in range(5):
+                uid=self.game.unit_at(owner,index)
+                if uid is None or not brawl_at_risk(self.game,uid):
+                    continue
+                rect=self.slot_rect(owner,index)
+                center=(rect.right+10,rect.y+15)
+                pygame.draw.circle(self.screen,(64,22,19),center,12)
+                pygame.draw.circle(self.screen,(248,113,94),center,10,2)
+                self._text('!',15,center[0],center[1]-1,
+                           (255,230,174),center=True)
+
+    def _draw_decision_preview(self):
+        """Hover-driven combat/replacement estimations, sidebar-only and safe.
+
+        Draw after ordinary hover hints so current legal decision has priority.
+        In a game phase modal, replay or pending ability, display nothing.
+        """
+        game=self.game
+        if (game.phase!='turn' or game.active!=0 or game.pending is not None
+                or self.menu_open or self.history_open or self.help_open
+                or self.replay_index is not None or self.details_card is not None
+                or self.confirm_action or self.tutorial_welcome_open
+                or self._bonus_selection_due()):
+            return
+        pointer=self.mouse_pos()
+        dragged=getattr(self,'drag_start',None)
+        if dragged is not None and getattr(self,'drag_pointer',None) is not None:
+            start,drag_uid=dragged
+            pointer=self.drag_pointer
+            if ((pointer[0]-start[0])**2+(pointer[1]-start[1])**2
+                    <=self.DRAG_THRESHOLD_SQ):
+                return
+            candidate=drag_uid
+        else:
+            candidate=self.selected
+        player=game.players[0]
+        title=None
+        rows=[]
+        if candidate in player.board and candidate in game.units:
+            target=self.target_under(pointer)
+            view=preview_standard_attack(game,candidate,target) if target else None
+            if view is not None:
+                title='PODGLĄD ZWYKŁEGO ATAKU'
+                strike=view.strike
+                rows.append(f'CEL: {game.label(target)}')
+                rows.append(f'ATAK: {strike.raw}  ·  PŻ −{strike.hp_loss}')
+                if strike.blocked_by_shield:
+                    rows.append('TARCZA CELU: BLOKUJE CAŁY CIOS')
+                elif strike.absorbed:
+                    rows.append(f'PANCERZ CELU: POCHŁONIE {strike.absorbed}')
+                rows.append(f'PŻ CELU: {max(0,strike.after_hp)} PO TRAFIENIU')
+                if view.counter is not None:
+                    counter=view.counter
+                    rows.append(f'ODWET: {counter.raw}  ·  PŻ −{counter.hp_loss}')
+                    if counter.blocked_by_shield:
+                        rows.append('TWOJA TARCZA: BLOKUJE ODWET')
+                    elif counter.absorbed:
+                        rows.append(f'TWÓJ PANCERZ: POCHŁONIE {counter.absorbed}')
+                    rows.append(f'TWOJE PŻ: {max(0,counter.after_hp)}')
+                if view.extra_effects_possible:
+                    rows.append('UWAGA: DODATKOWE ZDOLNOŚCI PRZED CIOSEM')
+                rows.append('Szacunek bez zdolności i efektów po śmierci.')
+        elif candidate in player.hand and len(player.board)==5:
+            target=self.target_under(pointer)
+            if target in player.board:
+                view=preview_replacement(game,candidate,target)
+                if view is not None:
+                    title='PORÓWNANIE PRZY WYMIANIE'
+                    old=game.cards[target].definition.name
+                    new=game.cards[candidate].definition.name
+                    rows.extend((f'OBECNA: {old}',f'NOWA: {new}',
+                                 f'ATK: {view.old_atk} → {view.new_atk}  '
+                                 f'({view.new_atk-view.old_atk:+d})',
+                                 f'PŻ: {view.old_hp} → {view.new_hp}  '
+                                 f'({view.new_hp-view.old_hp:+d})'))
+                    if view.loses_outgoing_aura:
+                        rows.append('UWAGA: ZNIKNIE OBECNA AURA')
+                    rows.append('Stara karta znika BEZ efektu śmierci.')
+                    rows.append('Zdolności i aury mogą zmienić statystyki.')
+        if title is None:
+            return
+        area=pygame.Rect(1099,285,338,55+len(rows)*26)
+        self._panel(area,TAVERN_TOOLTIP_BG,TAVERN_GOLD,10)
+        self._text(title,15,area.x+12,area.y+11,cfg.GOLD)
+        pygame.draw.line(self.screen,TAVERN_BRASS,
+                         (area.x+12,area.y+38),(area.right-12,area.y+38))
+        for i,row in enumerate(rows):
+            font=13
+            self._text(self.cards_view.clip(row,self.fonts[font],314),
+                       font,area.x+12,area.y+46+i*26,
+                       cfg.RED if row.startswith('UWAGA') else cfg.TEXT)
 
     def _draw_sidebar(self):
         rect=pygame.Rect(self.SIDEBAR_X,78,364,872)
@@ -3929,6 +4029,7 @@ class SoloApp:
             self._draw_log()
             self._draw_choices()
             self._draw_hover_guidance()
+            self._draw_decision_preview()
             self._draw_drag_overlay()
             self._draw_attack_drag()
             self._draw_gameover()
