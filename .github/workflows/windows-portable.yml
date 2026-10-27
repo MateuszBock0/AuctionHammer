@@ -239,6 +239,26 @@ jobs:
           if (-not (Test-Path -LiteralPath $installed)) { throw 'Installed EXE missing' }
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'tools/portable_launcher.ps1' -ProjectRoot $root -SkipUpdate -NoLaunch
           if ($LASTEXITCODE -ne 0) { throw 'Offline launcher smoke test failed' }
+      - name: Start the INSTALLED Windows EXE in headless mode (release smoke)
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'AuctionHammer-release-smoke'
+          $tag = 'build-' + '${{ github.sha }}'.Substring(0, 8)
+          $exe = Join-Path (Join-Path (Join-Path $root '.auctionhammer-versions') $tag) 'AuctionHammer.exe'
+          if (-not (Test-Path -LiteralPath $exe)) { throw 'Installed game EXE is missing' }
+          $env:SDL_VIDEODRIVER = 'dummy'
+          $env:SDL_AUDIODRIVER = 'dummy'
+          $proc = Start-Process -FilePath $exe -WorkingDirectory (Split-Path $exe) -PassThru
+          try {
+            Start-Sleep -Seconds 7
+            $proc.Refresh()
+            if ($proc.HasExited) { throw ('Installed AuctionHammer.exe exited unexpectedly with code ' + $proc.ExitCode) }
+            Write-Host ('PASS: installed Windows EXE stays running (PID ' + $proc.Id + ')')
+          } finally {
+            if (-not $proc.HasExited) {
+              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            }
+          }
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
