@@ -21,10 +21,11 @@ jobs:
           python-version: '3.12'
       - name: Install pygame
         run: python -m pip install -r requirements.txt
-      - name: Install FFmpeg
+      - name: Install self-contained FFmpeg without apt
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          python -m pip install imageio-ffmpeg
+          FFMPEG="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          sudo ln -sf "$FFMPEG" /usr/local/bin/ffmpeg
           ffmpeg -version | head -n 1
       - name: Unit tests of highlight selection
         env:
@@ -36,9 +37,9 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m tools.native_featured_match
-      - name: Verify native video
+      - name: Verify native video decodes
         run: |
-          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,nb_frames -of default=noprint_wrappers=1 preview/AuctionHammer_EPICKIE_AKCJE_NATYWNY.mp4
+          ffmpeg -hide_banner -loglevel error -t 2 -i preview/AuctionHammer_EPICKIE_AKCJE_NATYWNY.mp4 -f null -
       - name: Attach actual recorded gameplay MP4
         uses: actions/upload-artifact@v4
         with:
