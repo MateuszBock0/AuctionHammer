@@ -34,7 +34,8 @@ from game.ui.card_infographics import (card_cue, highlighted_numeric_ranges,
 from game.ui.auction_badges import draw_trigger_icon, TRIGGER_NAMES
 from game.ui.card_summary import ability_summary
 from game.ui.v23_help import v23_base_card_note, v23_base_card_short_note
-from game.ui.auction_copy import preview_auction_copy, full_preview_auction_copy
+from game.ui.auction_copy import (preview_auction_copy, full_preview_auction_copy,
+                                  identify_auction_variant)
 from game.ui.rarity_view import card_rarity
 from game.ui.attack_view import attack_display, inactive_card_reason
 from game.ui.gameplay_clarity import turn_readout, selected_card_readout, combat_notice
@@ -2837,7 +2838,7 @@ class SoloApp:
                                   'AKTUALNY EFEKT',cue.base,cue.color,combat_line)
             rules=getattr(self.game,'ruleset_version','v22')
             complete=(full_preview_auction_copy(d.id,card_rarity(c),rules,summary.full)
-                      if d.id.startswith('A0') and card_rarity(c) else
+                      if d.id.startswith('A0') and card_rarity(c) and identify_auction_variant(d) else
                       (v23_base_card_note(d.id,rules) or summary.full))
             self._draw_sidebar_description(card_id,complete)
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
@@ -3383,7 +3384,7 @@ class SoloApp:
         # truncated v23 appendix. Historical ruleset descriptions are untouched.
         detail_summary=(full_preview_auction_copy(d.id,card_rarity(card),
                            getattr(self.game,'ruleset_version','v22'),summary.full)
-                        if d.id.startswith('A0') and card_rarity(card) else
+                        if d.id.startswith('A0') and card_rarity(card) and identify_auction_variant(d) else
                         (v23_note or summary.full))
         guard_kills=self._guard_progress(uid)
         if guard_kills is not None:
