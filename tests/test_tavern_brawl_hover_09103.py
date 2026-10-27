@@ -85,7 +85,7 @@ class BrawlHover09103(unittest.TestCase):
     def test_hover_highlights_label_and_draws_only_in_sidebar(self):
         fake=self.fake_app()
         self.assertTrue(SoloApp._draw_brawl_hover_help(fake,fake.pointer))
-        self.assertNotEqual(fake.screen.get_at((11,500)),(7,8,9,255))
+        self.assertNotEqual(fake.screen.get_at((14,510)),(7,8,9,255))
         self.assertNotEqual(fake.screen.get_at((1120,310)),(7,8,9,255))
         # No card art, health bar or purchase button is touched.
         for pt in ((150,530),(350,350),(800,470),(105,570),(600,820)):
