@@ -1,0 +1,43 @@
+name: Native AuctionHammer gameplay trailer (engine + pygame)
+
+on:
+  pull_request:
+    paths:
+      - 'game/core/audit.py'
+      - 'tools/native_trailer.py'
+      - 'tools/native_trailer_smoke.py'
+      - '.github/workflows/native-gameplay-preview.yml'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pygame
+        run: python -m pip install -r requirements.txt
+      - name: Verify FFmpeg availability
+        run: ffmpeg -version | head -n 1
+      - name: Unit tests of highlight selection
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m unittest discover -s tests -p 'test_native_trailer.py' -v
+      - name: Render native gameplay from verified engine
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m tools.native_trailer_smoke
+      - name: Verify generated video
+        run: |
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,nb_frames -of default=noprint_wrappers=1 preview/AuctionHammer-NATYWNE-AKCJE-demo.mp4
+      - name: Attach true Pygame gameplay MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-Natywne-Gameplay-MP4
+          path: preview/AuctionHammer-NATYWNE-AKCJE-demo.mp4
+          if-no-files-found: error
