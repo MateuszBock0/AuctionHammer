@@ -116,6 +116,48 @@ def _battle(item):
         steps or "<li>Brak mikrooperacji</li>", events)
 
 
+def _brawl_records(payload):
+    """Visible brawl ticks, sourced only from the signed event journal."""
+    groups={}
+    last_brawl=None
+    for event in payload.get('event_journal',[]):
+        message=event.get('text','')
+        if not (message.startswith('KARCZEMNA BURDA:') or
+                message.startswith('BURDA — ')):
+            continue
+        key=event.get('action_seq')
+        if message.startswith('KARCZEMNA BURDA:'):
+            if key is None:
+                key=('journal',event.get('seq',len(groups)+1))
+            last_brawl=key
+        elif key is None:
+            # In-memory diagnostics may not have action_seq; attach only
+            # to the last explicit brawl tick. Signed audits carry the ID.
+            key=last_brawl
+        if key is None:
+            continue
+        group=groups.setdefault(key,{'round':event.get('round',0),
+                                    'active':event.get('active',0),
+                                    'messages':[], 'has_tick':False})
+        if message.startswith('KARCZEMNA BURDA:'):
+            group['has_tick']=True
+        group['messages'].append(message)
+    groups=[group for group in groups.values() if group['has_tick']]
+    rendered=[]
+    for index,group in enumerate(groups,1):
+        descriptions=''.join('<li>{}</li>'.format(_e(s))
+                             for s in group['messages'])
+        searchable=' '.join(group['messages']).lower()
+        rendered.append(
+            '<details class="battle" data-owner="{}" data-death="0" '
+            'data-search="{}"><summary><span class="round">R{} · BURDA #{}</span>'
+            '<b>Obrażenia obszarowe obu plansz</b></summary>'
+            '<div class="body"><ol>{}</ol></div></details>'.format(
+                _e(group['active']),_e(searchable),_e(group['round']),
+                index,descriptions))
+    return groups,''.join(rendered)
+
+
 def render_combat_html(payload):
     """Render a searchable, standalone local HTML with no external dependencies."""
     combat = payload.get("combat_analysis") or {}
@@ -138,6 +180,7 @@ def render_combat_html(payload):
     resolved_choices = sum(len(item["actions"]) > 1 for item in attacks)
     death_attacks = sum(_participant_died(item["defender"]) for item in attacks)
     cards = "\n".join(_battle(item) for item in attacks)
+    brawls,brawl_cards=_brawl_records(payload)
     document = r"""<!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AuctionHammer — Księga Starć</title>
@@ -159,18 +202,22 @@ ol li{margin:6px 0}li details summary{cursor:pointer;color:#e8ce9b}pre{white-spa
 <div class="note">Seed: __SEED__ · Build: __BUILD__ · analiza zakończonego meczu</div></header>
 <div class="counts"><div class="count"><strong>__COUNT__</strong>ataków</div>
 <div class="count"><strong>__CHOICES__</strong>ataków z wyborem zdolności</div>
-<div class="count"><strong>__DEATHS__</strong>ataków ze zgonem obrońcy</div></div>
+<div class="count"><strong>__DEATHS__</strong>ataków ze zgonem obrońcy</div>
+<div class="count"><strong>__BRAWLS__</strong>ticków Karczemnej Burdy</div></div>
 <p class="note">PRZED oznacza stan przed komendą attack, PO oznacza stan po pełnym rozstrzygnięciu, także po późniejszym choose. Brak jednostki nie jest zerowym HP. Każda mikrooperacja zawiera rzeczywiste dane silnika przed/po; rozróżniamy żądane obrażenia i wynik w punktach życia. Raport nie symuluje walk. Premie Generała pochodzą ze stanu zapisanych powiązań i nie zmieniają odnotowanych statystyk ATK.</p>
 <div class="toolbar"><input id="search" placeholder="Szukaj kart, ID lub zdarzeń..." type="search">
 <select id="owner"><option value="all">Wszyscy atakujący</option><option value="0">Gracz</option>
 <option value="1">Komputer</option><option value="death">Zgon</option></select>
 <button id="expand">Rozwiń</button><button id="close">Zwiń</button></div><p id="visible" class="note"></p>
-<section id="battles">__CARDS__</section></main><script>
+<h2>Karczemna Burda — zapisane obrażenia obu plansz</h2>
+<p class="note">Wpisy pochodzą z podpisanego dziennika; wartości PŻ, Tarcza i pancerz są rozliczane przez silnik.</p>
+<section id="brawls">__BRAWL_CARDS__</section>
+<h2>Ataki jednostek</h2><section id="battles">__CARDS__</section></main><script>
 (()=>{const cards=[...document.querySelectorAll('.battle')],q=document.getElementById('search'),
 o=document.getElementById('owner');function update(){let n=0;for(const x of cards){
 const ok=x.dataset.search.includes(q.value.toLocaleLowerCase('pl').trim())&&
 (o.value==='all'||(o.value==='death'?x.dataset.death==='1':x.dataset.owner===o.value));
-x.hidden=!ok;if(ok)n++;}document.getElementById('visible').textContent='Widoczne walki: '+n+' / '+cards.length;}
+x.hidden=!ok;if(ok)n++;}document.getElementById('visible').textContent='Widoczne walki: '+[...document.querySelectorAll('#battles .battle')].filter(x=>!x.hidden).length+' · Burda: '+[...document.querySelectorAll('#brawls .battle')].filter(x=>!x.hidden).length;}
 q.addEventListener('input',update);o.addEventListener('change',update);
 document.getElementById('expand').onclick=()=>cards.filter(x=>!x.hidden).forEach(x=>x.open=true);
 document.getElementById('close').onclick=()=>cards.forEach(x=>x.open=false);update();})();
@@ -181,6 +228,8 @@ document.getElementById('close').onclick=()=>cards.forEach(x=>x.open=false);upda
             .replace("__COUNT__", str(total))
             .replace("__CHOICES__", str(resolved_choices))
             .replace("__DEATHS__", str(death_attacks))
+            .replace("__BRAWLS__", str(len(brawls)))
+            .replace("__BRAWL_CARDS__", brawl_cards)
             .replace("__CARDS__", cards))
 
 

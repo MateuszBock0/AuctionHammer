@@ -275,6 +275,11 @@ def load_match(path: Path | None = None) -> Match:
     data.setdefault('beer_turns_remaining',0)
     data.setdefault('beer_orders',0)
     data.setdefault('tavern_scaled_damage_enabled',False)
+    data.setdefault('tavern_min_hp_damage_enabled',False)
+    if (type(data['tavern_min_hp_damage_enabled']) is not bool
+            or (data['tavern_min_hp_damage_enabled'] and
+                not data['tavern_scaled_damage_enabled'])):
+        raise ValueError('Nieprawidłowe minimum obrażeń Burdy w zapisie')
     if type(data['tavern_scaled_damage_enabled']) is not bool:
         raise ValueError('Nieprawidłowa flaga skalowanych obrażeń Burdy')
     if data['tavern_scaled_damage_enabled'] and not data['tavern_beer_enabled']:

@@ -53,7 +53,10 @@ def _projected_board_loss(game,owner,turns):
         start_hp=hp
         armor=max(0,unit.armor)
         shield=bool(unit.shield)
-        for hit in damage_steps:
+        for base_hit in damage_steps:
+            hit=(max(base_hit,(max(0,unit.max_hp)+9)//10)
+                 if getattr(game,'tavern_min_hp_damage_enabled',False)
+                 else base_hit)
             if shield:
                 shield=False
                 continue

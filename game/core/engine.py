@@ -26,7 +26,8 @@ class Match:
                  general_friendly_only: bool | None = None,
                  tavern_beer_enabled: bool | None = None,
                  tavern_price_v2_enabled: bool = False,
-                 tavern_scaled_damage_enabled: bool = False):
+                 tavern_scaled_damage_enabled: bool = False,
+                 tavern_min_hp_damage_enabled: bool = False):
         if auction_catalog not in ("v3","v4","v22","placeholders"):
             raise ValueError("Unknown auction catalog mode")
         if starting_compensation not in ("coins", "unit_5_5", "unit_3_5", "choice_2_5_or_coins"):
@@ -105,6 +106,9 @@ class Match:
         # 0.9.100 opt-in; pre-0.9.100 games and replays remain 1 DMG/tick.
         self.tavern_scaled_damage_enabled=bool(
             tavern_scaled_damage_enabled and self.tavern_beer_enabled)
+        # 0.9.105: per-unit ceil(10% MAX HP) floor for newly signed matches.
+        self.tavern_min_hp_damage_enabled=bool(
+            tavern_min_hp_damage_enabled and self.tavern_scaled_damage_enabled)
         self.auction_general_targets={}
         self.auction_general_grants={}
         self.auction_pending_targets={}
@@ -527,6 +531,23 @@ class Match:
                 and self.active==player and player in (0,1)
                 and self.players[player].coins>=self.beer_price(player))
 
+    def tavern_damage_for(self,uid,turns=None):
+        """Authoritative raw tick damage to this unit before shield/armor.
+
+        The optional floor is signed per match; old saves retain 3-2-1
+        or historical fixed-one rules without reinterpretation.
+        """
+        if not self.tavern_beer_enabled or uid not in self.units:
+            return 0
+        remaining=self.beer_turns_remaining if turns is None else turns
+        if remaining<=0:
+            return 0
+        if not self.tavern_scaled_damage_enabled:
+            return 1
+        if self.tavern_min_hp_damage_enabled:
+            return max(remaining,(max(0,self.units[uid].max_hp)+9)//10)
+        return remaining
+
     @audit_action('order_beer')
     def order_beer(self,player):
         """Pay immediately. Each order adds 3 turns to the symmetric hazard."""
@@ -542,7 +563,10 @@ class Match:
         self.beer_turns_remaining+=3
         self.beer_orders+=1
         self.beer_orders_by_player[player]+=1
-        info=(f'{self.beer_turns_remaining} DMG na następny koniec tury; '
+        info=(f'na każdy koniec tury każda jednostka otrzymuje max('
+              f'licznik tur, 10% jej MAX PŻ zaokrąglone w górę) obrażeń'
+              if self.tavern_min_hp_damage_enabled else
+              f'{self.beer_turns_remaining} DMG na następny koniec tury; '
               'potem o 1 mniej co turę' if self.tavern_scaled_damage_enabled
               else 'na koniec każdej tury obie plansze otrzymają po 1 obrażeniu')
         self._log(f'{self.players[player].name} zamawia kufel za {price} monet: '
@@ -566,7 +590,13 @@ class Match:
         self.beer_turns_remaining-=1
         affected=[uid for pl in self.players for uid in list(pl.board)
                   if uid in self.units]
-        if getattr(self,'tavern_scaled_damage_enabled',False):
+        if self.tavern_min_hp_damage_enabled:
+            self._log(f'KARCZEMNA BURDA: bazowe {damage} DMG; każda jednostka '
+                      f'otrzymuje co najmniej 10% MAX PŻ (w górę), '
+                      f'po uwzględnieniu Tarczy i pancerza. '
+                      f'Celów: {len(affected)}. '
+                      f'Pozostało tur: {self.beer_turns_remaining}.')
+        elif getattr(self,'tavern_scaled_damage_enabled',False):
             self._log(f'KARCZEMNA BURDA: {damage} DMG dla jednostek obu plansz '
                       f'({len(affected)} jednostek). '
                       f'Pozostało tur: {self.beer_turns_remaining}.')
@@ -577,7 +607,14 @@ class Match:
                       f'Pozostało tur: {self.beer_turns_remaining}.')
         for uid in affected:
             if uid in self.units:
-                self._damage(uid,damage,defer_death=True)
+                hit=self.tavern_damage_for(uid,damage)
+                before=self.units[uid].hp
+                self._damage(uid,hit,defer_death=True)
+                if self.tavern_min_hp_damage_enabled:
+                    after=self.units[uid].hp
+                    self._log(f'BURDA — {self.label(uid)}: {hit} DMG surowych, '
+                              f'PŻ {before} → {after}/{self.units[uid].max_hp} '
+                              f'(Tarcza/pancerz rozliczone).')
         dead=[uid for uid in affected if uid in self.units
               and self.units[uid].hp<=0]
         if dead:
@@ -1450,8 +1487,11 @@ class Match:
     def assert_integrity(self):
         assert type(getattr(self,'tavern_beer_enabled',False)) is bool
         assert type(getattr(self,'tavern_scaled_damage_enabled',False)) is bool
+        assert type(getattr(self,'tavern_min_hp_damage_enabled',False)) is bool
         if getattr(self,'tavern_scaled_damage_enabled',False):
             assert self.tavern_beer_enabled
+        if getattr(self,'tavern_min_hp_damage_enabled',False):
+            assert self.tavern_scaled_damage_enabled
         assert type(getattr(self,'tavern_price_v2_enabled',False)) is bool
         assert (isinstance(self.beer_orders_by_player,list)
                 and len(self.beer_orders_by_player)==2

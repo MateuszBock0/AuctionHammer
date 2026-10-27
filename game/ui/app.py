@@ -100,6 +100,9 @@ class SoloApp:
         self.fonts={n:pygame.font.SysFont('segoeui',n,bold=(n>=22)) for n in (11,12,13,14,15,16,18,20,22,28,34,46)}
         self.theme=VisualTheme()
         self.cards_view=CardView()
+        self._sidebar_desc_uid=None
+        self._sidebar_desc_scroll=0
+        self._sidebar_desc_maxscroll=0
         self.auction_art_regions=[]
         self.detail_art_regions=[]
         self.fonts_bold={n:pygame.font.SysFont('segoeui',n,bold=True) for n in (13,14,16,18,20,22)}
@@ -149,7 +152,8 @@ class SoloApp:
                             starting_compensation='choice_2_5_or_coins',
                             fixed_board_slots=True,
                             tavern_price_v2_enabled=True,
-                            tavern_scaled_damage_enabled=True)
+                            tavern_scaled_damage_enabled=True,
+                            tavern_min_hp_damage_enabled=True)
             if candidate.first==first:
                 return candidate
         raise RuntimeError('Nie znaleziono losowania właściwej kolejności')
@@ -2076,6 +2080,9 @@ class SoloApp:
         elif event.type==pygame.MOUSEWHEEL:
             if self.game.pending and self.game.pending.owner==0:
                 self.choice_page=max(0,min(self._choice_last_page(),self.choice_page-event.y))
+            elif (self.card_description_rect().collidepoint(self.mouse_pos())
+                  and getattr(self,'_sidebar_desc_maxscroll',0)>0):
+                self._scroll_sidebar_description(event.y)
             else:self.scroll=max(0,self.scroll-event.y)
         elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
             pos=self._physical_to_virtual(event.pos)
@@ -2546,10 +2553,15 @@ class SoloApp:
         enabled=self.game.can_order_beer(0)
         self._button(self.beer_buy_rect(),'KUP [B]',active=enabled,small=True)
         if ticks:
-            next_damage=(ticks if getattr(self.game,'tavern_scaled_damage_enabled',False)
-                         else 1)
-            self._text(f'{next_damage} DMG / TURA',11,1018,486,cfg.GOLD,center=True)
-            self._text('+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
+            if getattr(self.game,'tavern_min_hp_damage_enabled',False):
+                # Per-target minimum cannot be represented by one DMG count.
+                self._text('MIN. 10% MAX PŻ',11,1018,486,cfg.GOLD,center=True)
+                self._text(f'BAZA {ticks} DMG',11,1018,509,cfg.TEXT,center=True)
+            else:
+                next_damage=(ticks if getattr(self.game,'tavern_scaled_damage_enabled',False)
+                             else 1)
+                self._text(f'{next_damage} DMG / TURA',11,1018,486,cfg.GOLD,center=True)
+                self._text('+3 ZA KUFEL',11,1018,509,cfg.TEXT,center=True)
 
     def _draw_board(self):
         self._text('STREFA KOMPUTERA',15,107,78,cfg.MUTED)
@@ -2753,6 +2765,39 @@ class SoloApp:
                        font,area.x+12,area.y+46+i*26,
                        cfg.RED if row.startswith('UWAGA') else cfg.TEXT)
 
+    @staticmethod
+    def card_description_rect():
+        return pygame.Rect(1101,370,329,111)
+
+    def _scroll_sidebar_description(self,steps):
+        self._sidebar_desc_scroll=max(0,min(
+            getattr(self,'_sidebar_desc_maxscroll',0),
+            getattr(self,'_sidebar_desc_scroll',0)-steps*2))
+
+    def _draw_sidebar_description(self,uid,description):
+        """Complete measured sidebar copy, wheel-scrollable without ellipses."""
+        if getattr(self,'_sidebar_desc_uid',None)!=uid:
+            self._sidebar_desc_uid=uid
+            self._sidebar_desc_scroll=0
+        lines=self._wrap(description,13,308)
+        visible=3  # Windows Segoe 13 renders at 18 px; preserve row separation.
+        self._sidebar_desc_maxscroll=max(0,len(lines)-visible)
+        offset=min(getattr(self,'_sidebar_desc_scroll',0),
+                   self._sidebar_desc_maxscroll)
+        self._sidebar_desc_scroll=offset
+        area=self.card_description_rect()
+        pygame.draw.rect(self.screen,(38,35,31),area,border_radius=6)
+        pygame.draw.rect(self.screen,TAVERN_BRASS,area,1,border_radius=6)
+        self._text('DZIAŁANIE ZDOLNOŚCI',14,area.x+7,area.y+4,cfg.GOLD)
+        for i,line in enumerate(lines[offset:offset+visible]):
+            self._text(line,13,area.x+7,area.y+28+i*20,cfg.TEXT)
+        if len(lines)>visible:
+            self._text(f'KÓŁKO: {offset+1}–{min(len(lines),offset+visible)}/{len(lines)} '
+                       '· [I] PEŁNY OPIS',11,area.x+7,area.bottom-14,cfg.GOLD)
+        else:
+            self._text('[I] PEŁNY OPIS I WARUNKI',11,
+                       area.x+7,area.bottom-14,cfg.MUTED)
+
     def _draw_sidebar(self):
         rect=pygame.Rect(self.SIDEBAR_X,78,364,872)
         self._panel(rect,TAVERN_PANEL_INNER,TAVERN_BRASS,16)
@@ -2791,22 +2836,8 @@ class SoloApp:
             self._infographic_box(pygame.Rect(1104,290,320,69),
                                   'AKTUALNY EFEKT',cue.base,cue.color,combat_line)
             rules=getattr(self.game,'ruleset_version','v22')
-            conditional=v23_base_card_short_note(d.id,rules)
-            if conditional:
-                self._text('DODATKOWA ZASADA v23',15,1105,380,cfg.GOLD)
-                short_lines=self._wrap(conditional,13,311)
-                for i,line in enumerate(short_lines[:3]):
-                    self._text(self.cards_view.clip(line,self.fonts[13],311),
-                               13,1105,406+i*19,cfg.TEXT)
-                self._text('PEŁNA REGUŁA I OPIS  [I]',12,1105,465,cfg.GOLD)
-            else:
-                self._text('DZIAŁANIE ZDOLNOŚCI',15,1105,380,cfg.GOLD)
-                description_lines=self._wrap(summary.full,13,312)
-                for i,line in enumerate(description_lines[:3]):
-                    self._text(self.cards_view.clip(line,self.fonts[13],311),
-                               13,1105,405+i*18,cfg.TEXT)
-                if len(description_lines)>3:
-                    self._text('PEŁNY OPIS I WARUNKI  [I]',12,1105,464,cfg.GOLD)
+            complete=v23_base_card_note(d.id,rules) or summary.full
+            self._draw_sidebar_description(card_id,complete)
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
             self._text(self.cards_view.clip(cue.growth,self.fonts[13],309),13,1105,517,cfg.MUTED)
             if u:

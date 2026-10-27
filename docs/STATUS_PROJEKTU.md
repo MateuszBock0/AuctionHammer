@@ -1,10 +1,19 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 27 października 2026  
-**Wersja gałęzi:** MVP 0.9.104 (podgląd ataku, wymiany, zagrożenia Burdą + obowiązkowa końcowa bramka Windows; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.105 (minimalne obrażenia Burdy = 10% MAX PŻ jednostki, pełny przewijany panel opisu, Burda w Księdze Starć; testy CI do potwierdzenia)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.105 (Burda liczona od MAX PŻ i pełny audyt)
+
+- W nowych grach dla każdej jednostki, po ustaleniu obecnego MAX PŻ, surowy tick Burdy to `max(licznik, ceil(MAX PŻ / 10))`. Następnie ten sam oryginalny potok Tarczy, pancerza, obrażeń w PŻ i wspólnej fali śmierci.
+- Reguła `tavern_min_hp_damage_enabled` zapisywana i podpisywana; stare zapisy i audyty nie przechodzą automatycznie na nową mechanikę.
+- `order_beer`, historia, podpowiedź BURDY i zagrożenia na planszy informują o rzeczywistej regule. AI liczy ekspozycję własnych i wrogich jednostek indywidualnie.
+- W Księdze Starć dodano sekcję Burdy na bazie podpisanego event journal, bez wnioskowania wyniku z obecnych reguł. W samym audycie nowe ticki raportują surowy atak i spadek PŻ każdego celu.
+- Prawy panel karty zawiera pełną treść opisu z przewijaniem w kontrolowanej ramce, a `[I]` pozostawia osobny, pełny ekran inspekcji.
+- Przygotowane testy regresyjne; rzeczywista paczka Windows wymaga pełnego przejścia CI oraz ręcznej akceptacji monitora/DPI.
 
 ### Etap — 0.9.104 (proste wskaźniki decyzji, bez ingerencji w mechanikę)
 
