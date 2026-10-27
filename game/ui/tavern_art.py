@@ -280,7 +280,7 @@ def draw_slot_flamelets(screen,rect,now_ms=0,owner=0,index=0,strength=1.0):
     """Tiny animated flames at the OUTER corners of a fixed battlefield slot.
 
     Both rows and all five places are covered, empty or occupied. Deliberately
-    no full glow rectangles or translucent surfaces: 2-3px pixel sparks only.
+    no full glow rectangles or translucent surfaces: small crisp flames only.
     The paint sits outside card content, hero bars and tooltip hitboxes.
     """
     level=max(0.0,min(1.0,strength))
@@ -297,22 +297,26 @@ def draw_slot_flamelets(screen,rect,now_ms=0,owner=0,index=0,strength=1.0):
         (2,(x1,y2),-1),(3,(x2,y2),1)
     ):
         sway=(-1,0,1,0)[(frame+corner)%4]
-        # Each slot and corner has a distinct deterministic 4-frame loop.
-        # Tiny 2..10px flames stay outside card artwork and readable text.
-        flicker=(0,2,-1,1)[(frame+corner+index)%4]
-        length=max(2,2+intensity*2+(corner+index)%2+flicker)
-        _sq(screen,(113,45,24),px,py-2,3,length)
-        _sq(screen,_EMBER,px+sign*sway,py-2,2,length-1)
-        if intensity>1:
-            _sq(screen,_GOLD,px,py-2-(intensity+frame+corner)%4,2,2)
+        # Crisp 4-frame tongues, more legible against dark wood. Everything
+        # is OUTSIDE the card rectangle, so headers and numbers stay clear.
+        flicker=(0,3,-1,2)[(frame+corner+index)%4]
+        length=max(4,4+intensity*3+(corner+index)%2+flicker)
+        # Dark ember outline makes the flame readable at small window sizes.
+        _sq(screen,(108,41,19),px-1,py-2,4,length+2)
+        _sq(screen,(231,91,26),px+sign*sway,py-2,3,length)
+        if intensity>=2:
+            _sq(screen,(255,158,41),px+sign*sway,py,2,max(2,length-4))
+            _sq(screen,(255,222,99),px,py-2-(intensity+frame+corner)%4,2,3)
         else:
-            _sq(screen,(181,78,31),px,py-2-(frame%2),2,2)
-        if intensity>1 and (frame+corner)%2==0:
-            _sq(screen,(255,224,131),px+sign*2,py+2,1,2)
-        if intensity==3 and (frame+corner+index)%4==0:
-            _sq(screen,(206,91,34),px+sign*3,py-7,2,2)
-    # Side embers between corners, very sparse, never a bright solid outline.
-    if intensity>1:
-        for side,xx in ((0,x1),(1,x2)):
-            yy=rect.centery+((frame*11+index*7+side*13)%29)-14
-            _sq(screen,(163,70,28),xx,yy,2,3)
+            _sq(screen,(239,126,43),px,py-2-(frame%2),2,2)
+        if intensity==3 and (frame+corner)%2==0:
+            _sq(screen,(255,237,143),px+sign*2,py+2,2,3)
+        # Independent sparks. No alpha sprites, float coordinates or RNG.
+        if intensity>=2 and (frame+corner+index)%3==0:
+            _sq(screen,(255,185,64),px+sign*3,py-8-intensity,2,2)
+    # Side highlights are spaced apart to avoid a solid bright selection rim.
+    for side,xx in ((0,x1),(1,x2)):
+        yy=rect.centery+((frame*11+index*7+side*13)%35)-18
+        _sq(screen,(156,64,25),xx,yy,2,3+intensity)
+        if intensity>=2 and (frame+side+index)%2==0:
+            _sq(screen,(249,143,44),xx,yy+1,2,intensity+1)

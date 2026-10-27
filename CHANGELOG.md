@@ -4,6 +4,14 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.101] — 2026-10-27
+
+### Karczemna Burda — wszystkie poziomy AI podejmują rozważne decyzje i jaśniejszy ogień
+- **Nowe partie z mechaniką skalowanych obrażeń:** AI łatwe, normalne i trudne oceniają, czy warto kupić piwo. Szybko porównują marginalne obrażenia na widocznych jednostkach obu stron po dopisaniu 3 tur, uwzględniają jednorazową Tarczę, zużywalny pancerz, PŻ, ATK, ważniejsze zgony, cenę piwa i rezerwę monet przed aukcją. Nie odczytują ręki, talii ani RNG. Łatwe wymaga większej przewagi niż normalne, normalne większej niż trudne. Wszystkie rezygnują przy nieopłacalnym bilansie lub natychmiastowym legalnym ataku kończącym partię.
+- Komputer nie kupuje drugiego kufla, gdy Burda ma już co najmniej dwie tury — chroni to przed zapętlaniem zakupów i niepotrzebnym samozniszczeniem. Stare mecze z obrażeniami 1 na turę **zachowują historyczną politykę AI**, a podpisane audyty i zasady pozostają niezmienione.
+- **Grafika:** płomyki na zewnętrznych narożnikach wszystkich 10 pól są wyższe i znacznie bardziej kontrastowe — pomarańczowa otoczka, jaśniejszy rdzeń, żółte języki i niezależne iskry. Nadal 4 deterministyczne klatki animacji, z mocą 3+/2/1/0 tur; bez zasłaniania statystyk, przesuwania kart lub nowych efektów rozgrywki.
+- Nowe testy obejmują decyzje wszystkich trudności, obronę, ryzyko swoich strat, stare gry, brak odczytu ukrytych informacji, brak mutacji stanu i renderowane poziomy ognia.
+
 ## [0.9.100] — 2026-10-27
 
 ### Karczemna Burda — płomienie reagują na czas, obrażenia 3→2→1

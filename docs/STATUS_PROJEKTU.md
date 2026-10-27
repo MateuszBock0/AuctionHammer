@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 27 października 2026  
-**Wersja gałęzi:** MVP 0.9.100 (żywsze 10 płomieni i podpisane skalowane obrażenia Burdy w nowych meczach; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.101 (rozważne piwo dla wszystkich poziomów AI i bardziej wyraziste płomyki; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.101 (AI Burdy na każdym poziomie i jaśniejsze płomienie)
+
+- W nowych meczach AI łatwe, normalne i trudne kupuje piwo tylko przy odpowiedniej przewadze z perspektywy **jawnych** jednostek obu stron. Porównuje przyrost obrażeń z +3 tur (3–2–1 i dotychczasowy licznik), Tarczę, pancerz, PŻ, wartość jednostek, koszt kufla i rezerwę na aukcje. Nie używa RNG ani niewidocznych kart; różne poziomy AI mają inne progi ryzyka.
+- Zabezpieczenie przed wielokrotnym bezmyślnym kupowaniem: AI nie dokupuje przy 2+ turach Burdy. W historycznych zapisach z 1 obrażeniem na turę zachowano dawną politykę (zakupy automatyczne tylko na trudnym). Podpisane powtórki bez zmian.
+- Wyraźniejsze jasne rdzenie i kontrastowe obwódki płomieni przy 10 slotach oraz niezależne iskry. Nadal 3+/2/1/0 intensywności, poza ilustracjami kart, przyciskami i hitboxami. [A] wyłącza animację.
+- Testy nowych decyzji wszystkich AI, osłon, ryzyka, aukcyjnej rezerwy, animacji i nienaruszania stanu.
 
 ### Etap — 0.9.100 (skalowane obrażenia i żywe płomienie)
 
