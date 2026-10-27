@@ -11,7 +11,7 @@ Ten dokument dotyczy wydawania wersji gry, a nie zasad samej rozgrywki. Z perspe
 
 **Jedynym źródłem numeru wersji produktu jest `VERSION.json` → `mvp`.** Z niego synchronizowane są `game/config.py`, README, changelog i treść GitHub Release. Poszczególne tagi `build-...` nie są numerami wersji; mogą istnieć dwa poprawnie zweryfikowane buildy tej samej wersji produktu.
 
-Przed wydaniem 1.0 numeracja `0.9.N` oznacza kolejne etapy MVP, także techniczne lub wyłącznie dokumentacyjne. Nie ma obowiązku wypełniania każdego pośredniego numeru, ale changelog nie powinien udawać, że brakujące wersje zostały opublikowane.
+Wydania `0.9.N` oznaczają etapy MVP, także techniczne lub wyłącznie dokumentacyjne. **Wersja `1.0.0`** oznacza pierwszą stabilną publikację gry solo na Windows; nie wymaga multiplayera ani nowych kart. Numeracja jest pełnym trzyczłonowym SemVer (`MAJOR.MINOR.PATCH`), bez prefiksu `v`, zer wiodących i sufiksów prerelease. Nie ma obowiązku wypełniania pośrednich numerów, ale changelog nie powinien sugerować publikacji pominiętych wersji.
 
 ## Aktualizowanie wersji
 
@@ -20,7 +20,7 @@ Przed wydaniem 1.0 numeracja `0.9.N` oznacza kolejne etapy MVP, także techniczn
 python -m tools.release_meta check
 
 # Gdy planujesz nową wersję, zwiększ numer i edytuj nowy wpis TODO w CHANGELOG
-python -m tools.release_meta bump 0.9.80
+python -m tools.release_meta bump 1.0.0
 
 # Podejrzyj dokładną treść opisu przeznaczonego dla GitHub Releases
 python -m tools.release_meta notes
@@ -30,6 +30,8 @@ python -m unittest discover -s tests -v
 ```
 
 Komenda `bump` synchronizuje **`VERSION.json`**, **`game/config.py`**, **`README.md`** i nagłówek wpisu w **`CHANGELOG.md`**. Dopóki wpis pozostaje oznaczony `TODO`, `check` blokuje publikację. Przy zwykłych wewnętrznych commitach wersji nie podnosi się automatycznie.
+
+**Przygotowanie narzędzia ≠ premiera:** sam fakt dopuszczenia SemVer `1.0.0` nie zmienia aktualnej wersji produktu. Do chwili osobnego zatwierdzenia wydania `VERSION.json` i README zachowują numer naprawdę opublikowanej wersji; `bump 1.0.0` wykonuje się dopiero w PR przygotowującym premierę, wraz z rzeczywistym changelogiem i ponownymi bramkami CI.
 
 ## Ścieżka wydania
 

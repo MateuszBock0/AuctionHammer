@@ -113,12 +113,53 @@ class ReleaseMetadata0979(unittest.TestCase):
     def test_bump_older_or_equal_version_rejected_without_files_changes(self):
         before={p:(self.root/p).read_bytes() for p in
                 ('README.md','VERSION.json','CHANGELOG.md','game/config.py')}
-        for version in ('0.9.78','0.9.76','v0.9.99','2.0.0'):
+        for version in ('0.9.78','0.9.76','v0.9.99','v1.0.0',
+                        '01.0.0','1.00.0','1.0.00','1.0.0-rc1','1.0'):
             with self.subTest(version=version):
                 with self.assertRaises(ReleaseMetadataError):
                     bump_version(self.root,version,date(2026,10,24))
         after={p:(self.root/p).read_bytes() for p in before}
         self.assertEqual(after,before)
+
+    def test_promote_to_first_stable_1_0_0(self):
+        # An actual release bump stays blocked until non-TODO notes exist.
+        bump_version(self.root,'1.0.0',date(2026,10,27))
+        self.assertEqual(current_version(self.root),'1.0.0')
+        self.assertIn('MVP 1.0.0',
+                      (self.root/'game/config.py').read_text(encoding='utf-8'))
+        self.assertIn('Wersja MVP: 1.0.0',
+                      (self.root/'README.md').read_text(encoding='utf-8'))
+        self.assertIn('## [1.0.0] — 2026-10-27',
+                      (self.root/'CHANGELOG.md').read_text(encoding='utf-8'))
+        with self.assertRaisesRegex(ReleaseMetadataError,'TODO'):
+            validate(self.root)
+        changelog=self.root/'CHANGELOG.md'
+        changelog.write_text(changelog.read_text(encoding='utf-8').replace(
+            'TODO: Opisz konkretne zmiany dla graczy.',
+            'Stabilne wydanie gry solo na Windows.'
+        ),encoding='utf-8')
+        self.assertEqual(validate(self.root),'1.0.0')
+        self.assertIn('AuctionHammer 1.0.0',release_notes(self.root))
+        self.assertNotIn('## [0.9.78]',release_notes(self.root))
+
+    def test_semver_major_rollforward_without_truncation(self):
+        bump_version(self.root,'2.0.0',date(2027,1,1))
+        self.assertEqual(current_version(self.root),'2.0.0')
+        self.assertIn('## [2.0.0]',
+                      (self.root/'CHANGELOG.md').read_text(encoding='utf-8'))
+        # The TODO gate also applies to later major releases.
+        with self.assertRaisesRegex(ReleaseMetadataError,'TODO'):
+            current_changelog_section(self.root)
+        changelog=self.root/'CHANGELOG.md'
+        changelog.write_text(changelog.read_text(encoding='utf-8').replace(
+            'TODO: Opisz konkretne zmiany dla graczy.',
+            'Drugie wydanie główne.'
+        ),encoding='utf-8')
+        self.assertIn('Drugie wydanie główne.',
+                      current_changelog_section(self.root))
+        # A lower version cannot replace the already promoted major.
+        with self.assertRaises(ReleaseMetadataError):
+            bump_version(self.root,'1.99.99',date(2027,1,1))
 
     def test_bad_mvp_field_is_rejected(self):
         path=self.root/'VERSION.json'

@@ -5,7 +5,7 @@ remain SHA-derived by the Windows release workflow. Standard library only.
 
 Usage:
     python -m tools.release_meta check
-    python -m tools.release_meta bump 0.9.80
+    python -m tools.release_meta bump 1.0.0
     python -m tools.release_meta notes --output release-notes.md
 """
 from __future__ import annotations
@@ -20,10 +20,16 @@ from urllib.parse import unquote, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SEMVER = re.compile(r"0\.[0-9]+\.[0-9]+\Z")
-README_VERSION = re.compile(r"((?:\*\*|<strong>)(?:Wersja MVP|Aktualna wersja): )(0\.[0-9]+\.[0-9]+)((?:\*\*|</strong>))")
-CONFIG_VERSION = re.compile(r"(MVP )(0\.[0-9]+\.[0-9]+)")
-CHANGELOG_HEADER = re.compile(r"(?m)^## \[(0\.[0-9]+\.[0-9]+)\](?:[^\n]*)\n")
+# Full numeric SemVer: allow 1.0.0 (and later major releases) without
+# allowing leading zeros, "v" prefixes, or unplanned prerelease tags.
+VERSION_PATTERN = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
+SEMVER = re.compile(VERSION_PATTERN + r"\Z")
+README_VERSION = re.compile(
+    r"((?:\*\*|<strong>)(?:Wersja MVP|Aktualna wersja): )"
+    r"(" + VERSION_PATTERN + r")((?:\*\*|</strong>))"
+)
+CONFIG_VERSION = re.compile(r"(MVP )(" + VERSION_PATTERN + r")")
+CHANGELOG_HEADER = re.compile(r"(?m)^## \[(" + VERSION_PATTERN + r")\](?:[^\n]*)\n")
 LOCAL_MARKDOWN_LINK = re.compile(r"!?(?:\[[^\]\n]*\])\(([^)\n]+)\)")
 LOCAL_HTML_LINK = re.compile(r'(?:src|href)="([^"]+)"')
 
