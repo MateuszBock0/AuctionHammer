@@ -2838,7 +2838,7 @@ class SoloApp:
                                   'AKTUALNY EFEKT',cue.base,cue.color,combat_line)
             rules=getattr(self.game,'ruleset_version','v22')
             complete=(full_preview_auction_copy(d.id,card_rarity(c),rules,summary.full)
-                      if d.id.startswith('A0') and card_rarity(c) and identify_auction_variant(d) else
+                      if d.id.startswith('A0') and self.game.auction_catalog=='v22' and card_rarity(c) and identify_auction_variant(d) else
                       (v23_base_card_note(d.id,rules) or summary.full))
             self._draw_sidebar_description(card_id,complete)
             self._text('POSTĘP / WZROST',15,1105,491,cfg.GOLD)
@@ -3384,7 +3384,7 @@ class SoloApp:
         # truncated v23 appendix. Historical ruleset descriptions are untouched.
         detail_summary=(full_preview_auction_copy(d.id,card_rarity(card),
                            getattr(self.game,'ruleset_version','v22'),summary.full)
-                        if d.id.startswith('A0') and card_rarity(card) and identify_auction_variant(d) else
+                        if d.id.startswith('A0') and self.game.auction_catalog=='v22' and card_rarity(card) and identify_auction_variant(d) else
                         (v23_note or summary.full))
         guard_kills=self._guard_progress(uid)
         if guard_kills is not None:
