@@ -42,6 +42,9 @@ Kolejność 13 utworów (Bandcamp):
 
 ## Status licencji
 
+**Decyzja projektu (27.10.2026):** właściciel potwierdził, że warunki wykorzystania albumu w grze oraz dystrybucji w ZIP były już wielokrotnie sprawdzane i nie są otwartym blokerem wydania 1.0.0. Zgłoszenie [#56](https://github.com/MateuszBock0/AuctionHammer/issues/56) zamknięto, aby nie ponawiać tej samej kontroli przy każdej aktualizacji. Poniżej pozostawiono oryginalne źródła oraz atrybucję; samo zamknięcie zgłoszenia nie jest dodatkową licencją, opinią prawną ani zmianą praw do nagrań. Wrócić do sprawy tylko w przypadku **nowych, konkretnych informacji** o warunkach wykorzystania.
+
+
 Prawa do muzyki należą do PGN Music i twórców nagrań. Polityka PGN Music wskazuje CC BY-SA, natomiast album na Bandcamp odsyła
 do CC BY 4.0. Są to różne warunki; sposób wykorzystania nagrań powinien
 być oceniony z uwzględnieniem właściwej licencji.
