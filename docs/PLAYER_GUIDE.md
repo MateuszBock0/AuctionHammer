@@ -79,7 +79,7 @@ Na poziomie **trudnym**, od 0.9.94, dodatkowa szybka analiza kilku ataków potra
 
 Na poziomie **trudnym**, od 0.9.93, komputer dodatkowo ocenia wszystkie legalne pary atakujący–cel, planuje potencjalne zakończenie meczu, porównuje odwet i ryzyko uruchomienia zdolności śmierci.
 
-Na poziomie **łatwym** komputer wydaje na jedną aukcję najwyżej połowę monet, które ma w chwili licytacji (zaokrąglenie w dół). Na **normalnym** wycenia korzyść z pierwszego wyboru, pamiętając, że przy przegranej aukcji nadal dostanie drugą kartę za darmo. Na **trudnym** uwzględnia dodatkowo publiczny stan planszy przeciwnika, wartość zachowania monet i to, jakie archetypy pozostają w puli. AI nie podgląda ręki ani talii gracza. Żaden poziom nie gwarantuje zwycięstwa lub porażki w każdej partii.
+Na poziomie **łatwym** komputer wydaje na jedną aukcję najwyżej połowę monet, które ma w chwili licytacji (zaokrąglenie w dół). Na **normalnym**, od 0.9.102, licytuje tylko wtedy, gdy pierwszy wybór daje sensowną przewagę nad drugą kartą za darmo lub pozwala odebrać przeciwnikowi ważny wybór. Nie zwiększa już budżetu tylko z powodu numeru aukcji, potrafi pasować przy podobnych ofertach, a o mocną kartę walczy zdecydowanie, zachowując monety na przyszłe aukcje. Na **trudnym** uwzględnia dodatkowo publiczny stan planszy przeciwnika, wartość zachowania monet i to, jakie archetypy pozostają w puli. AI nie podgląda ręki ani talii gracza. Żaden poziom nie gwarantuje zwycięstwa lub porażki w każdej partii.
 
 ## Najważniejsze skróty
 

@@ -1,10 +1,17 @@
 # AuctionHammer — status projektu
 
 **Data aktualizacji:** 27 października 2026  
-**Wersja gałęzi:** MVP 0.9.101 (rozważne piwo dla wszystkich poziomów AI i bardziej wyraziste płomyki; weryfikacja CI)  
+**Wersja gałęzi:** MVP 0.9.102 (normalne AI licytuje według wartości pierwszego wyboru, bez rosnącej sztywnej bazy; weryfikacja CI)  
 **Tryb:** wyłącznie single-player przeciw AI, offline na Windows. Multiplayer, lobby i serwer nie są elementem MVP.
 
 **Źródła aktualności:** `VERSION.json`, `README.md`, `game/core/`, `data/cards_base_70.json` i katalog aukcji v22. Poprzednie sekcje chronologiczne dokumentują historię zmian, nie zastępują bieżącej konfiguracji.
+
+### Etap — 0.9.102 (normalne AI — bardziej ekonomiczne licytacje)
+
+- Usunięto automatycznie rosnące wraz z numerem aukcji minimum wydatków normalnego AI (4–9 monet). Komputer porównuje wartość pierwszego wyboru względem darmowego drugiego wyboru i wpływ odebrania przeciwnikowi pierwszeństwa. Słabe różnice oznaczają pas; mocne oferty uzasadniają większy realny wydatek.
+- Normalne AI chroni rezerwę monet, gdy zostały kolejne aukcje, i ostrożniej wycenia stawkę przy małym saldzie; honoruje bonusy licytacji i rzeczywistą opłatę. Poziomy łatwy/trudny oraz stare katalogi bez zmian.
+- Testy wszystkich wariantów: prawie równe oferty, prawdziwy premium, wzrost przewagi, numer aukcji, ostatnia aukcja i rezerwa, bonusy do efektywnej oferty, historyczne warianty.
+- Reguły silnika, karty, monety, Burda, historia i podpisane audyty bez zmian.
 
 ### Etap — 0.9.101 (AI Burdy na każdym poziomie i jaśniejsze płomienie)
 

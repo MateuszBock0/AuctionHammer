@@ -4,6 +4,13 @@ Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzn
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
 
+## [0.9.102] — 2026-10-27
+
+### Normalne AI — realna wartość aukcji zamiast automatycznego podbijania
+- Normalny komputer nie podbija już stawki tylko dlatego, że trwa późniejsza aukcja: **usunięto sztywny minimalny limit 4–9 monet**. Ocenia koszt zdobycia pierwszego wyboru wobec darmowej drugiej karty i wartość odmówienia pierwszego wyboru przeciwnikowi.
+- Gdy różnice między trzema ofertami są znikome, AI pasuje. Przy naprawdę silnej karcie ustawia wyższy limit; uwzględnia dostępne monety, zachowuje rezerwę na pozostałe aukcje oraz ostrożniej liczy koszt przy małym portfelu. Bonusy licytacji nadal pomniejszają wymaganą **rzeczywistą** stawkę, bez obchodzenia limitu.
+- Poziomy łatwy i trudny, ceny piwa, obrażenia Burdy, karty, podpisane audyty i zasady aukcji pozostają bez zmian. Testy: remisy, marginalne korzyści, cenne oferty, wpływ przyszłych aukcji, niska płynność, kupony i zgodność starszych wariantów.
+
 ## [0.9.101] — 2026-10-27
 
 ### Karczemna Burda — wszystkie poziomy AI podejmują rozważne decyzje i jaśniejszy ogień
