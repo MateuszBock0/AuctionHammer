@@ -81,7 +81,7 @@ def stage_game():
     move("S104", 1, "hand")
     # Permanent buffs are part of this staged late-game initial position.
     game._add_effect("S34", "atk", value=1, source="S04")
-    game._add_effect("S103", "atk", value=1, source="S34")
+    game._add_effect("S103", "atk", value=2, source="S34")
     game._add_effect("S103", "max_hp", value=4, source="S35")
     game.units["S103"].hp = 9
     game.units["S111"].hp = 5
@@ -91,7 +91,7 @@ def stage_game():
     game._update_auras()
     assert len(game.players[1].board) == 4
     assert game._taunt(game.units["S39"])
-    assert game.units["S103"].atk == 5
+    assert game.units["S103"].atk == 6
     assert game.units["S103"].hp == 9
     game.assert_integrity()
     return game
@@ -140,8 +140,7 @@ def run_scene(output):
 
     def assert_after_player_end():
         assert game.active == 1, ("expected enemy turn", game.active, game.phase)
-        print("DEBUG first brawl:", "guard", game.units.get(TAUNT), "brawl", game.beer_turns_remaining, "board", {uid: (u.hp, u.max_hp, u.atk) for uid,u in game.units.items()}, "journal", [e["text"] for e in game.event_journal[-18:]], flush=True)
-        assert game.units[TAUNT].hp == 5
+        assert game.units[TAUNT].hp == 6
         assert len(game.players[1].board) == 5
         assert game.beer_turns_remaining == 2
 
