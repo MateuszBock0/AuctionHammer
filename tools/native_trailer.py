@@ -125,6 +125,16 @@ class NativeExporter:
             self.frames(self.post_frames, fade_out=True)
             self.captured.append(action['seq'])
 
+    def abort(self):
+        """Discard partial MP4 if the signed replay fails verification."""
+        if self.encoder.stdin:
+            self.encoder.stdin.close()
+        if self.encoder.poll() is None:
+            self.encoder.terminate()
+        self.encoder.wait()
+        self.pg.quit()
+        self.output.unlink(missing_ok=True)
+
     def close(self):
         if self.encoder.stdin:
             self.encoder.stdin.close()
@@ -164,7 +174,10 @@ def main(argv=None):
     try:
         verify_replay(payload, lambda seed, **kwargs: Match(seed, audit_enabled=True, **kwargs),
                       frame_observer=exporter.observe)
-    finally:
+    except BaseException:
+        exporter.abort()
+        raise
+    else:
         exporter.close()
     print(f'Created {args.output}: {exporter.total} frames, actions {exporter.captured}')
 
