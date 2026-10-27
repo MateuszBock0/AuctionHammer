@@ -140,6 +140,7 @@ def run_scene(output):
 
     def assert_after_player_end():
         assert game.active == 1, ("expected enemy turn", game.active, game.phase)
+        print("DEBUG first brawl:", "guard", game.units.get(TAUNT), "brawl", game.beer_turns_remaining, "board", {uid: (u.hp, u.max_hp, u.atk) for uid,u in game.units.items()}, "journal", [e["text"] for e in game.event_journal[-18:]], flush=True)
         assert game.units[TAUNT].hp == 5
         assert len(game.players[1].board) == 5
         assert game.beer_turns_remaining == 2
