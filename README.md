@@ -19,7 +19,7 @@
   <a href="CHANGELOG.md">CO NOWEGO?</a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.105</strong> · po polsku · solo przeciw AI · offline po pobraniu · bez instalowania Pythona</p>
+<p align="center"><strong>Aktualna wersja: 1.0.0</strong> · po polsku · solo przeciw AI · offline po pobraniu · bez instalowania Pythona</p>
 
 ---
 
