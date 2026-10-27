@@ -21,7 +21,7 @@ from game.core.models import Unit
 from tools.native_trailer import NativeExporter
 
 
-FOES = ("S103", "S104", "S111", "S115", "S39")
+FOES = ("S103", "S111", "S59", "S39")  # first four, fifth played in intro
 TAUNT = "S33"  # Strażnik Bram (natural, authentic taunt)
 QUICK = "S114"  # Instruktor Błyskawicznego Natarcia (innate quick)
 
@@ -49,11 +49,11 @@ def stage_game():
     game.round = 5
     game.players[0].turn_count = 5
     game.players[1].turn_count = 4
-    game.players[0].hp = 5
+    game.players[0].hp = 12
     game.players[1].hp = 1
     game.players[0].coins = 80
     game.players[1].coins = 12
-    game.players[0].played_this_turn = False
+    game.players[0].played_this_turn = True  # already used a card before intro
     game.players[1].played_this_turn = False
 
     def move(uid, owner, zone, slot=None, hp=None):
@@ -74,20 +74,25 @@ def stage_game():
 
     move(TAUNT, 0, "hand")
     move(QUICK, 0, "hand")
-    # One enemy unit has a previous permanent buff: 5 ATK / 7 MAX HP,
-    # and is currently wounded to 6 HP. Thus it survives its counterattack.
+    move("S34", 0, "board", slot=2)   # earlier position: our 2-ATK unit
+    # Prelude starts with FOUR enemies; opponent legally plays the fifth.
     for slot, uid in enumerate(FOES):
-        move(uid, 1, "board", slot=slot, hp=4)
+        move(uid, 1, "board", slot=slot)
+    move("S104", 1, "hand")
+    # Permanent buffs are part of this staged late-game initial position.
+    game._add_effect("S34", "atk", value=1, source="S04")
     game._add_effect("S103", "atk", value=1, source="S34")
-    game._add_effect("S103", "max_hp", value=2, source="S35")
-    game.units["S103"].hp = 6
+    game._add_effect("S103", "max_hp", value=4, source="S35")
+    game.units["S103"].hp = 9
+    game.units["S111"].hp = 5
+    game.units["S59"].hp = 5
     # Another foe has existing taunt from an earlier ability.
     game._add_effect("S39", "taunt", source="S61")
     game._update_auras()
-    assert len(game.players[1].board) == 5
+    assert len(game.players[1].board) == 4
     assert game._taunt(game.units["S39"])
     assert game.units["S103"].atk == 5
-    assert game.units["S103"].hp == 6
+    assert game.units["S103"].hp == 9
     game.assert_integrity()
     return game
 
@@ -142,7 +147,7 @@ def run_scene(output):
     def assert_after_taunt():
         assert TAUNT not in game.units, "Prowokacja must die in enemy attack"
         assert "S103" in game.units, "First attacker must survive until BURDA"
-        assert game.players[0].hp == 5
+        assert game.players[0].hp == 12
 
     def assert_after_hero_hit():
         assert game.players[0].hp == 1, "EXACTLY ONE hero HP required"
@@ -168,24 +173,69 @@ def run_scene(output):
         assert game.players[0].hp == 1
         assert game.players[1].hp <= 0
 
+    def assert_intro_hit():
+        assert game.units["S34"].hp == 2
+        assert game.units["S39"].hp == 5
+        assert game.players[0].hp == 12
+
+    def assert_intro_fifth():
+        assert len(game.players[1].board) == 5
+        assert "S104" in game.units
+
+    def assert_intro_enemy_strike():
+        assert "S34" not in game.units
+        assert game.units["S103"].hp == 7
+        assert game.players[0].hp == 12
+
+    def assert_after_first_turn():
+        assert game.active == 0
+        assert game.players[0].hp == 12
+        assert len(game.players[1].board) == 5
+
+    def assert_full_enemy_attacks():
+        assert all(game.units[uid].attacks == 1 for uid in ("S103", "S104", "S111", "S59", "S39"))
+        assert all(game.legal_attacks(uid) == [] for uid in ("S103", "S104", "S111", "S59", "S39"))
+        assert game.players[0].hp == 1
+
     try:
-        check_step("Pięć wrogich jednostek / mój bohater 5 HP", 1.1)
+        # Prequel: two actual player turns (attack and response), all legal commands.
+        check_step("WCZEŚNIEJ: Cztery wrogie karty, obaj gracze nadal walczą", 1.2)
+        check_step("MÓJ ATAK: Chorąży Królewskiej Kompanii atakuje wrogą Prowokację", 1.8,
+                   lambda: game.attack("S34", "S39"), assert_intro_hit, selected="S34")
+        check_step("KONIEC MOJEJ TURY: Wróg przejmuje inicjatywę", 0.8,
+                   game.end_turn)
+        check_step("WRÓG WYSTAWIA PIĄTĄ KARTĘ — Kapelan Garnizonu", 1.7,
+                   lambda: game.play("S104"), assert_intro_fifth)
+        check_step("WRÓG KONTRATAKUJE I ZABIJA MOJĄ KARTĘ", 1.9,
+                   lambda: game.attack("S103", "S34"), assert_intro_enemy_strike)
+        check_step("Koniec wcześniejszej tury wroga — moja kolej", 1.0,
+                   game.end_turn, assert_after_first_turn)
+
+        # Main directed action: purchase creates the AUTHENTIC full-board fire.
+        check_step("Pięć wrogich jednostek / mój bohater 12 HP", 1.0)
         check_step("KLIK: KARCZEMNA BURDA — zakup kufla, podpalenie",
                    2.5, lambda: game.order_beer(0))
         check_step("Wystawiam STRAŻNIKA BRAM (Prowokacja)",
-                   1.3, lambda: game.play(TAUNT))
+                   1.5, lambda: game.play(TAUNT))
         check_step("Koniec mojej tury — pierwsza fala Burdy (-3)",
                    1.2, game.end_turn, assert_after_player_end)
-        check_step("Wróg ZABIJA Prowokację", 1.5,
+        check_step("PIERWSZY WRÓG: ZABIJA Prowokację", 1.5,
                    lambda: game.attack("S103", TAUNT), assert_after_taunt)
-        check_step("Wróg bije mojego bohatera: 5 → 1 PŻ", 1.8,
-                   lambda: game.attack("S104", "hero:0"), assert_after_hero_hit)
-        check_step("Koniec tury wroga: Burda ZABIJA CAŁĄ PLANSZĘ", 2.4,
+        check_step("DRUGI WRÓG: atakuje bohatera, 12 → 8 PŻ", 1.15,
+                   lambda: game.attack("S104", "hero:0"))
+        check_step("TRZECI WRÓG: atakuje bohatera, 8 → 6 PŻ", 1.15,
+                   lambda: game.attack("S111", "hero:0"))
+        check_step("CZWARTY WRÓG: atakuje bohatera, 6 → 5 PŻ", 1.15,
+                   lambda: game.attack("S59", "hero:0"))
+        check_step("PIĄTY WRÓG: 5 → 1 PŻ — teraz WSZYSCY zużyli atak", 2.0,
+                   lambda: game.attack("S39", "hero:0"),
+                   lambda: (assert_after_hero_hit(), assert_full_enemy_attacks()))
+        check_step("KONIEC TURY WROGA: Burda ZABIJA CAŁĄ PLANSZĘ", 2.5,
                    game.end_turn, assert_after_brawl)
-        check_step("MOJA TURA — mam 1 PŻ, wróg bez Prowokacji", 0.9)
-        check_step("Wystawiam Instruktora Błyskawicznego Natarcia", 1.3,
+        check_step("MOJA TURA — mam 1 PŻ, wróg bez Prowokacji", 1.0)
+        check_step("Wystawiam Instruktora Błyskawicznego Natarcia", 1.5,
                    lambda: game.play(QUICK), assert_after_quick)
-        check_step("SZYBKI ATAK — ostatni cios w bohatera 1 PŻ", 2.1,
+        check_step("SZYBKI ATAK — ostatni cios w bohatera 1 PŻ", 2.2,
                    lambda: game.attack(QUICK, "hero:1"), assert_final,
                    selected=QUICK)
         exporter.captured.append("STAGED_SCENE")
