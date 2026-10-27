@@ -33,7 +33,7 @@ def default_highlights(payload, limit=7):
         deaths = sum(text.startswith('Zgon ') for text in messages)
         finisher = any('KONIEC MECZU' in text for text in messages)
         if damages:
-            score = max(damages) * 1.5 + deaths * 6 + (50 if finisher else 0)
+            score = sum(sorted(damages, reverse=True)[:2]) * 1.5 + deaths * 6 + (50 if finisher else 0)
             ranked.append((score, action['seq']))
     top = {seq for _, seq in sorted(ranked, reverse=True)[:limit]}
     return sorted(top)
@@ -48,6 +48,9 @@ class NativeExporter:
         self.pg = pygame
         self.CombatVisuals = CombatVisuals
         self.app = SoloApp(start_in_menu=False)
+        # Export is render-only: mute the live sound engine (music below is
+        # muxed once by ffmpeg) and prevent UI tooltips from stale mouse state.
+        self.app.tooltip_open = False
         self.app.menu_open = False
         self.app.animations_enabled = True
         self.seqs = set(seqs)
@@ -79,7 +82,10 @@ class NativeExporter:
         pg = self.pg
         for i in range(n):
             with patch.object(pg.time, 'get_ticks', return_value=self.ms):
-                self.app.draw()  # Original native UI and native combat animation.
+                # Keep the authentic board on screen on the final hit, instead
+                # of replacing the action with the game-over dialog.
+                with patch.object(self.app, '_draw_gameover', return_value=None):
+                    self.app.draw()  # Native UI and native combat animation.
             frame = self.app.screen.copy()
             if fade_in and i < min(7, n):
                 overlay = pg.Surface(self.size)
@@ -156,7 +162,8 @@ def main(argv=None):
     os.environ.setdefault('SDL_AUDIODRIVER', 'dummy')
     exporter = NativeExporter(payload, args.output, selected, fps=args.fps)
     try:
-        verify_replay(payload, Match, frame_observer=exporter.observe)
+        verify_replay(payload, lambda seed, **kwargs: Match(seed, audit_enabled=True, **kwargs),
+                      frame_observer=exporter.observe)
     finally:
         exporter.close()
     print(f'Created {args.output}: {exporter.total} frames, actions {exporter.captured}')
