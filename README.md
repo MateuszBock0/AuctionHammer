@@ -1,174 +1,134 @@
 <p align="center">
-  <img src="assets/branding/chorazy_zawsze_zdazy_icon.png" width="116" alt="AuctionHammer — herb z chorągwią" />
+  <img src="assets/branding/chorazy_zawsze_zdazy_icon.png" width="112" alt="AuctionHammer — herb Chorążego" />
 </p>
 
 <h1 align="center">AUCTIONHAMMER</h1>
-<p align="center"><strong>Jedna plansza. Pięć jednostek. Każda decyzja ma znaczenie.</strong></p>
-<p align="center">Taktyczna, turowa gra karciana fantasy dla jednego gracza przeciwko komputerowi.<br />Buduj armię, rozwijaj karty i licytuj rzadkie jednostki w średniowiecznym świecie.</p>
+
+<p align="center"><strong>Pięć miejsc na planszy. Dziesiątki kombinacji. Jeden zwycięzca.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/MateuszBock0/AuctionHammer/releases/latest"><strong>POBIERZ GRĘ NA WINDOWS</strong></a>
-  &nbsp;·&nbsp;
-  <a href="docs/PLAYER_GUIDE.md">Jak grać?</a>
-  &nbsp;·&nbsp;
-  <a href="CHANGELOG.md">Co nowego?</a>
-  &nbsp;·&nbsp;
-  <a href="https://github.com/MateuszBock0/AuctionHammer/issues/new/choose">Zgłoś problem</a>
+  Turowa gra karciana fantasy, w której każda wystawiona jednostka, atak i licytacja może odwrócić losy pojedynku.<br />
+  Zbuduj drużynę, rozwijaj karty i pokonaj komputer, zanim padnie Twój bohater.
 </p>
 
 <p align="center">
-  <a href="https://github.com/MateuszBock0/AuctionHammer/actions/workflows/tests.yml"><img src="https://github.com/MateuszBock0/AuctionHammer/actions/workflows/tests.yml/badge.svg" alt="Testy silnika i interfejsu" /></a>
-  <a href="https://github.com/MateuszBock0/AuctionHammer/actions/workflows/windows-portable.yml"><img src="https://github.com/MateuszBock0/AuctionHammer/actions/workflows/windows-portable.yml/badge.svg" alt="Kompilacja i wydanie Windows" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/kod-MIT-8da67a" alt="Licencja kodu MIT" /></a>
+  <a href="https://github.com/MateuszBock0/AuctionHammer/releases/latest"><strong>POBIERZ NA WINDOWS</strong></a>
+  &nbsp; · &nbsp;
+  <a href="docs/PLAYER_GUIDE.md">ZASADY GRY</a>
+  &nbsp; · &nbsp;
+  <a href="CHANGELOG.md">CO NOWEGO?</a>
 </p>
 
-<p align="center"><strong>Aktualna wersja: 0.9.105</strong> · Windows portable · offline po pobraniu · interfejs po polsku · projekt w aktywnym rozwoju</p>
+<p align="center"><strong>Aktualna wersja: 0.9.105</strong> · po polsku · solo przeciw AI · offline po pobraniu · bez instalowania Pythona</p>
 
 ---
 
-## O grze
+## Twoja plansza. Twoja strategia.
 
-Zaczynasz z niewielką ręką kart. W każdej turze wybierasz, którą jednostkę wprowadzić na planszę, kogo zaatakować i czy warto zachować karty, aby stały się silniejsze. Co kilka rund aukcje pozwalają zdobyć wyjątkowych sojuszników — ale monety wydane teraz mogą przydać się później.
+**Cel jest prosty: sprowadź zdrowie wrogiego bohatera do zera.** Droga do zwycięstwa już taka prosta nie jest.
 
-| | Co czeka na gracza |
-|---|---|
-| **5 pól na stronę** | Ustawienie jednostek ma znaczenie. Możesz zastąpić jednostkę, a puste miejsce pozostaje puste po jej śmierci. |
-| **70 kart podstawowych** | Pięć frakcji, różne momenty aktywacji zdolności i indywidualne ilustracje pixel art. |
-| **Aukcje** | 17 archetypów, trzy rzadkości i **51 wariantów zdolności**. Monety służą do licytacji, nie do zwykłego wystawiania kart. |
-| **Rozwój kart** | Karty podstawowe pozostające na ręce zyskują statystyki i rozwijają zdolności. |
-| **Czytelna walka** | Przeciąganie ataków, statusy, pancerz, tarcza, połączenia aur i faktyczne wartości obrażeń. |
-| **Twoje tempo** | Trzy poziomy trudności AI, samouczek, zapisy, powtórki i podsumowanie meczu. |
+| W grze | Dlaczego to ma znaczenie |
+|:--|:--|
+| **5 miejsc na jednostki** | Każda pozycja jest cenna. Sąsiedztwo, ustawienie naprzeciw wroga i aury potrafią zmienić całą walkę. |
+| **70 niepowtarzalnych kart podstawowych** | Twórz kombinacje pięciu frakcji i zdolności aktywowanych w różnych momentach. |
+| **17 archetypów aukcyjnych, 51 wariantów** | Licytuj pierwszeństwo wyboru jednostek w trzech rzadkościach: podstawowej, rzadkiej i legendarnej. |
+| **Rozwój kart na ręce** | Czekanie bywa potężniejsze niż natychmiastowe wystawienie: karty zyskują statystyki i ulepszają zdolności. |
+| **3 poziomy AI** | Graj spokojnie na łatwym, ucz się na normalnym albo sprawdź swoje planowanie na trudnym. |
 
-### Karty prosto z gry
+### Poznaj karty
 
 <p align="center">
-  <img src="assets/cards/pixel_art/S34_portrait.png" width="205" alt="Chorąży Królewskiej Kompanii — ilustracja karty podstawowej" />
+  <img src="assets/cards/pixel_art/S34_portrait.png" width="205" alt="S34 — Chorąży Królewskiej Kompanii, karta podstawowa" />
   &nbsp;
-  <img src="assets/cards/pixel_art/S35_portrait.png" width="205" alt="Komendant Straży — ilustracja karty podstawowej" />
+  <img src="assets/cards/pixel_art/S35_portrait.png" width="205" alt="S35 — Komendant Straży, karta podstawowa" />
   &nbsp;
-  <img src="assets/auction/final/A002_legendarna_portrait.png" width="205" alt="Generał Oddziału Natarcia — legendarna ilustracja aukcyjna" />
+  <img src="assets/auction/final/A002_legendarna_portrait.png" width="205" alt="A002 — legendarny Generał Oddziału Natarcia, karta aukcyjna" />
 </p>
-<p align="center"><sub>Oryginalne ilustracje używane w grze, nie makieta ekranu.</sub></p>
+<p align="center"><sub>Rzeczywiste ilustracje pixel art z gry. Każda jednostka ma własną tożsamość i zdolność.</sub></p>
 
-## Pobierz i uruchom — Windows
+## Pięć frakcji. Różne sposoby na zwycięstwo.
 
-**Nie potrzebujesz Pythona ani instalatora systemowego.**
+| Frakcja | Jej specjalność | Jak nią grać? |
+|:--|:--|:--|
+| **Elfy** | Efekty przy wystawieniu | Wprowadzaj je w odpowiednim momencie, by natychmiast uzyskać przewagę. |
+| **Dzikie bestie** | Efekty podczas ataku | Wybieraj cele i kolejność ciosów z rozmysłem. |
+| **Potwory** | Efekty po śmierci | Czasem strata jednostki jest początkiem silnej kombinacji. |
+| **Krasnoludy** | Efekty na koniec tury | Chroń je, żeby ich zdolności pracowały dłużej. |
+| **Ludzie** | Efekty pasywne i aury | Buduj formację, w której sąsiedzi wzajemnie się wzmacniają. |
 
-1. Otwórz **[najnowsze wydanie w GitHub Releases](https://github.com/MateuszBock0/AuctionHammer/releases/latest)**.
-2. W sekcji *Assets* pobierz `AuctionHammer-Windows.zip` oraz, jeśli chcesz sprawdzić integralność pobierania, plik `AuctionHammer-Windows.zip.sha256`.
-3. Rozpakuj ZIP, wejdź do folderu `AuctionHammer` i uruchom **`AuctionHammer.exe`**.
-4. W menu wybierz **SAMOUCZEK** albo rozpocznij zwykłą rozgrywkę.
+**Przykład:** Chorąży Królewskiej Kompanii (S34) i Komendant Straży (S35) pomagają rozwijać formację, a legendarny Generał Oddziału Natarcia (A002) potrafi nadać jej nowe tempo. Wystawienie karty to decyzja nie tylko o sile, lecz także o *momencie* i *miejscu*.
 
-| Plik w pobranej grze | Do czego służy? |
-|---|---|
-| `AuctionHammer.exe` | Uruchamia dokładnie wersję z rozpakowanego folderu |
-| `URUCHOM_AUCTIONHAMMER.bat` | Sprawdza dostępne wydanie i korzysta z bezpiecznego aktualizatora |
-| `GRAJ_BEZ_INTERNETU.bat` | Uruchamia ostatnią lokalną wersję bez sprawdzania sieci |
-| `COFNIJ_AKTUALIZACJE.bat` | Przywraca wcześniejsze poprawnie zainstalowane wydanie (jeżeli istnieje) |
+## Co dzieje się podczas partii?
 
-Po pierwszym pobraniu gra nie wymaga logowania, konta ani serwera. Zapisy pozostają na Twoim komputerze w `%LOCALAPPDATA%\AuctionHammer\`.
+### 1. Wystaw jednostkę i rozplanuj ataki
 
-**Ważne:** pobieraj wyłącznie z tego repozytorium. Jeśli instalujesz po raz pierwszy ze starej wersji sprzed 0.9.43, rozpakuj najnowszy ZIP w **nowym folderze**. Rozwiązywanie problemów, raporty awarii i bezpieczne aktualizacje opisuje [Pomoc techniczna](docs/TROUBLESHOOTING.md). Build jest sprawdzany automatycznie w GitHub Actions; nie oznacza to ręcznej certyfikacji na każdym komputerze i skalowaniu ekranu.
+W swojej turze zazwyczaj zagrywasz **jedną kartę z ręki** na jedno z pięciu pól. Zaznacz własną jednostkę i kliknij podświetlony legalny cel albo przeciągnij atakującego na wroga. **Tarcze, pancerz, prowokacja, ogłuszenie i inne statusy** zmieniają wynik starcia.
 
-## Pierwsze trzy minuty
+Prawy panel wyjaśnia zdolności, a przy wskazaniu celu pokazuje szacunek zwykłego ataku i odwetu. Zdolności specjalne mogą zmienić ostateczny rezultat.
 
-1. **Wybierz bonus startowy**, jeżeli zaczynasz jako drugi: trzy monety albo specjalnego Chorążego.
-2. **Wymień do trzech kart** z początkowej ręki (możesz też zostawić wszystkie).
-3. **Zagraj kartę** na jedno z pięciu własnych pól. Możesz przeciągnąć ją z ręki.
-4. **Wybierz jednostkę i zaatakuj** legalny cel — klikając jednostkę, a potem cel, lub przeciągając jednostkę z bardzo delikatną czerwoną strzałką.
-5. **Zakończ turę [SPACJA]**. Gdy jeszcze możesz coś zrobić, gra ostrzeże Cię przed pominięciem tych akcji.
-6. **Zdobądź przewagę** dzięki zdolnościom, aurze jednostek i aukcjom. Wygrywa gracz, który sprowadzi PŻ wrogiego bohatera do zera.
+### 2. Pozwól kartom rosnąć w siłę
 
-Nie musisz zapamiętywać wszystkich efektów — `F1` otwiera pomoc, a `I` pokazuje szczegóły karty.
+Karty podstawowe pozostające na ręce rozwijają **statystyki co własną turę**, a **zdolność co trzy takie tury**. Wcześniejsze zagranie pomaga przeżyć teraz; cierpliwość może zapewnić dużo potężniejszą jednostkę później.
 
-| Sterowanie | Działanie |
-|---|---|
-| Lewy przycisk / przeciągnięcie | Wystawienie karty, atak i wybór celu |
-| `SPACJA` | Zakończenie tury (z potwierdzeniem, jeśli pozostają akcje) |
-| `I` | Pełny opis wybranej karty |
-| `F1` / `T` | Zasady / wskazówki w grze |
-| `H` / `P` | Historia zdarzeń / powtórka |
-| `M` / `R` | Menu / nowy mecz |
-| `F8` / `F11` | Tempo AI / pełny ekran |
-| `A` | Włączanie i wyłączanie animacji |
+### 3. Wygraj aukcję — ale nie przepłać
 
-Pełne zasady, pięć frakcji, sposób rozwoju kart i przebieg aukcji: **[Przewodnik gracza](docs/PLAYER_GUIDE.md)**.
+Co **trzy pełne rundy**, jeśli są dostępne oferty, pojawia się aukcja trzech kart. Licytujesz **prawo pierwszego wyboru**, nie zakup całej trójki. Przeciwnik wybiera potem kartę bez płacenia za pierwszeństwo.
 
-## Co nowego?
+Monety przydają się do licytacji i Karczemnej Burdy. **Zwykłe zagrywanie kart z ręki nie kosztuje monet.**
 
-Ostatnie aktualizacje mocno poprawiły wygodę gry. Najważniejsze z nich:
+### 4. Rozpal Karczemną Burdę
 
-- **0.9.105** — w nowych meczach każdy tick Burdy zadaje jednostce co najmniej 10% jej MAX PŻ (w górę), niezależnie od malejącego licznika; Tarcza i pancerz działają. Szczegóły Burdy są czytelne w podpowiedzi, historii i Księdze Starć; prawy panel pokazuje cały opis karty z przewijaniem kółkiem. Stare zapisy i podpisane audyty zachowują dawną regułę.
-- **0.9.104** — trzy kontekstowe wskazówki: po wskazaniu legalnego celu ataku panel podaje podstawowy szacunek obrażeń i odwetu (z uwzględnieniem Tarczy/pancerza), przy legalnym zastępowaniu 5/5 porównuje ATK/PŻ starej i nowej karty z ostrzeżeniem o aurze i braku efektu śmierci, a jednostki obu stron zagrożone następnym uderzeniem Burdy otrzymują mały znacznik na zewnątrz slotu. Prognozy nie obiecują skutków zdolności. Dodano obowiązkowy test Windows: start, kliknięcia, zapis/wczytanie i podpowiedzi; wcześniejszy instalator, SHA-256 i rollback pozostają sprawdzane.
-- **0.9.103** — podświetlana etykieta **BURDA: N TUR** po najechaniu kursorem i czytelny dymek wyjaśniający działanie efektu: pozostałe tury, obrażenia na następny koniec tury, jednostki obu graczy, działanie Tarcz i pancerza, bezpieczeństwo bohaterów/ręki i +3 tury za kolejny kufel. Objaśnienie uwzględnia stare zapisane gry z 1 DMG/turę oraz nie zasłania pól kart, bo wykorzystuje boczny panel. Bez zmiany reguł, AI i skrótów.
-- **0.9.102** — normalne AI licytuje według wartości przewagi pierwszego wyboru nad darmowym drugim wyborem, a nie rosnącego automatycznie numeru aukcji. Pasuje przy niemal równych kartach, mocniej walczy o wartościowe oferty, bierze pod uwagę odebranie ważnego pierwszego wyboru przeciwnikowi, liczy rzeczywisty koszt z bonusami i zachowuje rezerwę monet na kolejne aukcje. Łatwe i trudne AI oraz zasady aukcji bez zmian.
-- **0.9.101** — wszystkie poziomy AI potrafią samodzielnie oceniać zakup piwa w nowych partiach: porównują przewidywane dodatkowe obrażenia obu plansz (w tym Tarczę, pancerz i eliminacje), cenę i rezerwę na aukcję. Różni się ostrożność poziomów; bez powtarzania zakupów przy długiej Burdzie i bez podglądu ręki przeciwnika. Płomienie wokół wszystkich 10 pól mają wyraźniejsze kontury, żywsze rdzenie i iskry, nadal poza kartami. Stare mecze zachowują dawną politykę AI i zasady obrażeń.
-- **0.9.100** — mocniej animowane, różnorodne pixelowe płomyki przy 10 polach; ogień słabnie wraz z pozostałymi turami. **W nowych grach** Burda zadaje na koniec każdej tury tylu obrażeń wszystkim jednostkom obu stron, ile zostało tur **przed odjęciem jednej** (3→2→1 za pierwszy kufel, 6→5… po dwóch). Tarcze/pancerz działają standardowo; stare zapisy i podpisane powtórki pozostają przy 1 obrażeniu na turę.
-- **0.9.99** — lewy kufel usunięty; jeden kufel pokazuje się tylko przy prawej krawędzi gracza podczas płatnego nalewania i znika po rozlaniu. Małe animowane płomyki pojawiają się przy 10 slotach obu stron i gasną dokładnie z końcem licznika Burdy (3 tury za każdy kufel). Bez zmian zasad walki, monet i zapisów.
-- **0.9.98** — świece w mosiężnych oprawach osadzone w ramie planszy i dopracowane sprite’y pixel art według zatwierdzonej ilustracji. Po opłaceniu kufla animacja pokazuje jego przechylenie, strugę piwa spadającą na krawędź planszy, rozlewisko, zapłon i wygasający żar po obu stronach. Bez zmian obrażeń, kart, hitboxów i podpisanych powtórek; animację wyłącza [A].
-- **0.9.97** — tańszy pierwszy kufel (10 monet u obu graczy), kolejny własny kufel +10 i +1 moneta co dwie rozpoczęte tury; mocniejsze licytacje normalnego AI, cztery ruchome pixelowe świece (po dwie na stronie), dopracowane kufle oraz wspólny rozbłysk i rozlanie po nalaniu. Obrażenia Burdy wciąż są rozliczane na koniec tury.
-- **0.9.96** — Karczemna Burda, etap 2: krótkie nalewanie piwa (0,6 s) i delikatne chwianie tylko dekoracji (do 2 px); bez ruchu kart/hitboxów, wyłączane [A]. Trudne AI może ostrożnie kupić kufel na podstawie jawnej planszy, bez szukania w drzewie gry, z zapasem monet na aukcję. Cena, obrażenia i podpisane reguły bez zmian.
-- **0.9.95** — Karczemna Burda, etap 1: dwa ognie i dwa kufle po bokach; zamów piwo [B] za większą z wartości (10 + liczba rozpoczętych tur obu graczy) lub 10% aktualnych monet (w górę). Po zakupie przez 3 tury na końcu każdej tury jednostki obu plansz otrzymują 1 zwykłe obrażenie. Każdy kolejny kufel +3 tury, bez zwiększenia obrażeń. Stare zapisy/replaye bez zmian.
-- **0.9.94** — lekkie planowanie walki na trudnym poziomie: do 3 ataków do przodu, 5 wariantów na poziom, możliwe śmiertelne kombinacje, usuwanie tarczy przed ciosem; bez kopiowania silnika/RNG. Pomiar czasu namysłu w CI i pojedynki z 0.9.93.
-- **0.9.93** — trudniejsze AI na poziomie TRUDNYM: globalna ocena atakujących/celów, śmiertelnych sekwencji, odwetu i zdolności po śmierci. Generał A002 na wszystkich rzadkościach wzmacnia wyłącznie własną planszę (podstawowy +1 ATK, rzadki wybrany sojusznik, legendarny nowi sojusznicy); historyczne audyty zachowują stare zasady.
-- **0.9.92** — czytelne aktywacje zdolności: krótkie podświetlenie źródła i celów oraz komunikat ŹRÓDŁO → CEL → rzeczywisty rezultat. Zweryfikowane z wykonanych komend i audytu, grupowane masowe premie, bez zasłaniania ilustracji; można wyłączyć [A].
-- **0.9.91** — inteligentne licytowanie: łatwy bot wydaje najwyżej 50% monet, normalny wycenia prawo pierwszego wyboru, a trudny uwzględnia publiczny stan przeciwnika, ryzyko wydatku oraz buffy v24; symulacje na wspólnych seedach.
-- **0.9.90** — zatwierdzone buffy v24 sześciu kart aukcyjnych (A014, A003, A004, A009, A016 i A002), bez nerfów i z mocnymi legendami.
-- **0.9.89** — osiem bardzo cichych, oryginalnych efektów dźwiękowych dla działań kart i aukcji. Domyślnie **muzyka 40%**, **efekty 10%**; osobne przyciski w USTAWIENIACH (co 10%, 0% = wyciszone), zapis lokalny, brak zmian rozgrywki.
-- **0.9.88** — subtelne kadrowanie kwadratowych portretów ofert wyżej: 8% powiększenia, górny priorytet kompozycji, bez zmiany ostrości i pozostałych obrazów.
-- **0.9.87** — poprawione małe oznaczenia statusów i PŻ w podglądach kart oraz pełniejsze kadrowanie kwadratowych ilustracji ofert aukcyjnych bez poziomych pasków; źródłowe PNG i zasady gry bez zmian.
-- **0.9.86** — poprawka uszkodzonych małych liter przy skalowaniu okna i DPI Windows: antyaliasowane UI oraz ostre portrety kart i ofert aukcyjnych.
-- **0.9.85** — wyższe karty w aukcji: obraz, rzadkość, aktywacja i zdolność nie nachodzą na siebie; odświeżony, czytelny panel licytacji.
+W swojej turze możesz kupić kufel piwa klawiszem **B**. Na kolejne **3 końce tur** Burda podpala obie plansze i rani jednostki **obu graczy**. Kolejne kufle przedłużają pożar.
 
-- **0.9.84** — poprawiona ostrość pixel artu przy skalowaniu okna, aury poza HUD-em, wolny od nakładek podgląd celu i wyraźniejsze obramowanie dostępnej oferty.
+W nowych meczach każda trafiona jednostka otrzymuje przed uwzględnieniem osłon co najmniej **10% swojego maksymalnego PŻ (zaokrąglone w górę)**. Obrażenia na koniec tury to większa z wartości: liczba pozostałych tur Burdy lub owo minimum. **Tarcze i pancerz chronią**, a bohaterowie i karty na ręce nie otrzymują tych obrażeń.
 
-- **0.9.83** — pikselowe przedłużenie ilustracji aukcyjnych bez rozmycia, czytelniejsze oznaczenia zdolności i licytacji, ostrzejsze informacje o ataku.
+To potężna broń, ale łatwo spalić także własną armię.
 
-- **0.9.82** — minimalistyczna, bardzo przezroczysta czerwona strzałka przy przeciąganiu ataku; pełne, wyśrodkowane ilustracje aukcyjne bez ucinania twarzy i hełmów.
+## Twoja pierwsza partia — w sześciu krokach
 
-- **0.9.81** — usunięto nieestetyczną strzałkę prowadzącą od atakującej jednostki do kursora. Legalne cele nadal są podświetlane, a oba sposoby atakowania działają.
+1. Uruchom grę i wybierz **SAMOUCZEK** lub **NOWY MECZ**.
+2. W pierwszym meczu zaczyna komputer. Jako drugi gracz wybierz **+3 monety** lub specjalnego **Chorążego**.
+3. Wymień do **3 kart** z początkowej ręki, jeśli potrzebujesz lepszego otwarcia.
+4. Wystaw jednostkę na własnym polu i wykorzystaj dostępne legalne ataki.
+5. Zakończ turę **SPACJĄ**. Gra ostrzeże Cię, jeżeli pomijasz możliwe zagrania.
+6. Rozwijaj karty, obserwuj aukcje, pilnuj Burdy i doprowadź PŻ wrogiego bohatera do **0**.
 
-- **0.9.80** — trasy aur poza kartami, kompletne dokumenty w ZIP i bramki CI przed publikacją.
+Nie musisz uczyć się wszystkich efektów na pamięć: **F1** otwiera pomoc, a **I** pełny opis wskazanej karty. Szczegóły znajdziesz w [przewodniku gracza](docs/PLAYER_GUIDE.md).
 
-- **0.9.78** — połączenia aktywnych aur między jednostkami.
-- **0.9.76** — inteligentny przycisk zakończenia tury.
-- **0.9.75** — ekran wyników i osiągnięć po meczu.
-- **0.9.74** — efekty rzeczywistych obrażeń, leczenia, tarczy i pancerza.
-- **0.9.72 / 0.9.71** — przeciąganie ataków, widoczny rozwój kart i płynne przeciąganie z ręki.
-- **0.9.70 / 0.9.65** — pełna oprawa pixel art kart aukcyjnych i podstawowych.
+## Pobierz i graj — Windows
 
-Wersja **0.9.105** dodaje minimalne obrażenia Burdy liczone od MAX PŻ jednostki, szczegółowy audyt i przewijane opisy po prawej stronie. Wersja **0.9.104** dodaje kontekstowe prognozy walki i wymiany oraz ostrzeżenia przed Burdą, wraz z osobnym testem Windows. Wersja **0.9.103** dodaje podświetlenie i kontekstową podpowiedź przy liczniku Burdy, bez zakrywania kart. Wersja **0.9.102** poprawia dyscyplinę licytacji normalnego AI i ogranicza przepłacanie za podobne karty. Wersja **0.9.101** uczy wszystkie poziomy AI opłacalnego kupowania piwa i rozjaśnia małe płomienie wokół pól. Wersja **0.9.100** skaluje obrażenia Burdy według pozostałych tur w nowych meczach i wzmacnia animację pixelowych płomieni. Wersja **0.9.99** usuwa lewy kufel i łączy małe płomyki przy 10 slotach z licznikiem tur Burdy. Wersja **0.9.98** wprowadza animowane rozlanie piwa i zapłon bezpośrednio na ramie planszy w wysokiej jakości pixel arcie. Wersja **0.9.97** wprowadza nowy cennik piwa, żywszy wygląd karczmy i bardziej aktywne normalne AI podczas aukcji. **0.9.96** dodaje krótką animację nalewania piwa i ostrożne zamówienia trudnego AI bez ciężkiej symulacji. **0.9.95** wprowadza pierwszy grywalny etap Karczemnej Burdy z dynamiczną ceną, dwoma ogniami i kuflami. **0.9.94** dodaje niedrogi obliczeniowo plan 2–3 ciosów wyłącznie na trudnym poziomie. **0.9.93** poprawia taktyczne AI na poziomie trudnym i pilnuje, aby Generał A002 wspierał tylko własną planszę. **0.9.92** dodaje czytelne wskazanie źródła i skutków uruchomionej zdolności, bez zmian zasad. **0.9.91** rozwija licytowanie AI, uwzględniając buffy **v24 z 0.9.90**. **0.9.89** dodaje dyskretną warstwę dźwiękową oraz niezależne poziomy muzyki i SFX. **0.9.88** ustawia wyższy kadr kwadratowych ofert aukcyjnych. **0.9.87** dopracowuje drobne etykiety w podglądzie karty i kwadratowe kadry aukcji. **0.9.86** naprawia skalowanie tekstu bez utraty ostrych ilustracji. **0.9.85** poprawia układ aukcji, a **0.9.84** zakończyła audyt wizualny MVP, poprawiając czytelność walki, kart, aukcji i układu planszy. **0.9.83** dopracowała wygląd pixel art w aukcjach i sygnały interfejsu ataku. **0.9.82** przywróciła subtelną, półprzezroczystą wskazówkę celowania i poprawiła kadrowanie ilustracji aukcyjnych. Wersja **0.9.81** usunęła poprzednią, zbyt grubą strzałkę; nowy wariant jest dwupikselowy i znacznie dyskretniejszy. Zasady walki pozostają bez zmian. Pełny, chronologiczny wykaz: **[CHANGELOG.md](CHANGELOG.md)**.
+<p align="center"><a href="https://github.com/MateuszBock0/AuctionHammer/releases/latest"><strong>POBIERZ NAJNOWSZĄ WERSJĘ AUCTIONHAMMER</strong></a></p>
 
-## Pomoc, bezpieczeństwo i rozwój
+1. Pobierz **AuctionHammer-Windows.zip** z sekcji *Assets* najnowszego wydania.
+2. Rozpakuj archiwum i otwórz folder **AuctionHammer**.
+3. Uruchom **AuctionHammer.exe** — gotowe.
 
-- **Błąd lub problem z uruchomieniem?** [Zgłoś błąd](https://github.com/MateuszBock0/AuctionHammer/issues/new/choose) i podaj wersję, Windows oraz sposób odtworzenia.
-- **Pytania o grę?** [Przewodnik gracza](docs/PLAYER_GUIDE.md) · [FAQ i problemy](docs/TROUBLESHOOTING.md).
-- **Chcesz pomóc w rozwoju?** [CONTRIBUTING.md](CONTRIBUTING.md) · [Uruchomienie z kodu](docs/DEVELOPMENT.md).
-- **Wydania i aktualizacje:** [Zasady wersjonowania](docs/RELEASE_PROCESS.md) · [Historia zmian](CHANGELOG.md).
+**Bez konta, bez serwera i bez Pythona.** Po pobraniu możesz grać offline. Twoje zapisy pozostają lokalnie na komputerze.
 
-### Dla zainteresowanych kodem
+| Chcesz… | Uruchom |
+|:--|:--|
+| Po prostu zagrać | **AuctionHammer.exe** |
+| Sprawdzić aktualizacje | **URUCHOM_AUCTIONHAMMER.bat** |
+| Zagrać bez sprawdzania internetu | **GRAJ_BEZ_INTERNETU.bat** |
+| Wrócić do wcześniejszej zainstalowanej wersji | **COFNIJ_AKTUALIZACJE.bat** |
 
-Gra jest napisana w **Pythonie 3.12 i pygame-ce**. Silnik zasad, bot i aukcje są oddzielone od warstwy graficznej. Program można uruchomić także ze źródeł:
+### Sterowanie, które warto znać
 
-```bash
-git clone https://github.com/MateuszBock0/AuctionHammer.git
-cd AuctionHammer
-python -m pip install -r requirements.txt
-python -m game.main
-```
+| Klawisz / gest | Działanie |
+|:--|:--|
+| **Mysz / przeciągnięcie** | Wystawienie karty, atak, wybór celu |
+| **SPACJA** | Zakończenie tury |
+| **B** | Zakup kufla i uruchomienie / przedłużenie Burdy |
+| **I** | Pełne szczegóły wybranej karty |
+| **F1** | Pomoc i zasady |
+| **H / P** | Historia zdarzeń / powtórka |
+| **F11** | Pełny ekran |
+| **A** | Włącz / wyłącz animacje |
 
-Projekt jest w fazie **MVP**: działa lokalnie w trybie jednego gracza przeciwko AI; **nie ma multiplayera, lobby ani serwera online**.
-
-### Licencja i muzyka
-
-Własny kod i dokumentacja AuctionHammer są udostępnione na licencji [MIT](LICENSE). Muzyka **Fantasy Tavern Music / Fantasy Tavern Album** (2021) — kompozytor **Alek Kaczan**, wydawca **PGN Music (Paradox Gaming Network)**. [Posłuchaj albumu](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album) i zobacz [credits oraz zasady wykorzystania](docs/THIRD_PARTY_MUSIC.md). Nagrania i inne materiały zewnętrzne podlegają **odrębnym prawom** — nie są automatycznie objęte licencją MIT.
+Po meczu możesz przejrzeć **Księgę Starć**, historię i podsumowanie wyniku. Chcesz wiedzieć, co zmieniło się w aktualizacji? Zajrzyj do [historii wydań](CHANGELOG.md).
 
 ---
 
-<p align="center">
-  <a href="https://github.com/MateuszBock0/AuctionHammer/releases/latest"><strong>Pobierz AuctionHammer</strong></a> ·
-  <a href="CHANGELOG.md">Historia wydań</a> ·
-  <a href="https://github.com/MateuszBock0/AuctionHammer/issues">Zgłoś problem</a>
-</p>
+<p align="center"><strong>Wygraj nie największą armią, lecz najlepszą decyzją.</strong></p>
 
-<sub>English: AuctionHammer is a Polish-language, offline fantasy card battler for Windows. Play solo against AI, control five unit slots, grow cards and acquire rare units in auctions. Download the portable ZIP from [Releases](https://github.com/MateuszBock0/AuctionHammer/releases/latest); Python is not required to play.</sub>
+<sub>Muzyka: *Fantasy Tavern Music / Fantasy Tavern Album* (2021), Alek Kaczan, PGN Music (Paradox Gaming Network) — [album i autor](https://pgnmusic.bandcamp.com/album/fantasy-tavern-album), [informacje o muzyce i prawach](docs/THIRD_PARTY_MUSIC.md). Prawa do nagrań są odrębne od licencji kodu. [Pomoc techniczna](docs/TROUBLESHOOTING.md) · [Zgłoś problem](https://github.com/MateuszBock0/AuctionHammer/issues/new/choose) · [Kod gry](LICENSE).</sub>
