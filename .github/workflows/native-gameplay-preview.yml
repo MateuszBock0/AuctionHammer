@@ -6,6 +6,7 @@ on:
       - 'game/core/audit.py'
       - 'tools/native_trailer.py'
       - 'tools/native_trailer_smoke.py'
+      - 'tools/native_featured_match.py'
       - '.github/workflows/native-gameplay-preview.yml'
   workflow_dispatch:
 
@@ -30,17 +31,17 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: python -m unittest discover -s tests -p 'test_native_trailer.py' -v
-      - name: Render native gameplay from verified engine
+      - name: Render original recorded player match in native Pygame
         env:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
-        run: python -m tools.native_trailer_smoke
-      - name: Verify generated video
+        run: python -m tools.native_featured_match
+      - name: Verify native video
         run: |
-          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,nb_frames -of default=noprint_wrappers=1 preview/AuctionHammer-NATYWNE-AKCJE-demo.mp4
-      - name: Attach true Pygame gameplay MP4
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,nb_frames -of default=noprint_wrappers=1 preview/AuctionHammer_EPICKIE_AKCJE_NATYWNY.mp4
+      - name: Attach actual recorded gameplay MP4
         uses: actions/upload-artifact@v4
         with:
           name: AuctionHammer-Natywne-Gameplay-MP4
-          path: preview/AuctionHammer-NATYWNE-AKCJE-demo.mp4
+          path: preview/AuctionHammer_EPICKIE_AKCJE_NATYWNY.mp4
           if-no-files-found: error
