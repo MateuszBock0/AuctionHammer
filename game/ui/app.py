@@ -2780,7 +2780,7 @@ class SoloApp:
             self._sidebar_desc_uid=uid
             self._sidebar_desc_scroll=0
         lines=self._wrap(description,13,308)
-        visible=4
+        visible=3  # Windows Segoe 13 renders at 18 px; preserve row separation.
         self._sidebar_desc_maxscroll=max(0,len(lines)-visible)
         offset=min(getattr(self,'_sidebar_desc_scroll',0),
                    self._sidebar_desc_maxscroll)
@@ -2790,7 +2790,7 @@ class SoloApp:
         pygame.draw.rect(self.screen,TAVERN_BRASS,area,1,border_radius=6)
         self._text('DZIAŁANIE ZDOLNOŚCI',14,area.x+7,area.y+4,cfg.GOLD)
         for i,line in enumerate(lines[offset:offset+visible]):
-            self._text(line,13,area.x+7,area.y+28+i*17,cfg.TEXT)
+            self._text(line,13,area.x+7,area.y+28+i*20,cfg.TEXT)
         if len(lines)>visible:
             self._text(f'KÓŁKO: {offset+1}–{min(len(lines),offset+visible)}/{len(lines)} '
                        '· [I] PEŁNY OPIS',11,area.x+7,area.bottom-14,cfg.GOLD)
