@@ -608,7 +608,7 @@ def read_report(path):
     return payload
 
 
-def verify_replay(payload,match_factory):
+def verify_replay(payload,match_factory,frame_observer=None):
     """Re-run recorded commands on v19 engine, comparing state/event hashes.
 
     This is independent of pygame and suitable for reviewing an uploaded JSON.
@@ -813,6 +813,8 @@ def verify_replay(payload,match_factory):
             raise ValueError(f"Nieznana komenda: {name}")
         if digest(state_snapshot(game))!=record["before_sha256"]:
             raise ValueError(f"Niezgodny stan przed akcją {record['seq']}")
+        if frame_observer is not None:
+            frame_observer(game,record,"before")
         caught=None
         try:
             getattr(game,name)(*record["args"],**record["kwargs"])
@@ -822,6 +824,8 @@ def verify_replay(payload,match_factory):
             raise ValueError(f"Niezgodny wynik akcji {record['seq']}")
         if digest(state_snapshot(game))!=record["after_sha256"]:
             raise ValueError(f"Niezgodny stan po akcji {record['seq']}")
+        if frame_observer is not None:
+            frame_observer(game,record,"after")
     if game.event_journal!=payload["event_journal"]:
         raise ValueError("Niezgodny dziennik zdarzeń silnika")
     if game.audit_internal!=payload["internal_events"]:

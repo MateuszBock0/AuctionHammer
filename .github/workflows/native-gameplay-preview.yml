@@ -1,0 +1,48 @@
+name: Native AuctionHammer gameplay trailer (engine + pygame)
+
+on:
+  pull_request:
+    paths:
+      - 'game/core/audit.py'
+      - 'tools/native_trailer.py'
+      - 'tools/native_trailer_smoke.py'
+      - 'tools/native_featured_match.py'
+      - '.github/workflows/native-gameplay-preview.yml'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pygame
+        run: python -m pip install -r requirements.txt
+      - name: Install self-contained FFmpeg without apt
+        run: |
+          python -m pip install imageio-ffmpeg
+          FFMPEG="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          sudo ln -sf "$FFMPEG" /usr/local/bin/ffmpeg
+          ffmpeg -version | head -n 1
+      - name: Unit tests of highlight selection
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m unittest discover -s tests -p 'test_native_trailer.py' -v
+      - name: Render original recorded player match in native Pygame
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m tools.native_featured_match
+      - name: Verify native video decodes
+        run: |
+          ffmpeg -hide_banner -loglevel error -t 2 -i preview/AuctionHammer_EPICKIE_AKCJE_NATYWNY.mp4 -f null -
+      - name: Attach actual recorded gameplay MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuctionHammer-Natywne-Gameplay-MP4
+          path: preview/AuctionHammer_EPICKIE_AKCJE_NATYWNY.mp4
+          if-no-files-found: error
