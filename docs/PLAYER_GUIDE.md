@@ -65,15 +65,32 @@ Gdy Burda jest aktywna, **mały czerwony wykrzyknik poza ramką pola** oznacza j
 
 ## Karczemna Burda — podpowiedź po najechaniu (od 0.9.103)
 
-**Najedź kursorem na napis `BURDA: N TUR` po lewej stronie planszy.** Zostanie podświetlony złotą ramką, a w panelu karty po prawej pojawi się informacja, co oznacza Burda. Wskazuje ona aktualną liczbę tur, obrażenia na najbliższy koniec tury, które jednostki zostaną trafione, jak działają Tarcze i pancerz, dlaczego bohaterowie i karty w ręce są bezpieczne, oraz co się stanie po kolejnym kuflu. Etykieta działa również, gdy efekt wygasł (`0 TUR`). Przy wczytaniu starej partii podpowiedź prawidłowo podaje starą regułę **1 DMG na koniec tury**. Dymek nie zasłania kart i znika po odsunięciu kursora.
+**Najedź kursorem na napis `BURDA: N TUR` po lewej stronie planszy.** Zostanie podświetlony złotą ramką, a w panelu karty po prawej pojawi się informacja o aktualnej zasadzie dla **tej konkretnej partii**. W nowej grze opis uwzględnia minimalne 10% MAX PŻ każdej jednostki (zaokrąglone w górę), oprócz licznika Burdy. Wyjaśnia, jak chronią Tarcza i pancerz, dlaczego bohaterowie i karty na ręce są bezpieczne oraz co zmieni kolejny kufel. Etykieta działa również przy `0 TUR`. Po wczytaniu historycznej partii podpowiedź zachowuje właściwą dla niej regułę: malejące 3→2→1 lub starsze stałe 1 DMG/turę. Dymek nie zasłania kart i znika po odsunięciu kursora.
 
-## Karczemna Burda — zamawianie piwa (od 0.9.95)
-Po obu stronach ramy planszy stoją świece. Kufel pojawia się tylko podczas animacji zakupu, po prawej krawędzi planszy. W swojej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**.
-- W nowych partiach od **0.9.97** pierwszy kufel kosztuje każdego gracza **10 monet**, drugi jego własny kufel **20**, trzeci **30** itd. Do tego dolicz **1 monetę za każde 2 rozpoczęte tury obu graczy łącznie**: `10 + 10 × (wcześniejsze własne kufle) + floor(rozpoczęte tury obu graczy/2)`. Przykład: po 12 turach pierwszy kufel kosztuje 16, a drugi 26 monet, niezależnie od posiadanego salda.
-- Stare mecze rozpoczęte w 0.9.95–0.9.96 zachowują poprzedni cennik `max(10 + rozpoczęte tury, ceil(monety/10))`.
-- Każdy kufel dodaje **3 tury** do licznika Burdy. Na końcu każdej tury w **nowych partiach od 0.9.100** wszystkie jednostki obu plansz otrzymują **tyle zwykłych obrażeń, ile tur Burdy pozostało przed odliczeniem jednej**. Pierwszy kufel daje kolejno 3, 2 i 1 obrażenie (razem 6 na jednostkę), a dwa kupione od razu: 6, 5, 4, 3, 2, 1. Tarcze i pancerze chronią według standardowych zasad. Stare zapisy i powtórki nie zmieniają poprzedniego 1 obrażenia na zakończenie tury. Efekty po śmierci działają normalnie. Bohaterowie i karty na ręce nie są ranne.
-- Kolejne piwo wydłuża efekt o 3 tury. W nowych meczach od 0.9.100 oznacza to także **zwiększenie obrażeń na następnym końcu tury** (bo obrażenia = pozostałe tury). W starych grach nadal zadaje 1 obrażenie na turę. Cena kolejnego kufla rośnie zgodnie z cennikiem.
-- Historyczne zapisy i podpisane powtórki zachowują swoje oryginalne reguły. W 0.9.98 zastąpiono starsze proste dekoracje dwoma bogato cieniowanymi świecami i przechylanymi kuflami zamocowanymi na ramie planszy. Nalewanie trwa 600 ms, następnie piwo spływa na planszę i zapala się wzdłuż krawędzi. Świece migają w czterech klatkach (co 130 ms), a naciśnięcie A zatrzymuje animacje. To efekt wizualny, bez dodatkowego natychmiastowego obrażenia. Trudne AI może kupować piwo od 0.9.96.
+## Karczemna Burda — zamawianie piwa i obrażenia
+
+W swojej aktywnej turze możesz kliknąć **KUP [B]** lub nacisnąć **B**, jeżeli masz wystarczająco monet. Każdy kufel przedłuża Burdę o **3 końce tur**; nie zadaje natychmiastowego ciosu. Na koniec tury, po rozstrzygnięciu zwykłych efektów końca tury, ogień trafia jednostki **obu graczy** stojące na planszy, a następnie licznik Burdy maleje o 1. Bohaterowie i karty na ręce nie otrzymują obrażeń od Burdy.
+
+### Aktualne zasady obrażeń (nowe partie od 0.9.105, również 1.0.0)
+
+**Każda jednostka otrzymuje własne obrażenia surowe**, obliczane na podstawie jej obecnego *maksymalnego* PŻ (MAX PŻ), a nie bieżącego zdrowia:
+
+`obrażenia = max(licznik tur Burdy, ceil(MAX PŻ jednostki / 10))`
+
+- **Licznik tur** odczytuje się **przed** zmniejszeniem go o 1. Przy pojedynczym kuflu ma wartości 3, potem 2 i 1.
+- **Minimum 10% MAX PŻ** jest liczone osobno dla każdej jednostki i **zaokrąglane w górę**. Dotyczy także ostatniego ticku Burdy z licznikiem 1.
+- Najpierw wyznaczane są obrażenia surowe, **potem Tarcza i pancerz** pochłaniają obrażenia zgodnie ze zwykłymi zasadami walki. Dlatego rzeczywisty ubytek PŻ może być mniejszy lub zerowy.
+- **Przykład:** przy liczniku 3, 2, 1 jednostka z 10 MAX PŻ dostaje odpowiednio **3, 2, 1** surowych obrażeń, a jednostka ze 101 MAX PŻ — **11, 11, 11**. Te wartości mogą być zmniejszone przez osłony.
+- Kolejny kufel **dodaje 3 do pozostałego licznika**, więc może od razu zwiększyć podstawę następnego ticku. Nadal stosuje się większą z dwóch wartości: licznik albo minimum 10% MAX PŻ danej jednostki.
+
+### Cena kufla i zgodność starszych partii
+
+- W nowych partiach od **0.9.97** pierwszy kufel danego gracza ma cenę bazową **10 monet**, drugi **20**, trzeci **30** itd. Do ceny dodawana jest **1 moneta za każde 2 rozpoczęte tury obu graczy łącznie**: `10 + 10 × (wcześniejsze własne kufle) + floor(rozpoczęte tury obu graczy/2)`. Przykład: po 12 turach pierwszy kufel kosztuje 16, a drugi 26 monet, niezależnie od posiadanego salda.
+- Partie rozpoczęte w **0.9.100–0.9.104** zachowują dawną zasadę **malejących obrażeń równych licznikowi**: po jednym kuflu 3→2→1 surowych obrażeń na jednostkę, niezależnie od MAX PŻ.
+- Jeszcze starsze partie z **0.9.95–0.9.99** zachowują **1 surowe obrażenie na jednostkę na koniec tury**, niezależnie od licznika. W meczach rozpoczętych w **0.9.95–0.9.96** pozostaje również stary cennik `max(10 + rozpoczęte tury, ceil(monety/10))`.
+- **Wczytanie zapisu lub podpisanej powtórki nie zmienia historycznych reguł.** Nowe minimum 10% nie jest dopisywane wstecz do już rozpoczętych gier.
+
+Podczas animacji kupiony kufel pojawia się po prawej krawędzi planszy, wylewa piwo na ramę i zapala ogień przy polach jednostek. Płomienie są wizualizacją aktywnej Burdy i nie zadają osobnego natychmiastowego obrażenia. **A** wyłącza animacje bez wpływu na wynik rozgrywki.
 
 ## Jak działa Generał A002? (od 0.9.93)
 
