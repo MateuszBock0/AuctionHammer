@@ -1,8 +1,21 @@
 # Historia zmian — AuctionHammer
 
-Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzne commity. Zapis `0.9.x` określa wersję gry; tag `build-xxxxxxxx` wskazuje dokładny commit skompilowanego ZIP-a Windows. Nie wszystkie numery pośrednie były publikowane jako osobne wydania.
+Poniżej opisane są **wydania produktu dla graczy**, a nie wszystkie wewnętrzne commity. Numer SemVer, np. `1.0.0` lub `0.9.105`, określa wersję gry; tag `build-xxxxxxxx` wskazuje dokładny commit skompilowanego ZIP-a Windows. Nie wszystkie numery pośrednie były publikowane jako osobne wydania.
 
 Pełne szczegóły historycznych mechanik pozostają w [dokumentacji projektu](docs/STATUS_PROJEKTU.md). Instalacja, aktualizacje i kryteria publikacji: [Proces wydań](docs/RELEASE_PROCESS.md).
+
+## [1.0.0] — 2026-10-28
+
+### Pierwsze stabilne wydanie — AuctionHammer Solo na Windows
+
+- **Pełna gra dla jednego gracza:** turowe pojedynki przeciwko komputerowi, trzy poziomy trudności, samouczek, lokalne zapisy i podsumowanie partii. Interfejs po polsku, uruchomienie na Windows z rozpakowanego ZIP-a, bez instalowania Pythona ani zakładania konta.
+- **Taktyczna plansza:** pięć stałych miejsc na stronę, wybór jednostek i celów, tarcze, pancerz, statusy, aury i efekty uruchamiane przy wystawieniu, ataku, śmierci lub końcu tury. Pełne opisy zdolności dostępne w bocznym panelu oraz pod klawiszem `I`.
+- **Karty i rozwój:** 70 różnych kart podstawowych z pięciu frakcji i oryginalnymi ilustracjami pixel art. Karty zachowane na ręce zwiększają statystyki i rozwijają zdolności; moment zagrania jest decyzją strategiczną.
+- **Aukcje i ekonomia:** 17 archetypów kart aukcyjnych w trzech rzadkościach (51 wariantów). Licytacja daje pierwszeństwo wyboru, a monety można przeznaczyć także na Karczemną Burdę.
+- **Karczemna Burda:** dodatkowe obrażenia rozliczane na koniec tury u jednostek obu graczy. W nowych partiach pojedynczy tick ma minimum 10% bieżącego MAX PŻ każdej jednostki, zaokrąglone w górę, przed Tarczą i pancerzem; licznik tur może podwyższać te obrażenia.
+- **Stabilizacja przed 1.0:** w ostatnim etapie 0.9.105 poprawiono opisy efektów i audyt Burdy, czytelność panelu oraz podgląd decyzji. Następnie skrócono ekranowe opisy **21 kart** i zapowiedzi aukcyjnych bez zmiany ich mechaniki (PR #133).
+- **Wygoda gry:** odświeżona strona pobierania i instrukcja skupiona na rozgrywce, czytelny podgląd walki, animacje możliwe do wyłączenia, historia i Księga Starć. Wersja 1.0.0 jest awansem wydawniczym sprawdzonego trybu solo, **bez nowego zestawu zasad i bez konieczności resetowania zapisów**.
+- **Paczka Windows:** przenośny plik `AuctionHammer-Windows.zip`, weryfikacja SHA-256, uruchamianie offline, możliwość aktualizacji i cofnięcia aktualizacji. Dokładny tag `build-...` identyfikuje commit, dla którego wykonano testy i zbudowano paczkę.
 
 ## [0.9.105] — 2026-10-27
 

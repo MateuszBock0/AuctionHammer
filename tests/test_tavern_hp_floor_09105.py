@@ -34,6 +34,25 @@ class BrawlHpFloor09105(unittest.TestCase):
         game.units[b].hp=101
         return game,a,b
 
+    def test_player_guide_keeps_new_brawl_formula_and_legacy_rules_distinct(self):
+        guide=(Path(__file__).resolve().parents[1]/'docs'/'PLAYER_GUIDE.md').read_text(
+            encoding='utf-8')
+        self.assertIn('Aktualne zasady obrażeń (nowe partie od 0.9.105',guide)
+        self.assertIn('max(licznik tur Burdy, ceil(MAX PŻ jednostki / 10))',
+                      guide)
+        self.assertIn('zaokrąglane w górę',guide)
+        self.assertIn('Tarcza i pancerz',guide)
+        self.assertIn('11, 11, 11',guide)
+        self.assertIn('0.9.100–0.9.104',guide)
+        self.assertIn('3→2→1',guide)
+        self.assertIn('0.9.95–0.9.99',guide)
+        self.assertIn('1 surowe obrażenie',guide)
+        self.assertIn('nie zmienia historycznych reguł',guide)
+        # No longer present the old 0.9.100 count-only formula as
+        # the default for all new games.
+        self.assertNotIn('w **nowych partiach od 0.9.100** wszystkie jednostki',
+                         guide)
+
     def test_floor_ceil_per_unit_and_decreasing_base(self):
         game,a,b=self.scene(910501)
         game.order_beer(0)
